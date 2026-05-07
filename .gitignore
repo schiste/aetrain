@@ -39,5 +39,6 @@ target/
 apps/web/dist/
 apps/web/.vite/
 data/cache/
+data/build/
 .playwright-mcp/
 output/playwright/

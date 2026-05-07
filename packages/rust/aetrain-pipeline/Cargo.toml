@@ -1,0 +1,14 @@
+[package]
+name = "aetrain-pipeline"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aetrain-dataset = { path = "../aetrain-dataset" }
+aetrain-normalize = { path = "../aetrain-normalize" }
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+time = { version = "0.3", features = ["formatting"] }

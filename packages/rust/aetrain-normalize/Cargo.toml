@@ -6,4 +6,16 @@ license.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+aetrain-dataset = { path = "../aetrain-dataset" }
 aetrain-domain = { path = "../aetrain-domain" }
+anyhow = "1.0"
+csv = "1.4"
+deunicode = "1.6"
+hex = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+time = { version = "0.3", features = ["formatting", "macros"] }
+toml = "0.8"
+zip = { version = "2.4", default-features = false, features = ["deflate"] }
