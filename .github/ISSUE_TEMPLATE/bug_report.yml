@@ -1,0 +1,85 @@
+name: Bug report
+description: Report a reproducible problem in the prototype, docs, or scripts.
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug.
+
+        Please do not use this form for security reports. Use `SECURITY.md`
+        and report vulnerabilities privately.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you continue
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: I can reproduce this on the current prototype or current `main`.
+          required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Pick the closest match.
+      options:
+        - apps/web prototype
+        - docs or README
+        - scripts/docx_to_md.py
+        - repository or GitHub metadata
+        - something else
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected instead.
+      placeholder: The map rendered, but selecting a second city broke the route summary...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide the shortest reliable sequence you know.
+      placeholder: |
+        1. Start the static server
+        2. Open http://localhost:8080
+        3. Click Paris, then Wien
+        4. Observe...
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, Python version, or anything else relevant.
+      placeholder: |
+        - OS:
+        - Browser:
+        - Python:
+        - Branch or commit:
+      render: markdown
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, or console output
+      description: Paste anything that would help us confirm the failure.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, related issues, or why this matters.
+    validations:
+      required: false

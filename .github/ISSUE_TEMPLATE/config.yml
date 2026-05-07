@@ -1,0 +1,6 @@
+# If the eventual GitHub owner/repo differs, update the Discussions URL below.
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and discussions
+    url: https://github.com/christophehenner/aetrain/discussions
+    about: Use Discussions for open-ended questions, roadmap ideas, and early design conversations.

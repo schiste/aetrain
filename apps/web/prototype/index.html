@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aetrain Trip Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b0f19;color:#f1f5f9;font-family:'Outfit',sans-serif;overflow:hidden;height:100vh}
+#app{display:flex;height:100vh}
+#side{width:390px;min-width:390px;background:#121827;border-right:1px solid #1e293b;display:flex;flex-direction:column;z-index:1000}
+.sh{padding:18px 22px 14px;border-bottom:1px solid #1e293b}
+.sh h1{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:#f59e0b;letter-spacing:2px;text-transform:uppercase}
+.sh p{font-size:11px;color:#94a3b8;margin-top:3px;font-weight:300}
+.stats{display:flex;gap:8px;padding:10px 22px;border-bottom:1px solid #1e293b;background:#1a2035}
+.st{flex:1;text-align:center}
+.st b{font-family:'JetBrains Mono',monospace;font-size:18px;color:#f59e0b;display:block}
+.st small{font-size:8px;color:#475569;text-transform:uppercase;letter-spacing:.8px}
+.filters{padding:12px 22px;border-bottom:1px solid #1e293b;background:#1a2035}
+.filters summary{font-size:11px;color:#94a3b8;cursor:pointer;font-weight:500;letter-spacing:.5px;text-transform:uppercase;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+.filters summary::before{content:'▸';font-size:9px;transition:transform .2s}
+.filters[open] summary::before{transform:rotate(90deg)}
+.fc{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.fg{display:flex;align-items:center;gap:10px}
+.fg label{font-size:10px;color:#94a3b8;width:56px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
+.fg input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:#232b42;border-radius:2px;outline:none}
+.fg input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#f59e0b;cursor:pointer;border:2px solid #0b0f19}
+.fg .fv{font-family:'JetBrains Mono',monospace;font-size:11px;color:#f59e0b;width:42px;text-align:right;flex-shrink:0;cursor:pointer;user-select:none}
+.fg .fv:hover{text-decoration:underline;text-underline-offset:2px}
+.fg .fv-input{font-family:'JetBrains Mono',monospace;font-size:11px;color:#f59e0b;width:42px;text-align:right;flex-shrink:0;background:transparent;border:none;border-bottom:1px solid #f59e0b;outline:none;padding:0;margin:0;-moz-appearance:textfield}
+.fg .fv-input::-webkit-outer-spin-button,.fg .fv-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.fi{font-size:10px;color:#475569;margin-top:4px;font-style:italic}
+.sb{padding:10px 22px;border-bottom:1px solid #1e293b;position:relative}
+.sb input{width:100%;padding:9px 12px 9px 14px;background:#0b0f19;border:1px solid #1e293b;border-radius:6px;color:#f1f5f9;font-family:'Outfit',sans-serif;font-size:13px;outline:none}
+.sb input:focus{border-color:#f59e0b}
+.sb input::placeholder{color:#475569}
+#sr{position:absolute;top:100%;left:22px;right:22px;background:#121827;border:1px solid #1e293b;border-top:none;border-radius:0 0 6px 6px;max-height:260px;overflow-y:auto;z-index:2000;display:none}
+.sri{padding:7px 12px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:8px}
+.sri:hover{background:#1a2035}
+.sri .sn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sri .sc{font-size:10px;color:#475569}
+.sri .sq{display:flex;gap:2px;flex-shrink:0}
+.sri .sq i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#475569}
+.sri .sq i.on{background:#f59e0b}
+.sri.act{opacity:.45}
+.sri.act::after{content:'\2713';color:#f59e0b;font-weight:700;margin-left:4px}
+#tl{flex:1;overflow-y:auto;padding:4px 0}
+#tl::-webkit-scrollbar{width:3px}
+#tl::-webkit-scrollbar-thumb{background:#232b42;border-radius:3px}
+.ts{display:flex;align-items:flex-start;padding:8px 22px;gap:10px;position:relative}
+.ts:hover{background:rgba(245,158,11,.03)}
+.tn{width:24px;height:24px;border-radius:50%;background:#f59e0b;color:#0b0f19;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ti{flex:1;min-width:0}
+.ti .cn{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ti .cc{font-size:10px;color:#475569}
+.ti .tt{display:inline-flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#10b981;margin-top:3px;background:rgba(16,185,129,.08);padding:1px 7px;border-radius:3px}
+.ti .tt.err{color:#f43f5e;background:rgba(244,63,94,.08)}
+.tx{width:20px;height:20px;border:none;background:transparent;color:#475569;cursor:pointer;border-radius:3px;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.tx:hover{background:rgba(244,63,94,.12);color:#f43f5e}
+.tcon{position:absolute;left:33px;top:-4px;width:2px;height:12px;background:#f59e0b;opacity:.2}
+.suggest{margin:2px 22px 8px 46px;padding:6px 10px;background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.12);border-radius:6px;font-size:11px;color:#818cf8;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.suggest:hover{background:rgba(129,140,248,.12);border-color:rgba(129,140,248,.25)}
+.suggest .sg-n{font-weight:600}
+.suggest .sg-i{font-size:10px;color:#94a3b8;margin-left:auto;flex-shrink:0}
+#empty{padding:36px 22px;text-align:center;color:#475569;font-size:12px;line-height:1.7;font-weight:300}
+#empty .icon{font-size:28px;margin-bottom:10px;opacity:.3}
+.actions{padding:12px 22px;border-top:1px solid #1e293b;display:flex;gap:7px}
+.btn{flex:1;padding:9px;border:none;border-radius:6px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.bp{background:#f59e0b;color:#0b0f19}.bp:hover{background:#b45309}
+.bd{background:rgba(244,63,94,.1);color:#f43f5e}.bd:hover{background:rgba(244,63,94,.18)}
+#map{flex:1;background:#0b0f19}
+.leaflet-container{background:#0b0f19!important;font-family:'Outfit',sans-serif!important}
+.leaflet-control-zoom a{background:#121827!important;color:#f1f5f9!important;border-color:#1e293b!important;width:30px!important;height:30px!important;line-height:30px!important;font-size:15px!important}
+.leaflet-control-zoom a:hover{background:#1a2035!important;color:#f59e0b!important}
+.leaflet-control-zoom{border:1px solid #1e293b!important;border-radius:6px!important;overflow:hidden}
+.leaflet-control-zoom a:first-child{border-bottom:1px solid #1e293b!important}
+.leaflet-control-attribution{background:rgba(11,15,25,.85)!important;color:#475569!important;font-size:9px!important}
+.leaflet-control-attribution a{color:#f59e0b!important}
+.leaflet-control-layers{background:#121827!important;border:1px solid #1e293b!important;border-radius:6px!important;color:#f1f5f9!important;font-size:11px!important}
+.leaflet-control-layers-toggle{background-color:#121827!important;border:1px solid #1e293b!important;border-radius:6px!important;width:30px!important;height:30px!important}
+.leaflet-control-layers label{color:#f1f5f9!important}
+.leaflet-tooltip{font-family:'Outfit',sans-serif!important}
+.city-lbl{background:transparent!important;border:none!important;box-shadow:none!important;color:#94a3b8!important;font-size:10px!important;font-family:'Outfit',sans-serif!important;white-space:nowrap!important;padding:0!important;pointer-events:none!important}
+.city-lbl.top{color:#e2e8f0!important;font-weight:500!important;font-size:11px!important}
+.city-lbl.trip-lbl{color:#f59e0b!important;font-weight:600!important;font-size:12px!important;font-family:'JetBrains Mono',monospace!important;text-shadow:0 0 6px rgba(0,0,0,.8),0 0 3px rgba(0,0,0,.9)!important}
+.city-lbl::before{display:none!important}
+.dual-range{position:relative;flex:1;height:20px}
+.dual-range input[type=range]{position:absolute;top:0;left:0;width:100%;-webkit-appearance:none;background:transparent;pointer-events:none;height:20px;margin:0}
+.dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#f59e0b;cursor:pointer;border:2px solid #0b0f19;pointer-events:all;position:relative;z-index:2;box-shadow:0 0 4px rgba(0,0,0,.4)}
+.dual-range input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#f59e0b;cursor:pointer;border:2px solid #0b0f19;pointer-events:all;position:relative;z-index:2}
+.dual-track{position:absolute;top:9px;left:0;right:0;height:4px;background:#232b42;border-radius:2px;pointer-events:none}
+.dual-fill{position:absolute;top:9px;height:4px;background:#f59e0b;border-radius:2px;pointer-events:none;opacity:.4}
+#citycount{position:absolute;bottom:50px;right:12px;z-index:800;background:#121827;border:1px solid #1e293b;border-radius:6px;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8}
+#citycount b{color:#f59e0b}
+@media(max-width:800px){#side{width:100%;min-width:100%;max-height:42vh}#app{flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="app">
+ <div id="side">
+  <div class="sh"><h1>Aetrain</h1><p>Plan your European rail adventure</p></div>
+  <div class="stats">
+   <div class="st"><b id="sv-s">0</b><small>Stops</small></div>
+   <div class="st"><b id="sv-h">0h</b><small>Travel</small></div>
+   <div class="st"><b id="sv-c">0</b><small>Countries</small></div>
+   <div class="st"><b id="sv-d">0km</b><small>Distance</small></div>
+  </div>
+  <details class="filters" open>
+   <summary>Map Filters</summary>
+   <div class="fc">
+    <div class="fg"><label>Interest</label><input type="range" id="f-int" min="1" max="10" value="5"><span class="fv" id="fv-int">5+</span></div>
+    <div class="fg"><label>Pop.</label><input type="range" id="f-pop" min="0" max="1000" value="100" step="10"><span class="fv" id="fv-pop">100k+</span></div>
+    <div id="leg-filter" style="display:none">
+     <div style="height:1px;background:#1e293b;margin:8px 0"></div>
+     <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Next leg from <b id="leg-from" style="color:#f59e0b">—</b></div>
+     <div class="fg">
+      <label>Leg</label>
+      <div class="dual-range">
+       <input type="range" id="f-leg-min" min="0" max="1440" value="0" step="15">
+       <input type="range" id="f-leg-max" min="0" max="1440" value="1440" step="15">
+       <div class="dual-track"></div>
+       <div class="dual-fill" id="dual-fill"></div>
+      </div>
+      <span class="fv" id="fv-leg" style="width:80px">0h — 5h</span>
+     </div>
+     <div style="font-size:10px;color:#475569;font-style:italic" id="leg-info">Reachable cities: —</div>
+    </div>
+    <div class="fi" id="fi-txt">Loading...</div>
+   </div>
+  </details>
+  <div class="sb"><input id="sinput" type="text" placeholder="Search a city..." autocomplete="off"><div id="sr"></div></div>
+  <div id="tl"><div id="empty"><div class="icon">&#x1F682;</div>Click any city on the map<br>or search to build your trip.<br><br>Interesting stops along your<br>route will be suggested automatically.</div></div>
+  <div class="actions"><button class="btn bd" onclick="clearTrip()">Clear</button><button class="btn bp" id="copyBtn" onclick="shareTrip()">Copy Summary</button></div>
+ </div>
+ <div id="map"></div>
+ <div id="citycount">Showing <b id="cc-n">0</b> / <b id="cc-t">0</b> cities</div>
+</div>
+<script>
+// === DATA ===
+var cities=[{"name": "Istanbul", "lat": 41.0082, "lon": 28.9784, "country": "Turkey", "pop": 15460000, "interest": 10}, {"name": "London", "lat": 51.5074, "lon": -0.1278, "country": "Great Britain", "pop": 8982000, "interest": 10}, {"name": "Roma", "lat": 41.9028, "lon": 12.4964, "country": "Italy", "pop": 2873000, "interest": 10}, {"name": "Paris", "lat": 48.8566, "lon": 2.3522, "country": "France", "pop": 2161000, "interest": 10}, {"name": "Barcelona", "lat": 41.3874, "lon": 2.1686, "country": "Spain", "pop": 1621000, "interest": 10}, {"name": "Firenze", "lat": 43.7696, "lon": 11.2558, "country": "Italy", "pop": 383000, "interest": 10}, {"name": "Venezia", "lat": 45.4408, "lon": 12.3155, "country": "Italy", "pop": 261000, "interest": 10}, {"name": "Berlin", "lat": 52.52, "lon": 13.405, "country": "Germany", "pop": 3645000, "interest": 9}, {"name": "Athinai", "lat": 37.9838, "lon": 23.7275, "country": "Greece", "pop": 3154000, "interest": 9}, {"name": "Wien", "lat": 48.2082, "lon": 16.3738, "country": "Austria", "pop": 1911000, "interest": 9}, {"name": "Budapest", "lat": 47.4979, "lon": 19.0402, "country": "Hungary", "pop": 1752000, "interest": 9}, {"name": "Praha", "lat": 50.0755, "lon": 14.4378, "country": "Czech Republic", "pop": 1309000, "interest": 9}, {"name": "Amsterdam", "lat": 52.3676, "lon": 4.9041, "country": "Netherlands", "pop": 873000, "interest": 9}, {"name": "Kraków", "lat": 50.0647, "lon": 19.945, "country": "Poland", "pop": 779000, "interest": 9}, {"name": "Sevilla", "lat": 37.3886, "lon": -5.9823, "country": "Spain", "pop": 689000, "interest": 9}, {"name": "Lisboa", "lat": 38.7223, "lon": -9.1393, "country": "Portugal", "pop": 545000, "interest": 9}, {"name": "Edinburgh", "lat": 55.9533, "lon": -3.1883, "country": "Great Britain", "pop": 482000, "interest": 9}, {"name": "Porto", "lat": 41.1579, "lon": -8.6291, "country": "Portugal", "pop": 249000, "interest": 9}, {"name": "Granada", "lat": 37.1773, "lon": -3.5986, "country": "Spain", "pop": 232000, "interest": 9}, {"name": "Brugge", "lat": 51.2093, "lon": 3.2247, "country": "Belgium", "pop": 118000, "interest": 9}, {"name": "Siena", "lat": 43.3188, "lon": 11.3308, "country": "Italy", "pop": 54000, "interest": 9}, {"name": "Dubrovnik", "lat": 42.6507, "lon": 18.0944, "country": "Croatia", "pop": 42000, "interest": 9}, {"name": "München", "lat": 48.1351, "lon": 11.582, "country": "Germany", "pop": 1472000, "interest": 8}, {"name": "Milano", "lat": 45.4643, "lon": 9.1895, "country": "Italy", "pop": 1352000, "interest": 8}, {"name": "Stockholm", "lat": 59.3293, "lon": 18.0686, "country": "Sweden", "pop": 975000, "interest": 8}, {"name": "Napoli", "lat": 40.8518, "lon": 14.2681, "country": "Italy", "pop": 967000, "interest": 8}, {"name": "København", "lat": 55.6761, "lon": 12.5683, "country": "Denmark", "pop": 794000, "interest": 8}, {"name": "Palermo", "lat": 38.1157, "lon": 13.3615, "country": "Italy", "pop": 664000, "interest": 8}, {"name": "Dublin", "lat": 53.3498, "lon": -6.2603, "country": "Ireland", "pop": 554000, "interest": 8}, {"name": "Nice", "lat": 43.7102, "lon": 7.262, "country": "France", "pop": 342000, "interest": 8}, {"name": "Bergen", "lat": 60.3913, "lon": 5.3221, "country": "Norway", "pop": 285000, "interest": 8}, {"name": "Strasbourg", "lat": 48.5734, "lon": 7.7521, "country": "France", "pop": 280000, "interest": 8}, {"name": "Bordeaux", "lat": 44.8378, "lon": -0.5792, "country": "France", "pop": 257000, "interest": 8}, {"name": "Verona", "lat": 45.4384, "lon": 10.9916, "country": "Italy", "pop": 257000, "interest": 8}, {"name": "York", "lat": 53.9591, "lon": -1.0815, "country": "Great Britain", "pop": 208000, "interest": 8}, {"name": "Split", "lat": 43.5081, "lon": 16.4402, "country": "Croatia", "pop": 178000, "interest": 8}, {"name": "Heraklion", "lat": 35.3387, "lon": 25.1442, "country": "Greece", "pop": 174000, "interest": 8}, {"name": "Salzburg", "lat": 47.8095, "lon": 13.055, "country": "Austria", "pop": 155000, "interest": 8}, {"name": "Oxford", "lat": 51.752, "lon": -1.2577, "country": "Great Britain", "pop": 152000, "interest": 8}, {"name": "Salamanca", "lat": 40.9701, "lon": -5.6635, "country": "Spain", "pop": 144000, "interest": 8}, {"name": "Cambridge", "lat": 52.2053, "lon": 0.1218, "country": "Great Britain", "pop": 125000, "interest": 8}, {"name": "Mostar", "lat": 43.3438, "lon": 17.8078, "country": "Bosnia Herzegovina", "pop": 106000, "interest": 8}, {"name": "Santiago de Compostela", "lat": 42.8782, "lon": -8.5448, "country": "Spain", "pop": 97000, "interest": 8}, {"name": "Avignon", "lat": 43.9493, "lon": 4.8055, "country": "France", "pop": 92000, "interest": 8}, {"name": "Pisa", "lat": 43.7228, "lon": 10.4017, "country": "Italy", "pop": 90000, "interest": 8}, {"name": "Bath", "lat": 51.3811, "lon": -2.359, "country": "Great Britain", "pop": 90000, "interest": 8}, {"name": "Luzern", "lat": 47.0502, "lon": 8.3093, "country": "Switzerland", "pop": 82000, "interest": 8}, {"name": "Córdoba", "lat": 37.8882, "lon": -4.7794, "country": "Spain", "pop": 58336, "interest": 8}, {"name": "Colmar", "lat": 48.0794, "lon": 7.3589, "country": "France", "pop": 57590, "interest": 8}, {"name": "Toledo", "lat": 39.8628, "lon": -4.0273, "country": "Spain", "pop": 44714, "interest": 8}, {"name": "Annecy", "lat": 45.8992, "lon": 6.1294, "country": "France", "pop": 42493, "interest": 8}, {"name": "Sighișoara", "lat": 46.2197, "lon": 24.7926, "country": "Romania", "pop": 28000, "interest": 8}, {"name": "San Sebastián", "lat": 43.3183, "lon": -1.9812, "country": "Spain", "pop": 18003, "interest": 8}, {"name": "Kalambáka", "lat": 39.7072, "lon": 21.6276, "country": "Greece", "pop": 12000, "interest": 8}, {"name": "Interlaken", "lat": 46.6863, "lon": 7.8632, "country": "Switzerland", "pop": 6000, "interest": 8}, {"name": "Hamburg", "lat": 53.5511, "lon": 9.9937, "country": "Germany", "pop": 1852000, "interest": 7}, {"name": "Bruxelles", "lat": 50.8503, "lon": 4.3517, "country": "Belgium", "pop": 1209000, "interest": 7}, {"name": "Köln", "lat": 50.9375, "lon": 6.9603, "country": "Germany", "pop": 1086000, "interest": 7}, {"name": "Torino", "lat": 45.0703, "lon": 7.6869, "country": "Italy", "pop": 870000, "interest": 7}, {"name": "Marseille", "lat": 43.2965, "lon": 5.3698, "country": "France", "pop": 861000, "interest": 7}, {"name": "Thessaloniki", "lat": 40.6401, "lon": 22.9444, "country": "Greece", "pop": 812000, "interest": 7}, {"name": "Oslo", "lat": 59.9139, "lon": 10.7522, "country": "Norway", "pop": 694000, "interest": 7}, {"name": "Helsinki", "lat": 60.1699, "lon": 24.9384, "country": "Finland", "pop": 656000, "interest": 7}, {"name": "Glasgow", "lat": 55.8642, "lon": -4.2518, "country": "Great Britain", "pop": 633000, "interest": 7}, {"name": "Málaga", "lat": 36.7213, "lon": -4.4214, "country": "Spain", "pop": 578000, "interest": 7}, {"name": "Genova", "lat": 44.4056, "lon": 8.9463, "country": "Italy", "pop": 574000, "interest": 7}, {"name": "Vilnius", "lat": 54.6872, "lon": 25.2797, "country": "Lithuania", "pop": 574000, "interest": 7}, {"name": "Dresden", "lat": 51.0504, "lon": 13.7373, "country": "Germany", "pop": 556000, "interest": 7}, {"name": "Antwerpen", "lat": 51.2194, "lon": 4.4025, "country": "Belgium", "pop": 529000, "interest": 7}, {"name": "Lyon", "lat": 45.764, "lon": 4.8357, "country": "France", "pop": 516000, "interest": 7}, {"name": "Liverpool", "lat": 53.4084, "lon": -2.9916, "country": "Great Britain", "pop": 496000, "interest": 7}, {"name": "Gdańsk", "lat": 54.352, "lon": 18.6466, "country": "Poland", "pop": 471000, "interest": 7}, {"name": "Bristol", "lat": 51.4545, "lon": -2.5879, "country": "Great Britain", "pop": 463000, "interest": 7}, {"name": "Tallinn", "lat": 59.437, "lon": 24.7536, "country": "Estonia", "pop": 437000, "interest": 7}, {"name": "Zürich", "lat": 47.3769, "lon": 8.5417, "country": "Switzerland", "pop": 421000, "interest": 7}, {"name": "Bologna", "lat": 44.4949, "lon": 11.3426, "country": "Italy", "pop": 394000, "interest": 7}, {"name": "Bilbao", "lat": 43.263, "lon": -2.935, "country": "Spain", "pop": 346000, "interest": 7}, {"name": "Plovdiv", "lat": 42.1354, "lon": 24.7453, "country": "Bulgaria", "pop": 346000, "interest": 7}, {"name": "Catania", "lat": 37.5079, "lon": 15.083, "country": "Italy", "pop": 311000, "interest": 7}, {"name": "Ljubljana", "lat": 46.0569, "lon": 14.5058, "country": "Slovenia", "pop": 286000, "interest": 7}, {"name": "Sarajevo", "lat": 43.8563, "lon": 18.4131, "country": "Bosnia Herzegovina", "pop": 275000, "interest": 7}, {"name": "Gent", "lat": 51.0543, "lon": 3.7174, "country": "Belgium", "pop": 262000, "interest": 7}, {"name": "Brașov", "lat": 45.6427, "lon": 25.5887, "country": "Romania", "pop": 253000, "interest": 7}, {"name": "Cork", "lat": 51.8985, "lon": -8.4756, "country": "Ireland", "pop": 210000, "interest": 7}, {"name": "Trieste", "lat": 45.6495, "lon": 13.7768, "country": "Italy", "pop": 204000, "interest": 7}, {"name": "Genève", "lat": 46.2044, "lon": 6.1432, "country": "Switzerland", "pop": 203000, "interest": 7}, {"name": "Perugia", "lat": 43.1107, "lon": 12.3908, "country": "Italy", "pop": 167000, "interest": 7}, {"name": "Dijon", "lat": 47.322, "lon": 5.0415, "country": "France", "pop": 157000, "interest": 7}, {"name": "Sibiu", "lat": 45.7983, "lon": 24.1256, "country": "Romania", "pop": 147000, "interest": 7}, {"name": "Bern", "lat": 46.948, "lon": 7.4474, "country": "Switzerland", "pop": 134000, "interest": 7}, {"name": "Innsbruck", "lat": 47.2692, "lon": 11.4041, "country": "Austria", "pop": 132000, "interest": 7}, {"name": "Coimbra", "lat": 40.2033, "lon": -8.4103, "country": "Portugal", "pop": 106000, "interest": 7}, {"name": "Galway", "lat": 53.2707, "lon": -9.0568, "country": "Ireland", "pop": 80000, "interest": 7}, {"name": "Cádiz", "lat": 36.5271, "lon": -6.2886, "country": "Spain", "pop": 79567, "interest": 7}, {"name": "Veliko Tarnovo", "lat": 43.0757, "lon": 25.6172, "country": "Bulgaria", "pop": 73000, "interest": 7}, {"name": "Ravenna", "lat": 44.4184, "lon": 12.2035, "country": "Italy", "pop": 71472, "interest": 7}, {"name": "Bolzano", "lat": 46.4983, "lon": 11.3548, "country": "Italy", "pop": 69355, "interest": 7}, {"name": "Reims", "lat": 49.2583, "lon": 3.5842, "country": "France", "pop": 63540, "interest": 7}, {"name": "Inverness", "lat": 57.4778, "lon": -4.2247, "country": "Great Britain", "pop": 63000, "interest": 7}, {"name": "Rovaniemi", "lat": 66.5039, "lon": 25.7294, "country": "Finland", "pop": 63000, "interest": 7}, {"name": "St. Malo", "lat": 48.6493, "lon": -2.006, "country": "France", "pop": 61925, "interest": 7}, {"name": "Évora", "lat": 38.5717, "lon": -7.9094, "country": "Portugal", "pop": 57000, "interest": 7}, {"name": "Freiburg", "lat": 47.999, "lon": 7.8421, "country": "Germany", "pop": 53618, "interest": 7}, {"name": "Bamberg", "lat": 49.8988, "lon": 10.8978, "country": "Germany", "pop": 45108, "interest": 7}, {"name": "Cannes", "lat": 43.5528, "lon": 7.0174, "country": "France", "pop": 28031, "interest": 7}, {"name": "Montreux", "lat": 46.4312, "lon": 6.9107, "country": "Switzerland", "pop": 26000, "interest": 7}, {"name": "Kiruna", "lat": 67.8558, "lon": 20.2253, "country": "Sweden", "pop": 18000, "interest": 7}, {"name": "Narvik", "lat": 68.4385, "lon": 17.4274, "country": "Norway", "pop": 18000, "interest": 7}, {"name": "Tours", "lat": 47.3941, "lon": 0.6848, "country": "France", "pop": 16639, "interest": 7}, {"name": "Killarney", "lat": 52.0599, "lon": -9.5044, "country": "Ireland", "pop": 15000, "interest": 7}, {"name": "Ankara", "lat": 39.9334, "lon": 32.8597, "country": "Turkey", "pop": 5663000, "interest": 6}, {"name": "Madrid", "lat": 40.4168, "lon": -3.7038, "country": "Spain", "pop": 3223000, "interest": 6}, {"name": "İzmir", "lat": 38.4237, "lon": 27.1428, "country": "Turkey", "pop": 2973000, "interest": 6}, {"name": "Konya", "lat": 37.8746, "lon": 32.4932, "country": "Turkey", "pop": 2232000, "interest": 6}, {"name": "Warszawa", "lat": 52.2297, "lon": 21.0122, "country": "Poland", "pop": 1794000, "interest": 6}, {"name": "București", "lat": 44.4268, "lon": 26.1025, "country": "Romania", "pop": 1794000, "interest": 6}, {"name": "Beograd", "lat": 44.7866, "lon": 20.4489, "country": "Serbia", "pop": 1389000, "interest": 6}, {"name": "Sofia", "lat": 42.6977, "lon": 23.3219, "country": "Bulgaria", "pop": 1307000, "interest": 6}, {"name": "Birmingham", "lat": 52.4862, "lon": -1.8904, "country": "Great Britain", "pop": 1145000, "interest": 6}, {"name": "Leeds", "lat": 53.8008, "lon": -1.5491, "country": "Great Britain", "pop": 793000, "interest": 6}, {"name": "Valencia", "lat": 39.4699, "lon": -0.3763, "country": "Spain", "pop": 791000, "interest": 6}, {"name": "Zagreb", "lat": 45.815, "lon": 15.9819, "country": "Croatia", "pop": 769000, "interest": 6}, {"name": "Frankfurt am Main", "lat": 50.1109, "lon": 8.6821, "country": "Germany", "pop": 753000, "interest": 6}, {"name": "Rotterdam", "lat": 51.9225, "lon": 4.4792, "country": "Netherlands", "pop": 651000, "interest": 6}, {"name": "Wrocław", "lat": 51.1079, "lon": 17.0385, "country": "Poland", "pop": 643000, "interest": 6}, {"name": "Stuttgart", "lat": 48.7758, "lon": 9.1829, "country": "Germany", "pop": 635000, "interest": 6}, {"name": "Düsseldorf", "lat": 51.2277, "lon": 6.7735, "country": "Germany", "pop": 621000, "interest": 6}, {"name": "Rīga", "lat": 56.9496, "lon": 24.1052, "country": "Latvia", "pop": 615000, "interest": 6}, {"name": "Leipzig", "lat": 51.3397, "lon": 12.3731, "country": "Germany", "pop": 587000, "interest": 6}, {"name": "Göteborg", "lat": 57.7089, "lon": 11.9746, "country": "Sweden", "pop": 572000, "interest": 6}, {"name": "Manchester", "lat": 53.4808, "lon": -2.2426, "country": "Great Britain", "pop": 553000, "interest": 6}, {"name": "Den Haag", "lat": 52.0705, "lon": 4.3007, "country": "Netherlands", "pop": 545000, "interest": 6}, {"name": "Nürnberg", "lat": 49.4521, "lon": 11.0767, "country": "Germany", "pop": 518000, "interest": 6}, {"name": "Bratislava", "lat": 48.1486, "lon": 17.1077, "country": "Slovakia", "pop": 475000, "interest": 6}, {"name": "Brno", "lat": 49.1951, "lon": 16.6068, "country": "Czech Republic", "pop": 381000, "interest": 6}, {"name": "Cardiff", "lat": 51.4816, "lon": -3.1791, "country": "Great Britain", "pop": 362000, "interest": 6}, {"name": "Utrecht", "lat": 52.0907, "lon": 5.1214, "country": "Netherlands", "pop": 358000, "interest": 6}, {"name": "Aarhus", "lat": 56.1629, "lon": 10.2039, "country": "Denmark", "pop": 350000, "interest": 6}, {"name": "Malmö", "lat": 55.605, "lon": 13.0038, "country": "Sweden", "pop": 344000, "interest": 6}, {"name": "Varna", "lat": 43.2141, "lon": 27.9147, "country": "Bulgaria", "pop": 334000, "interest": 6}, {"name": "Bari", "lat": 41.1171, "lon": 16.8719, "country": "Italy", "pop": 325000, "interest": 6}, {"name": "Cluj-Napoca", "lat": 46.7712, "lon": 23.6236, "country": "Romania", "pop": 324000, "interest": 6}, {"name": "Timișoara", "lat": 45.7489, "lon": 21.2087, "country": "Romania", "pop": 319000, "interest": 6}, {"name": "Nantes", "lat": 47.2184, "lon": -1.5536, "country": "France", "pop": 309000, "interest": 6}, {"name": "Newcastle", "lat": 54.9783, "lon": -1.6178, "country": "Great Britain", "pop": 302000, "interest": 6}, {"name": "Graz", "lat": 47.0707, "lon": 15.4395, "country": "Austria", "pop": 291000, "interest": 6}, {"name": "Kaunas", "lat": 54.8985, "lon": 23.9036, "country": "Lithuania", "pop": 289000, "interest": 6}, {"name": "Montpellier", "lat": 43.6108, "lon": 3.8767, "country": "France", "pop": 285000, "interest": 6}, {"name": "Aberdeen", "lat": 57.1497, "lon": -2.0943, "country": "Great Britain", "pop": 229000, "interest": 6}, {"name": "Trondheim", "lat": 63.4305, "lon": 10.3951, "country": "Norway", "pop": 207000, "interest": 6}, {"name": "Toruń", "lat": 53.0138, "lon": 18.5984, "country": "Poland", "pop": 198000, "interest": 6}, {"name": "Braga", "lat": 41.5518, "lon": -8.4229, "country": "Portugal", "pop": 193000, "interest": 6}, {"name": "Turku", "lat": 60.4518, "lon": 22.2666, "country": "Finland", "pop": 192000, "interest": 6}, {"name": "Basel", "lat": 47.5596, "lon": 7.5886, "country": "Switzerland", "pop": 178000, "interest": 6}, {"name": "Uppsala", "lat": 59.8586, "lon": 17.6389, "country": "Sweden", "pop": 177000, "interest": 6}, {"name": "Burgos", "lat": 42.3439, "lon": -3.6969, "country": "Spain", "pop": 176000, "interest": 6}, {"name": "Santander", "lat": 43.4623, "lon": -3.81, "country": "Spain", "pop": 172000, "interest": 6}, {"name": "Patras", "lat": 38.2466, "lon": 21.7346, "country": "Greece", "pop": 168000, "interest": 6}, {"name": "Grenoble", "lat": 45.1885, "lon": 5.7245, "country": "France", "pop": 160000, "interest": 6}, {"name": "Cagliari", "lat": 39.2238, "lon": 9.1217, "country": "Italy", "pop": 155000, "interest": 6}, {"name": "Pécs", "lat": 46.0727, "lon": 18.2323, "country": "Hungary", "pop": 145000, "interest": 6}, {"name": "Stavanger", "lat": 58.97, "lon": 5.7331, "country": "Norway", "pop": 144000, "interest": 6}, {"name": "Lausanne", "lat": 46.5197, "lon": 6.6323, "country": "Switzerland", "pop": 140000, "interest": 6}, {"name": "Luxembourg", "lat": 49.6117, "lon": 6.13, "country": "Luxembourg", "pop": 125000, "interest": 6}, {"name": "Maastricht", "lat": 50.8514, "lon": 5.691, "country": "Netherlands", "pop": 121000, "interest": 6}, {"name": "Rimini", "lat": 44.0594, "lon": 12.5681, "country": "Italy", "pop": 78774, "interest": 6}, {"name": "La Spezia", "lat": 44.1024, "lon": 9.824, "country": "Italy", "pop": 73028, "interest": 6}, {"name": "Alacant", "lat": 38.3452, "lon": -0.481, "country": "Spain", "pop": 65663, "interest": 6}, {"name": "Koblenz", "lat": 50.3569, "lon": 7.589, "country": "Germany", "pop": 65036, "interest": 6}, {"name": "Faro", "lat": 37.0194, "lon": -7.9304, "country": "Portugal", "pop": 65000, "interest": 6}, {"name": "Lugano", "lat": 46.0037, "lon": 8.9511, "country": "Switzerland", "pop": 63000, "interest": 6}, {"name": "Bonn", "lat": 50.7374, "lon": 7.0982, "country": "Germany", "pop": 62823, "interest": 6}, {"name": "Pula", "lat": 44.8666, "lon": 13.8496, "country": "Croatia", "pop": 58000, "interest": 6}, {"name": "Trento", "lat": 46.0748, "lon": 11.1217, "country": "Italy", "pop": 56198, "interest": 6}, {"name": "Bodø", "lat": 67.2804, "lon": 14.4049, "country": "Norway", "pop": 52000, "interest": 6}, {"name": "La Rochelle", "lat": 46.1603, "lon": -1.1511, "country": "France", "pop": 50741, "interest": 6}, {"name": "Padova", "lat": 45.4064, "lon": 11.8768, "country": "Italy", "pop": 50142, "interest": 6}, {"name": "Karlovy Vary", "lat": 50.2328, "lon": 12.8714, "country": "Czech Republic", "pop": 49000, "interest": 6}, {"name": "Erfurt", "lat": 50.9848, "lon": 11.0299, "country": "Germany", "pop": 42696, "interest": 6}, {"name": "Bayonne", "lat": 43.4929, "lon": -1.4748, "country": "France", "pop": 42651, "interest": 6}, {"name": "Konstanz", "lat": 47.6633, "lon": 9.1751, "country": "Germany", "pop": 39898, "interest": 6}, {"name": "Lecce", "lat": 40.3516, "lon": 18.175, "country": "Italy", "pop": 39807, "interest": 6}, {"name": "Trier", "lat": 49.749, "lon": 6.6371, "country": "Germany", "pop": 37059, "interest": 6}, {"name": "Salerno", "lat": 40.6824, "lon": 14.7681, "country": "Italy", "pop": 34213, "interest": 6}, {"name": "Regensburg", "lat": 49.0134, "lon": 12.1016, "country": "Germany", "pop": 33210, "interest": 6}, {"name": "Rouen", "lat": 49.4432, "lon": 1.0993, "country": "France", "pop": 33024, "interest": 6}, {"name": "Caen", "lat": 49.1829, "lon": -0.3707, "country": "France", "pop": 31049, "interest": 6}, {"name": "Carcassonne", "lat": 43.213, "lon": 2.3491, "country": "France", "pop": 30247, "interest": 6}, {"name": "Würzburg", "lat": 49.7913, "lon": 9.9534, "country": "Germany", "pop": 29110, "interest": 6}, {"name": "Lübeck", "lat": 53.8655, "lon": 10.6866, "country": "Germany", "pop": 25463, "interest": 6}, {"name": "Girona", "lat": 41.9794, "lon": 2.8214, "country": "Spain", "pop": 21619, "interest": 6}, {"name": "Penzance", "lat": 50.1186, "lon": -5.5371, "country": "Great Britain", "pop": 21000, "interest": 6}, {"name": "Eskişehir", "lat": 39.7667, "lon": 30.5256, "country": "Turkey", "pop": 888000, "interest": 5}, {"name": "Zaragoza", "lat": 41.6488, "lon": -0.8891, "country": "Spain", "pop": 675000, "interest": 5}, {"name": "Dortmund", "lat": 51.5136, "lon": 7.4653, "country": "Germany", "pop": 586000, "interest": 5}, {"name": "Bremen", "lat": 53.0793, "lon": 8.8017, "country": "Germany", "pop": 567000, "interest": 5}, {"name": "Skopje", "lat": 41.9981, "lon": 21.4254, "country": "North Macedonia", "pop": 544000, "interest": 5}, {"name": "Hannover", "lat": 52.3759, "lon": 9.732, "country": "Germany", "pop": 536000, "interest": 5}, {"name": "Poznań", "lat": 52.4064, "lon": 16.9252, "country": "Poland", "pop": 534000, "interest": 5}, {"name": "Toulouse", "lat": 43.6047, "lon": 1.4442, "country": "France", "pop": 479000, "interest": 5}, {"name": "Tirana", "lat": 41.3275, "lon": 19.8187, "country": "Albania", "pop": 418000, "interest": 5}, {"name": "Szczecin", "lat": 53.4285, "lon": 14.5528, "country": "Poland", "pop": 402000, "interest": 5}, {"name": "Novi Sad", "lat": 45.2671, "lon": 19.8335, "country": "Serbia", "pop": 368000, "interest": 5}, {"name": "Belfast", "lat": 54.5973, "lon": -5.9301, "country": "Ireland", "pop": 343000, "interest": 5}, {"name": "Lublin", "lat": 51.2465, "lon": 22.5684, "country": "Poland", "pop": 340000, "interest": 5}, {"name": "Valladolid", "lat": 41.6523, "lon": -4.7245, "country": "Spain", "pop": 298000, "interest": 5}, {"name": "Vigo", "lat": 42.2406, "lon": -8.7207, "country": "Spain", "pop": 295000, "interest": 5}, {"name": "Iași", "lat": 47.1585, "lon": 27.6014, "country": "Romania", "pop": 290000, "interest": 5}, {"name": "Ostrava", "lat": 49.8209, "lon": 18.2625, "country": "Czech Republic", "pop": 287000, "interest": 5}, {"name": "Constanța", "lat": 44.1598, "lon": 28.6348, "country": "Romania", "pop": 284000, "interest": 5}, {"name": "Plymouth", "lat": 50.3755, "lon": -4.1427, "country": "Great Britain", "pop": 264000, "interest": 5}, {"name": "A Coruña", "lat": 43.3623, "lon": -8.4115, "country": "Spain", "pop": 245000, "interest": 5}, {"name": "Tampere", "lat": 61.4978, "lon": 23.761, "country": "Finland", "pop": 241000, "interest": 5}, {"name": "Košice", "lat": 48.7164, "lon": 21.2611, "country": "Slovakia", "pop": 239000, "interest": 5}, {"name": "Eindhoven", "lat": 51.4416, "lon": 5.4697, "country": "Netherlands", "pop": 234000, "interest": 5}, {"name": "Lille", "lat": 50.6292, "lon": 3.0573, "country": "France", "pop": 233000, "interest": 5}, {"name": "Groningen", "lat": 53.2194, "lon": 6.5665, "country": "Netherlands", "pop": 233000, "interest": 5}, {"name": "Oviedo", "lat": 43.3614, "lon": -5.8494, "country": "Spain", "pop": 220000, "interest": 5}, {"name": "Rennes", "lat": 48.1173, "lon": -1.6778, "country": "France", "pop": 216000, "interest": 5}, {"name": "Aalborg", "lat": 57.0488, "lon": 9.9217, "country": "Denmark", "pop": 215000, "interest": 5}, {"name": "Linz", "lat": 48.3069, "lon": 14.2858, "country": "Austria", "pop": 206000, "interest": 5}, {"name": "Oulu", "lat": 65.0121, "lon": 25.4651, "country": "Finland", "pop": 205000, "interest": 5}, {"name": "Odense", "lat": 55.4038, "lon": 10.4024, "country": "Denmark", "pop": 204000, "interest": 5}, {"name": "Debrecen", "lat": 47.5316, "lon": 21.6273, "country": "Hungary", "pop": 203000, "interest": 5}, {"name": "Burgas", "lat": 42.5048, "lon": 27.4626, "country": "Bulgaria", "pop": 203000, "interest": 5}, {"name": "Liège", "lat": 50.6326, "lon": 5.5797, "country": "Belgium", "pop": 197000, "interest": 5}, {"name": "Plzeň", "lat": 49.7384, "lon": 13.3736, "country": "Czech Republic", "pop": 174000, "interest": 5}, {"name": "Piraeus", "lat": 37.9415, "lon": 23.6467, "country": "Greece", "pop": 163000, "interest": 5}, {"name": "Arnhem", "lat": 51.9851, "lon": 5.8987, "country": "Netherlands", "pop": 161000, "interest": 5}, {"name": "Szeged", "lat": 46.253, "lon": 20.1414, "country": "Hungary", "pop": 161000, "interest": 5}, {"name": "Klaipėda", "lat": 55.7033, "lon": 21.1443, "country": "Lithuania", "pop": 150000, "interest": 5}, {"name": "Ruse", "lat": 43.8356, "lon": 25.9657, "country": "Bulgaria", "pop": 149000, "interest": 5}, {"name": "Volos", "lat": 39.3666, "lon": 22.9425, "country": "Greece", "pop": 145000, "interest": 5}, {"name": "Exeter", "lat": 50.7236, "lon": -3.5275, "country": "Great Britain", "pop": 131000, "interest": 5}, {"name": "Rijeka", "lat": 45.3271, "lon": 14.4422, "country": "Croatia", "pop": 128000, "interest": 5}, {"name": "León", "lat": 42.5987, "lon": -5.5671, "country": "Spain", "pop": 124000, "interest": 5}, {"name": "Perpignan", "lat": 42.6986, "lon": 2.8954, "country": "France", "pop": 121000, "interest": 5}, {"name": "Namur", "lat": 50.4674, "lon": 4.872, "country": "Belgium", "pop": 112000, "interest": 5}, {"name": "Klagenfurt", "lat": 46.6247, "lon": 14.3086, "country": "Austria", "pop": 101000, "interest": 5}, {"name": "Olomouc", "lat": 49.5938, "lon": 17.2509, "country": "Czech Republic", "pop": 100000, "interest": 5}, {"name": "Limerick", "lat": 52.6638, "lon": -8.6267, "country": "Ireland", "pop": 95000, "interest": 5}, {"name": "České Budějovice", "lat": 48.9745, "lon": 14.4743, "country": "Czech Republic", "pop": 94000, "interest": 5}, {"name": "Tartu", "lat": 58.378, "lon": 26.729, "country": "Estonia", "pop": 93000, "interest": 5}, {"name": "Suceava", "lat": 47.6514, "lon": 26.2555, "country": "Romania", "pop": 93000, "interest": 5}, {"name": "Kristiansand", "lat": 58.1462, "lon": 7.9956, "country": "Norway", "pop": 92000, "interest": 5}, {"name": "Mainz", "lat": 49.9929, "lon": 8.2473, "country": "Germany", "pop": 77731, "interest": 5}, {"name": "Pescara", "lat": 42.4618, "lon": 14.2141, "country": "Italy", "pop": 75443, "interest": 5}, {"name": "Amiens", "lat": 49.8941, "lon": 2.2958, "country": "France", "pop": 73469, "interest": 5}, {"name": "Augsburg", "lat": 48.3705, "lon": 10.8978, "country": "Germany", "pop": 71970, "interest": 5}, {"name": "Tarragona", "lat": 41.1189, "lon": 1.2445, "country": "Spain", "pop": 71785, "interest": 5}, {"name": "Almería", "lat": 36.834, "lon": -2.4637, "country": "Spain", "pop": 71054, "interest": 5}, {"name": "Göttingen", "lat": 51.5413, "lon": 9.9158, "country": "Germany", "pop": 70541, "interest": 5}, {"name": "Kiel", "lat": 54.3233, "lon": 10.1228, "country": "Germany", "pop": 67810, "interest": 5}, {"name": "Kassel", "lat": 51.3127, "lon": 9.4797, "country": "Germany", "pop": 64729, "interest": 5}, {"name": "Östersund", "lat": 63.1792, "lon": 14.6357, "country": "Sweden", "pop": 64000, "interest": 5}, {"name": "Le Mans", "lat": 48.0061, "lon": 0.1996, "country": "France", "pop": 63598, "interest": 5}, {"name": "Quimper", "lat": 47.9974, "lon": -4.0972, "country": "France", "pop": 63265, "interest": 5}, {"name": "Villach", "lat": 46.6106, "lon": 13.8558, "country": "Austria", "pop": 62000, "interest": 5}, {"name": "Rostock", "lat": 54.0924, "lon": 12.0991, "country": "Germany", "pop": 60753, "interest": 5}, {"name": "Nancy", "lat": 48.6921, "lon": 6.1844, "country": "France", "pop": 59348, "interest": 5}, {"name": "Falun", "lat": 60.6065, "lon": 15.6356, "country": "Sweden", "pop": 58000, "interest": 5}, {"name": "Chambéry", "lat": 45.5646, "lon": 5.9178, "country": "France", "pop": 56905, "interest": 5}, {"name": "Aveiro", "lat": 40.6405, "lon": -8.6538, "country": "Portugal", "pop": 56660, "interest": 5}, {"name": "Udine", "lat": 46.0711, "lon": 13.2346, "country": "Italy", "pop": 55535, "interest": 5}, {"name": "Limoges", "lat": 45.8315, "lon": 1.2578, "country": "France", "pop": 53698, "interest": 5}, {"name": "Waterford", "lat": 52.2593, "lon": -7.1101, "country": "Ireland", "pop": 53000, "interest": 5}, {"name": "Reggio Calabria", "lat": 38.1106, "lon": 15.6613, "country": "Italy", "pop": 52837, "interest": 5}, {"name": "Toulon", "lat": 43.1242, "lon": 5.928, "country": "France", "pop": 51781, "interest": 5}, {"name": "Besançon", "lat": 47.2378, "lon": 6.0241, "country": "France", "pop": 50713, "interest": 5}, {"name": "Angoulême", "lat": 45.6485, "lon": 0.1562, "country": "France", "pop": 48118, "interest": 5}, {"name": "Huesca", "lat": 42.1401, "lon": -0.4089, "country": "Spain", "pop": 39911, "interest": 5}, {"name": "Leeuwarden", "lat": 53.2012, "lon": 5.7999, "country": "Netherlands", "pop": 39260, "interest": 5}, {"name": "Oostende", "lat": 51.2254, "lon": 2.9263, "country": "Belgium", "pop": 38909, "interest": 5}, {"name": "Livorno", "lat": 43.5485, "lon": 10.3106, "country": "Italy", "pop": 38700, "interest": 5}, {"name": "Schwerin", "lat": 53.6355, "lon": 11.4012, "country": "Germany", "pop": 37541, "interest": 5}, {"name": "Magdeburg", "lat": 52.1205, "lon": 11.6276, "country": "Germany", "pop": 37298, "interest": 5}, {"name": "Chur", "lat": 46.8499, "lon": 9.5329, "country": "Switzerland", "pop": 37000, "interest": 5}, {"name": "Mannheim", "lat": 49.4875, "lon": 8.466, "country": "Germany", "pop": 33231, "interest": 5}, {"name": "Le Havre", "lat": 49.4944, "lon": 0.1079, "country": "France", "pop": 29628, "interest": 5}, {"name": "Valence", "lat": 44.9334, "lon": 4.8924, "country": "France", "pop": 29446, "interest": 5}, {"name": "Bregenz", "lat": 47.5031, "lon": 9.7471, "country": "Austria", "pop": 29000, "interest": 5}, {"name": "Messina", "lat": 38.1938, "lon": 15.554, "country": "Italy", "pop": 27601, "interest": 5}, {"name": "Brest", "lat": 48.3904, "lon": -4.4861, "country": "France", "pop": 24144, "interest": 5}, {"name": "Ancona", "lat": 43.6158, "lon": 13.5189, "country": "Italy", "pop": 23180, "interest": 5}, {"name": "Clermont-Ferrand", "lat": 45.7772, "lon": 3.087, "country": "France", "pop": 22296, "interest": 5}, {"name": "Metz", "lat": 49.1193, "lon": 6.1757, "country": "France", "pop": 21717, "interest": 5}, {"name": "Braunschweig", "lat": 52.2689, "lon": 10.5268, "country": "Germany", "pop": 21338, "interest": 5}, {"name": "Narbonne", "lat": 43.184, "lon": 3.0038, "country": "France", "pop": 21140, "interest": 5}, {"name": "Passau", "lat": 48.5665, "lon": 13.4319, "country": "Germany", "pop": 21078, "interest": 5}, {"name": "Poitiers", "lat": 46.5802, "lon": 0.3404, "country": "France", "pop": 20697, "interest": 5}, {"name": "Brindisi", "lat": 40.6326, "lon": 17.9419, "country": "Italy", "pop": 20164, "interest": 5}, {"name": "Sligo", "lat": 54.2766, "lon": -8.4761, "country": "Ireland", "pop": 20000, "interest": 5}, {"name": "Pau", "lat": 43.2951, "lon": -0.3708, "country": "France", "pop": 17082, "interest": 5}, {"name": "Münster", "lat": 51.9607, "lon": 7.6261, "country": "Germany", "pop": 15425, "interest": 5}, {"name": "Bar", "lat": 42.0936, "lon": 19.1005, "country": "Montenegro", "pop": 14000, "interest": 5}, {"name": "Brig", "lat": 46.3141, "lon": 7.9876, "country": "Switzerland", "pop": 13000, "interest": 5}, {"name": "Westport", "lat": 53.8009, "lon": -9.5181, "country": "Ireland", "pop": 6000, "interest": 5}, {"name": "Łódź", "lat": 51.7592, "lon": 19.456, "country": "Poland", "pop": 672000, "interest": 4}, {"name": "Essen", "lat": 51.4556, "lon": 7.0116, "country": "Germany", "pop": 583000, "interest": 4}, {"name": "Bydgoszcz", "lat": 53.1235, "lon": 18.0084, "country": "Poland", "pop": 345000, "interest": 4}, {"name": "Białystok", "lat": 53.1325, "lon": 23.1688, "country": "Poland", "pop": 298000, "interest": 4}, {"name": "Katowice", "lat": 50.2649, "lon": 19.0238, "country": "Poland", "pop": 292000, "interest": 4}, {"name": "Craiova", "lat": 44.3302, "lon": 23.7949, "country": "Romania", "pop": 269000, "interest": 4}, {"name": "Niš", "lat": 43.3209, "lon": 21.8954, "country": "Serbia", "pop": 260000, "interest": 4}, {"name": "Częstochowa", "lat": 50.8118, "lon": 19.1203, "country": "Poland", "pop": 217000, "interest": 4}, {"name": "Rzeszów", "lat": 50.0412, "lon": 21.9991, "country": "Poland", "pop": 196000, "interest": 4}, {"name": "Kielce", "lat": 50.8661, "lon": 20.6286, "country": "Poland", "pop": 196000, "interest": 4}, {"name": "Oradea", "lat": 47.0465, "lon": 21.9189, "country": "Romania", "pop": 196000, "interest": 4}, {"name": "Podgorica", "lat": 42.4304, "lon": 19.2594, "country": "Montenegro", "pop": 190000, "interest": 4}, {"name": "Banja Luka", "lat": 44.7722, "lon": 17.191, "country": "Bosnia Herzegovina", "pop": 185000, "interest": 4}, {"name": "Olsztyn", "lat": 53.7784, "lon": 20.4801, "country": "Poland", "pop": 172000, "interest": 4}, {"name": "Larissa", "lat": 39.6372, "lon": 22.4208, "country": "Greece", "pop": 170000, "interest": 4}, {"name": "Linköping", "lat": 58.4108, "lon": 15.6214, "country": "Sweden", "pop": 164000, "interest": 4}, {"name": "Miskolc", "lat": 48.1035, "lon": 20.7784, "country": "Hungary", "pop": 160000, "interest": 4}, {"name": "Arad", "lat": 46.1866, "lon": 21.3123, "country": "Romania", "pop": 159000, "interest": 4}, {"name": "Jyväskylä", "lat": 62.2415, "lon": 25.7209, "country": "Finland", "pop": 143000, "interest": 4}, {"name": "Norrköping", "lat": 58.5877, "lon": 16.1924, "country": "Sweden", "pop": 141000, "interest": 4}, {"name": "Jönköping", "lat": 57.7826, "lon": 14.1618, "country": "Sweden", "pop": 141000, "interest": 4}, {"name": "Stara Zagora", "lat": 42.4258, "lon": 25.6252, "country": "Bulgaria", "pop": 138000, "interest": 4}, {"name": "Győr", "lat": 47.6875, "lon": 17.6344, "country": "Hungary", "pop": 130000, "interest": 4}, {"name": "Lahti", "lat": 60.9827, "lon": 25.6612, "country": "Finland", "pop": 120000, "interest": 4}, {"name": "Kuopio", "lat": 62.8924, "lon": 27.677, "country": "Finland", "pop": 119000, "interest": 4}, {"name": "Osijek", "lat": 45.5511, "lon": 18.6939, "country": "Croatia", "pop": 108000, "interest": 4}, {"name": "Liberec", "lat": 50.7671, "lon": 15.0564, "country": "Czech Republic", "pop": 104000, "interest": 4}, {"name": "Gävle", "lat": 60.6749, "lon": 17.1413, "country": "Sweden", "pop": 102000, "interest": 4}, {"name": "Székesfehérvár", "lat": 47.186, "lon": 18.4221, "country": "Hungary", "pop": 97000, "interest": 4}, {"name": "Subotica", "lat": 46.1003, "lon": 19.6658, "country": "Serbia", "pop": 97000, "interest": 4}, {"name": "Karlstad", "lat": 59.4022, "lon": 13.5115, "country": "Sweden", "pop": 93000, "interest": 4}, {"name": "Umeå", "lat": 63.8258, "lon": 20.263, "country": "Sweden", "pop": 90000, "interest": 4}, {"name": "Žilina", "lat": 49.2231, "lon": 18.7393, "country": "Slovakia", "pop": 81000, "interest": 4}, {"name": "Daugavpils", "lat": 55.8749, "lon": 26.5356, "country": "Latvia", "pop": 80000, "interest": 4}, {"name": "Luleå", "lat": 65.5848, "lon": 22.1547, "country": "Sweden", "pop": 78000, "interest": 4}, {"name": "Banská Bystrica", "lat": 48.736, "lon": 19.1461, "country": "Slovakia", "pop": 78000, "interest": 4}, {"name": "Joensuu", "lat": 62.601, "lon": 29.7636, "country": "Finland", "pop": 77000, "interest": 4}, {"name": "Esbjerg", "lat": 55.476, "lon": 8.4594, "country": "Denmark", "pop": 72000, "interest": 4}, {"name": "Halmstad", "lat": 56.6745, "lon": 12.8578, "country": "Sweden", "pop": 70000, "interest": 4}, {"name": "Guarda", "lat": 40.5373, "lon": -7.2676, "country": "Portugal", "pop": 69664, "interest": 4}, {"name": "Foggia", "lat": 41.4621, "lon": 15.5446, "country": "Italy", "pop": 61174, "interest": 4}, {"name": "Mulhouse", "lat": 47.7508, "lon": 7.3359, "country": "France", "pop": 60962, "interest": 4}, {"name": "Sundsvall", "lat": 62.3908, "lon": 17.3069, "country": "Sweden", "pop": 58000, "interest": 4}, {"name": "Chemnitz", "lat": 50.8278, "lon": 12.9214, "country": "Germany", "pop": 54565, "interest": 4}, {"name": "Calais", "lat": 50.9513, "lon": 1.8587, "country": "France", "pop": 54453, "interest": 4}, {"name": "Taranto", "lat": 40.4644, "lon": 17.247, "country": "Italy", "pop": 51178, "interest": 4}, {"name": "Mâcon", "lat": 46.3069, "lon": 4.8343, "country": "France", "pop": 44439, "interest": 4}, {"name": "Osnabrück", "lat": 52.2799, "lon": 8.0472, "country": "Germany", "pop": 38526, "interest": 4}, {"name": "Spiez", "lat": 46.6847, "lon": 7.6767, "country": "Switzerland", "pop": 38283, "interest": 4}, {"name": "Feldkirch", "lat": 47.2333, "lon": 9.6, "country": "Austria", "pop": 34000, "interest": 4}, {"name": "Murcia", "lat": 37.9922, "lon": -1.1307, "country": "Spain", "pop": 33965, "interest": 4}, {"name": "Badajoz", "lat": 38.8794, "lon": -6.9707, "country": "Spain", "pop": 33217, "interest": 4}, {"name": "Halle", "lat": 51.4828, "lon": 11.97, "country": "Germany", "pop": 32335, "interest": 4}, {"name": "Lleida", "lat": 41.6176, "lon": 0.62, "country": "Spain", "pop": 30256, "interest": 4}, {"name": "Béziers", "lat": 43.3441, "lon": 3.2192, "country": "France", "pop": 29328, "interest": 4}, {"name": "Saarbrücken", "lat": 49.2354, "lon": 6.9813, "country": "Germany", "pop": 21698, "interest": 4}, {"name": "Huelva", "lat": 37.2614, "lon": -6.9447, "country": "Spain", "pop": 20229, "interest": 4}, {"name": "Cosenza", "lat": 39.3088, "lon": 16.2503, "country": "Italy", "pop": 19558, "interest": 4}, {"name": "Wuppertal", "lat": 51.2562, "lon": 7.1508, "country": "Germany", "pop": 17847, "interest": 4}, {"name": "Tarbes", "lat": 43.2327, "lon": 0.0782, "country": "France", "pop": 16952, "interest": 4}, {"name": "Dunkerque", "lat": 51.0343, "lon": 2.3768, "country": "France", "pop": 16739, "interest": 4}, {"name": "Opole", "lat": 50.6751, "lon": 17.9213, "country": "Poland", "pop": 128000, "interest": 3}, {"name": "Kouvola", "lat": 60.8681, "lon": 26.7043, "country": "Finland", "pop": 82000, "interest": 3}, {"name": "Karlsruhe", "lat": 49.0069, "lon": 8.4037, "country": "Germany", "pop": 68046, "interest": 3}, {"name": "Cottbus", "lat": 51.7563, "lon": 14.3329, "country": "Germany", "pop": 67895, "interest": 3}, {"name": "Szolnok", "lat": 47.1621, "lon": 20.1825, "country": "Hungary", "pop": 58920, "interest": 3}, {"name": "Fredericia", "lat": 55.5659, "lon": 9.7527, "country": "Denmark", "pop": 51000, "interest": 3}, {"name": "Tromsø", "lat": 69.6492, "lon": 18.9553, "country": "Norway", "pop": 32496, "interest": 3}, {"name": "Pamplona", "lat": 42.8125, "lon": -1.6458, "country": "Spain", "pop": 29935, "interest": 3}, {"name": "Bruck a/d Mur", "lat": 47.4108, "lon": 15.2774, "country": "Austria", "pop": 28730, "interest": 3}, {"name": "Charleroi", "lat": 50.4108, "lon": 4.4446, "country": "Belgium", "pop": 25659, "interest": 3}, {"name": "Ulm", "lat": 48.4011, "lon": 9.9876, "country": "Germany", "pop": 25189, "interest": 3}];
+var routeData={"Paris-Lyon": 120, "Paris-Strasbourg": 105, "Paris-Lille": 62, "Paris-Dijon": 100, "Paris-Tours": 75, "Paris-Le Mans": 55, "Paris-Rouen": 80, "Paris-Amiens": 75, "Paris-Reims": 45, "Paris-Metz": 85, "Paris-London": 135, "Paris-Bruxelles": 82, "Lyon-Marseille": 100, "Lyon-Grenoble": 90, "Lyon-Genève": 115, "Lyon-Dijon": 115, "Lyon-Chambéry": 70, "Lyon-Avignon": 70, "Lyon-Clermont-Ferrand": 130, "Lyon-Mâcon": 40, "Lyon-Valence": 60, "Lyon-Annecy": 110, "Marseille-Nice": 155, "Marseille-Montpellier": 100, "Marseille-Avignon": 35, "Marseille-Toulon": 50, "Marseille-Aix-en-Provence": 15, "Nice-Cannes": 30, "Bordeaux-Toulouse": 125, "Bordeaux-Bayonne": 115, "Bordeaux-Angoulême": 55, "Bordeaux-Limoges": 180, "Toulouse-Montpellier": 130, "Toulouse-Carcassonne": 50, "Toulouse-Pau": 150, "Toulouse-Perpignan": 120, "Strasbourg-Mulhouse": 70, "Strasbourg-Colmar": 30, "Strasbourg-Nancy": 90, "Strasbourg-Basel": 80, "Strasbourg-Stuttgart": 85, "Strasbourg-Luxembourg": 130, "Rennes-Nantes": 80, "Rennes-Brest": 150, "Rennes-St. Malo": 60, "Rennes-Le Mans": 85, "Rennes-Caen": 180, "Lille-Bruxelles": 35, "Lille-Calais": 90, "Lille-Amiens": 100, "Montpellier-Perpignan": 110, "Montpellier-Narbonne": 65, "Montpellier-Avignon": 55, "Montpellier-Béziers": 45, "Narbonne-Perpignan": 40, "Narbonne-Carcassonne": 45, "Perpignan-Barcelona": 85, "Tours-Poitiers": 55, "Tours-Le Mans": 60, "Tours-Nantes": 160, "Poitiers-La Rochelle": 80, "Poitiers-Limoges": 110, "Poitiers-Angoulême": 60, "Nancy-Metz": 35, "Nancy-Strasbourg": 90, "Nancy-Dijon": 150, "Reims-Metz": 120, "Le Havre-Rouen": 55, "Caen-Rouen": 100, "Calais-Dunkerque": 40, "Besançon-Dijon": 55, "Besançon-Mulhouse": 90, "Grenoble-Chambéry": 60, "Chambéry-Annecy": 50, "Bayonne-San Sebastián": 50, "Bayonne-Pau": 75, "Valence-Avignon": 60, "Mâcon-Dijon": 75, "Berlin-Hamburg": 105, "Berlin-Dresden": 120, "Berlin-Leipzig": 75, "Berlin-Hannover": 100, "Berlin-Rostock": 150, "Berlin-Szczecin": 120, "Berlin-Magdeburg": 95, "Berlin-Cottbus": 80, "Berlin-Praha": 270, "Berlin-Warszawa": 350, "Berlin-Braunschweig": 100, "Hamburg-Hannover": 80, "Hamburg-Bremen": 60, "Hamburg-Kiel": 75, "Hamburg-Lübeck": 45, "Hamburg-Rostock": 130, "Hamburg-Schwerin": 80, "Hamburg-København": 290, "Hamburg-Berlin": 105, "München-Nürnberg": 65, "München-Stuttgart": 135, "München-Augsburg": 30, "München-Innsbruck": 105, "München-Salzburg": 90, "München-Wien": 240, "München-Regensburg": 90, "München-Passau": 130, "München-Ulm": 80, "Frankfurt am Main-Köln": 62, "Frankfurt am Main-Stuttgart": 75, "Frankfurt am Main-Hannover": 140, "Frankfurt am Main-Nürnberg": 130, "Frankfurt am Main-Mannheim": 30, "Frankfurt am Main-Mainz": 25, "Frankfurt am Main-Würzburg": 65, "Frankfurt am Main-Basel": 175, "Frankfurt am Main-Kassel": 100, "Köln-Düsseldorf": 25, "Köln-Bonn": 20, "Köln-Dortmund": 75, "Köln-Koblenz": 55, "Köln-Wuppertal": 35, "Köln-Bruxelles": 110, "Stuttgart-Ulm": 55, "Stuttgart-Mannheim": 40, "Stuttgart-Karlsruhe": 50, "Stuttgart-Strasbourg": 85, "Stuttgart-Nürnberg": 120, "Düsseldorf-Essen": 20, "Düsseldorf-Dortmund": 50, "Düsseldorf-Wuppertal": 20, "Hannover-Bremen": 60, "Hannover-Göttingen": 35, "Hannover-Kassel": 80, "Hannover-Braunschweig": 30, "Hannover-Osnabrück": 70, "Hannover-Magdeburg": 90, "Nürnberg-Würzburg": 60, "Nürnberg-Regensburg": 60, "Nürnberg-Bamberg": 40, "Dresden-Leipzig": 70, "Dresden-Chemnitz": 70, "Dresden-Praha": 135, "Leipzig-Erfurt": 50, "Leipzig-Halle": 25, "Leipzig-Nürnberg": 180, "Erfurt-Kassel": 100, "Erfurt-Frankfurt am Main": 150, "Erfurt-Leipzig": 50, "Bremen-Osnabrück": 70, "Bremen-Oldenburg": 30, "Dortmund-Essen": 20, "Dortmund-Münster": 45, "Münster-Osnabrück": 30, "Münster-Hamburg": 165, "Kassel-Göttingen": 20, "Kassel-Frankfurt am Main": 100, "Koblenz-Trier": 80, "Koblenz-Mainz": 55, "Trier-Saarbrücken": 70, "Trier-Luxembourg": 50, "Saarbrücken-Mannheim": 80, "Saarbrücken-Strasbourg": 100, "Karlsruhe-Basel": 80, "Karlsruhe-Mannheim": 20, "Freiburg-Basel": 45, "Freiburg-Karlsruhe": 70, "Konstanz-Zürich": 75, "Passau-Wien": 180, "Magdeburg-Hannover": 90, "Magdeburg-Halle": 60, "Rostock-Schwerin": 70, "Schwerin-Lübeck": 60, "Chemnitz-Leipzig": 70, "Chemnitz-Nürnberg": 180, "Halle-Erfurt": 80, "Augsburg-Ulm": 45, "Bamberg-Würzburg": 55, "Milano-Venezia": 155, "Milano-Firenze": 105, "Milano-Bologna": 65, "Milano-Genova": 90, "Milano-Torino": 55, "Milano-Verona": 75, "Milano-Lugano": 80, "Roma-Napoli": 70, "Roma-Firenze": 95, "Roma-Pescara": 195, "Roma-Ancona": 195, "Firenze-Bologna": 37, "Firenze-Pisa": 50, "Firenze-Siena": 90, "Firenze-Roma": 95, "Firenze-Perugia": 120, "Venezia-Trieste": 120, "Venezia-Verona": 70, "Venezia-Bologna": 90, "Venezia-Padova": 25, "Venezia-Udine": 120, "Bologna-Rimini": 60, "Bologna-Ravenna": 70, "Bologna-Ancona": 120, "Bologna-Firenze": 37, "Bologna-Verona": 55, "Bologna-Parma": 55, "Napoli-Salerno": 35, "Napoli-Foggia": 150, "Napoli-Roma": 70, "Bari-Lecce": 90, "Bari-Brindisi": 60, "Bari-Taranto": 80, "Bari-Foggia": 90, "Genova-La Spezia": 75, "Genova-Torino": 100, "Torino-Milano": 55, "Torino-Genova": 100, "Verona-Bolzano": 80, "Verona-Padova": 50, "Bolzano-Innsbruck": 80, "Bolzano-Trento": 35, "Trento-Verona": 60, "Padova-Bologna": 75, "Udine-Trieste": 75, "Udine-Venezia": 120, "Trieste-Ljubljana": 100, "Ancona-Rimini": 55, "Ancona-Pescara": 100, "La Spezia-Pisa": 50, "Reggio Calabria-Messina": 30, "Messina-Palermo": 180, "Messina-Catania": 80, "Catania-Palermo": 180, "Salerno-Reggio Calabria": 240, "Cosenza-Reggio Calabria": 130, "Foggia-Bari": 90, "Livorno-Pisa": 15, "Cagliari-Sassari": 160, "Rimini-Ravenna": 30, "Madrid-Sevilla": 155, "Madrid-Valencia": 105, "Madrid-Córdoba": 105, "Madrid-Zaragoza": 80, "Madrid-Valladolid": 70, "Madrid-Toledo": 30, "Madrid-Salamanca": 155, "Madrid-Badajoz": 300, "Barcelona-Zaragoza": 90, "Barcelona-Valencia": 175, "Barcelona-Girona": 40, "Barcelona-Tarragona": 35, "Barcelona-Lleida": 60, "Sevilla-Córdoba": 45, "Sevilla-Granada": 155, "Sevilla-Málaga": 120, "Sevilla-Cádiz": 100, "Sevilla-Huelva": 80, "Valencia-Alacant": 100, "Valencia-Murcia": 180, "Bilbao-San Sebastián": 85, "Bilbao-Santander": 90, "Bilbao-Burgos": 160, "San Sebastián-Pamplona": 100, "San Sebastián-Bayonne": 50, "Zaragoza-Pamplona": 120, "Zaragoza-Lleida": 60, "Zaragoza-Huesca": 55, "León-Oviedo": 120, "León-Valladolid": 90, "León-Burgos": 120, "Oviedo-Santander": 180, "Oviedo-A Coruña": 300, "Santiago de Compostela-A Coruña": 35, "Santiago de Compostela-Vigo": 80, "Santiago de Compostela-Porto": 210, "Vigo-Porto": 120, "Córdoba-Málaga": 60, "Córdoba-Granada": 150, "Salamanca-Valladolid": 70, "Valladolid-Burgos": 75, "Burgos-Bilbao": 160, "Burgos-León": 120, "Almería-Granada": 130, "Almería-Murcia": 180, "Tarragona-Lleida": 55, "Girona-Perpignan": 55, "Lisboa-Porto": 175, "Lisboa-Faro": 175, "Lisboa-Coimbra": 110, "Lisboa-Évora": 90, "Porto-Braga": 55, "Porto-Coimbra": 60, "Porto-Aveiro": 40, "Porto-Vigo": 120, "Coimbra-Aveiro": 40, "Coimbra-Guarda": 120, "Faro-Évora": 180, "London-Manchester": 130, "London-Birmingham": 85, "London-Bristol": 100, "London-York": 115, "London-Cambridge": 50, "London-Oxford": 60, "London-Leeds": 135, "London-Liverpool": 135, "London-Cardiff": 125, "London-Exeter": 150, "London-Bath": 90, "Edinburgh-Glasgow": 50, "Edinburgh-Newcastle": 90, "Edinburgh-York": 155, "Edinburgh-Aberdeen": 140, "Edinburgh-Inverness": 210, "Glasgow-Edinburgh": 50, "Glasgow-Inverness": 210, "Manchester-Liverpool": 45, "Manchester-Leeds": 55, "Manchester-Birmingham": 90, "Manchester-York": 55, "Birmingham-Bristol": 90, "Birmingham-Cardiff": 120, "Birmingham-Leeds": 120, "York-Leeds": 25, "York-Newcastle": 55, "Newcastle-Edinburgh": 90, "Exeter-Plymouth": 55, "Plymouth-Penzance": 70, "Bath-Bristol": 15, "Dublin-Belfast": 130, "Dublin-Cork": 165, "Dublin-Galway": 155, "Dublin-Limerick": 150, "Dublin-Waterford": 130, "Dublin-Sligo": 195, "Dublin-Westport": 200, "Cork-Killarney": 75, "Cork-Limerick": 90, "Limerick-Galway": 120, "Bruxelles-Antwerpen": 40, "Bruxelles-Gent": 30, "Bruxelles-Liège": 60, "Bruxelles-Namur": 50, "Bruxelles-Brugge": 55, "Bruxelles-Charleroi": 50, "Bruxelles-Luxembourg": 180, "Bruxelles-Köln": 110, "Bruxelles-Amsterdam": 115, "Bruxelles-Lille": 35, "Bruxelles-Paris": 82, "Gent-Brugge": 25, "Gent-Antwerpen": 50, "Gent-Oostende": 40, "Antwerpen-Eindhoven": 70, "Antwerpen-Rotterdam": 60, "Liège-Maastricht": 30, "Liège-Luxembourg": 120, "Luxembourg-Trier": 50, "Luxembourg-Metz": 50, "Luxembourg-Strasbourg": 130, "Luxembourg-Saarbrücken": 90, "Namur-Liège": 40, "Namur-Charleroi": 25, "Amsterdam-Rotterdam": 40, "Amsterdam-Den Haag": 50, "Amsterdam-Utrecht": 25, "Amsterdam-Eindhoven": 80, "Amsterdam-Arnhem": 65, "Amsterdam-Hamburg": 330, "Amsterdam-Köln": 160, "Amsterdam-Frankfurt am Main": 240, "Amsterdam-Groningen": 120, "Amsterdam-Leeuwarden": 130, "Rotterdam-Bruxelles": 75, "Rotterdam-Antwerpen": 60, "Rotterdam-Den Haag": 15, "Utrecht-Arnhem": 40, "Utrecht-Eindhoven": 50, "Arnhem-Düsseldorf": 80, "Arnhem-Osnabrück": 120, "Eindhoven-Maastricht": 65, "Zürich-Bern": 56, "Zürich-Basel": 53, "Zürich-Luzern": 45, "Zürich-Chur": 75, "Zürich-Konstanz": 75, "Bern-Interlaken": 50, "Bern-Genève": 105, "Bern-Lausanne": 65, "Bern-Basel": 55, "Bern-Brig": 65, "Bern-Spiez": 30, "Basel-Strasbourg": 45, "Basel-Freiburg": 45, "Basel-Bern": 55, "Basel-Zürich": 53, "Basel-Mulhouse": 20, "Genève-Lausanne": 40, "Genève-Lyon": 115, "Lausanne-Montreux": 20, "Lausanne-Brig": 100, "Luzern-Interlaken": 115, "Luzern-Bern": 65, "Brig-Milano": 120, "Brig-Spiez": 35, "Chur-Lugano": 180, "Lugano-Milano": 80, "Interlaken-Spiez": 20, "Spiez-Brig": 35, "Montreux-Brig": 90, "Wien-Salzburg": 145, "Wien-Graz": 155, "Wien-Linz": 75, "Wien-Bratislava": 65, "Wien-Budapest": 155, "Wien-Praha": 240, "Wien-München": 240, "Wien-Passau": 180, "Salzburg-Innsbruck": 110, "Salzburg-München": 90, "Salzburg-Linz": 75, "Salzburg-Villach": 120, "Innsbruck-München": 105, "Innsbruck-Feldkirch": 120, "Innsbruck-Bolzano": 80, "Graz-Wien": 155, "Graz-Ljubljana": 210, "Graz-Bruck a/d Mur": 45, "Graz-Villach": 160, "Linz-Wien": 75, "Linz-Salzburg": 75, "Linz-Graz": 195, "Villach-Ljubljana": 100, "Villach-Klagenfurt": 25, "Villach-Salzburg": 120, "Klagenfurt-Graz": 170, "Klagenfurt-Villach": 25, "Feldkirch-Bregenz": 30, "Bregenz-Zürich": 90, "Bruck a/d Mur-Wien": 120, "Praha-Brno": 155, "Praha-Berlin": 270, "Praha-Wien": 240, "Praha-Dresden": 135, "Praha-Plzeň": 90, "Praha-Ostrava": 210, "Praha-Olomouc": 150, "Praha-Karlovy Vary": 180, "Praha-Liberec": 110, "Brno-Wien": 90, "Brno-Ostrava": 90, "Brno-Bratislava": 80, "Brno-Olomouc": 80, "Brno-Kraków": 250, "Ostrava-Kraków": 150, "Ostrava-Katowice": 70, "Ostrava-Žilina": 100, "Plzeň-Nürnberg": 180, "Plzeň-Karlovy Vary": 90, "Olomouc-Ostrava": 80, "Budapest-Wien": 155, "Budapest-Bratislava": 155, "Budapest-Zagreb": 370, "Budapest-Debrecen": 155, "Budapest-Szeged": 155, "Budapest-Miskolc": 120, "Budapest-Pécs": 180, "Budapest-Győr": 75, "Budapest-Szolnok": 80, "Budapest-Székesfehérvár": 60, "Győr-Wien": 100, "Győr-Bratislava": 60, "Debrecen-Oradea": 120, "Szeged-Subotica": 60, "Pécs-Osijek": 180, "Miskolc-Košice": 60, "Warszawa-Kraków": 155, "Warszawa-Gdańsk": 170, "Warszawa-Poznań": 175, "Warszawa-Wrocław": 225, "Warszawa-Łódź": 80, "Warszawa-Lublin": 130, "Warszawa-Białystok": 120, "Warszawa-Katowice": 180, "Warszawa-Bydgoszcz": 160, "Warszawa-Olsztyn": 160, "Warszawa-Kielce": 120, "Kraków-Katowice": 75, "Kraków-Wrocław": 210, "Kraków-Rzeszów": 120, "Kraków-Brno": 250, "Kraków-Košice": 300, "Kraków-Wien": 420, "Kraków-Częstochowa": 120, "Kraków-Lublin": 230, "Gdańsk-Gdynia": 25, "Gdańsk-Bydgoszcz": 120, "Gdańsk-Olsztyn": 160, "Gdańsk-Szczecin": 300, "Wrocław-Poznań": 120, "Wrocław-Opole": 55, "Wrocław-Katowice": 150, "Wrocław-Dresden": 240, "Poznań-Berlin": 180, "Poznań-Szczecin": 150, "Poznań-Łódź": 180, "Poznań-Bydgoszcz": 90, "Poznań-Toruń": 100, "Łódź-Warszawa": 80, "Łódź-Poznań": 180, "Łódź-Częstochowa": 90, "Katowice-Częstochowa": 70, "Katowice-Ostrava": 70, "Szczecin-Berlin": 120, "Bydgoszcz-Toruń": 35, "Bydgoszcz-Gdańsk": 120, "Olsztyn-Gdańsk": 160, "Rzeszów-Lublin": 150, "Rzeszów-Przemyśl": 55, "Lublin-Warszawa": 130, "København-Malmö": 33, "København-Stockholm": 305, "København-Göteborg": 200, "København-Hamburg": 290, "København-Aarhus": 185, "København-Odense": 95, "Malmö-Göteborg": 185, "Malmö-Stockholm": 275, "Stockholm-Göteborg": 185, "Stockholm-Uppsala": 40, "Stockholm-Helsinki": 960, "Stockholm-Oslo": 305, "Stockholm-Malmö": 275, "Stockholm-Linköping": 115, "Stockholm-Sundsvall": 240, "Stockholm-Gävle": 100, "Stockholm-Falun": 170, "Stockholm-Karlstad": 180, "Stockholm-Norrköping": 95, "Göteborg-Oslo": 225, "Göteborg-Jönköping": 90, "Göteborg-Karlstad": 165, "Göteborg-Halmstad": 60, "Oslo-Bergen": 405, "Oslo-Trondheim": 405, "Oslo-Kristiansand": 260, "Oslo-Stavanger": 460, "Oslo-Göteborg": 225, "Oslo-Stockholm": 305, "Bergen-Stavanger": 270, "Trondheim-Bodø": 570, "Trondheim-Oslo": 405, "Bodø-Narvik": 240, "Narvik-Kiruna": 180, "Kiruna-Luleå": 210, "Luleå-Umeå": 210, "Luleå-Boden": 25, "Umeå-Sundsvall": 150, "Sundsvall-Gävle": 150, "Gävle-Uppsala": 60, "Gävle-Falun": 50, "Östersund-Sundsvall": 130, "Östersund-Trondheim": 240, "Karlstad-Oslo": 185, "Jönköping-Linköping": 90, "Linköping-Norrköping": 25, "Norrköping-Stockholm": 95, "Halmstad-Göteborg": 60, "Aarhus-Aalborg": 80, "Aarhus-Odense": 90, "Aarhus-Fredericia": 45, "Odense-Fredericia": 25, "Fredericia-Esbjerg": 55, "Fredericia-København": 95, "Aalborg-Frederikshavn": 70, "Kristiansand-Stavanger": 180, "Helsinki-Turku": 120, "Helsinki-Tampere": 100, "Helsinki-Tallinn": 120, "Helsinki-Rovaniemi": 480, "Helsinki-Oulu": 360, "Helsinki-Lahti": 60, "Helsinki-Kouvola": 85, "Helsinki-Jyväskylä": 180, "Tampere-Jyväskylä": 100, "Tampere-Oulu": 300, "Tampere-Turku": 120, "Oulu-Rovaniemi": 150, "Oulu-Kuopio": 300, "Kuopio-Joensuu": 180, "Kuopio-Jyväskylä": 180, "Lahti-Kouvola": 40, "Kouvola-Joensuu": 240, "Tallinn-Rīga": 270, "Tallinn-Tartu": 150, "Rīga-Vilnius": 255, "Rīga-Daugavpils": 210, "Vilnius-Kaunas": 75, "Kaunas-Klaipėda": 210, "Daugavpils-Vilnius": 180, "Ljubljana-Zagreb": 135, "Ljubljana-Venezia": 240, "Ljubljana-Trieste": 100, "Ljubljana-Villach": 100, "Ljubljana-Graz": 210, "Ljubljana-Rijeka": 150, "Zagreb-Split": 345, "Zagreb-Beograd": 390, "Zagreb-Budapest": 370, "Zagreb-Rijeka": 210, "Zagreb-Osijek": 240, "Zagreb-Ljubljana": 135, "Zagreb-Sarajevo": 540, "Split-Sarajevo": 280, "Split-Dubrovnik": 270, "Rijeka-Pula": 120, "Osijek-Beograd": 240, "Beograd-Novi Sad": 90, "Beograd-Niš": 180, "Beograd-Podgorica": 480, "Beograd-Subotica": 180, "Novi Sad-Subotica": 90, "Novi Sad-Budapest": 210, "Niš-Sofia": 220, "Niš-Skopje": 240, "Sarajevo-Mostar": 130, "Sarajevo-Banja Luka": 300, "Podgorica-Bar": 60, "Podgorica-Skopje": 300, "Skopje-Thessaloniki": 235, "Subotica-Budapest": 180, "Subotica-Szeged": 60, "București-Brașov": 165, "București-Cluj-Napoca": 475, "București-Timișoara": 530, "București-Iași": 390, "București-Constanța": 135, "București-Craiova": 240, "București-Sibiu": 310, "București-Varna": 430, "București-Suceava": 360, "Cluj-Napoca-Oradea": 150, "Cluj-Napoca-Timișoara": 310, "Cluj-Napoca-Sibiu": 165, "Cluj-Napoca-Brașov": 285, "Cluj-Napoca-Sighișoara": 170, "Cluj-Napoca-Iași": 400, "Timișoara-Arad": 50, "Timișoara-Beograd": 240, "Brașov-Sibiu": 120, "Brașov-Sighișoara": 100, "Oradea-Debrecen": 120, "Oradea-Arad": 150, "Craiova-Timișoara": 240, "Iași-Suceava": 120, "Constanța-Varna": 300, "Sibiu-Sighișoara": 80, "Sofia-Plovdiv": 90, "Sofia-Varna": 430, "Sofia-Burgas": 380, "Sofia-Thessaloniki": 420, "Sofia-Niš": 220, "Sofia-Veliko Tarnovo": 240, "Sofia-Ruse": 300, "Sofia-Skopje": 540, "Plovdiv-Stara Zagora": 60, "Plovdiv-Burgas": 240, "Varna-Burgas": 120, "Varna-Ruse": 240, "Veliko Tarnovo-Ruse": 90, "Veliko Tarnovo-Stara Zagora": 100, "Athinai-Thessaloniki": 255, "Athinai-Patras": 210, "Athinai-Larissa": 200, "Athinai-Piraeus": 15, "Thessaloniki-Larissa": 100, "Thessaloniki-Skopje": 235, "Thessaloniki-Sofia": 420, "Larissa-Volos": 50, "Larissa-Kalambáka": 80, "Istanbul-Eskişehir": 180, "Ankara-Konya": 190, "Ankara-Eskişehir": 90, "Ankara-İzmir": 390, "Eskişehir-İzmir": 350, "Bratislava-Wien": 65, "Bratislava-Budapest": 155, "Bratislava-Košice": 300, "Bratislava-Žilina": 130, "Bratislava-Brno": 80, "Košice-Miskolc": 60, "Košice-Žilina": 180, "Žilina-Ostrava": 100, "Žilina-Košice": 180, "Banská Bystrica-Žilina": 100, "Banská Bystrica-Bratislava": 180, "Toulon-Nice": 90, "Nice-Genova": 180, "Paris-Poitiers": 80, "Bayonne-Toulouse": 210, "Le Mans-Nantes": 80, "Metz-Strasbourg": 55, "Chambéry-Torino": 180, "Bordeaux-La Rochelle": 120, "La Rochelle-Nantes": 140, "Hannover-Dortmund": 80, "Berlin-Erfurt": 105, "Erfurt-Nürnberg": 120, "Salerno-Cosenza": 180, "Bristol-Cardiff": 50, "Feldkirch-Zürich": 90, "Plovdiv-Istanbul": 490, "Budapest-Cluj-Napoca": 400, "Lisboa-Badajoz": 280};
+var cityMap={};
+for(var i=0;i<cities.length;i++) cityMap[cities[i].name]=cities[i];
+
+// === GRAPH ===
+var adj={};
+function ae(a,b,t){if(!adj[a])adj[a]=[];if(!adj[b])adj[b]=[];adj[a].push({to:b,t:t});adj[b].push({to:a,t:t});}
+var rkeys=Object.keys(routeData);
+for(var i=0;i<rkeys.length;i++){var p=rkeys[i].split("-");ae(p[0],p[1],routeData[rkeys[i]]);}
+
+function dijkstra(s,e){
+  if(s===e)return{time:0,path:[s]};
+  if(!adj[s]||!adj[e])return null;
+  var d={},p={},v={};
+  var nodes=Object.keys(adj);
+  for(var i=0;i<nodes.length;i++)d[nodes[i]]=Infinity;
+  d[s]=0;var q=[s];
+  while(q.length){
+    q.sort(function(a,b){return d[a]-d[b]});
+    var u=q.shift();
+    if(v[u])continue;v[u]=true;if(u===e)break;
+    var edges=adj[u]||[];
+    for(var i=0;i<edges.length;i++){
+      var alt=d[u]+edges[i].t;
+      if(alt<d[edges[i].to]){d[edges[i].to]=alt;p[edges[i].to]=u;q.push(edges[i].to);}
+    }
+  }
+  if(d[e]===Infinity)return null;
+  var path=[];var c=e;while(c){path.unshift(c);c=p[c];}
+  return{time:d[e],path:path};
+}
+
+function fmt(m){if(!m&&m!==0)return"\u2014";var h=Math.floor(m/60),mn=m%60;return h>0?h+"h"+(mn>0?("0"+mn).slice(-2):""):mn+"min";}
+function fmtPop(p){return p>=1e6?(p/1e6).toFixed(1)+"M":Math.round(p/1000)+"k";}
+function haversine(a,b){var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
+  var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+
+// === SUGGESTIONS ===
+function findInterestingStops(segments,tripNames){
+  var suggestions=[];
+  for(var i=0;i<segments.length;i++){
+    var seg=segments[i];if(!seg||!seg.path||seg.path.length<=2)continue;
+    for(var j=1;j<seg.path.length-1;j++){
+      var name=seg.path[j];if(tripNames.indexOf(name)>=0)continue;
+      var c=cityMap[name];if(!c||c.interest<7)continue;
+      suggestions.push({name:name,city:c,afterStop:i,detourMin:0});
+    }
+    var from=cityMap[seg.path[0]],to=cityMap[seg.path[seg.path.length-1]];
+    if(!from||!to)continue;
+    var routeSet={};for(var j=0;j<seg.path.length;j++)routeSet[seg.path[j]]=true;
+    for(var k=0;k<cities.length;k++){
+      var c=cities[k];
+      if(c.interest<7||routeSet[c.name]||tripNames.indexOf(c.name)>=0)continue;
+      var already=false;for(var s=0;s<suggestions.length;s++)if(suggestions[s].name===c.name){already=true;break;}
+      if(already)continue;
+      var midLat=(from.lat+to.lat)/2,midLon=(from.lon+to.lon)/2;
+      var distToMid=haversine(c,{lat:midLat,lon:midLon}),routeLen=haversine(from,to);
+      if(distToMid<routeLen*0.4&&distToMid<120){
+        var dA=dijkstra(seg.path[0],c.name),dB=dijkstra(c.name,seg.path[seg.path.length-1]);
+        if(dA&&dB){var detour=dA.time+dB.time-seg.time;if(detour>0&&detour<180)
+          suggestions.push({name:c.name,city:c,afterStop:i,detourMin:detour});}
+      }
+    }
+  }
+  var seen={};
+  return suggestions.filter(function(s){if(seen[s.name])return false;seen[s.name]=true;return true;}).sort(function(a,b){return b.city.interest-a.city.interest||a.detourMin-b.detourMin;});
+}
+
+// === MAP ===
+var map=L.map('map',{center:[50,10],zoom:5,minZoom:3,maxZoom:15,zoomControl:false});
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+// === INLINE MAP BACKGROUND (no external tiles needed) ===
+var borderData=[{"n":"France","t":"M","c":[[[[2.5,51.1],[4.2,50.3],[4.1,50.0],[4.8,50.2],[5.5,49.5],[8.2,49.0],[7.6,47.6],[7.0,47.5],[6.0,46.2],[6.8,46.4],[7.2,45.4],[6.6,45.1],[7.0,44.8],[6.9,44.4],[7.7,44.1],[6.2,43.0],[5.0,43.6],[4.0,43.5],[3.1,43.1],[3.2,42.4],[2.7,42.3],[-1.5,43.0],[-1.8,43.4],[-1.0,44.7],[-1.1,45.5],[-0.5,45.0],[-1.2,45.7],[-1.0,45.7],[-1.1,46.3],[-2.1,46.8],[-2.2,47.3],[-1.7,47.2],[-4.4,47.8],[-4.7,48.0],[-4.2,48.3],[-4.8,48.5],[-3.2,48.9],[-2.7,48.5],[-1.4,48.6],[-1.9,49.7],[-1.3,49.7],[-1.1,49.3],[0.4,49.5],[0.2,49.7],[1.7,50.2],[1.6,50.9],[2.5,51.1]]],[[[8.6,42.2],[9.5,43.0],[9.2,41.4],[8.6,42.2]]]]},{"n":"Lithuania","t":"P","c":[[[26.6,55.7],[26.5,55.3],[26.8,55.3],[25.8,54.9],[25.8,54.2],[23.6,53.9],[22.7,54.4],[22.6,55.1],[21.3,55.2],[21.1,56.1],[24.9,56.4],[26.6,55.7]]]},{"n":"Czechia","t":"P","c":[[[14.8,50.9],[16.3,50.6],[16.7,50.1],[16.9,50.4],[17.7,50.3],[18.8,49.5],[16.9,48.6],[15.0,49.0],[14.7,48.6],[14.0,48.6],[12.6,49.4],[12.1,50.3],[14.3,51.0],[14.8,50.9]]]},{"n":"Germany","t":"M","c":[[[[13.8,48.8],[12.7,48.1],[13.0,47.5],[12.2,47.7],[10.2,47.3],[8.6,47.8],[7.6,47.6],[8.2,49.0],[6.3,49.5],[5.9,51.8],[7.0,52.2],[6.7,52.5],[7.4,53.3],[7.0,53.4],[7.2,53.7],[8.5,53.4],[8.6,53.9],[9.2,53.9],[9.8,53.5],[8.9,53.9],[8.7,54.9],[9.9,54.8],[10.1,54.3],[11.1,54.4],[10.9,54.0],[12.5,54.5],[12.9,54.4],[12.4,54.3],[13.7,54.2],[14.3,53.8],[14.4,53.3],[14.1,52.9],[14.6,52.6],[15.0,51.1],[12.1,50.3],[12.6,49.4],[13.8,48.8]]],[[[13.7,54.4],[13.1,54.3],[13.4,54.7],[13.7,54.4]]]]},{"n":"Estonia","t":"M","c":[[[[24.3,57.9],[24.6,58.3],[23.7,58.3],[23.5,58.7],[23.9,58.8],[23.4,58.8],[23.5,59.2],[25.5,59.7],[28.2,59.4],[27.4,58.8],[27.8,57.9],[27.4,57.5],[25.3,58.1],[24.3,57.9]]],[[[23.2,58.5],[22.0,57.9],[21.8,58.3],[23.2,58.5]]]]},{"n":"Latvia","t":"P","c":[[[27.4,57.5],[27.8,57.3],[27.6,56.8],[28.2,56.3],[27.6,55.8],[26.5,55.7],[24.9,56.4],[21.0,56.2],[21.4,57.3],[22.5,57.7],[23.7,57.0],[24.4,57.3],[24.3,57.9],[25.1,58.1],[27.4,57.5]]]},{"n":"Norway","t":"M","c":[[[[20.6,69.0],[20.1,69.0],[20.4,68.8],[20.0,68.4],[18.4,68.6],[17.9,68.0],[16.8,67.9],[15.5,66.3],[14.5,66.1],[14.5,65.3],[13.6,64.6],[14.1,64.2],[12.2,63.6],[12.2,61.7],[12.9,61.3],[12.3,61.0],[12.6,60.4],[11.7,59.6],[11.7,58.9],[10.7,59.2],[10.7,59.9],[10.5,59.5],[10.2,59.7],[10.3,59.1],[9.5,59.1],[8.1,58.1],[6.6,58.1],[6.8,58.3],[5.5,58.8],[5.6,59.0],[6.6,59.1],[5.9,59.1],[6.5,59.6],[5.5,59.3],[5.2,59.5],[7.1,60.5],[6.2,60.5],[5.7,60.0],[5.7,60.4],[5.1,60.4],[5.7,60.7],[5.2,60.6],[4.9,60.8],[5.5,60.9],[5.0,61.0],[6.6,61.2],[7.1,60.9],[7.0,61.1],[7.7,61.2],[7.3,61.3],[7.6,61.5],[7.3,61.2],[6.7,61.4],[5.2,61.1],[5.0,61.3],[5.6,61.4],[4.9,61.4],[5.8,61.5],[5.0,61.7],[6.8,61.9],[5.2,61.9],[5.4,62.0],[5.1,62.2],[6.4,62.1],[5.9,62.2],[6.5,62.1],[6.7,62.5],[7.2,62.1],[6.3,62.6],[8.1,62.7],[6.9,62.9],[8.5,62.7],[7.9,63.0],[8.7,62.8],[8.2,63.1],[8.9,63.2],[8.7,63.4],[10.9,63.5],[11.5,63.8],[11.1,63.9],[11.4,64.1],[10.1,63.5],[9.5,63.8],[11.0,64.6],[11.7,64.5],[11.4,64.7],[12.2,64.9],[11.3,64.9],[12.9,65.3],[12.2,65.2],[12.8,65.5],[12.4,65.6],[12.8,65.6],[12.7,65.9],[13.2,65.9],[12.7,66.1],[14.1,66.3],[13.0,66.2],[13.5,66.3],[13.0,66.5],[13.7,66.6],[13.2,66.7],[14.0,66.8],[13.5,66.9],[15.7,67.2],[14.3,67.2],[15.9,67.6],[14.8,67.8],[15.9,67.9],[15.3,68.0],[16.0,68.3],[16.5,67.8],[16.2,68.0],[16.7,68.1],[16.1,68.3],[16.8,68.1],[16.2,68.4],[17.9,68.4],[16.5,68.5],[17.7,68.7],[17.2,68.8],[17.8,68.7],[17.4,68.9],[18.2,69.5],[19.5,69.2],[18.9,69.6],[19.8,69.8],[19.5,69.4],[20.3,70.0],[19.9,69.3],[21.3,70.0],[22.1,69.7],[21.8,70.0],[22.1,70.1],[21.2,70.2],[21.6,70.3],[23.3,69.9],[23.5,70.4],[24.7,70.6],[24.2,70.8],[24.6,71.0],[25.9,70.9],[25.1,70.5],[24.9,70.1],[25.2,70.1],[26.6,70.9],[26.5,70.4],[27.1,70.5],[27.6,70.8],[27.1,71.0],[27.7,71.1],[28.5,71.0],[27.7,70.6],[28.3,70.7],[27.8,70.5],[28.3,70.5],[28.0,70.1],[28.8,70.9],[30.9,70.5],[30.2,70.1],[28.6,70.2],[29.7,70.0],[29.5,69.7],[30.3,69.9],[30.9,69.5],[30.1,69.6],[29.0,69.0],[29.3,69.5],[29.1,69.7],[27.9,70.1],[26.5,69.9],[24.9,68.6],[22.4,68.7],[21.6,69.3],[20.6,69.0]]],[[[16.5,68.7],[15.0,68.3],[15.6,69.0],[16.0,68.8],[15.7,68.5],[16.5,68.7]]],[[[18.1,69.4],[16.8,69.1],[17.5,69.6],[18.1,69.4]]],[[[22.4,70.5],[22.0,70.7],[23.5,70.8],[22.4,70.5]]]]},{"n":"Sweden","t":"M","c":[[[[20.6,69.0],[23.7,68.0],[23.4,67.5],[24.0,66.8],[23.7,66.3],[24.2,65.8],[21.8,65.7],[22.2,65.5],[21.3,65.4],[21.6,65.1],[21.0,64.8],[21.6,64.5],[20.7,63.8],[19.4,63.6],[18.2,62.8],[17.7,63.0],[18.1,62.6],[17.3,62.5],[17.7,62.2],[17.5,61.6],[17.1,61.6],[17.2,60.7],[18.0,60.6],[19.1,59.7],[18.0,59.4],[18.6,59.3],[17.9,58.9],[17.7,59.2],[17.4,58.8],[16.2,58.6],[16.9,58.5],[16.4,58.5],[16.8,58.3],[16.5,57.9],[16.7,57.8],[16.4,57.9],[16.7,57.5],[15.9,56.1],[14.7,56.2],[14.2,55.4],[12.8,55.4],[13.1,55.7],[12.5,56.3],[12.9,56.5],[11.9,57.4],[11.9,58.3],[11.2,58.3],[11.1,59.0],[11.7,58.9],[11.7,59.6],[12.6,60.4],[12.3,61.0],[12.9,61.3],[12.2,61.7],[12.0,63.3],[12.8,64.0],[14.1,64.2],[13.6,64.6],[14.5,65.3],[14.5,66.1],[15.5,66.3],[16.4,67.0],[16.2,67.5],[17.3,68.1],[17.9,68.0],[18.2,68.5],[20.0,68.4],[20.4,68.8],[20.1,69.0],[20.6,69.0]]],[[[19.0,57.9],[18.1,56.9],[18.1,57.5],[19.0,57.9]]]]},{"n":"Finland","t":"P","c":[[[29.0,69.0],[28.4,68.9],[28.8,68.8],[28.4,68.5],[28.7,68.2],[30.0,67.7],[29.1,66.9],[30.1,65.7],[29.7,65.6],[29.6,64.9],[30.6,64.2],[30.0,63.7],[31.6,62.9],[31.2,62.5],[27.7,60.5],[26.7,60.7],[22.9,59.8],[23.3,60.0],[22.9,60.1],[23.1,60.4],[21.4,60.6],[21.4,61.5],[21.7,61.5],[21.1,62.6],[21.7,63.0],[21.5,63.2],[22.3,63.3],[24.5,64.8],[25.4,65.0],[25.3,65.5],[23.7,66.3],[24.0,66.8],[23.4,67.5],[23.7,68.0],[20.6,69.0],[21.6,69.3],[22.4,68.7],[24.9,68.6],[25.8,69.0],[26.0,69.7],[27.9,70.1],[29.1,69.7],[29.0,69.0]]]},{"n":"Luxembourg","t":"P","c":[[[6.1,50.1],[6.5,49.8],[6.3,49.5],[5.8,49.5],[6.1,50.1]]]},{"n":"Belgium","t":"P","c":[[[2.5,51.1],[5.0,51.5],[5.8,51.2],[5.6,50.8],[6.4,50.3],[5.5,49.5],[4.9,50.1],[4.1,50.0],[4.2,50.3],[2.5,51.1]]]},{"n":"North Macedonia","t":"P","c":[[[20.6,41.9],[22.3,42.4],[23.0,41.7],[22.7,41.1],[21.0,40.8],[20.5,41.2],[20.6,41.9]]]},{"n":"Albania","t":"P","c":[[[20.6,41.9],[20.5,41.2],[21.0,40.6],[20.2,39.6],[19.3,40.4],[19.6,41.6],[19.3,42.2],[19.7,42.7],[20.6,41.9]]]},{"n":"Turkey","t":"M","c":[[[[43.4,41.1],[43.7,40.1],[44.8,39.6],[44.0,39.4],[44.5,38.3],[44.2,37.9],[44.8,37.1],[42.8,37.4],[39.2,36.7],[36.6,36.8],[36.7,36.2],[36.1,35.8],[35.8,36.3],[36.2,36.6],[36.0,36.9],[32.8,36.0],[30.7,36.9],[30.4,36.2],[29.7,36.1],[28.5,36.9],[27.4,36.7],[28.3,37.0],[27.3,37.0],[27.6,37.3],[27.0,37.7],[27.2,38.0],[26.2,38.3],[26.4,38.7],[26.7,38.3],[27.2,38.4],[26.7,38.7],[27.1,38.9],[26.6,39.3],[26.9,39.6],[26.1,39.5],[26.7,40.4],[29.1,40.4],[29.0,40.6],[29.9,40.7],[29.3,40.8],[29.2,41.2],[31.2,41.1],[33.3,42.0],[35.0,42.1],[36.4,41.3],[38.3,40.9],[40.1,40.9],[42.7,41.6],[43.4,41.1]]],[[[28.0,42.0],[29.0,41.0],[27.5,41.0],[26.2,40.1],[26.8,40.6],[26.1,40.7],[26.6,41.4],[26.3,41.8],[28.0,42.0]]]]},{"n":"Spain","t":"M","c":[[[[-1.8,43.4],[-0.6,42.8],[3.2,42.4],[3.2,41.9],[0.7,40.8],[-0.3,39.5],[0.2,38.7],[-2.1,36.7],[-4.4,36.7],[-5.6,36.0],[-6.4,36.6],[-6.2,36.9],[-7.4,37.2],[-7.0,39.0],[-7.6,39.7],[-7.0,39.7],[-6.9,41.0],[-6.2,41.6],[-6.6,42.0],[-8.9,41.9],[-8.6,42.3],[-8.9,42.3],[-8.7,42.7],[-9.0,42.5],[-9.2,43.2],[-7.7,43.8],[-7.0,43.5],[-1.8,43.4]]],[[[3.4,39.8],[3.1,39.3],[2.4,39.6],[3.4,39.8]]]]},{"n":"Denmark","t":"M","c":[[[[8.7,54.9],[8.6,55.4],[8.1,55.5],[8.1,56.0],[8.4,55.9],[8.2,56.7],[9.3,56.5],[9.2,56.9],[9.9,57.1],[8.7,57.0],[8.6,56.6],[8.2,56.8],[10.6,57.7],[10.3,57.0],[9.9,57.1],[10.3,56.7],[9.8,56.6],[10.9,56.3],[9.6,55.7],[9.9,55.6],[9.4,55.0],[9.7,54.8],[8.7,54.9]]],[[[10.7,55.1],[9.7,55.5],[10.6,55.6],[10.7,55.1]]],[[[12.0,54.9],[11.9,54.6],[11.8,55.1],[10.9,55.7],[11.8,56.0],[12.1,55.7],[11.9,56.0],[12.6,56.0],[12.0,54.9]]]]},{"n":"Romania","t":"P","c":[[[22.9,47.9],[24.9,47.7],[26.9,48.2],[28.2,46.7],[28.1,45.6],[28.7,45.2],[29.6,45.4],[29.6,44.9],[28.9,44.9],[28.6,43.7],[27.0,44.2],[25.4,43.7],[22.9,43.8],[23.0,44.1],[22.5,44.5],[22.8,44.6],[21.4,44.8],[21.5,45.1],[20.2,46.1],[21.1,46.3],[22.0,47.5],[22.9,47.9]]]},{"n":"Hungary","t":"P","c":[[[22.9,47.9],[22.0,47.5],[21.1,46.2],[18.4,45.7],[17.3,46.0],[16.1,46.9],[16.5,47.0],[16.7,47.5],[16.4,47.7],[17.2,48.0],[18.7,47.8],[21.4,48.6],[22.9,47.9]]]},{"n":"Slovakia","t":"P","c":[[[22.5,49.1],[22.1,48.4],[20.5,48.5],[18.7,47.8],[17.7,47.8],[16.8,48.4],[17.2,48.9],[19.4,49.6],[19.8,49.2],[21.3,49.4],[22.5,49.1]]]},{"n":"Poland","t":"P","c":[[[18.8,49.5],[17.7,50.3],[16.9,50.4],[16.7,50.1],[16.3,50.6],[14.8,50.9],[14.6,52.6],[14.1,52.9],[14.3,53.7],[14.6,53.9],[14.2,53.9],[18.2,54.8],[18.9,54.4],[23.4,54.2],[23.9,52.7],[23.2,52.3],[23.6,52.1],[24.1,50.5],[22.7,49.6],[22.9,49.0],[21.6,49.4],[20.1,49.2],[19.5,49.6],[18.8,49.5]]]},{"n":"Ireland","t":"P","c":[[[-7.2,55.1],[-8.2,54.5],[-6.1,54.0],[-6.4,53.9],[-6.0,53.0],[-6.3,52.2],[-10.2,51.6],[-9.6,51.9],[-10.3,51.8],[-9.8,52.2],[-10.5,52.2],[-8.8,52.7],[-9.9,52.6],[-8.9,53.2],[-10.2,53.4],[-9.6,53.9],[-10.1,54.2],[-8.5,54.2],[-8.1,54.6],[-8.8,54.7],[-8.3,55.2],[-7.6,55.3],[-7.7,55.0],[-7.4,55.4],[-6.9,55.2],[-7.2,55.1]]]},{"n":"United Kingdom","t":"M","c":[[[[-7.2,55.1],[-6.1,55.2],[-5.7,54.8],[-5.9,54.6],[-5.4,54.5],[-6.0,54.0],[-7.0,54.4],[-7.8,54.2],[-8.2,54.5],[-7.2,55.1]]],[[[-2.7,51.6],[-3.5,51.4],[-5.3,51.9],[-3.9,52.5],[-4.1,52.9],[-4.8,52.8],[-4.2,53.2],[-2.7,53.4],[-3.1,53.6],[-2.8,54.2],[-3.1,54.1],[-3.6,54.5],[-3.0,55.0],[-4.9,54.6],[-5.2,54.9],[-4.6,55.5],[-4.9,55.9],[-4.5,55.9],[-4.8,56.2],[-5.0,55.9],[-5.3,56.0],[-4.9,56.3],[-5.4,56.0],[-5.8,55.3],[-5.6,56.3],[-5.0,56.7],[-6.2,56.7],[-5.4,57.1],[-5.8,57.8],[-5.1,57.8],[-5.4,58.1],[-4.9,58.2],[-5.0,58.6],[-3.0,58.6],[-4.4,57.9],[-3.8,57.9],[-4.2,57.5],[-1.8,57.6],[-2.5,56.6],[-3.3,56.4],[-2.6,56.3],[-3.8,56.1],[-2.1,55.9],[-1.2,54.6],[-0.1,54.1],[0.1,53.6],[-0.7,53.7],[0.2,53.4],[0.0,52.9],[1.7,52.6],[1.6,52.1],[0.4,51.5],[1.4,51.2],[0.3,50.7],[-1.5,50.9],[-5.7,50.1],[-4.2,51.2],[-3.0,51.2],[-2.7,51.6]]],[[[-5.7,56.4],[-6.4,56.3],[-6.0,56.4],[-6.2,56.7],[-5.7,56.4]]],[[[-6.6,57.3],[-6.3,57.7],[-5.6,57.3],[-6.0,57.0],[-6.6,57.3]]],[[[-7.0,57.7],[-7.1,58.2],[-6.2,58.5],[-7.0,57.7]]],[[[-1.1,60.4],[-1.3,59.9],[-1.3,60.2],[-1.7,60.3],[-1.3,60.6],[-1.1,60.4]]]]},{"n":"Greece","t":"M","c":[[[[21.0,40.8],[24.2,41.6],[25.3,41.2],[26.1,41.4],[26.2,41.7],[26.6,41.4],[26.1,40.7],[25.1,41.0],[23.7,40.8],[24.4,40.2],[23.7,40.4],[24.0,40.0],[23.4,40.3],[23.7,39.9],[23.4,40.0],[22.9,40.6],[22.6,40.5],[23.3,39.2],[22.9,39.4],[23.1,39.0],[22.5,38.9],[24.1,38.2],[24.0,37.7],[23.6,38.0],[23.0,37.9],[23.5,37.4],[22.7,37.6],[23.2,36.4],[22.7,36.8],[22.5,36.4],[22.2,37.0],[21.7,36.8],[21.7,37.4],[21.1,37.9],[21.8,38.3],[22.9,37.9],[23.2,38.2],[21.2,38.3],[20.7,38.8],[21.2,39.0],[20.7,39.0],[20.0,39.7],[21.0,40.8]]],[[[26.3,35.3],[26.1,35.0],[25.0,34.9],[23.5,35.3],[23.7,35.7],[25.8,35.1],[26.3,35.3]]],[[[20.7,38.1],[20.3,38.2],[20.5,38.5],[20.7,38.1]]],[[[26.2,38.5],[25.9,38.2],[25.8,38.6],[26.2,38.5]]],[[[24.6,38.2],[24.4,38.0],[22.8,38.8],[23.3,39.0],[24.6,38.2]]],[[[26.6,39.0],[25.8,39.2],[26.4,39.4],[26.6,39.0]]]]},{"n":"Austria","t":"P","c":[[[16.9,48.6],[17.1,47.7],[16.4,47.7],[16.7,47.5],[16.5,47.0],[14.5,46.4],[12.4,46.7],[12.2,47.1],[10.1,46.8],[9.5,47.3],[9.8,47.6],[10.2,47.3],[12.2,47.7],[13.0,47.5],[12.7,48.1],[13.8,48.8],[14.7,48.6],[15.0,49.0],[16.9,48.6]]]},{"n":"Italy","t":"M","c":[[[[7.0,45.9],[7.8,45.9],[8.4,46.5],[9.0,45.8],[9.3,46.5],[10.1,46.2],[10.5,46.9],[12.2,47.1],[12.4,46.7],[13.7,46.5],[13.4,46.3],[13.8,45.6],[13.1,45.8],[12.2,45.3],[12.5,45.0],[12.4,44.3],[13.6,43.6],[14.7,42.1],[16.1,41.9],[16.0,41.5],[18.0,40.7],[18.4,39.8],[17.0,40.5],[16.5,39.8],[17.2,39.4],[17.2,39.0],[15.7,38.0],[16.2,38.9],[15.6,40.1],[11.1,42.4],[10.1,44.0],[8.8,44.4],[7.5,43.8],[7.7,44.2],[7.0,44.2],[7.0,44.8],[6.6,45.1],[7.1,45.3],[6.8,45.8],[7.0,45.9]]],[[[15.5,38.3],[15.1,36.7],[12.4,37.8],[12.7,38.2],[13.8,38.0],[15.5,38.3]]],[[[9.8,40.6],[9.6,39.1],[9.0,39.3],[8.6,38.9],[8.2,41.0],[9.2,41.3],[9.8,40.6]]]]},{"n":"Switzerland","t":"P","c":[[[10.5,46.9],[10.1,46.2],[9.3,46.5],[9.0,45.8],[8.4,46.5],[7.8,45.9],[7.1,45.9],[6.6,46.5],[6.0,46.1],[7.0,47.5],[8.6,47.8],[9.7,47.5],[9.5,47.1],[10.5,46.9]]]},{"n":"Netherlands","t":"P","c":[[[7.2,53.2],[6.7,52.5],[7.0,52.4],[6.8,52.0],[5.9,51.8],[6.2,51.5],[6.0,50.7],[5.0,51.5],[3.5,51.5],[4.3,51.4],[3.9,51.8],[4.7,53.0],[6.0,53.4],[7.2,53.2]]]},{"n":"Croatia","t":"P","c":[[[16.5,46.5],[17.9,45.8],[18.9,45.9],[19.0,45.4],[19.4,45.2],[18.9,44.9],[15.8,45.2],[15.7,44.8],[17.6,43.0],[16.0,43.5],[14.6,45.3],[13.9,44.8],[13.6,45.1],[13.5,45.5],[15.3,45.5],[15.6,46.2],[16.5,46.5]]]},{"n":"Slovenia","t":"P","c":[[[13.6,45.5],[13.9,45.6],[13.4,46.3],[13.7,46.5],[14.5,46.4],[16.1,46.9],[16.5,46.5],[15.6,46.2],[15.3,45.5],[13.6,45.5]]]},{"n":"Bulgaria","t":"P","c":[[[26.3,41.7],[25.9,41.3],[22.9,41.3],[23.0,41.7],[22.3,42.3],[23.0,43.2],[22.4,44.0],[22.7,44.2],[22.9,43.8],[25.4,43.7],[27.0,44.2],[28.6,43.7],[27.5,42.5],[28.0,42.0],[27.0,42.1],[26.3,41.7]]]},{"n":"Montenegro","t":"P","c":[[[18.5,42.4],[18.4,43.0],[19.0,43.5],[20.4,42.9],[19.6,42.6],[19.4,41.9],[18.5,42.4]]]},{"n":"Bosnia and Herzegovina","t":"P","c":[[[17.7,42.9],[15.7,44.8],[15.8,45.2],[19.4,44.9],[19.1,44.4],[19.6,44.1],[19.2,44.0],[19.5,43.6],[18.9,43.5],[18.5,42.6],[17.7,42.9]]]},{"n":"Portugal","t":"P","c":[[[-7.1,38.8],[-7.4,38.4],[-6.9,38.2],[-7.5,37.6],[-7.4,37.2],[-9.0,37.0],[-8.9,38.5],[-8.6,38.4],[-9.3,38.7],[-8.8,39.1],[-9.5,38.8],[-8.6,40.8],[-8.9,41.7],[-8.6,42.1],[-6.6,42.0],[-6.2,41.6],[-6.9,41.0],[-7.0,39.7],[-7.6,39.7],[-7.1,38.8]]]}];
+
+// Convert compact format to GeoJSON for Leaflet
+function bordersToGeoJSON(data){
+  var features=[];
+  for(var i=0;i<data.length;i++){
+    var d=data[i];
+    var geom;
+    if(d.t==='P'){
+      // Polygon: coords are [ring, ring, ...]
+      // GeoJSON wants [lon,lat] — our data is already [lon,lat]
+      geom={type:'Polygon',coordinates:d.c};
+    }else{
+      // MultiPolygon: coords are [poly, poly, ...] where poly=[ring,ring,...]
+      geom={type:'MultiPolygon',coordinates:d.c};
+    }
+    features.push({type:'Feature',properties:{name:d.n},geometry:geom});
+  }
+  return {type:'FeatureCollection',features:features};
+}
+
+var europeGeoJSON=bordersToGeoJSON(borderData);
+
+// Water background (covers the whole map pane)
+L.rectangle([[-90,-180],[90,180]],{
+  fillColor:'#0f1729',fillOpacity:1,
+  color:'none',weight:0,interactive:false
+}).addTo(map);
+
+// Country fills
+L.geoJSON(europeGeoJSON,{
+  style:function(feature){
+    return{
+      fillColor:'#151d2e',
+      fillOpacity:1,
+      color:'#1e293b',
+      weight:0.8,
+      opacity:0.6
+    };
+  },
+  interactive:false
+}).addTo(map);
+
+// Also draw rail network connections as thin lines in the background
+var railBg=[];
+var rk=Object.keys(routeData);
+for(var i=0;i<rk.length;i++){
+  var p=rk[i].split('-');
+  var a=cityMap[p[0]],b=cityMap[p[1]];
+  if(a&&b){
+    railBg.push(L.polyline([[a.lat,a.lon],[b.lat,b.lon]],{
+      color:'#1e293b',weight:0.6,opacity:0.5,interactive:false
+    }));
+  }
+}
+for(var i=0;i<railBg.length;i++) railBg[i].addTo(map);
+
+// === CIRCLE MARKERS ===
+var markers={};
+
+function mkRadius(interest,zoom){
+  var base=interest>=9?6:interest>=7?4.5:interest>=5?3.5:2.5;
+  var zf=zoom<=4?0.8:zoom<=6?1:zoom<=8?1.3:1.6;
+  return Math.max(2,Math.round(base*zf));
+}
+function mkColor(interest){
+  if(interest>=9)return '#f59e0b';
+  if(interest>=7)return '#38bdf8';
+  if(interest>=5)return '#94a3b8';
+  return '#475569';
+}
+function mkStyle(c,zoom,inTrip){
+  var col=inTrip?'#f59e0b':mkColor(c.interest);
+  var r=inTrip?Math.max(8,mkRadius(c.interest,zoom)+3):mkRadius(c.interest,zoom);
+  return{
+    radius:r,
+    color:col,
+    fillColor:col,
+    fillOpacity:inTrip?0.7:c.interest>=9?0.5:c.interest>=7?0.35:0.25,
+    weight:inTrip?2.5:c.interest>=7?1.5:1,
+    opacity:inTrip?1:0.8
+  };
+}
+
+for(var i=0;i<cities.length;i++){
+  (function(c){
+    var m=L.circleMarker([c.lat,c.lon],mkStyle(c,5,false));
+    var stars='';for(var s=0;s<Math.min(c.interest,10);s++)stars+='\u2605';
+    m.bindTooltip(function(){
+      var base='<b>'+c.name+'</b><br><span style="color:#94a3b8;font-size:10px">'+c.country+' \u00b7 '+fmtPop(c.pop)+'</span><br><span style="color:#f59e0b;font-size:10px">'+stars+' '+c.interest+'/10</span>';
+      if(trip.length>=1&&distFromLast[c.name]&&distFromLast[c.name]<Infinity&&trip.indexOf(c.name)<0){
+        base+='<br><span style="color:#10b981;font-size:10px">\u{1F682} '+fmt(distFromLast[c.name])+' from '+trip[trip.length-1]+'</span>';
+      }
+      return base;
+    },{direction:'top',offset:[0,-8]});
+    m.on('click',function(){toggleCity(c.name);});
+    markers[c.name]=m;
+  })(cities[i]);
+}
+
+// === FILTERS ===
+var filterInterest=5,filterPop=100;
+var legMin=0,legMax=1440;
+var legDynMax=1440; // actual max reachable time, computed dynamically
+var trip=[];
+var cityLabels=[];
+var distFromLast={}; // dijkstra distances from last trip stop to all cities
+
+// Compute shortest travel time from one city to ALL others
+function dijkstraAll(start){
+  var d={},v={};
+  var nodes=Object.keys(adj);
+  for(var i=0;i<nodes.length;i++)d[nodes[i]]=Infinity;
+  if(!adj[start])return d;
+  d[start]=0;var q=[start];
+  while(q.length){
+    q.sort(function(a,b){return d[a]-d[b]});
+    var u=q.shift();
+    if(v[u])continue;v[u]=true;
+    var edges=adj[u]||[];
+    for(var i=0;i<edges.length;i++){
+      var alt=d[u]+edges[i].t;
+      if(alt<d[edges[i].to]){d[edges[i].to]=alt;q.push(edges[i].to);}
+    }
+  }
+  return d;
+}
+
+function updateLegFilter(){
+  var el=document.getElementById('leg-filter');
+  if(trip.length>=1){
+    el.style.display='block';
+    var lastStop=trip[trip.length-1];
+    document.getElementById('leg-from').textContent=lastStop;
+    distFromLast=dijkstraAll(lastStop);
+    // Compute actual max reachable time (only among cities that pass interest/pop filters)
+    var maxTime=0;
+    for(var i=0;i<cities.length;i++){
+      var c=cities[i];
+      var d=distFromLast[c.name];
+      if(d!==undefined&&d!==Infinity&&d>maxTime) maxTime=d;
+    }
+    // Round up to nearest hour for clean slider
+    legDynMax=Math.ceil(maxTime/60)*60;
+    if(legDynMax<60) legDynMax=60;
+    // Update slider max attributes
+    document.getElementById('f-leg-min').max=legDynMax;
+    document.getElementById('f-leg-max').max=legDynMax;
+    // If current legMax was at old max (user never touched it), snap to new max
+    if(legMax>=legDynMax||legMax>=1440) legMax=legDynMax;
+    document.getElementById('f-leg-max').value=legMax;
+    updateDualFill();
+  }else{
+    el.style.display='none';
+    distFromLast={};
+  }
+}
+
+function fmtLeg(min){
+  if(min===0)return '0h';
+  var h=Math.floor(min/60),m=min%60;
+  if(h>0&&m>0)return h+'h'+('0'+m).slice(-2);
+  if(h>0)return h+'h';
+  return m+'min';
+}
+
+function updateDualFill(){
+  var mn=document.getElementById('f-leg-min');
+  var mx=document.getElementById('f-leg-max');
+  var range=legDynMax||1440;
+  var left=(legMin/range)*100;
+  var right=(legMax/range)*100;
+  document.getElementById('dual-fill').style.left=left+'%';
+  document.getElementById('dual-fill').style.width=Math.max(0,right-left)+'%';
+  var el=document.getElementById('fv-leg');
+  if(el&&!el.querySelector('input')) el.textContent=fmtLeg(legMin)+' \u2014 '+fmtLeg(legMax);
+}
+
+document.getElementById('f-leg-min').addEventListener('input',function(e){
+  legMin=parseInt(e.target.value);
+  if(legMin>legMax){legMin=legMax;e.target.value=legMin;}
+  updateDualFill();
+  applyFilters();
+});
+document.getElementById('f-leg-max').addEventListener('input',function(e){
+  legMax=parseInt(e.target.value);
+  if(legMax<legMin){legMax=legMin;e.target.value=legMax;}
+  updateDualFill();
+  applyFilters();
+});
+
+// Decide which cities get a permanent name label based on zoom
+function labelThreshold(zoom){
+  // At low zoom only show top cities, progressively more as you zoom in
+  if(zoom<=4) return {interest:10,pop:2000000};
+  if(zoom<=5) return {interest:8,pop:500000};
+  if(zoom<=6) return {interest:7,pop:200000};
+  if(zoom<=7) return {interest:6,pop:100000};
+  if(zoom<=8) return {interest:5,pop:50000};
+  if(zoom<=9) return {interest:4,pop:20000};
+  return {interest:1,pop:0}; // show all at zoom 10+
+}
+
+function clearLabels(){
+  for(var i=0;i<cityLabels.length;i++) map.removeLayer(cityLabels[i]);
+  cityLabels=[];
+}
+
+function applyFilters(){
+  var zoom=map.getZoom();var shown=0;var reachable=0;
+  var lt=labelThreshold(zoom);
+  clearLabels();
+  var hasLegFilter=trip.length>=1;
+  var legFilterActive=hasLegFilter&&(legMin>0||legMax<720);
+
+  for(var i=0;i<cities.length;i++){
+    var c=cities[i];var m=markers[c.name];
+    var inTrip=trip.indexOf(c.name)>=0;
+    var ok=inTrip||(c.interest>=filterInterest&&c.pop>=filterPop*1000);
+
+    // Apply leg duration filter: city must be reachable within [legMin, legMax] from last stop
+    if(ok&&hasLegFilter&&!inTrip){
+      var dist=distFromLast[c.name];
+      if(dist!==undefined&&dist!==Infinity){
+        if(dist<legMin||dist>legMax) ok=false;
+        else reachable++;
+      }else{
+        // Not reachable at all via rail network
+        if(legFilterActive) ok=false;
+      }
+    }
+
+    if(ok){
+      if(!map.hasLayer(m))m.addTo(map);
+      m.setStyle(mkStyle(c,zoom,inTrip));
+      m.setRadius(mkStyle(c,zoom,inTrip).radius);
+      shown++;
+
+      // Permanent city name label
+      var showLabel=inTrip||(c.interest>=lt.interest&&c.pop>=lt.pop);
+      if(showLabel){
+        var cls='city-lbl';
+        var labelText=c.name;
+        if(inTrip){
+          cls='city-lbl trip-lbl';
+          var tripIdx=trip.indexOf(c.name);
+          labelText=(tripIdx+1)+'. '+c.name;
+        } else if(c.interest>=9){
+          cls='city-lbl top';
+        }
+        // If leg filter active, show travel time in label
+        if(hasLegFilter&&!inTrip&&distFromLast[c.name]&&distFromLast[c.name]<Infinity){
+          labelText=c.name+' ('+fmt(distFromLast[c.name])+')';
+        }
+        var lbl=L.tooltip({
+          permanent:true,
+          direction:'right',
+          offset:[mkStyle(c,zoom,inTrip).radius+3,0],
+          className:cls,
+          interactive:false
+        });
+        lbl.setContent(labelText);
+        lbl.setLatLng([c.lat,c.lon]);
+        lbl.addTo(map);
+        cityLabels.push(lbl);
+      }
+    }else{
+      if(map.hasLayer(m))map.removeLayer(m);
+    }
+  }
+  document.getElementById('cc-n').textContent=shown;
+  document.getElementById('cc-t').textContent=cities.length;
+  document.getElementById('fi-txt').textContent='Showing '+shown+' of '+cities.length+' cities';
+  if(hasLegFilter){
+    document.getElementById('leg-info').textContent='Reachable in '+fmtLeg(legMin)+' - '+fmtLeg(legMax)+': '+reachable+' cities';
+  }
+}
+
+document.getElementById('f-int').addEventListener('input',function(e){
+  filterInterest=parseInt(e.target.value);
+  document.getElementById('fv-int').textContent=filterInterest+'+';
+  applyFilters();
+});
+document.getElementById('f-pop').addEventListener('input',function(e){
+  filterPop=parseInt(e.target.value);
+  document.getElementById('fv-pop').textContent=filterPop===0?'All':filterPop+'k+';
+  applyFilters();
+});
+
+// === INLINE-EDITABLE FILTER VALUES ===
+function makeEditable(spanId,opts){
+  var span=document.getElementById(spanId);
+  if(!span)return;
+  span.addEventListener('click',function(){
+    // Don't double-activate
+    if(span.querySelector('input'))return;
+    var currentVal=opts.getValue();
+    var inp=document.createElement('input');
+    inp.type='number';
+    inp.className='fv-input';
+    inp.value=currentVal;
+    inp.min=opts.min!==undefined?opts.min:'';
+    inp.max=opts.max!==undefined?opts.max:'';
+    inp.step=opts.step||1;
+    if(opts.width)inp.style.width=opts.width;
+    span.textContent='';
+    span.appendChild(inp);
+    inp.focus();
+    inp.select();
+
+    function commit(){
+      var v=parseInt(inp.value);
+      if(isNaN(v))v=currentVal;
+      if(opts.min!==undefined&&v<opts.min)v=opts.min;
+      if(opts.max!==undefined&&v>opts.max)v=opts.max;
+      opts.setValue(v);
+      // Remove input, restore span text
+      span.textContent=opts.formatValue(v);
+    }
+    inp.addEventListener('blur',commit);
+    inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();inp.blur();}
+      if(e.key==='Escape'){inp.value=currentVal;inp.blur();}
+    });
+  });
+}
+
+makeEditable('fv-int',{
+  min:1,max:10,step:1,
+  getValue:function(){return filterInterest;},
+  setValue:function(v){filterInterest=v;document.getElementById('f-int').value=v;applyFilters();},
+  formatValue:function(v){return v+'+';}
+});
+
+makeEditable('fv-pop',{
+  min:0,max:1000,step:10,
+  getValue:function(){return filterPop;},
+  setValue:function(v){filterPop=v;document.getElementById('f-pop').value=v;applyFilters();},
+  formatValue:function(v){return v===0?'All':v+'k+';}
+});
+
+makeEditable('fv-leg',{
+  min:0,max:1440,step:15,width:'80px',
+  getValue:function(){return legMin;},
+  setValue:function(){},
+  formatValue:function(){return fmtLeg(legMin)+' \u2014 '+fmtLeg(legMax);}
+});
+
+// Override the leg label click with a dual-input editor
+(function(){
+  var span=document.getElementById('fv-leg');
+  if(!span)return;
+  // Remove the generic handler by cloning
+  var newSpan=span.cloneNode(true);
+  span.parentNode.replaceChild(newSpan,span);
+
+  newSpan.addEventListener('click',function(){
+    if(newSpan.querySelector('input'))return;
+    newSpan.textContent='';
+    var inpMin=document.createElement('input');
+    inpMin.type='number';inpMin.className='fv-input';inpMin.value=Math.round(legMin/60*10)/10;
+    inpMin.min=0;inpMin.max=Math.ceil(legDynMax/60);inpMin.step=0.25;inpMin.style.width='28px';inpMin.style.textAlign='center';
+    var dash=document.createElement('span');
+    dash.textContent=' \u2014 ';dash.style.color='#475569';dash.style.fontSize='10px';
+    var inpMax=document.createElement('input');
+    inpMax.type='number';inpMax.className='fv-input';inpMax.value=Math.round(legMax/60*10)/10;
+    inpMax.min=0;inpMax.max=Math.ceil(legDynMax/60);inpMax.step=0.25;inpMax.style.width='28px';inpMax.style.textAlign='center';
+    var suffix=document.createElement('span');
+    suffix.textContent='h';suffix.style.color='#f59e0b';suffix.style.fontSize='10px';
+    newSpan.appendChild(inpMin);newSpan.appendChild(dash);newSpan.appendChild(inpMax);newSpan.appendChild(suffix);
+    inpMin.focus();inpMin.select();
+
+    function commit(){
+      var vMin=parseFloat(inpMin.value);var vMax=parseFloat(inpMax.value);
+      if(isNaN(vMin))vMin=legMin/60;if(isNaN(vMax))vMax=legMax/60;
+      var maxH=Math.ceil(legDynMax/60);vMin=Math.max(0,Math.min(maxH,vMin));vMax=Math.max(0,Math.min(maxH,vMax));
+      if(vMin>vMax){var tmp=vMin;vMin=vMax;vMax=tmp;}
+      legMin=Math.round(vMin*60);legMax=Math.round(vMax*60);
+      document.getElementById('f-leg-min').value=legMin;
+      document.getElementById('f-leg-max').value=legMax;
+      updateDualFill();applyFilters();
+      newSpan.textContent=fmtLeg(legMin)+' \u2014 '+fmtLeg(legMax);
+    }
+    inpMin.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inpMax.focus();inpMax.select();}if(e.key==='Escape')commit();});
+    inpMax.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();commit();}});
+    inpMax.addEventListener('blur',function(){
+      // Small delay to check if focus moved to inpMin
+      setTimeout(function(){if(document.activeElement!==inpMin)commit();},100);
+    });
+    inpMin.addEventListener('blur',function(){
+      setTimeout(function(){if(document.activeElement!==inpMax)commit();},100);
+    });
+  });
+})();
+map.on('zoomend',applyFilters);
+applyFilters();
+
+// === ROUTE LINES ===
+var routeLines=[];
+function clearLines(){for(var i=0;i<routeLines.length;i++)map.removeLayer(routeLines[i]);routeLines=[];}
+function drawLines(){
+  clearLines();if(trip.length<2)return;var segs=getSegs();
+  for(var i=0;i<segs.length;i++){
+    var seg=segs[i];if(!seg||!seg.path)continue;
+    var coords=[];
+    for(var j=0;j<seg.path.length;j++){var c=cityMap[seg.path[j]];if(c)coords.push([c.lat,c.lon]);}
+    if(coords.length<2)continue;
+    routeLines.push(L.polyline(coords,{color:'#f59e0b',weight:7,opacity:0.12,lineCap:'round',interactive:false}).addTo(map));
+    routeLines.push(L.polyline(coords,{color:'#f59e0b',weight:3,opacity:0.8,dashArray:'8 4',lineCap:'round',interactive:false}).addTo(map));
+  }
+}
+
+// === TRIP ===
+function toggleCity(n){var i=trip.indexOf(n);if(i===0&&trip.length>=2){if(trip[trip.length-1]===n){trip.pop();}else{trip.push(n);}}else if(i>=0){trip.splice(i,1);}else{trip.push(n);}updateAll();}
+function removeStop(i){trip.splice(i,1);updateAll();}
+function addStopAfter(idx,name){trip.splice(idx+1,0,name);updateAll();}
+function clearTrip(){trip=[];updateAll();}
+function getSegs(){var s=[];for(var i=0;i<trip.length-1;i++)s.push(dijkstra(trip[i],trip[i+1]));return s;}
+
+function shareTrip(){
+  if(!trip.length)return;var segs=getSegs();var lines=["My Aetrain Trip\n"];
+  for(var i=0;i<trip.length;i++){var c=cityMap[trip[i]];var seg=i>0?segs[i-1]:null;
+    var t=seg&&seg.time?' ('+fmt(seg.time)+')':'';lines.push((i+1)+'. '+trip[i]+', '+(c?c.country:'')+t);}
+  var total=0;for(var i=0;i<segs.length;i++)if(segs[i])total+=segs[i].time;
+  var cc={};for(var i=0;i<trip.length;i++){var c=cityMap[trip[i]];if(c)cc[c.country]=true;}
+  var dist=0;for(var i=1;i<trip.length;i++){var a=cityMap[trip[i-1]],b=cityMap[trip[i]];if(a&&b)dist+=haversine(a,b);}
+  lines.push('\n'+trip.length+' stops / '+fmt(total)+' / '+Math.round(dist)+'km / '+Object.keys(cc).length+' countries');
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){document.getElementById('copyBtn').textContent='Copied!';setTimeout(function(){document.getElementById('copyBtn').textContent='Copy Summary';},1500);});
+}
+
+function updateAll(){updateLegFilter();updateSidebar();applyFilters();drawLines();updateStats();}
+
+function updateStats(){
+  document.getElementById('sv-s').textContent=trip.length;
+  var segs=getSegs();var t=0;for(var i=0;i<segs.length;i++)if(segs[i])t+=segs[i].time;
+  document.getElementById('sv-h').textContent=fmt(t);
+  var cc={};for(var i=0;i<trip.length;i++){var c=cityMap[trip[i]];if(c)cc[c.country]=true;}
+  document.getElementById('sv-c').textContent=Object.keys(cc).length;
+  var dist=0;for(var i=1;i<trip.length;i++){var a=cityMap[trip[i-1]],b=cityMap[trip[i]];if(a&&b)dist+=haversine(a,b);}
+  document.getElementById('sv-d').textContent=Math.round(dist)+'km';
+}
+
+function updateSidebar(){
+  var el=document.getElementById('tl');
+  if(!trip.length){el.innerHTML='<div id="empty"><div class="icon">&#x1F682;</div>Click any city on the map<br>or search to build your trip.<br><br>Interesting stops along your<br>route will be suggested automatically.</div>';return;}
+  var segs=getSegs();
+  var suggestions=findInterestingStops(segs,trip);
+  var h='';
+  for(var i=0;i<trip.length;i++){
+    var c=cityMap[trip[i]];var seg=i>0?segs[i-1]:null;
+    var tv='';
+    if(seg&&seg.time)tv='<div class="tt">&#x1F682; '+fmt(seg.time)+' from '+trip[i-1]+'</div>';
+    else if(i>0&&!seg)tv='<div class="tt err">&#x26A0; No route found</div>';
+    h+='<div class="ts">'+(i>0?'<div class="tcon"></div>':'')+'<div class="tn">'+(i+1)+'</div><div class="ti"><div class="cn">'+trip[i]+(c?' <span style="color:#475569;font-size:10px">'+fmtPop(c.pop)+'</span>':'')+'</div><div class="cc">'+(c?c.country+' &middot; &#9733;'+c.interest+'/10':'')+'</div>'+tv+'</div><button class="tx" onclick="removeStop('+i+')" title="Remove">&times;</button></div>';
+    var segSug=[];for(var s=0;s<suggestions.length;s++)if(suggestions[s].afterStop===i)segSug.push(suggestions[s]);
+    for(var s=0;s<Math.min(segSug.length,2);s++){
+      var sg=segSug[s];
+      var detLabel=sg.detourMin>0?'+'+fmt(sg.detourMin)+' detour':'on your route';
+      h+='<div class="suggest" onclick="addStopAfter('+i+',\''+sg.name.replace(/'/g,"\\'")+'\')"><span>&#x1F48E;</span> <span class="sg-n">'+sg.name+'</span> <span style="color:#475569">'+sg.city.country+'</span><span class="sg-i">&#9733;'+sg.city.interest+' &middot; '+detLabel+'</span></div>';
+    }
+  }
+  el.innerHTML=h;
+}
+
+// === SEARCH ===
+var sinput=document.getElementById('sinput'),sr=document.getElementById('sr');
+sinput.addEventListener('input',function(e){
+  var q=e.target.value.toLowerCase().trim();if(q.length<1){sr.style.display='none';return;}
+  var m=cities.filter(function(c){return c.name.toLowerCase().indexOf(q)>=0||c.country.toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return b.interest-a.interest||b.pop-a.pop;}).slice(0,14);
+  if(!m.length){sr.style.display='none';return;}
+  var html='';
+  for(var i=0;i<m.length;i++){
+    var c=m[i];var act=trip.indexOf(c.name)>=0;
+    var dots='';for(var d=0;d<5;d++)dots+='<i class="'+(d<Math.ceil(c.interest/2)?'on':'')+'"></i>';
+    html+='<div class="sri'+(act?' act':'')+'" data-n="'+c.name+'"><span class="sn">'+c.name+'</span><span class="sc">'+c.country+' &middot; '+fmtPop(c.pop)+'</span><span class="sq">'+dots+'</span></div>';
+  }
+  sr.innerHTML=html;sr.style.display='block';
+});
+sr.addEventListener('click',function(e){
+  var it=e.target.closest('.sri');if(!it)return;
+  var n=it.getAttribute('data-n');toggleCity(n);sinput.value='';sr.style.display='none';
+  var c=cityMap[n];if(c)map.flyTo([c.lat,c.lon],7,{duration:0.7});
+});
+sinput.addEventListener('blur',function(){setTimeout(function(){sr.style.display='none';},200);});
+sinput.addEventListener('keydown',function(e){if(e.key==='Escape'){sr.style.display='none';sinput.blur();}});
+</script>
+</body>
+</html>

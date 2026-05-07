@@ -1,0 +1,15 @@
+dataset_id = "stage1"
+schema_version = 1
+description = "Stage 1 feed inventory for the static journey builder."
+
+# Add one entry per feed once the concrete adapter and feed URL are known.
+#
+# [[source]]
+# id = "sncf-fr"
+# kind = "gtfs"
+# country_code = "FR"
+# adapter = "sncf_fr"
+# url = "REPLACE_WITH_FEED_URL"
+# active = true
+# include_service_classes = ["intercity", "regional", "ferry"]
+# notes = "Fastest-travel-time extraction only in Stage 1."

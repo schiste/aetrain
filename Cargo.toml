@@ -1,0 +1,16 @@
+[workspace]
+members = [
+  "packages/rust/aetrain-dataset",
+  "packages/rust/aetrain-domain",
+  "packages/rust/aetrain-normalize",
+  "packages/rust/aetrain-routing",
+  "packages/rust/aetrain-urlstate",
+  "packages/rust/aetrain-wikidata",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+license = "AGPL-3.0-only"
+rust-version = "1.92"
+version = "0.1.0"
