@@ -9,5 +9,20 @@ Expected responsibilities here:
 - selecting manifests
 - invoking source adapters
 - running normalization and enrichment stages
-- exporting versioned dataset artifacts into `apps/web/public/data/`
+- managing raw-source updates in `data/cache/`
+- exporting canonical build artifacts into `data/build/`
+- projecting browser runtime artifacts into `apps/web/public/data/` later
 - producing attribution and build metadata
+
+Current Stage 1 entrypoint:
+
+```sh
+tools/pipeline/run-stage1.sh
+```
+
+That command:
+
+- loads `data/manifests/stage1.sources.toml`
+- fetches or skips active sources based on cached `ETag` / `Last-Modified`
+- stores raw files under `data/cache/raw/`
+- writes the first SNCF canonical artifacts under `data/build/stage1/sncf-fr/`

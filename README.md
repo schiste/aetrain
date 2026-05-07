@@ -51,13 +51,18 @@ Stage 1 data model and pipeline harden.
 # Run the shared Rust workspace checks
 cargo test
 
+# Fetch or refresh the first live SNCF sources and build canonical Stage 1 outputs
+tools/pipeline/run-stage1.sh
+
 # Browse the current modularized web app (any static server works)
 python3 -m http.server --directory apps/web 8080
 # then open http://localhost:8080/
 ```
 
 The web app is now split into modules, but it still uses embedded prototype
-data and is not yet wired to live generated datasets or wasm bindings.
+data and is not yet wired to live generated datasets or wasm bindings. The
+first live import pipeline writes raw source cache state under `data/cache/`
+and canonical build artifacts under `data/build/stage1/sncf-fr/`.
 
 ## Repository layout
 

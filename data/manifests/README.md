@@ -10,3 +10,12 @@ The default policy is:
 
 Manifests belong in version control because they are part of the product
 definition, not just build tooling.
+
+The current `stage1.sources.toml` includes:
+
+- the official SNCF static GTFS export
+- the official SNCF passenger-station reference export
+
+Sources may also carry a version probe URL when the download endpoint does not
+publish stable `ETag` or `Last-Modified` headers. That lets the pipeline skip
+unchanged sources without redownloading them blindly.
