@@ -176,9 +176,11 @@ The pipeline output is the product interface between build-time and runtime.
 Stage 1 artifacts should be versioned and immutable, for example:
 
 - `meta.json`
+- `countries.json`
 - `cities.json`
 - `graph.json`
 - `aliases.json`
+- `stations.json`
 - `attribution.json`
 
 Stored under a versioned directory such as:
@@ -192,6 +194,24 @@ Stored under a versioned directory such as:
 - schema version
 - generation timestamp
 - attribution pointers
+
+The important split is:
+
+- Canonical artifacts can be rich, traceable, and station-aware.
+- Runtime artifacts must be optimized for browser startup and route queries.
+
+The browser hot path should eagerly load only:
+
+- `meta.json`
+- `countries.json`
+- `cities.json`
+- `graph.json`
+
+The browser should load these only when needed:
+
+- `aliases.json` on first search interaction if it is large enough to matter
+- `stations.json` only for future station-aware product surfaces
+- `attribution.json` from an about/help surface, not as part of initial route rendering
 
 ## Decision 4: The browser consumes a city graph, not raw GTFS
 
@@ -210,6 +230,19 @@ Browser-facing model:
 - city-to-city edge
 - search alias
 - enrichment metadata
+
+Runtime graph representation should be compact and index-based:
+
+- stable `city_id` strings for URLs and external references
+- dense city indexes for in-memory routing
+- adjacency offsets + targets + durations arrays for fast shortest-path setup
+- country table indirection instead of repeated country names per city row
+- scaled integer coordinates (`lat_e5` / `lon_e5`) instead of repeated floats in the wire format
+
+That gives us two important properties at once:
+
+- Stable public identifiers
+- Fast browser parsing and low memory churn
 
 Rationale:
 
@@ -285,6 +318,9 @@ Important consequence:
 - The route engine, URL state, and most product APIs are city-based.
 - Station data is retained for future capability, but it does not define the
   user-facing planning model.
+- The canonical model is not shipped directly to the browser; the browser gets
+  a runtime projection tuned for map rendering, search, and shortest-path
+  queries.
 
 ## Decision 6: Normalize by adapter, then resolve to canonical entities
 
