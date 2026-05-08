@@ -16,6 +16,10 @@ const INTERACTION_LABEL_OPACITY = "0";
 const ZOOM_MOVEEND_SUPPRESSION_MS = 60;
 const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
+const TARGET_ZOOM_SCALE_RATIO = 1.02;
+const ZOOM_LEVEL_STEP = Math.log(TARGET_ZOOM_SCALE_RATIO) / Math.LN2;
+const WHEEL_PIXEL_DELTA_PER_STEP = 60;
+const WHEEL_PIXELS_PER_ZOOM_LEVEL = WHEEL_PIXEL_DELTA_PER_STEP / ZOOM_LEVEL_STEP;
 
 const diagnostics = createDiagnostics("web/map/leaflet-surface");
 
@@ -42,12 +46,12 @@ export function createLeafletMapSurface({
     zoom: 5,
     minZoom: 3,
     maxZoom: 15,
-    wheelDebounceTime: 16,
-    wheelPxPerZoomLevel: 120,
+    wheelDebounceTime: 12,
+    wheelPxPerZoomLevel: WHEEL_PIXELS_PER_ZOOM_LEVEL,
     zoomAnimationThreshold: 8,
     zoomControl: false,
-    zoomDelta: 0.25,
-    zoomSnap: 0
+    zoomDelta: ZOOM_LEVEL_STEP,
+    zoomSnap: ZOOM_LEVEL_STEP
   });
   L.control.zoom({ position: "bottomright" }).addTo(map);
 
