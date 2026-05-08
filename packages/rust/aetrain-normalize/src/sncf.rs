@@ -5,7 +5,10 @@ use std::{
     path::Path,
 };
 
-use aetrain_dataset::{AliasRecord, DatasetBundle, DatasetMeta, SourceSnapshot};
+use aetrain_dataset::{
+    AliasRecord, DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord,
+    EdgeGeometrySource, PolylinePointE5, SourceSnapshot,
+};
 use aetrain_domain::{
     City, CityId, GeoPoint, ServiceClass, ServiceKind, SourceRef, Station, StationId, TravelEdge,
 };
@@ -20,6 +23,8 @@ use crate::{IssueSeverity, ManualOverrideRegistry, NormalizationIssue};
 pub const DEFAULT_DUPLICATE_DISTANCE_METERS: u32 = 25_000;
 const NAME_MATCH_DISTANCE_METERS: f64 = 2_000.0;
 const GTFS_BASIC_STEM_DISTANCE_METERS: f64 = 30_000.0;
+const MAX_SHAPE_STOP_DISTANCE_METERS: f64 = 25_000.0;
+const SHAPE_ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DuplicateCityCandidate {
@@ -58,6 +63,7 @@ pub struct SncfBuildOutput {
     pub stations: Vec<Station>,
     pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
+    pub edge_geometries: EdgeGeometryArtifact,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
@@ -81,6 +87,7 @@ pub struct BasicGtfsBuildOutput {
     pub stations: Vec<Station>,
     pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
+    pub edge_geometries: EdgeGeometryArtifact,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
@@ -170,6 +177,7 @@ struct StopVisit {
     city_id: CityId,
     departure_seconds: u32,
     stop_sequence: u32,
+    location: GeoPoint,
 }
 
 #[derive(Clone, Debug)]
@@ -177,6 +185,8 @@ struct EdgeAccumulator {
     duration_min: u32,
     source_confidence: u8,
     provenance: String,
+    geometry_points: Vec<GeoPoint>,
+    geometry_source: EdgeGeometrySource,
 }
 
 #[derive(Clone, Debug)]
@@ -207,6 +217,8 @@ struct GtfsRouteRow {
 struct GtfsTripRow {
     route_id: String,
     trip_id: String,
+    #[serde(default)]
+    shape_id: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -216,6 +228,20 @@ struct GtfsStopTimeRow {
     departure_time: String,
     stop_id: String,
     stop_sequence: u32,
+}
+
+#[derive(Deserialize)]
+struct GtfsShapeRow {
+    shape_id: String,
+    shape_pt_lat: f64,
+    shape_pt_lon: f64,
+    shape_pt_sequence: u32,
+}
+
+#[derive(Clone, Debug)]
+struct TripDescriptor {
+    route_id: String,
+    shape_id: Option<String>,
 }
 
 pub fn build_sncf_dataset(
@@ -230,13 +256,18 @@ pub fn build_sncf_dataset(
 ) -> Result<SncfBuildOutput> {
     let station_references = load_station_references(stations_csv_path)?;
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
-    let trip_routes = load_trip_routes_from_gtfs(gtfs_path)?;
+    let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path)?;
+    let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
     let used_station_keys =
-        collect_used_station_keys(gtfs_path, &trip_routes, &stop_to_station_key)?;
+        collect_used_station_keys(gtfs_path, &trip_descriptors, &stop_to_station_key)?;
     let gtfs_stations = gtfs_stations
         .into_iter()
         .filter(|station| used_station_keys.contains(&station.station_key))
         .collect::<Vec<_>>();
+    let station_locations = gtfs_stations
+        .iter()
+        .map(|station| (station.station_key.clone(), station.location))
+        .collect::<HashMap<_, _>>();
 
     let mut issues = Vec::new();
     let (
@@ -257,11 +288,13 @@ pub fn build_sncf_dataset(
         &mut issues,
     )?;
 
-    let edges = build_city_edges(
+    let (edges, edge_geometries) = build_city_edges(
         gtfs_path,
         gtfs_source_id,
-        &trip_routes,
+        &trip_descriptors,
+        &shapes_by_id,
         &stop_to_station_key,
+        &station_locations,
         &station_key_to_city,
         &station_key_confidence,
         &mut issues,
@@ -295,6 +328,7 @@ pub fn build_sncf_dataset(
         stations,
         station_mappings,
         edges,
+        edge_geometries,
         aliases,
         duplicates,
         issues,
@@ -322,34 +356,35 @@ pub fn build_gtfs_basic_dataset(
     overrides: &ManualOverrideRegistry,
 ) -> Result<BasicGtfsBuildOutput> {
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
-    let trip_routes = load_trip_routes_from_gtfs(gtfs_path)?;
+    let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path)?;
+    let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
     let used_station_keys =
-        collect_used_station_keys(gtfs_path, &trip_routes, &stop_to_station_key)?;
+        collect_used_station_keys(gtfs_path, &trip_descriptors, &stop_to_station_key)?;
     let gtfs_stations = gtfs_stations
         .into_iter()
         .filter(|station| used_station_keys.contains(&station.station_key))
         .collect::<Vec<_>>();
+    let station_locations = gtfs_stations
+        .iter()
+        .map(|station| (station.station_key.clone(), station.location))
+        .collect::<HashMap<_, _>>();
 
     let mut issues = Vec::new();
-    let (
-        cities,
-        stations,
-        station_mappings,
-        aliases,
-        station_key_to_city,
-        station_key_confidence,
-    ) = normalize_gtfs_only_stations(
-        &gtfs_stations,
-        gtfs_source_id,
-        country_code,
-        overrides,
-        &mut issues,
-    )?;
-    let edges = build_city_edges(
+    let (cities, stations, station_mappings, aliases, station_key_to_city, station_key_confidence) =
+        normalize_gtfs_only_stations(
+            &gtfs_stations,
+            gtfs_source_id,
+            country_code,
+            overrides,
+            &mut issues,
+        )?;
+    let (edges, edge_geometries) = build_city_edges(
         gtfs_path,
         gtfs_source_id,
-        &trip_routes,
+        &trip_descriptors,
+        &shapes_by_id,
         &stop_to_station_key,
+        &station_locations,
         &station_key_to_city,
         &station_key_confidence,
         &mut issues,
@@ -380,6 +415,7 @@ pub fn build_gtfs_basic_dataset(
         stations,
         station_mappings,
         edges,
+        edge_geometries,
         aliases,
         duplicates,
         issues,
@@ -1053,12 +1089,14 @@ fn normalize_gtfs_only_stations(
 fn build_city_edges(
     gtfs_path: &Path,
     gtfs_source_id: &str,
-    trip_routes: &HashMap<String, String>,
+    trip_descriptors: &HashMap<String, TripDescriptor>,
+    shapes_by_id: &HashMap<String, Vec<GeoPoint>>,
     stop_to_station_key: &HashMap<String, String>,
+    station_locations: &HashMap<String, GeoPoint>,
     station_key_to_city: &HashMap<String, CityId>,
     station_key_confidence: &HashMap<String, u8>,
     issues: &mut Vec<NormalizationIssue>,
-) -> Result<Vec<TravelEdge>> {
+) -> Result<(Vec<TravelEdge>, EdgeGeometryArtifact)> {
     let file =
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
@@ -1073,10 +1111,14 @@ fn build_city_edges(
 
     for row in reader.deserialize::<GtfsStopTimeRow>() {
         let row = row.context("failed to parse GTFS stop time")?;
-        let Some(route_id) = trip_routes.get(&row.trip_id) else {
+        let Some(trip_descriptor) = trip_descriptors.get(&row.trip_id) else {
             continue;
         };
         let Some(station_key) = stop_to_station_key.get(&row.stop_id) else {
+            missing_stop_mappings += 1;
+            continue;
+        };
+        let Some(location) = station_locations.get(station_key).copied() else {
             missing_stop_mappings += 1;
             continue;
         };
@@ -1101,6 +1143,7 @@ fn build_city_edges(
                 city_id: city_id.clone(),
                 departure_seconds,
                 stop_sequence: row.stop_sequence,
+                location,
             },
         ) {
             if row.stop_sequence <= previous.stop_sequence || previous.city_id == *city_id {
@@ -1122,9 +1165,17 @@ fn build_city_edges(
                         .copied()
                         .unwrap_or(50),
                 );
+            let (geometry_points, geometry_source) = build_edge_geometry(
+                previous.location,
+                location,
+                trip_descriptor
+                    .shape_id
+                    .as_deref()
+                    .and_then(|shape_id| shapes_by_id.get(shape_id)),
+            );
 
             let key = (previous.city_id.clone(), city_id.clone());
-            let provenance = format!("{gtfs_source_id}:{route_id}");
+            let provenance = format!("{gtfs_source_id}:{}", trip_descriptor.route_id);
             edge_map
                 .entry(key)
                 .and_modify(|edge| {
@@ -1132,12 +1183,16 @@ fn build_city_edges(
                         edge.duration_min = duration_min;
                         edge.provenance = provenance.clone();
                         edge.source_confidence = confidence;
+                        edge.geometry_points = geometry_points.clone();
+                        edge.geometry_source = geometry_source.clone();
                     }
                 })
                 .or_insert(EdgeAccumulator {
                     duration_min,
                     source_confidence: confidence,
                     provenance,
+                    geometry_points,
+                    geometry_source,
                 });
         }
     }
@@ -1153,19 +1208,106 @@ fn build_city_edges(
         });
     }
 
-    Ok(edge_map
-        .into_iter()
-        .map(|((from_city_id, to_city_id), edge)| TravelEdge {
-            from_city_id,
-            to_city_id,
+    let mut edges = Vec::<TravelEdge>::new();
+    let mut geometries = Vec::<EdgeGeometryRecord>::new();
+    for ((from_city_id, to_city_id), edge) in edge_map {
+        edges.push(TravelEdge {
+            from_city_id: from_city_id.clone(),
+            to_city_id: to_city_id.clone(),
             duration_min: edge.duration_min,
             service_kind: ServiceKind::Rail,
             service_class: ServiceClass::Regional,
             change_count_estimate: Some(0),
             source_confidence: edge.source_confidence,
+            provenance: vec![edge.provenance.clone()],
+        });
+        geometries.push(EdgeGeometryRecord {
+            from_city_id,
+            to_city_id,
+            points: edge
+                .geometry_points
+                .into_iter()
+                .map(scale_geo_point_e5)
+                .collect::<Result<Vec<_>>>()?,
+            source: edge.geometry_source,
             provenance: vec![edge.provenance],
-        })
-        .collect())
+        });
+    }
+
+    Ok((edges, EdgeGeometryArtifact { geometries }))
+}
+
+fn build_edge_geometry(
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+    shape_points: Option<&Vec<GeoPoint>>,
+) -> (Vec<GeoPoint>, EdgeGeometrySource) {
+    if let Some(shape_points) = shape_points {
+        if let Some(points) = extract_shape_segment(shape_points, from_location, to_location) {
+            return (points, EdgeGeometrySource::GtfsShapeSegment);
+        }
+    }
+
+    (
+        vec![from_location, to_location],
+        EdgeGeometrySource::StraightLineFallback,
+    )
+}
+
+fn extract_shape_segment(
+    shape_points: &[GeoPoint],
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+) -> Option<Vec<GeoPoint>> {
+    if shape_points.len() < 2 {
+        return None;
+    }
+
+    let (start_index, start_distance) = nearest_shape_point_index(shape_points, from_location, 0)?;
+    let (end_index, end_distance) =
+        nearest_shape_point_index(shape_points, to_location, start_index)?;
+    if end_index <= start_index
+        || start_distance > MAX_SHAPE_STOP_DISTANCE_METERS
+        || end_distance > MAX_SHAPE_STOP_DISTANCE_METERS
+    {
+        return None;
+    }
+
+    let mut points = shape_points[start_index..=end_index].to_vec();
+    if haversine_meters(points[0], from_location) > SHAPE_ENDPOINT_SNAP_DISTANCE_METERS {
+        points.insert(0, from_location);
+    } else {
+        points[0] = from_location;
+    }
+
+    let last_index = points.len() - 1;
+    if haversine_meters(points[last_index], to_location) > SHAPE_ENDPOINT_SNAP_DISTANCE_METERS {
+        points.push(to_location);
+    } else {
+        points[last_index] = to_location;
+    }
+
+    Some(points)
+}
+
+fn nearest_shape_point_index(
+    shape_points: &[GeoPoint],
+    target: GeoPoint,
+    start_index: usize,
+) -> Option<(usize, f64)> {
+    shape_points
+        .iter()
+        .enumerate()
+        .skip(start_index)
+        .map(|(index, point)| (index, haversine_meters(*point, target)))
+        .min_by(|left, right| left.1.total_cmp(&right.1))
+}
+
+fn scale_geo_point_e5(point: GeoPoint) -> Result<PolylinePointE5> {
+    Ok(PolylinePointE5 {
+        lat_e5: (point.lat * 100_000.0).round() as i32,
+        lon_e5: (point.lon * 100_000.0).round() as i32,
+    })
 }
 
 fn load_allowed_routes(archive: &mut ZipArchive<File>) -> Result<HashMap<String, i16>> {
@@ -1183,35 +1325,83 @@ fn load_allowed_routes(archive: &mut ZipArchive<File>) -> Result<HashMap<String,
     Ok(allowed)
 }
 
-fn load_trip_routes(
+fn load_trip_descriptors(
     archive: &mut ZipArchive<File>,
     allowed_routes: &HashMap<String, i16>,
-) -> Result<HashMap<String, String>> {
+) -> Result<HashMap<String, TripDescriptor>> {
     let trips = archive
         .by_name("trips.txt")
         .context("missing trips.txt in GTFS archive")?;
     let mut reader = ReaderBuilder::new().from_reader(trips);
-    let mut trip_routes = HashMap::new();
+    let mut trip_descriptors = HashMap::new();
     for row in reader.deserialize::<GtfsTripRow>() {
         let row = row.context("failed to parse GTFS trip")?;
         if allowed_routes.contains_key(&row.route_id) {
-            trip_routes.insert(row.trip_id, row.route_id);
+            trip_descriptors.insert(
+                row.trip_id,
+                TripDescriptor {
+                    route_id: row.route_id,
+                    shape_id: row.shape_id.and_then(|shape_id| {
+                        let shape_id = shape_id.trim().to_string();
+                        if shape_id.is_empty() {
+                            None
+                        } else {
+                            Some(shape_id)
+                        }
+                    }),
+                },
+            );
         }
     }
-    Ok(trip_routes)
+    Ok(trip_descriptors)
 }
 
-fn load_trip_routes_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, String>> {
+fn load_trip_descriptors_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, TripDescriptor>> {
     let file =
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
     let allowed_routes = load_allowed_routes(&mut archive)?;
-    load_trip_routes(&mut archive, &allowed_routes)
+    load_trip_descriptors(&mut archive, &allowed_routes)
+}
+
+fn load_gtfs_shapes_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, Vec<GeoPoint>>> {
+    let file =
+        File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
+    let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
+    let Ok(shapes) = archive.by_name("shapes.txt") else {
+        return Ok(HashMap::new());
+    };
+    let mut reader = ReaderBuilder::new().from_reader(shapes);
+    let mut shapes_by_id = HashMap::<String, Vec<(u32, GeoPoint)>>::new();
+    for row in reader.deserialize::<GtfsShapeRow>() {
+        let row = row.context("failed to parse GTFS shape row")?;
+        shapes_by_id.entry(row.shape_id).or_default().push((
+            row.shape_pt_sequence,
+            GeoPoint {
+                lat: row.shape_pt_lat,
+                lon: row.shape_pt_lon,
+            },
+        ));
+    }
+
+    Ok(shapes_by_id
+        .into_iter()
+        .map(|(shape_id, mut points)| {
+            points.sort_by_key(|(sequence, _)| *sequence);
+            (
+                shape_id,
+                points
+                    .into_iter()
+                    .map(|(_, point)| point)
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect())
 }
 
 fn collect_used_station_keys(
     gtfs_path: &Path,
-    trip_routes: &HashMap<String, String>,
+    trip_descriptors: &HashMap<String, TripDescriptor>,
     stop_to_station_key: &HashMap<String, String>,
 ) -> Result<HashSet<String>> {
     let file =
@@ -1225,7 +1415,7 @@ fn collect_used_station_keys(
 
     for row in reader.deserialize::<GtfsStopTimeRow>() {
         let row = row.context("failed to parse GTFS stop time")?;
-        if !trip_routes.contains_key(&row.trip_id) {
+        if !trip_descriptors.contains_key(&row.trip_id) {
             continue;
         }
         if let Some(station_key) = stop_to_station_key.get(&row.stop_id) {
@@ -1904,6 +2094,11 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
         assert_eq!(output.summary.station_count, 3);
         assert_eq!(output.summary.edge_count, 1);
         assert_eq!(output.station_mappings.records.len(), 3);
+        assert_eq!(output.edge_geometries.geometries.len(), 1);
+        assert_eq!(
+            output.edge_geometries.geometries[0].source,
+            EdgeGeometrySource::StraightLineFallback
+        );
         assert!(
             output
                 .cities
@@ -1918,6 +2113,69 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
         );
 
         let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn sncf_dataset_exports_shape_segment_geometry() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-shapes-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:OCE8727100,Paris Nord,48.8809,2.3553,1,\n\
+StopArea:OCE8772319,Lyon Part Dieu,45.7604,4.8599,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id,shape_id\nR1,T1,S1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:OCE8727100,1\n\
+T1,10:00:00,10:05:00,StopArea:OCE8772319,2\n",
+                ),
+                (
+                    "shapes.txt",
+                    "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\n\
+S1,48.8809,2.3553,1\n\
+S1,48.3000,2.9000,2\n\
+S1,47.3000,3.7000,3\n\
+S1,46.4000,4.3000,4\n\
+S1,45.7604,4.8599,5\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+        let stations_csv_path = write_text_file(
+            "aetrain-stations-test.csv",
+            "id,nom,position_geographique,codeinsee,codes_uic\n\
+ref-paris-nord,Paris Nord,\"48.8809,2.3553\",75056,8727100\n\
+ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
+        )
+        .expect("station reference CSV should be created");
+
+        let output = build_sncf_dataset(
+            &zip_path,
+            &stations_csv_path,
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            "test-version",
+            "2026-05-08T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("sncf dataset should build");
+
+        assert_eq!(output.summary.edge_count, 1);
+        assert_eq!(output.edge_geometries.geometries.len(), 1);
+        assert_eq!(
+            output.edge_geometries.geometries[0].source,
+            EdgeGeometrySource::GtfsShapeSegment
+        );
+        assert!(output.edge_geometries.geometries[0].points.len() >= 3);
+
+        let _ = fs::remove_file(zip_path);
+        let _ = fs::remove_file(stations_csv_path);
     }
 
     fn write_test_gtfs_zip(
@@ -1944,6 +2202,17 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
                 .with_context(|| format!("failed to write zip entry {name}"))?;
         }
         writer.finish().context("failed to finalize GTFS zip")?;
+        Ok(path)
+    }
+
+    fn write_text_file(file_name: &str, contents: &str) -> Result<std::path::PathBuf> {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("current time should be after epoch")
+            .as_nanos();
+        let path = env::temp_dir().join(format!("{timestamp}-{file_name}"));
+        fs::write(&path, contents)
+            .with_context(|| format!("failed to write {}", path.display()))?;
         Ok(path)
     }
 }

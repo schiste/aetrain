@@ -5,9 +5,11 @@ use std::{
 };
 
 use aetrain_dataset::{
-    DatasetBundle, DatasetMeta, RuntimeAliasIndex, RuntimeAliasRecord, RuntimeCountryRecord,
-    RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeGraph, RuntimeStationArtifact,
-    RuntimeStationRecord, SourceSnapshot,
+    DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord, EdgeGeometrySource,
+    PolylinePointE5, RuntimeAliasIndex, RuntimeAliasRecord, RuntimeCountryRecord,
+    RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeEdgeGeometryArtifact,
+    RuntimeEdgeGeometryRecord, RuntimeGraph, RuntimeStationArtifact, RuntimeStationRecord,
+    SourceSnapshot,
 };
 use aetrain_domain::{ServiceClass, ServiceKind};
 use anyhow::{Context, Result, bail};
@@ -63,13 +65,15 @@ impl<'a> AdapterBuildRequest<'a> {
         role: &str,
         kind: SourceKind,
     ) -> Result<&'a FetchedSource> {
-        self.source_by_role(role).or_else(|_| self.source_by_kind(kind))
+        self.source_by_role(role)
+            .or_else(|_| self.source_by_kind(kind))
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AdapterBuildArtifacts {
     pub canonical: DatasetBundle,
+    pub edge_geometries: Option<EdgeGeometryArtifact>,
     pub station_mappings: Option<StationMappingReport>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
@@ -207,7 +211,16 @@ pub fn sync_web_debug_artifacts(
     fs::create_dir_all(destination)
         .with_context(|| format!("failed to create {}", destination.display()))?;
 
-    for file_name in ["meta.json", "cities.json", "edges.json", "attribution.json"] {
+    for file_name in [
+        "meta.json",
+        "cities.json",
+        "edges.json",
+        "attribution.json",
+        "edge-geometries.json",
+    ] {
+        if !source_dir.join(file_name).exists() {
+            continue;
+        }
         fs::copy(source_dir.join(file_name), destination.join(file_name)).with_context(|| {
             format!(
                 "failed to copy {} into {}",
@@ -269,7 +282,12 @@ fn export_pipeline_target(
         let runtime_dir = target_root.join("runtime").join("web");
         fs::create_dir_all(&runtime_dir)
             .with_context(|| format!("failed to create {}", runtime_dir.display()))?;
-        export_web_runtime_bundle(&runtime_dir, &artifacts.canonical, &attribution)?;
+        export_web_runtime_bundle(
+            &runtime_dir,
+            &artifacts.canonical,
+            &artifacts.edge_geometries,
+            &attribution,
+        )?;
         Some(runtime_dir)
     } else {
         None
@@ -283,6 +301,7 @@ fn export_pipeline_target(
             &runtime_dir,
             &artifacts.canonical.meta,
             &artifacts.canonical,
+            &artifacts.edge_geometries,
             &attribution,
         )?;
         Some(runtime_dir)
@@ -338,6 +357,8 @@ fn export_canonical_bundle(
     artifacts: &AdapterBuildArtifacts,
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
+    let edge_geometries =
+        resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?;
     write_json(&output_dir.join("bundle.json"), &artifacts.canonical)?;
     write_json(&output_dir.join("meta.json"), &artifacts.canonical.meta)?;
     write_json(&output_dir.join("cities.json"), &artifacts.canonical.cities)?;
@@ -346,6 +367,7 @@ fn export_canonical_bundle(
         &artifacts.canonical.stations,
     )?;
     write_json(&output_dir.join("edges.json"), &artifacts.canonical.edges)?;
+    write_json(&output_dir.join("edge-geometries.json"), &edge_geometries)?;
     write_json(
         &output_dir.join("aliases.json"),
         &artifacts.canonical.aliases,
@@ -366,11 +388,14 @@ fn export_web_debug_bundle(
     output_dir: &Path,
     meta: &DatasetMeta,
     canonical: &DatasetBundle,
+    edge_geometries: &Option<EdgeGeometryArtifact>,
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
+    let edge_geometries = resolved_edge_geometries(canonical, edge_geometries)?;
     write_json(&output_dir.join("meta.json"), meta)?;
     write_json(&output_dir.join("cities.json"), &canonical.cities)?;
     write_json(&output_dir.join("edges.json"), &canonical.edges)?;
+    write_json(&output_dir.join("edge-geometries.json"), &edge_geometries)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
 }
@@ -378,9 +403,12 @@ fn export_web_debug_bundle(
 fn export_web_runtime_bundle(
     output_dir: &Path,
     canonical: &DatasetBundle,
+    edge_geometries: &Option<EdgeGeometryArtifact>,
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
-    let (runtime_bundle, station_artifact) = build_web_runtime_bundle(canonical)?;
+    let edge_geometries = resolved_edge_geometries(canonical, edge_geometries)?;
+    let (runtime_bundle, station_artifact, runtime_edge_geometries) =
+        build_web_runtime_bundle(canonical, &edge_geometries)?;
     write_json(&output_dir.join("meta.json"), &runtime_bundle.meta)?;
     write_json(
         &output_dir.join("countries.json"),
@@ -390,13 +418,22 @@ fn export_web_runtime_bundle(
     write_json(&output_dir.join("graph.json"), &runtime_bundle.graph)?;
     write_json(&output_dir.join("aliases.json"), &runtime_bundle.aliases)?;
     write_json(&output_dir.join("stations.json"), &station_artifact)?;
+    write_json(
+        &output_dir.join("route-geometries.json"),
+        &runtime_edge_geometries,
+    )?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
 }
 
 fn build_web_runtime_bundle(
     canonical: &DatasetBundle,
-) -> Result<(RuntimeDatasetBundle, RuntimeStationArtifact)> {
+    edge_geometries: &EdgeGeometryArtifact,
+) -> Result<(
+    RuntimeDatasetBundle,
+    RuntimeStationArtifact,
+    RuntimeEdgeGeometryArtifact,
+)> {
     let mut country_index_by_code = BTreeMap::<String, u16>::new();
     let mut countries = Vec::<RuntimeCountryRecord>::new();
     for city in &canonical.cities {
@@ -444,10 +481,13 @@ fn build_web_runtime_bundle(
     let graph = build_runtime_graph(canonical, &city_index_by_id)?;
     let aliases = build_runtime_alias_index(canonical, &city_index_by_id)?;
     let station_artifact = build_runtime_station_artifact(canonical, &city_index_by_id)?;
+    let edge_geometry_artifact =
+        build_runtime_edge_geometry_artifact(edge_geometries, &city_index_by_id)?;
+    let city_count = cities.len();
     let meta = RuntimeDatasetMeta::from_canonical(
         &canonical.meta,
         countries.len() as u16,
-        cities.len() as u32,
+        city_count as u32,
         graph.edge_count() as u32,
         aliases.records.len() as u32,
     );
@@ -461,8 +501,11 @@ fn build_web_runtime_bundle(
     runtime_bundle
         .validate()
         .map_err(|error| anyhow::anyhow!("runtime web bundle validation failed: {error:?}"))?;
+    edge_geometry_artifact
+        .validate(city_count)
+        .map_err(|error| anyhow::anyhow!("runtime route geometry validation failed: {error:?}"))?;
 
-    Ok((runtime_bundle, station_artifact))
+    Ok((runtime_bundle, station_artifact, edge_geometry_artifact))
 }
 
 fn build_runtime_graph(
@@ -555,6 +598,83 @@ fn build_runtime_station_artifact(
     Ok(RuntimeStationArtifact { stations })
 }
 
+fn build_runtime_edge_geometry_artifact(
+    edge_geometries: &EdgeGeometryArtifact,
+    city_index_by_id: &HashMap<aetrain_domain::CityId, u32>,
+) -> Result<RuntimeEdgeGeometryArtifact> {
+    let geometries = edge_geometries
+        .geometries
+        .iter()
+        .map(|geometry| {
+            let from_city_index =
+                *city_index_by_id
+                    .get(&geometry.from_city_id)
+                    .with_context(|| {
+                        format!(
+                            "missing route geometry from_city_id {}",
+                            geometry.from_city_id
+                        )
+                    })?;
+            let to_city_index = *city_index_by_id
+                .get(&geometry.to_city_id)
+                .with_context(|| {
+                    format!("missing route geometry to_city_id {}", geometry.to_city_id)
+                })?;
+            Ok(RuntimeEdgeGeometryRecord {
+                from_city_index,
+                to_city_index,
+                points: geometry.points.clone(),
+                source: geometry.source.clone(),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(RuntimeEdgeGeometryArtifact { geometries })
+}
+
+fn resolved_edge_geometries(
+    canonical: &DatasetBundle,
+    edge_geometries: &Option<EdgeGeometryArtifact>,
+) -> Result<EdgeGeometryArtifact> {
+    if let Some(edge_geometries) = edge_geometries {
+        return Ok(edge_geometries.clone());
+    }
+
+    let city_by_id = canonical
+        .cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<HashMap<_, _>>();
+    let geometries = canonical
+        .edges
+        .iter()
+        .map(|edge| {
+            let from_city = city_by_id
+                .get(&edge.from_city_id)
+                .with_context(|| format!("missing from city {}", edge.from_city_id))?;
+            let to_city = city_by_id
+                .get(&edge.to_city_id)
+                .with_context(|| format!("missing to city {}", edge.to_city_id))?;
+            Ok(EdgeGeometryRecord {
+                from_city_id: edge.from_city_id.clone(),
+                to_city_id: edge.to_city_id.clone(),
+                points: vec![
+                    PolylinePointE5 {
+                        lat_e5: scale_coord_e5(from_city.location.lat)?,
+                        lon_e5: scale_coord_e5(from_city.location.lon)?,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: scale_coord_e5(to_city.location.lat)?,
+                        lon_e5: scale_coord_e5(to_city.location.lon)?,
+                    },
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+                provenance: edge.provenance.clone(),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(EdgeGeometryArtifact { geometries })
+}
+
 fn scale_coord_e5(value: f64) -> Result<i32> {
     let scaled = (value * 100_000.0).round();
     if scaled < i32::MIN as f64 || scaled > i32::MAX as f64 {
@@ -604,7 +724,10 @@ fn write_json(path: &Path, value: &impl Serialize) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aetrain_dataset::{AliasRecord, DatasetMeta};
+    use aetrain_dataset::{
+        AliasRecord, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord, EdgeGeometrySource,
+        PolylinePointE5,
+    };
     use aetrain_domain::{City, CityId, GeoPoint, Station, StationId, TravelEdge};
 
     #[test]
@@ -689,14 +812,35 @@ mod tests {
             ],
         };
 
-        let (runtime_bundle, station_artifact) =
-            build_web_runtime_bundle(&canonical).expect("runtime bundle should build");
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![EdgeGeometryRecord {
+                from_city_id: CityId::new("paris-fr").expect("valid city id"),
+                to_city_id: CityId::new("lyon-fr").expect("valid city id"),
+                points: vec![
+                    PolylinePointE5 {
+                        lat_e5: 4_885_660,
+                        lon_e5: 235_220,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: 4_576_400,
+                        lon_e5: 483_570,
+                    },
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+                provenance: vec!["test:R1".to_string()],
+            }],
+        };
+
+        let (runtime_bundle, station_artifact, runtime_edge_geometries) =
+            build_web_runtime_bundle(&canonical, &edge_geometries)
+                .expect("runtime bundle should build");
 
         assert_eq!(runtime_bundle.countries.len(), 1);
         assert_eq!(runtime_bundle.cities.len(), 2);
         assert_eq!(runtime_bundle.graph.edge_count(), 1);
         assert_eq!(runtime_bundle.aliases.records.len(), 2);
         assert_eq!(station_artifact.stations.len(), 2);
+        assert_eq!(runtime_edge_geometries.geometries.len(), 1);
         runtime_bundle
             .validate()
             .expect("runtime bundle should validate");
@@ -756,6 +900,7 @@ impl PipelineAdapter for SncfAdapter {
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_output(&output),
+            edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
             duplicates: output.duplicates,
             issues: output.issues,
@@ -793,6 +938,7 @@ impl PipelineAdapter for GtfsBasicAdapter {
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_basic_output(&output),
+            edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
             duplicates: output.duplicates,
             issues: output.issues,

@@ -51,6 +51,34 @@ impl DatasetBundle {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PolylinePointE5 {
+    pub lat_e5: i32,
+    pub lon_e5: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EdgeGeometrySource {
+    GtfsShapeSegment,
+    StraightLineFallback,
+    OsmGraphFallbackPlanned,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EdgeGeometryRecord {
+    pub from_city_id: CityId,
+    pub to_city_id: CityId,
+    pub points: Vec<PolylinePointE5>,
+    pub source: EdgeGeometrySource,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct EdgeGeometryArtifact {
+    pub geometries: Vec<EdgeGeometryRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RuntimeDatasetMeta {
     pub schema_version: u16,
     pub dataset_version: String,
@@ -59,6 +87,7 @@ pub struct RuntimeDatasetMeta {
     pub city_count: u32,
     pub edge_count: u32,
     pub alias_count: u32,
+    pub route_geometry_artifact_path: Option<String>,
     pub station_artifact_path: Option<String>,
     pub attribution_path: String,
 }
@@ -79,6 +108,7 @@ impl RuntimeDatasetMeta {
             city_count,
             edge_count,
             alias_count,
+            route_geometry_artifact_path: Some("route-geometries.json".to_string()),
             station_artifact_path: Some("stations.json".to_string()),
             attribution_path: meta.attribution_path.clone(),
         }
@@ -207,6 +237,59 @@ pub struct RuntimeAliasRecord {
 #[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct RuntimeAliasIndex {
     pub records: Vec<RuntimeAliasRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RuntimeEdgeGeometryRecord {
+    pub from_city_index: u32,
+    pub to_city_index: u32,
+    pub points: Vec<PolylinePointE5>,
+    pub source: EdgeGeometrySource,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct RuntimeEdgeGeometryArtifact {
+    pub geometries: Vec<RuntimeEdgeGeometryRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RuntimeEdgeGeometryError {
+    CityIndexOutOfBounds {
+        record_index: usize,
+        from_city_index: u32,
+        to_city_index: u32,
+        city_count: usize,
+    },
+    TooFewPoints {
+        record_index: usize,
+        point_count: usize,
+    },
+}
+
+impl RuntimeEdgeGeometryArtifact {
+    pub fn validate(&self, city_count: usize) -> Result<(), RuntimeEdgeGeometryError> {
+        for (index, geometry) in self.geometries.iter().enumerate() {
+            if geometry.from_city_index as usize >= city_count
+                || geometry.to_city_index as usize >= city_count
+            {
+                return Err(RuntimeEdgeGeometryError::CityIndexOutOfBounds {
+                    record_index: index,
+                    from_city_index: geometry.from_city_index,
+                    to_city_index: geometry.to_city_index,
+                    city_count,
+                });
+            }
+
+            if geometry.points.len() < 2 {
+                return Err(RuntimeEdgeGeometryError::TooFewPoints {
+                    record_index: index,
+                    point_count: geometry.points.len(),
+                });
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -390,6 +473,7 @@ mod tests {
                 city_count: 2,
                 edge_count: 2,
                 alias_count: 2,
+                route_geometry_artifact_path: Some("route-geometries.json".to_string()),
                 station_artifact_path: Some("stations.json".to_string()),
                 attribution_path: "attribution.json".to_string(),
             },
@@ -442,5 +526,33 @@ mod tests {
         };
 
         dataset.validate().expect("expected valid runtime dataset");
+    }
+
+    #[test]
+    fn runtime_edge_geometry_requires_city_bounds_and_points() {
+        let artifact = RuntimeEdgeGeometryArtifact {
+            geometries: vec![RuntimeEdgeGeometryRecord {
+                from_city_index: 0,
+                to_city_index: 2,
+                points: vec![PolylinePointE5 {
+                    lat_e5: 4_885_660,
+                    lon_e5: 235_220,
+                }],
+                source: EdgeGeometrySource::StraightLineFallback,
+            }],
+        };
+
+        let error = artifact
+            .validate(2)
+            .expect_err("expected invalid route geometry");
+        assert_eq!(
+            error,
+            RuntimeEdgeGeometryError::CityIndexOutOfBounds {
+                record_index: 0,
+                from_city_index: 0,
+                to_city_index: 2,
+                city_count: 2,
+            }
+        );
     }
 }
