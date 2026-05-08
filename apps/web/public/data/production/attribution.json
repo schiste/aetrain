@@ -1,18 +1,22 @@
 {
-  "schema_version": 1,
+  "dataset_id": "stage1",
+  "target_id": "sncf-fr",
   "dataset_version": "20260508-165109.303959",
   "generated_at": "2026-05-08T16:51:09.303959Z",
-  "source_snapshots": [
+  "sources": [
     {
       "source_id": "sncf-fr-gtfs",
+      "local_path": "data/cache/raw/sncf-fr-gtfs/sncf-fr-gtfs.zip",
       "fetched_at": "2026-05-07T19:22:54.582858Z",
+      "sha256": "88778c88c91e10df8960d7b87a134d9e303c90ce89e4b547f467a8046f00fda6",
       "version_hint": "\"69fb9c61-544e2d\""
     },
     {
       "source_id": "sncf-fr-stations",
+      "local_path": "data/cache/raw/sncf-fr-stations/sncf-fr-stations.csv",
       "fetched_at": "2026-05-07T19:31:47.665816Z",
+      "sha256": "333587736fc2eef8dea59f0cbc84b464bcd9f82ca7174e3c575287b8041b5b24",
       "version_hint": "2026-05-07T12:43:06+00:00"
     }
-  ],
-  "attribution_path": "attribution.json"
+  ]
 }
