@@ -72,7 +72,11 @@ export function createLeafletMapSurface({
   }).addTo(map);
 
   const overlayPane = map.getPanes().overlayPane;
-  const surfaceRoot = L.DomUtil.create("div", "aetrain-map-surface", overlayPane);
+  const surfaceRoot = L.DomUtil.create(
+    "div",
+    "aetrain-map-surface leaflet-zoom-animated",
+    overlayPane
+  );
   surfaceRoot.style.position = "absolute";
   surfaceRoot.style.pointerEvents = "none";
   surfaceRoot.style.left = "0";
@@ -136,6 +140,7 @@ export function createLeafletMapSurface({
   let lastHotRenderInfoAt = 0;
   let isZooming = false;
   let suppressMoveEndUntil = 0;
+  let zoomAnimationSnapshot = null;
 
   map.on("click", (event) => {
     const hit = hitTestSpatialGrid(hitGrid, event.containerPoint);
@@ -178,11 +183,24 @@ export function createLeafletMapSurface({
 
   map.on("zoomstart", () => {
     isZooming = true;
+    zoomAnimationSnapshot = {
+      bounds: map.getBounds(),
+      zoom: map.getZoom()
+    };
     labelsLayer.style.opacity = INTERACTION_LABEL_OPACITY;
+  });
+
+  map.on("zoomanim", (event) => {
+    if (!zoomAnimationSnapshot) {
+      return;
+    }
+
+    applyZoomAnimationFrame(event);
   });
 
   map.on("zoomend", () => {
     isZooming = false;
+    zoomAnimationSnapshot = null;
     suppressMoveEndUntil = now() + ZOOM_MOVEEND_SUPPRESSION_MS;
     labelsLayer.style.opacity = "";
     invalidateView("leaflet-zoom-settle", {
@@ -296,6 +314,28 @@ export function createLeafletMapSurface({
         listener(viewState);
       }
     }, VIEW_CHANGE_COMMIT_DELAY_MS);
+  }
+
+  function applyZoomAnimationFrame(event) {
+    const scale = map.getZoomScale(event.zoom, zoomAnimationSnapshot.zoom);
+    const offset = getZoomAnimationOffset(event);
+    L.DomUtil.setTransform(surfaceRoot, offset, scale);
+  }
+
+  function getZoomAnimationOffset(event) {
+    if (typeof map._latLngBoundsToNewLayerBounds === "function") {
+      return map._latLngBoundsToNewLayerBounds(
+        zoomAnimationSnapshot.bounds,
+        event.zoom,
+        event.center
+      ).min;
+    }
+
+    const startNorthWest = zoomAnimationSnapshot.bounds.getNorthWest();
+    const newTopLeft = map.project(startNorthWest, event.zoom)
+      .subtract(map.project(event.center, event.zoom))
+      .add(map.getSize().divideBy(2));
+    return newTopLeft;
   }
 
   function scheduleRender(reason, dirty) {
