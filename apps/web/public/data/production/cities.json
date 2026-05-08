@@ -102,34 +102,6 @@
     "aliases": []
   },
   {
-    "city_id": "agay-fr-83118",
-    "slug": "agay",
-    "display_name": "Agay",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.43312983333333,
-      "lon": 6.8491125
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": null,
-    "station_ids": [
-      "sncf-fr-87757526",
-      "sncf-fr-87757534",
-      "sncf-fr-87757542",
-      "sncf-fr-87757559",
-      "sncf-fr-87757567",
-      "sncf-fr-87757575"
-    ],
-    "aliases": [
-      "Anthéor Cap Roux",
-      "Boulouris sur Mer",
-      "Le Dramont",
-      "Le Trayas",
-      "Saint-Raphaël Valescure"
-    ]
-  },
-  {
     "city_id": "agde-fr-34003",
     "slug": "agde",
     "display_name": "Agde",
@@ -2554,6 +2526,29 @@
       "sncf-fr-87295733"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "avignon-fr-84007",
+    "slug": "avignon",
+    "display_name": "Avignon",
+    "country_code": "FR",
+    "location": {
+      "lat": 43.932180666666675,
+      "lon": 4.821815
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": null,
+    "station_ids": [
+      "sncf-fr-87318964",
+      "sncf-fr-87765008",
+      "sncf-fr-87765412"
+    ],
+    "aliases": [
+      "Avignon Centre",
+      "Avignon TGV",
+      "Montfavet"
+    ]
   },
   {
     "city_id": "avignonet-fr-31037",
@@ -19381,42 +19376,6 @@
     "aliases": []
   },
   {
-    "city_id": "la-joux-fr-74056",
-    "slug": "la-joux",
-    "display_name": "La Joux",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.9412851,
-      "lon": 6.8845152999999994
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": null,
-    "station_ids": [
-      "sncf-fr-87462085",
-      "sncf-fr-87746768",
-      "sncf-fr-87746776",
-      "sncf-fr-87746784",
-      "sncf-fr-87746818",
-      "sncf-fr-87746826",
-      "sncf-fr-87746834",
-      "sncf-fr-87746842",
-      "sncf-fr-87746859",
-      "sncf-fr-87746867"
-    ],
-    "aliases": [
-      "Argentière",
-      "Chamonix Aiguille du Midi",
-      "Chamonix-Mont-Blanc",
-      "Les Bossons",
-      "Les Moussoux",
-      "Les Praz de Chamonix",
-      "Les Pélerins",
-      "Les Tines",
-      "Montroc le Planet"
-    ]
-  },
-  {
     "city_id": "la-lechere-les-bains-petit-coeur-zz-adaa1e6a",
     "slug": "la-lechere-les-bains-petit-coeur",
     "display_name": "La Lechere Les Bains Petit Coeur",
@@ -19673,42 +19632,6 @@
       "sncf-fr-85010017"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "la-pomme-fr-13055",
-    "slug": "la-pomme",
-    "display_name": "La Pomme",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.3245224,
-      "lon": 5.3902785
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": null,
-    "station_ids": [
-      "sncf-fr-87580340",
-      "sncf-fr-87751008",
-      "sncf-fr-87751081",
-      "sncf-fr-87751602",
-      "sncf-fr-87751701",
-      "sncf-fr-87751719",
-      "sncf-fr-87751826",
-      "sncf-fr-87751842",
-      "sncf-fr-87759290",
-      "sncf-fr-87759316"
-    ],
-    "aliases": [
-      "L'Estaque",
-      "Marseille Arenc Euroméditerranée",
-      "Marseille Blancarde",
-      "Marseille Saint-Charles",
-      "Picon Busserine",
-      "Saint-Antoine",
-      "Saint-Joseph le Castellas",
-      "Saint-Marcel",
-      "Sainte-Marthe en Provence"
-    ]
   },
   {
     "city_id": "la-porcherie-fr-87120",
@@ -21864,6 +21787,35 @@
     "aliases": []
   },
   {
+    "city_id": "le-fr-83118",
+    "slug": "le",
+    "display_name": "Le",
+    "country_code": "FR",
+    "location": {
+      "lat": 43.43312983333333,
+      "lon": 6.8491125
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": null,
+    "station_ids": [
+      "sncf-fr-87757526",
+      "sncf-fr-87757534",
+      "sncf-fr-87757542",
+      "sncf-fr-87757559",
+      "sncf-fr-87757567",
+      "sncf-fr-87757575"
+    ],
+    "aliases": [
+      "Agay",
+      "Anthéor Cap Roux",
+      "Boulouris sur Mer",
+      "Le Dramont",
+      "Le Trayas",
+      "Saint-Raphaël Valescure"
+    ]
+  },
+  {
     "city_id": "le-genest-fr-53103",
     "slug": "le-genest",
     "display_name": "Le Genest",
@@ -22375,42 +22327,6 @@
       "sncf-fr-87765453"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "le-toec-fr-31555",
-    "slug": "le-toec",
-    "display_name": "Le Toec",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.5989781,
-      "lon": 1.4143328
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": null,
-    "station_ids": [
-      "sncf-fr-87353573",
-      "sncf-fr-87353581",
-      "sncf-fr-87353599",
-      "sncf-fr-87446179",
-      "sncf-fr-87497461",
-      "sncf-fr-87611004",
-      "sncf-fr-87611301",
-      "sncf-fr-87611434",
-      "sncf-fr-87611939",
-      "sncf-fr-87612010"
-    ],
-    "aliases": [
-      "Gallieni-Cancéropôle",
-      "Lacourtensourt",
-      "Lardenne",
-      "Les Ramassiers",
-      "Montaudran",
-      "Saint-Agne",
-      "Saint-Cyprien Arènes",
-      "Saint-Martin du Touch",
-      "Toulouse Matabiau"
-    ]
   },
   {
     "city_id": "le-treport-mers-les-bains-fr-76711",
@@ -22927,6 +22843,43 @@
     ]
   },
   {
+    "city_id": "les-fr-74056",
+    "slug": "les",
+    "display_name": "Les",
+    "country_code": "FR",
+    "location": {
+      "lat": 45.9412851,
+      "lon": 6.8845152999999994
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": null,
+    "station_ids": [
+      "sncf-fr-87462085",
+      "sncf-fr-87746768",
+      "sncf-fr-87746776",
+      "sncf-fr-87746784",
+      "sncf-fr-87746818",
+      "sncf-fr-87746826",
+      "sncf-fr-87746834",
+      "sncf-fr-87746842",
+      "sncf-fr-87746859",
+      "sncf-fr-87746867"
+    ],
+    "aliases": [
+      "Argentière",
+      "Chamonix Aiguille du Midi",
+      "Chamonix-Mont-Blanc",
+      "La Joux",
+      "Les Bossons",
+      "Les Moussoux",
+      "Les Praz de Chamonix",
+      "Les Pélerins",
+      "Les Tines",
+      "Montroc le Planet"
+    ]
+  },
+  {
     "city_id": "les-fumeaux-zz-52415ba8",
     "slug": "les-fumeaux",
     "display_name": "Les Fumeaux",
@@ -23338,36 +23291,6 @@
     "aliases": []
   },
   {
-    "city_id": "lezennes-fr-59350",
-    "slug": "lezennes",
-    "display_name": "Lezennes",
-    "country_code": "FR",
-    "location": {
-      "lat": 50.62337128571429,
-      "lon": 3.0805224285714283
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": null,
-    "station_ids": [
-      "sncf-fr-87109306",
-      "sncf-fr-87223263",
-      "sncf-fr-87286005",
-      "sncf-fr-87286062",
-      "sncf-fr-87287102",
-      "sncf-fr-87287128",
-      "sncf-fr-87287250"
-    ],
-    "aliases": [
-      "Hellemmes",
-      "Lille Centre Hospitalier Régional",
-      "Lille Europe",
-      "Lille Flandres",
-      "Lille Porte de Douai",
-      "Mont de Terre"
-    ]
-  },
-  {
     "city_id": "lezignan-corbieres-fr-11203",
     "slug": "lezignan-corbieres",
     "display_name": "Lezignan Corbieres",
@@ -23502,6 +23425,37 @@
       "sncf-fr-87575274"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "lille-fr-59350",
+    "slug": "lille",
+    "display_name": "Lille",
+    "country_code": "FR",
+    "location": {
+      "lat": 50.62337128571429,
+      "lon": 3.0805224285714283
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": null,
+    "station_ids": [
+      "sncf-fr-87109306",
+      "sncf-fr-87223263",
+      "sncf-fr-87286005",
+      "sncf-fr-87286062",
+      "sncf-fr-87287102",
+      "sncf-fr-87287128",
+      "sncf-fr-87287250"
+    ],
+    "aliases": [
+      "Hellemmes",
+      "Lezennes",
+      "Lille Centre Hospitalier Régional",
+      "Lille Europe",
+      "Lille Flandres",
+      "Lille Porte de Douai",
+      "Mont de Terre"
+    ]
   },
   {
     "city_id": "lillers-fr-62516",
@@ -28092,28 +28046,6 @@
       "sncf-fr-87765818"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "montfavet-fr-84007",
-    "slug": "montfavet",
-    "display_name": "Montfavet",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.932180666666675,
-      "lon": 4.821815
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": null,
-    "station_ids": [
-      "sncf-fr-87318964",
-      "sncf-fr-87765008",
-      "sncf-fr-87765412"
-    ],
-    "aliases": [
-      "Avignon Centre",
-      "Avignon TGV"
-    ]
   },
   {
     "city_id": "montferrand-thoraise-fr-25397",
@@ -36393,6 +36325,80 @@
       "sncf-fr-87728501"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "saint-fr-13055",
+    "slug": "saint",
+    "display_name": "Saint",
+    "country_code": "FR",
+    "location": {
+      "lat": 43.3245224,
+      "lon": 5.3902785
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": null,
+    "station_ids": [
+      "sncf-fr-87580340",
+      "sncf-fr-87751008",
+      "sncf-fr-87751081",
+      "sncf-fr-87751602",
+      "sncf-fr-87751701",
+      "sncf-fr-87751719",
+      "sncf-fr-87751826",
+      "sncf-fr-87751842",
+      "sncf-fr-87759290",
+      "sncf-fr-87759316"
+    ],
+    "aliases": [
+      "L'Estaque",
+      "La Pomme",
+      "Marseille Arenc Euroméditerranée",
+      "Marseille Blancarde",
+      "Marseille Saint-Charles",
+      "Picon Busserine",
+      "Saint-Antoine",
+      "Saint-Joseph le Castellas",
+      "Saint-Marcel",
+      "Sainte-Marthe en Provence"
+    ]
+  },
+  {
+    "city_id": "saint-fr-31555",
+    "slug": "saint",
+    "display_name": "Saint",
+    "country_code": "FR",
+    "location": {
+      "lat": 43.5989781,
+      "lon": 1.4143328
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": null,
+    "station_ids": [
+      "sncf-fr-87353573",
+      "sncf-fr-87353581",
+      "sncf-fr-87353599",
+      "sncf-fr-87446179",
+      "sncf-fr-87497461",
+      "sncf-fr-87611004",
+      "sncf-fr-87611301",
+      "sncf-fr-87611434",
+      "sncf-fr-87611939",
+      "sncf-fr-87612010"
+    ],
+    "aliases": [
+      "Gallieni-Cancéropôle",
+      "Lacourtensourt",
+      "Lardenne",
+      "Le Toec",
+      "Les Ramassiers",
+      "Montaudran",
+      "Saint-Agne",
+      "Saint-Cyprien Arènes",
+      "Saint-Martin du Touch",
+      "Toulouse Matabiau"
+    ]
   },
   {
     "city_id": "saint-gaudens-fr-31483",

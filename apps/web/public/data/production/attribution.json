@@ -1,8 +1,8 @@
 {
   "dataset_id": "stage1",
   "target_id": "sncf-fr",
-  "dataset_version": "20260508-184153.879551",
-  "generated_at": "2026-05-08T18:41:53.879551Z",
+  "dataset_version": "20260508-185531.204322",
+  "generated_at": "2026-05-08T18:55:31.204322Z",
   "sources": [
     {
       "source_id": "sncf-fr-gtfs",
