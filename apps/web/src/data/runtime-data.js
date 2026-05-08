@@ -1,5 +1,6 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
 import { cities as pocCities, routeData as pocRouteData } from "../legacy/data.js";
+import { fetchEdgeGeometryArtifact } from "./edge-geometry-artifacts.js";
 import {
   assertPlannerDataset,
   isKnownPlannerDataSourceId
@@ -109,7 +110,13 @@ async function loadProductionDataSourceInline() {
       fetchJsonWithFallback("meta.json"),
       fetchJsonWithFallback("cities.json"),
       fetchJsonWithFallback("edges.json"),
-      fetchJsonWithFallback("edge-geometries.json")
+      fetchEdgeGeometryArtifact({
+        basePaths: PRODUCTION_BASE_PATHS,
+        fetchJsonWithFallback,
+        fetchOptionalJsonWithFallback,
+        fetchJsonFromBasePath,
+        diagnostics
+      })
     ]);
 
     const dataset = buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries });
@@ -183,23 +190,37 @@ async function loadProductionDataSourceFromWorker() {
 }
 
 async function fetchJsonWithFallback(fileName) {
+  const result = await fetchJsonAssetWithFallback(fileName);
+  return result.json;
+}
+
+async function fetchOptionalJsonWithFallback(fileName) {
+  let lastError = null;
+  let sawNonNotFoundError = false;
+  for (const basePath of PRODUCTION_BASE_PATHS) {
+    try {
+      const json = await fetchJsonFromBasePath(basePath, fileName);
+      return { basePath, json };
+    } catch (error) {
+      if (error?.artifactStatus !== 404) {
+        sawNonNotFoundError = true;
+        lastError = error;
+      }
+    }
+  }
+
+  if (sawNonNotFoundError) {
+    throw lastError;
+  }
+  return null;
+}
+
+async function fetchJsonAssetWithFallback(fileName) {
   let lastError = null;
   for (const basePath of PRODUCTION_BASE_PATHS) {
     try {
-      diagnostics.debug("fetching runtime artifact", {
-        file_name: fileName,
-        base_path: basePath
-      });
-      const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const json = await response.json();
-      diagnostics.debug("fetched runtime artifact", {
-        file_name: fileName,
-        base_path: basePath
-      });
-      return json;
+      const json = await fetchJsonFromBasePath(basePath, fileName);
+      return { basePath, json };
     } catch (error) {
       diagnostics.warn("runtime artifact fetch failed", {
         file_name: fileName,
@@ -211,6 +232,25 @@ async function fetchJsonWithFallback(fileName) {
   }
 
   throw lastError || new Error(`Failed to load ${fileName}`);
+}
+
+async function fetchJsonFromBasePath(basePath, fileName) {
+  diagnostics.debug("fetching runtime artifact", {
+    file_name: fileName,
+    base_path: basePath
+  });
+  const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
+  if (!response.ok) {
+    const error = new Error(`HTTP ${response.status}`);
+    error.artifactStatus = response.status;
+    throw error;
+  }
+  const json = await response.json();
+  diagnostics.debug("fetched runtime artifact", {
+    file_name: fileName,
+    base_path: basePath
+  });
+  return json;
 }
 
 function deserializeWorkerError(error) {

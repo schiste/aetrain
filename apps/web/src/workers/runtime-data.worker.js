@@ -1,4 +1,5 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
+import { fetchEdgeGeometryArtifact } from "../data/edge-geometry-artifacts.js";
 import { buildProductionPlannerData } from "../data/production-adapter.js";
 
 const diagnostics = createDiagnostics("web/worker/runtime-data");
@@ -21,7 +22,14 @@ self.addEventListener("message", async (event) => {
         fetchJsonWithFallback(basePaths, "meta.json"),
         fetchJsonWithFallback(basePaths, "cities.json"),
         fetchJsonWithFallback(basePaths, "edges.json"),
-        fetchJsonWithFallback(basePaths, "edge-geometries.json")
+        fetchEdgeGeometryArtifact({
+          basePaths,
+          fetchJsonWithFallback: (fileName) => fetchJsonWithFallback(basePaths, fileName),
+          fetchOptionalJsonWithFallback: (fileName) =>
+            fetchOptionalJsonWithFallback(basePaths, fileName),
+          fetchJsonFromBasePath,
+          diagnostics
+        })
       ]);
 
       return buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries });
@@ -50,23 +58,37 @@ self.addEventListener("message", async (event) => {
 });
 
 async function fetchJsonWithFallback(basePaths, fileName) {
+  const result = await fetchJsonAssetWithFallback(basePaths, fileName);
+  return result.json;
+}
+
+async function fetchOptionalJsonWithFallback(basePaths, fileName) {
+  let lastError = null;
+  let sawNonNotFoundError = false;
+  for (const basePath of basePaths) {
+    try {
+      const json = await fetchJsonFromBasePath(basePath, fileName);
+      return { basePath, json };
+    } catch (error) {
+      if (error?.artifactStatus !== 404) {
+        sawNonNotFoundError = true;
+        lastError = error;
+      }
+    }
+  }
+
+  if (sawNonNotFoundError) {
+    throw lastError;
+  }
+  return null;
+}
+
+async function fetchJsonAssetWithFallback(basePaths, fileName) {
   let lastError = null;
   for (const basePath of basePaths) {
     try {
-      diagnostics.debug("worker fetching artifact", {
-        file_name: fileName,
-        base_path: basePath
-      });
-      const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const json = await response.json();
-      diagnostics.debug("worker fetched artifact", {
-        file_name: fileName,
-        base_path: basePath
-      });
-      return json;
+      const json = await fetchJsonFromBasePath(basePath, fileName);
+      return { basePath, json };
     } catch (error) {
       diagnostics.warn("worker artifact fetch failed", {
         file_name: fileName,
@@ -78,6 +100,25 @@ async function fetchJsonWithFallback(basePaths, fileName) {
   }
 
   throw lastError || new Error(`Failed to load ${fileName}`);
+}
+
+async function fetchJsonFromBasePath(basePath, fileName) {
+  diagnostics.debug("worker fetching artifact", {
+    file_name: fileName,
+    base_path: basePath
+  });
+  const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
+  if (!response.ok) {
+    const error = new Error(`HTTP ${response.status}`);
+    error.artifactStatus = response.status;
+    throw error;
+  }
+  const json = await response.json();
+  diagnostics.debug("worker fetched artifact", {
+    file_name: fileName,
+    base_path: basePath
+  });
+  return json;
 }
 
 function serializeError(error) {

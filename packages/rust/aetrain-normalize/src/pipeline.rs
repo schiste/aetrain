@@ -139,6 +139,22 @@ pub struct PipelineAttributionFile {
     pub sources: Vec<PipelineSourceArtifact>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedEdgeGeometryManifest {
+    pub version: u8,
+    pub total_geometry_count: usize,
+    pub chunk_target_bytes: usize,
+    pub chunks: Vec<ChunkedEdgeGeometryManifestChunk>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedEdgeGeometryManifestChunk {
+    pub file: String,
+    pub geometry_count: usize,
+}
+
+const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
+
 pub fn build_pipeline_target(
     manifest: &SourceManifest,
     target: &TargetDefinition,
@@ -215,27 +231,8 @@ pub fn sync_web_debug_artifacts(
     };
 
     let source_dir = PathBuf::from(source_dir);
-    fs::create_dir_all(destination)
-        .with_context(|| format!("failed to create {}", destination.display()))?;
-
-    for file_name in [
-        "meta.json",
-        "cities.json",
-        "edges.json",
-        "attribution.json",
-        "edge-geometries.json",
-    ] {
-        if !source_dir.join(file_name).exists() {
-            continue;
-        }
-        fs::copy(source_dir.join(file_name), destination.join(file_name)).with_context(|| {
-            format!(
-                "failed to copy {} into {}",
-                file_name,
-                destination.display()
-            )
-        })?;
-    }
+    recreate_dir(destination)?;
+    copy_dir_contents(&source_dir, destination)?;
 
     Ok(())
 }
@@ -277,8 +274,7 @@ fn export_pipeline_target(
 
     let canonical_dir = if target.canonical_export {
         let canonical_dir = target_root.join("canonical");
-        fs::create_dir_all(&canonical_dir)
-            .with_context(|| format!("failed to create {}", canonical_dir.display()))?;
+        recreate_dir(&canonical_dir)?;
         export_canonical_bundle(&canonical_dir, artifacts, &attribution)?;
         Some(canonical_dir)
     } else {
@@ -287,8 +283,7 @@ fn export_pipeline_target(
 
     let web_dir = if target.web_debug_export {
         let runtime_dir = target_root.join("runtime").join("web");
-        fs::create_dir_all(&runtime_dir)
-            .with_context(|| format!("failed to create {}", runtime_dir.display()))?;
+        recreate_dir(&runtime_dir)?;
         export_web_runtime_bundle(
             &runtime_dir,
             &artifacts.canonical,
@@ -302,8 +297,7 @@ fn export_pipeline_target(
 
     let web_debug_dir = if target.web_debug_export {
         let runtime_dir = target_root.join("runtime").join("web-debug");
-        fs::create_dir_all(&runtime_dir)
-            .with_context(|| format!("failed to create {}", runtime_dir.display()))?;
+        recreate_dir(&runtime_dir)?;
         export_web_debug_bundle(
             &runtime_dir,
             &artifacts.canonical.meta,
@@ -402,7 +396,7 @@ fn export_web_debug_bundle(
     write_json(&output_dir.join("meta.json"), meta)?;
     write_json(&output_dir.join("cities.json"), &canonical.cities)?;
     write_json(&output_dir.join("edges.json"), &canonical.edges)?;
-    write_json(&output_dir.join("edge-geometries.json"), &edge_geometries)?;
+    export_chunked_web_debug_edge_geometries(output_dir, &edge_geometries)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
 }
@@ -728,6 +722,114 @@ fn write_json(path: &Path, value: &impl Serialize) -> Result<()> {
     fs::write(path, bytes).with_context(|| format!("failed to write {}", path.display()))
 }
 
+fn write_json_compact(path: &Path, value: &(impl Serialize + ?Sized)) -> Result<()> {
+    let bytes = serde_json::to_vec(value).context("failed to serialize compact JSON output")?;
+    fs::write(path, bytes).with_context(|| format!("failed to write {}", path.display()))
+}
+
+fn export_chunked_web_debug_edge_geometries(
+    output_dir: &Path,
+    edge_geometries: &EdgeGeometryArtifact,
+) -> Result<()> {
+    let chunk_ranges = chunk_edge_geometry_ranges(
+        &edge_geometries.geometries,
+        WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES,
+    )?;
+    let chunk_dir = output_dir.join("edge-geometries");
+    recreate_dir(&chunk_dir)?;
+
+    let mut manifest = ChunkedEdgeGeometryManifest {
+        version: 1,
+        total_geometry_count: edge_geometries.geometries.len(),
+        chunk_target_bytes: WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES,
+        chunks: Vec::with_capacity(chunk_ranges.len()),
+    };
+
+    for (chunk_index, range) in chunk_ranges.iter().enumerate() {
+        let file_name = format!("chunk-{chunk_index:04}.json");
+        let relative_file = format!("edge-geometries/{file_name}");
+        let chunk_path = chunk_dir.join(&file_name);
+        write_json_compact(&chunk_path, &edge_geometries.geometries[range.clone()])?;
+        manifest.chunks.push(ChunkedEdgeGeometryManifestChunk {
+            file: relative_file,
+            geometry_count: range.len(),
+        });
+    }
+
+    write_json(
+        &output_dir.join("edge-geometries.manifest.json"),
+        &manifest,
+    )?;
+    Ok(())
+}
+
+fn chunk_edge_geometry_ranges(
+    geometries: &[EdgeGeometryRecord],
+    max_bytes: usize,
+) -> Result<Vec<std::ops::Range<usize>>> {
+    if geometries.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut ranges = Vec::new();
+    let mut chunk_start = 0usize;
+    let mut chunk_bytes = 2usize;
+
+    for (index, geometry) in geometries.iter().enumerate() {
+        let geometry_bytes = serde_json::to_vec(geometry)
+            .context("failed to size edge geometry record for chunking")?
+            .len();
+        let separator_bytes = usize::from(index > chunk_start);
+        if index > chunk_start && chunk_bytes + separator_bytes + geometry_bytes > max_bytes {
+            ranges.push(chunk_start..index);
+            chunk_start = index;
+            chunk_bytes = 2 + geometry_bytes;
+            continue;
+        }
+        chunk_bytes += separator_bytes + geometry_bytes;
+    }
+
+    ranges.push(chunk_start..geometries.len());
+    Ok(ranges)
+}
+
+fn recreate_dir(path: &Path) -> Result<()> {
+    if path.exists() {
+        fs::remove_dir_all(path)
+            .with_context(|| format!("failed to remove {}", path.display()))?;
+    }
+    fs::create_dir_all(path).with_context(|| format!("failed to create {}", path.display()))
+}
+
+fn copy_dir_contents(source_dir: &Path, destination: &Path) -> Result<()> {
+    for entry in fs::read_dir(source_dir)
+        .with_context(|| format!("failed to read {}", source_dir.display()))?
+    {
+        let entry =
+            entry.with_context(|| format!("failed to read entry in {}", source_dir.display()))?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if entry
+            .file_type()
+            .with_context(|| format!("failed to inspect {}", source_path.display()))?
+            .is_dir()
+        {
+            fs::create_dir_all(&destination_path)
+                .with_context(|| format!("failed to create {}", destination_path.display()))?;
+            copy_dir_contents(&source_path, &destination_path)?;
+            continue;
+        }
+        fs::copy(&source_path, &destination_path).with_context(|| {
+            format!(
+                "failed to copy {} into {}",
+                source_path.display(),
+                destination_path.display()
+            )
+        })?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -851,6 +953,37 @@ mod tests {
         runtime_bundle
             .validate()
             .expect("runtime bundle should validate");
+    }
+
+    #[test]
+    fn edge_geometry_chunking_splits_large_artifacts() {
+        let geometries = (0..6)
+            .map(|index| EdgeGeometryRecord {
+                from_city_id: CityId::new(format!("city-{index}-fr")).expect("valid city id"),
+                to_city_id: CityId::new(format!("city-{}-fr", index + 1))
+                    .expect("valid city id"),
+                points: vec![
+                    PolylinePointE5 {
+                        lat_e5: 4_800_000 + index,
+                        lon_e5: 200_000 + index,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: 4_810_000 + index,
+                        lon_e5: 210_000 + index,
+                    },
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+                provenance: vec!["test:R1".to_string()],
+            })
+            .collect::<Vec<_>>();
+
+        let chunk_ranges =
+            chunk_edge_geometry_ranges(&geometries, 250).expect("chunking should succeed");
+        assert!(chunk_ranges.len() > 1);
+        assert_eq!(
+            chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),
+            geometries.len()
+        );
     }
 }
 

@@ -36,6 +36,7 @@ That command:
 - writes compact runtime artifacts under `data/build/stage1/<target>/runtime/web/`
   - including `route-geometries.json` for browser rendering
 - writes runtime debug artifacts under `data/build/stage1/<target>/runtime/web-debug/`
+  - large route geometry exports are chunked into `edge-geometries.manifest.json` plus `edge-geometries/chunk-*.json`
 - syncs the selected target runtime projection into `apps/web/public/data/production/`
 
 The Rust CLI also supports the underlying staged commands directly:

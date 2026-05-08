@@ -8,6 +8,7 @@ Near-term output shape:
 - `meta.json`
 - `cities.json`
 - `edges.json` or `graph.json` during the transition
+- `edge-geometries.manifest.json` plus `edge-geometries/chunk-*.json` for large route geometry payloads
 - `aliases.json`
 - `attribution.json`
 
