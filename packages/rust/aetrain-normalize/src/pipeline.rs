@@ -15,8 +15,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     DuplicateCityReport, FetchedSource, ManualOverrideRegistry, NormalizationIssue, SourceKind,
-    SourceManifest, TargetDefinition, build_gtfs_basic_dataset, build_sncf_dataset,
-    bundle_from_basic_output, bundle_from_output,
+    SourceManifest, StationMappingReport, TargetDefinition, build_gtfs_basic_dataset,
+    build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
 };
 
 pub trait PipelineAdapter {
@@ -49,11 +49,28 @@ impl<'a> AdapterBuildRequest<'a> {
             .find(|source| source.definition.kind == kind)
             .with_context(|| format!("target {} is missing a {:?} source", self.target.id, kind))
     }
+
+    pub fn source_by_role(&self, role: &str) -> Result<&'a FetchedSource> {
+        self.sources
+            .iter()
+            .copied()
+            .find(|source| source.definition.role.as_deref() == Some(role))
+            .with_context(|| format!("target {} is missing a {role} source", self.target.id))
+    }
+
+    pub fn source_by_role_or_kind(
+        &self,
+        role: &str,
+        kind: SourceKind,
+    ) -> Result<&'a FetchedSource> {
+        self.source_by_role(role).or_else(|_| self.source_by_kind(kind))
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AdapterBuildArtifacts {
     pub canonical: DatasetBundle,
+    pub station_mappings: Option<StationMappingReport>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
     pub counters: BTreeMap<String, u64>,
@@ -337,6 +354,9 @@ fn export_canonical_bundle(
         &output_dir.join("duplicate-candidates.json"),
         &artifacts.duplicates,
     )?;
+    if let Some(station_mappings) = &artifacts.station_mappings {
+        write_json(&output_dir.join("station-mappings.json"), station_mappings)?;
+    }
     write_json(&output_dir.join("issues.json"), &artifacts.issues)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
@@ -700,12 +720,15 @@ impl PipelineAdapter for SncfAdapter {
     }
 
     fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
-        let gtfs = request.source_by_kind(SourceKind::Gtfs)?;
-        let stations = request.source_by_kind(SourceKind::Supplementary)?;
+        let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
+        let stations =
+            request.source_by_role_or_kind("stations_reference", SourceKind::Supplementary)?;
 
         let output = build_sncf_dataset(
             &gtfs.local_path,
             &stations.local_path,
+            &gtfs.definition.id,
+            &stations.definition.id,
             request.dataset_version,
             request.generated_at,
             request.source_snapshots,
@@ -733,6 +756,7 @@ impl PipelineAdapter for SncfAdapter {
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_output(&output),
+            station_mappings: Some(output.station_mappings),
             duplicates: output.duplicates,
             issues: output.issues,
             counters,
@@ -750,10 +774,11 @@ impl PipelineAdapter for GtfsBasicAdapter {
     }
 
     fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
-        let gtfs = request.source_by_kind(SourceKind::Gtfs)?;
+        let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
         let country_code = gtfs.definition.country_code.clone();
         let output = build_gtfs_basic_dataset(
             &gtfs.local_path,
+            &gtfs.definition.id,
             &country_code,
             request.dataset_version,
             request.generated_at,
@@ -768,6 +793,7 @@ impl PipelineAdapter for GtfsBasicAdapter {
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_basic_output(&output),
+            station_mappings: Some(output.station_mappings),
             duplicates: output.duplicates,
             issues: output.issues,
             counters,

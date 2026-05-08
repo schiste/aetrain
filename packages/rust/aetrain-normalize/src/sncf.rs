@@ -56,6 +56,7 @@ pub struct SncfBuildOutput {
     pub meta: DatasetMeta,
     pub cities: Vec<City>,
     pub stations: Vec<Station>,
+    pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
@@ -78,11 +79,42 @@ pub struct BasicGtfsBuildOutput {
     pub meta: DatasetMeta,
     pub cities: Vec<City>,
     pub stations: Vec<Station>,
+    pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
     pub summary: BasicGtfsBuildSummary,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StationMappingStrategy {
+    ManualOverride,
+    ReferenceUic,
+    ReferenceName,
+    FallbackReferenceGap,
+    GtfsStemCluster,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StationMappingRecord {
+    pub station_key: String,
+    pub station_id: StationId,
+    pub city_id: CityId,
+    pub city_cluster_key: String,
+    pub station_display_name: String,
+    pub mapping_strategy: StationMappingStrategy,
+    pub confidence: u8,
+    pub matched_reference_id: Option<String>,
+    pub matched_reference_name: Option<String>,
+    pub override_id: Option<String>,
+    pub source_refs: Vec<SourceRef>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct StationMappingReport {
+    pub records: Vec<StationMappingRecord>,
 }
 
 #[derive(Clone, Debug)]
@@ -105,12 +137,17 @@ struct GtfsStationArea {
 #[derive(Clone, Debug)]
 struct PendingStation {
     station_id: StationId,
+    station_key: String,
     cluster_key: String,
     display_name: String,
     location: GeoPoint,
     uic_code: Option<String>,
     source_refs: Vec<SourceRef>,
     confidence: u8,
+    mapping_strategy: StationMappingStrategy,
+    matched_reference_id: Option<String>,
+    matched_reference_name: Option<String>,
+    override_id: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -184,6 +221,8 @@ struct GtfsStopTimeRow {
 pub fn build_sncf_dataset(
     gtfs_path: &Path,
     stations_csv_path: &Path,
+    gtfs_source_id: &str,
+    station_reference_source_id: &str,
     dataset_version: &str,
     generated_at: &str,
     source_snapshots: Vec<SourceSnapshot>,
@@ -203,15 +242,24 @@ pub fn build_sncf_dataset(
     let (
         cities,
         stations,
+        station_mappings,
         aliases,
         station_key_to_city,
         station_key_confidence,
         matched_station_count,
         unmatched_station_count,
-    ) = normalize_stations(&gtfs_stations, &station_references, overrides, &mut issues)?;
+    ) = normalize_stations(
+        &gtfs_stations,
+        &station_references,
+        gtfs_source_id,
+        station_reference_source_id,
+        overrides,
+        &mut issues,
+    )?;
 
     let edges = build_city_edges(
         gtfs_path,
+        gtfs_source_id,
         &trip_routes,
         &stop_to_station_key,
         &station_key_to_city,
@@ -245,6 +293,7 @@ pub fn build_sncf_dataset(
         meta,
         cities,
         stations,
+        station_mappings,
         edges,
         aliases,
         duplicates,
@@ -265,6 +314,7 @@ pub fn bundle_from_output(output: &SncfBuildOutput) -> DatasetBundle {
 
 pub fn build_gtfs_basic_dataset(
     gtfs_path: &Path,
+    gtfs_source_id: &str,
     country_code: &str,
     dataset_version: &str,
     generated_at: &str,
@@ -281,10 +331,23 @@ pub fn build_gtfs_basic_dataset(
         .collect::<Vec<_>>();
 
     let mut issues = Vec::new();
-    let (cities, stations, aliases, station_key_to_city, station_key_confidence) =
-        normalize_gtfs_only_stations(&gtfs_stations, country_code, overrides, &mut issues)?;
+    let (
+        cities,
+        stations,
+        station_mappings,
+        aliases,
+        station_key_to_city,
+        station_key_confidence,
+    ) = normalize_gtfs_only_stations(
+        &gtfs_stations,
+        gtfs_source_id,
+        country_code,
+        overrides,
+        &mut issues,
+    )?;
     let edges = build_city_edges(
         gtfs_path,
+        gtfs_source_id,
         &trip_routes,
         &stop_to_station_key,
         &station_key_to_city,
@@ -315,6 +378,7 @@ pub fn build_gtfs_basic_dataset(
         meta,
         cities,
         stations,
+        station_mappings,
         edges,
         aliases,
         duplicates,
@@ -428,11 +492,14 @@ fn load_gtfs_stations(path: &Path) -> Result<(Vec<GtfsStationArea>, HashMap<Stri
 fn normalize_stations(
     gtfs_stations: &[GtfsStationArea],
     references: &[ReferenceStation],
+    gtfs_source_id: &str,
+    station_reference_source_id: &str,
     overrides: &ManualOverrideRegistry,
     issues: &mut Vec<NormalizationIssue>,
 ) -> Result<(
     Vec<City>,
     Vec<Station>,
+    StationMappingReport,
     Vec<AliasRecord>,
     HashMap<String, CityId>,
     HashMap<String, u8>,
@@ -463,6 +530,16 @@ fn normalize_stations(
 
     for station in gtfs_stations {
         let normalized_name = normalize_name(&station.display_name);
+        let reference_match_mode = if station
+            .uic_code
+            .as_ref()
+            .and_then(|uic| reference_by_uic.get(uic))
+            .is_some()
+        {
+            Some(StationMappingStrategy::ReferenceUic)
+        } else {
+            None
+        };
         let direct_match = station
             .uic_code
             .as_ref()
@@ -479,7 +556,7 @@ fn normalize_stations(
 
         let matched_reference = direct_match.or(name_match);
         let mut source_refs = vec![SourceRef {
-            source_id: "sncf-fr-gtfs".to_string(),
+            source_id: gtfs_source_id.to_string(),
             raw_id: station.station_key.clone(),
         }];
         let code_insee = matched_reference.and_then(|reference| {
@@ -490,24 +567,28 @@ fn normalize_stations(
         });
         if let Some(reference) = matched_reference {
             source_refs.push(SourceRef {
-                source_id: "sncf-fr-stations".to_string(),
+                source_id: station_reference_source_id.to_string(),
                 raw_id: reference.raw_id.clone(),
             });
         }
 
         let override_binding =
             resolve_station_override(&source_refs, &override_lookup, &station.station_key)?;
+        let override_id = override_binding
+            .as_ref()
+            .map(|binding| binding.override_id.clone());
         if let Some(binding) = &override_binding {
             applied_override_ids.insert(binding.override_id.clone());
         }
 
-        let (cluster_key, country_code, confidence, manual_city_id) =
+        let (cluster_key, country_code, confidence, manual_city_id, mapping_strategy) =
             if let Some(binding) = override_binding {
                 (
                     format!("override-city-{}", binding.target_city_id),
                     "FR".to_string(),
                     100,
                     Some(binding.target_city_id),
+                    StationMappingStrategy::ManualOverride,
                 )
             } else if let Some(reference) = matched_reference {
                 matched_station_count += 1;
@@ -523,18 +604,25 @@ fn normalize_stations(
                     "FR".to_string(),
                     if direct_match.is_some() { 100 } else { 80 },
                     None,
+                    reference_match_mode.unwrap_or(StationMappingStrategy::ReferenceName),
                 )
             } else {
                 issues.push(NormalizationIssue {
                     severity: IssueSeverity::Warning,
-                    source_id: "sncf-fr-stations".to_string(),
+                    source_id: station_reference_source_id.to_string(),
                     entity_ref: station.station_key.clone(),
                     message: format!(
                         "no station-reference match for GTFS stop area {}",
                         station.display_name
                     ),
                 });
-                (fallback_cluster_key(station), "ZZ".to_string(), 50, None)
+                (
+                    fallback_cluster_key(station),
+                    "ZZ".to_string(),
+                    50,
+                    None,
+                    StationMappingStrategy::FallbackReferenceGap,
+                )
             };
 
         let station_id = StationId::new(stable_station_id(station))
@@ -543,12 +631,18 @@ fn normalize_stations(
         station_key_confidence.insert(station.station_key.clone(), confidence);
         pending_stations.push(PendingStation {
             station_id: station_id.clone(),
+            station_key: station.station_key.clone(),
             cluster_key: cluster_key.clone(),
             display_name: station.display_name.clone(),
             location: station.location,
             uic_code: station.uic_code.clone(),
             source_refs,
             confidence,
+            mapping_strategy,
+            matched_reference_id: matched_reference.map(|reference| reference.raw_id.clone()),
+            matched_reference_name: matched_reference
+                .map(|reference| reference.display_name.clone()),
+            override_id,
         });
 
         let cluster = clusters.entry(cluster_key).or_insert_with(|| CityCluster {
@@ -656,6 +750,7 @@ fn normalize_stations(
             .then_with(|| left.city_id.cmp(&right.city_id))
     });
 
+    let mut station_mappings = Vec::<StationMappingRecord>::new();
     let mut stations = pending_stations
         .into_iter()
         .map(|station| {
@@ -663,6 +758,19 @@ fn normalize_stations(
                 .get(&station.cluster_key)
                 .expect("cluster should resolve to a city")
                 .clone();
+            station_mappings.push(StationMappingRecord {
+                station_key: station.station_key.clone(),
+                station_id: station.station_id.clone(),
+                city_id: city_id.clone(),
+                city_cluster_key: station.cluster_key.clone(),
+                station_display_name: station.display_name.clone(),
+                mapping_strategy: station.mapping_strategy.clone(),
+                confidence: station.confidence,
+                matched_reference_id: station.matched_reference_id.clone(),
+                matched_reference_name: station.matched_reference_name.clone(),
+                override_id: station.override_id.clone(),
+                source_refs: station.source_refs.clone(),
+            });
             Station {
                 station_id: station.station_id,
                 city_id,
@@ -674,6 +782,7 @@ fn normalize_stations(
         })
         .collect::<Vec<_>>();
     stations.sort_by(|left, right| left.station_id.cmp(&right.station_id));
+    station_mappings.sort_by(|left, right| left.station_id.cmp(&right.station_id));
 
     for override_entry in &overrides.city_overrides {
         if !applied_override_ids.contains(&override_entry.id) {
@@ -693,6 +802,9 @@ fn normalize_stations(
     Ok((
         cities,
         stations,
+        StationMappingReport {
+            records: station_mappings,
+        },
         aliases,
         station_key_to_city,
         station_key_confidence,
@@ -703,12 +815,14 @@ fn normalize_stations(
 
 fn normalize_gtfs_only_stations(
     gtfs_stations: &[GtfsStationArea],
+    gtfs_source_id: &str,
     country_code: &str,
     overrides: &ManualOverrideRegistry,
     issues: &mut Vec<NormalizationIssue>,
 ) -> Result<(
     Vec<City>,
     Vec<Station>,
+    StationMappingReport,
     Vec<AliasRecord>,
     HashMap<String, CityId>,
     HashMap<String, u8>,
@@ -725,11 +839,14 @@ fn normalize_gtfs_only_stations(
 
     for station in gtfs_stations {
         let source_refs = vec![SourceRef {
-            source_id: "gtfs-basic".to_string(),
+            source_id: gtfs_source_id.to_string(),
             raw_id: station.station_key.clone(),
         }];
         let override_binding =
             resolve_station_override(&source_refs, &override_lookup, &station.station_key)?;
+        let override_id = override_binding
+            .as_ref()
+            .map(|binding| binding.override_id.clone());
         if let Some(binding) = &override_binding {
             applied_override_ids.insert(binding.override_id.clone());
         }
@@ -753,12 +870,21 @@ fn normalize_gtfs_only_stations(
         station_key_confidence.insert(station.station_key.clone(), confidence);
         pending_stations.push(PendingStation {
             station_id: station_id.clone(),
+            station_key: station.station_key.clone(),
             cluster_key: cluster_key.clone(),
             display_name: station.display_name.clone(),
             location: station.location,
             uic_code: station.uic_code.clone(),
             source_refs,
             confidence,
+            mapping_strategy: if manual_city_id.is_some() {
+                StationMappingStrategy::ManualOverride
+            } else {
+                StationMappingStrategy::GtfsStemCluster
+            },
+            matched_reference_id: None,
+            matched_reference_name: None,
+            override_id,
         });
 
         let cluster = clusters.entry(cluster_key).or_insert_with(|| CityCluster {
@@ -864,6 +990,7 @@ fn normalize_gtfs_only_stations(
             .then_with(|| left.city_id.cmp(&right.city_id))
     });
 
+    let mut station_mappings = Vec::<StationMappingRecord>::new();
     let mut stations = pending_stations
         .into_iter()
         .map(|station| {
@@ -871,6 +998,19 @@ fn normalize_gtfs_only_stations(
                 .get(&station.cluster_key)
                 .expect("cluster should resolve to a city")
                 .clone();
+            station_mappings.push(StationMappingRecord {
+                station_key: station.station_key.clone(),
+                station_id: station.station_id.clone(),
+                city_id: city_id.clone(),
+                city_cluster_key: station.cluster_key.clone(),
+                station_display_name: station.display_name.clone(),
+                mapping_strategy: station.mapping_strategy.clone(),
+                confidence: station.confidence,
+                matched_reference_id: None,
+                matched_reference_name: None,
+                override_id: station.override_id.clone(),
+                source_refs: station.source_refs.clone(),
+            });
             Station {
                 station_id: station.station_id,
                 city_id,
@@ -882,6 +1022,7 @@ fn normalize_gtfs_only_stations(
         })
         .collect::<Vec<_>>();
     stations.sort_by(|left, right| left.station_id.cmp(&right.station_id));
+    station_mappings.sort_by(|left, right| left.station_id.cmp(&right.station_id));
 
     for override_entry in &overrides.city_overrides {
         if !applied_override_ids.contains(&override_entry.id) {
@@ -900,6 +1041,9 @@ fn normalize_gtfs_only_stations(
     Ok((
         cities,
         stations,
+        StationMappingReport {
+            records: station_mappings,
+        },
         aliases,
         station_key_to_city,
         station_key_confidence,
@@ -908,6 +1052,7 @@ fn normalize_gtfs_only_stations(
 
 fn build_city_edges(
     gtfs_path: &Path,
+    gtfs_source_id: &str,
     trip_routes: &HashMap<String, String>,
     stop_to_station_key: &HashMap<String, String>,
     station_key_to_city: &HashMap<String, CityId>,
@@ -979,7 +1124,7 @@ fn build_city_edges(
                 );
 
             let key = (previous.city_id.clone(), city_id.clone());
-            let provenance = format!("sncf-fr-gtfs:{route_id}");
+            let provenance = format!("{gtfs_source_id}:{route_id}");
             edge_map
                 .entry(key)
                 .and_modify(|edge| {
@@ -1000,7 +1145,7 @@ fn build_city_edges(
     if missing_stop_mappings > 0 {
         issues.push(NormalizationIssue {
             severity: IssueSeverity::Warning,
-            source_id: "sncf-fr-gtfs".to_string(),
+            source_id: gtfs_source_id.to_string(),
             entity_ref: "stop_times.txt".to_string(),
             message: format!(
                 "{missing_stop_mappings} stop_time rows could not be mapped to normalized cities"
@@ -1652,9 +1797,15 @@ mod tests {
         };
         let mut issues = Vec::new();
 
-        let (cities, stations, _, _, _, _, _) =
-            normalize_stations(&gtfs_stations, &references, &overrides, &mut issues)
-                .expect("normalization should succeed");
+        let (cities, stations, station_mappings, _, _, _, _, _) = normalize_stations(
+            &gtfs_stations,
+            &references,
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            &overrides,
+            &mut issues,
+        )
+        .expect("normalization should succeed");
 
         assert_eq!(cities.len(), 1);
         assert_eq!(
@@ -1663,6 +1814,15 @@ mod tests {
         );
         assert_eq!(stations.len(), 1);
         assert_eq!(stations[0].city_id, cities[0].city_id);
+        assert_eq!(station_mappings.records.len(), 1);
+        assert_eq!(
+            station_mappings.records[0].mapping_strategy,
+            StationMappingStrategy::ManualOverride
+        );
+        assert_eq!(
+            station_mappings.records[0].override_id.as_deref(),
+            Some("paris-cluster")
+        );
     }
 
     #[test]
@@ -1731,6 +1891,7 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
 
         let output = build_gtfs_basic_dataset(
             &zip_path,
+            "sncf-fr-gtfs",
             "FR",
             "test-version",
             "2026-05-08T18:00:00Z",
@@ -1742,6 +1903,7 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
         assert_eq!(output.summary.city_count, 2);
         assert_eq!(output.summary.station_count, 3);
         assert_eq!(output.summary.edge_count, 1);
+        assert_eq!(output.station_mappings.records.len(), 3);
         assert!(
             output
                 .cities

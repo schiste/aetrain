@@ -19,5 +19,6 @@ pub use pipeline::{
 pub use sncf::{
     BasicGtfsBuildOutput, BasicGtfsBuildSummary, DEFAULT_DUPLICATE_DISTANCE_METERS,
     DuplicateCityCandidate, DuplicateCityReport, SncfBuildOutput, SncfBuildSummary,
-    build_gtfs_basic_dataset, build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
+    StationMappingRecord, StationMappingReport, StationMappingStrategy, build_gtfs_basic_dataset,
+    build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
 };
