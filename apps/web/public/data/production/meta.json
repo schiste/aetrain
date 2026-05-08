@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dataset_version": "20260508-170822.500351",
-  "generated_at": "2026-05-08T17:08:22.500351Z",
+  "dataset_version": "20260508-171537.995155",
+  "generated_at": "2026-05-08T17:15:37.995155Z",
   "source_snapshots": [
     {
       "source_id": "sncf-fr-gtfs",
