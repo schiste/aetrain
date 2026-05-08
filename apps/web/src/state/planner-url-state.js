@@ -86,7 +86,7 @@ export function writePlannerUrlHash({ plannerState, mapView }) {
   if (mapView) {
     segments.push(
       `ui.map=${encodeComponent(
-        `${mapView.zoom}/${mapView.lat.toFixed(4)}/${mapView.lon.toFixed(4)}`
+        `${mapView.zoom.toFixed(2)}/${mapView.lat.toFixed(4)}/${mapView.lon.toFixed(4)}`
       )}`
     );
   }

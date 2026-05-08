@@ -28,7 +28,7 @@ test("writePlannerUrlHash emits readable versioned state", () => {
     mapView: {
       lat: 48.8566,
       lon: 2.3522,
-      zoom: 7
+      zoom: 7.125
     },
     plannerState: {
       filterInterest: 5,
@@ -42,6 +42,6 @@ test("writePlannerUrlHash emits readable versioned state", () => {
 
   assert.equal(
     hash,
-    "#v1;t=Paris,Lyon;fi=5;fp=100;ll=45-360;ui.q=par;ui.map=7%2F48.8566%2F2.3522"
+    "#v1;t=Paris,Lyon;fi=5;fp=100;ll=45-360;ui.q=par;ui.map=7.13%2F48.8566%2F2.3522"
   );
 });

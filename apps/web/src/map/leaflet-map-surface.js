@@ -42,7 +42,12 @@ export function createLeafletMapSurface({
     zoom: 5,
     minZoom: 3,
     maxZoom: 15,
-    zoomControl: false
+    wheelDebounceTime: 16,
+    wheelPxPerZoomLevel: 120,
+    zoomAnimationThreshold: 8,
+    zoomControl: false,
+    zoomDelta: 0.25,
+    zoomSnap: 0
   });
   L.control.zoom({ position: "bottomright" }).addTo(map);
 
