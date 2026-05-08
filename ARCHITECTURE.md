@@ -278,6 +278,27 @@ Stage 1 edge semantics are intentionally narrow:
 - Fare class, seat availability, booking rules, and itinerary preference are
   deferred to downstream booking surfaces and later product stages.
 
+Browser integration rule:
+
+- raw runtime artifacts enter through a dedicated data gateway
+- planner queries enter through a dedicated engine gateway
+- UI code should mutate trip state through a store or controller layer, not by
+  talking to worker messages or artifact files directly
+- the map renderer should consume planner state through a dedicated surface API,
+  not through per-city Leaflet objects embedded in UI code
+
+That ports-and-adapters shape keeps the web shell replaceable and is the same
+shape future native clients should follow over the shared Rust core.
+
+Diagnostics rule:
+
+- every client surface should emit verbose structured logs and performance
+  timings across app boot, data loading, engine calls, state transitions, URL
+  synchronization, and rendering
+- diagnostics are a first-class product capability, not an afterthought
+- future native iOS and Android clients should mirror the same observability
+  discipline
+
 ## Decision 5: Keep a city-canonical model with retained station support data
 
 The canonical model is:

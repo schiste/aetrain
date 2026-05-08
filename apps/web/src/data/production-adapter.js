@@ -1,9 +1,26 @@
+import { createDiagnostics } from "../app-shell/diagnostics.js";
+import {
+  assertPlannerDataset,
+  assertProductionArtifactBundle
+} from "./planner-dataset-contracts.js";
+
 const COUNTRY_LABELS = {
   FR: "France",
   ZZ: "Imported"
 };
+const diagnostics = createDiagnostics("web/data/production-adapter");
 
 export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
+  assertProductionArtifactBundle(
+    { meta, rawCities, rawEdges },
+    "Production runtime artifact bundle"
+  );
+  diagnostics.debug("adapting production runtime bundle", {
+    dataset_version: meta.dataset_version,
+    raw_city_count: rawCities.length,
+    raw_edge_count: rawEdges.length
+  });
+
   const neighborMap = new Map();
   for (const edge of rawEdges) {
     if (!neighborMap.has(edge.from_city_id)) {
@@ -62,14 +79,20 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
     routeData[routeKey] = Math.min(routeData[routeKey] ?? Infinity, edge.duration_min);
   }
 
-  return {
+  const dataset = assertPlannerDataset({
     id: "production",
     label: "Production",
     description: `SNCF Stage 1 debug snapshot · ${rawCities.length} cities · ${Object.keys(routeData).length} undirected routes · interest/pop derived heuristics`,
     meta,
     cities,
     routeData
-  };
+  }, "Production planner dataset");
+  diagnostics.info("adapted production planner dataset", {
+    dataset_version: dataset.meta?.dataset_version || null,
+    city_count: dataset.cities.length,
+    route_count: Object.keys(dataset.routeData).length
+  });
+  return dataset;
 }
 
 function countryLabel(countryCode) {

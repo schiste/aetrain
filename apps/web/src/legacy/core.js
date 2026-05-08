@@ -64,7 +64,7 @@ function parseRouteKeyFactory(cityMap) {
   };
 }
 
-export function createPlannerModel(cities, routeData) {
+export function buildPlannerGraph(cities, routeData) {
   const cityMap = Object.fromEntries(cities.map((city) => [city.name, city]));
   const adj = {};
   const edges = [];
@@ -88,6 +88,54 @@ export function createPlannerModel(cities, routeData) {
     addEdge(endpoints[0], endpoints[1], travelMinutes);
     edges.push({ from: endpoints[0], to: endpoints[1], minutes: travelMinutes, key: routeKey });
   }
+
+  return {
+    adj,
+    cities,
+    cityMap,
+    edges,
+    invalidRouteKeys
+  };
+}
+
+export function deriveTripPlan(model, trip) {
+  const segments = [];
+  for (let index = 0; index < trip.length - 1; index += 1) {
+    segments.push(model.dijkstra(trip[index], trip[index + 1]));
+  }
+
+  const distFromLast =
+    trip.length >= 1 ? model.dijkstraAll(trip[trip.length - 1]) : {};
+
+  return {
+    distFromLast,
+    segments,
+    suggestions: model.findInterestingStops(segments, trip)
+  };
+}
+
+export function searchCities(cities, { query, limit = 14 }) {
+  const normalizedQuery = String(query || "")
+    .toLowerCase()
+    .trim();
+
+  if (normalizedQuery.length < 1) {
+    return [];
+  }
+
+  return cities
+    .filter((city) => {
+      return (
+        city.name.toLowerCase().includes(normalizedQuery) ||
+        city.country.toLowerCase().includes(normalizedQuery)
+      );
+    })
+    .sort((left, right) => right.interest - left.interest || right.pop - left.pop)
+    .slice(0, limit);
+}
+
+export function createPlannerModel(cities, routeData) {
+  const { adj, cityMap, edges, invalidRouteKeys } = buildPlannerGraph(cities, routeData);
 
   function dijkstra(start, end) {
     if (start === end) {
@@ -255,6 +303,16 @@ export function createPlannerModel(cities, routeData) {
     adj,
     cities,
     cityMap,
+    deriveTripPlan(trip) {
+      return deriveTripPlan(
+        {
+          dijkstra,
+          dijkstraAll,
+          findInterestingStops
+        },
+        trip
+      );
+    },
     dijkstra,
     dijkstraAll,
     edges,

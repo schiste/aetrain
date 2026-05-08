@@ -12,11 +12,22 @@ dataset, planner logic, and UI/map wiring. That keeps the current behavior
 working while making it possible to replace embedded data and browser-only
 logic incrementally with generated datasets, workers, and shared Rust code.
 
+The intended browser boundary is now explicit:
+
+- `src/data/` is the runtime dataset gateway
+- `src/engine/` is the planner gateway
+- `src/state/` is the trip/filter orchestration layer
+- `src/map/` is the rendering and map-interaction surface
+- `src/legacy/` is a temporary consumer of those boundaries, not the owner of
+  them
+
 Long-term intent:
 
 - the browser shell stays thin
 - the renderer becomes custom and performance-oriented
 - routing, parsing, and heavy graph logic move behind worker + wasm boundaries
+- verbose structured diagnostics remain available across boot, data, engine,
+  state, URL sync, and rendering
 
 ## Current layout
 
@@ -45,11 +56,16 @@ Then open <http://localhost:8080/>.
 The original one-file prototype remains available at
 <http://localhost:8080/prototype/>.
 
+For browser diagnostics, inspect `window.__AETRAIN_DIAGNOSTICS__` in the
+console. It keeps a rolling event buffer and helper methods such as `dump()`,
+`table()`, and `clear()`.
+
 ## Limits right now
 
 - The app still uses embedded prototype data under `src/legacy/data.js`.
 - Shared Rust logic is scaffolded in the repo but not yet bound into the web app.
-- The current map surface still relies on the transitional `src/legacy/` path.
+- The current map surface is now a dedicated Leaflet-plus-canvas module, but it
+  is still transitional and browser-only.
 - The final city graph, manifest ingestion, worker boundary, and URL codec are
   being moved into shared Rust crates and thin browser adapters.
 

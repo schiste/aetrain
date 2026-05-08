@@ -15,3 +15,13 @@ Target boundaries:
 
 The goal is a thin browser shell around a shared Rust engine and a
 performance-oriented renderer.
+
+Important boundary rule:
+
+- raw runtime artifacts enter through `data/`
+- route computation enters through `engine/`
+- UI modules should consume store or gateway APIs, not raw backend shapes
+- the map surface should consume planner state and engine output, not reach into
+  raw artifact parsing or worker messaging
+- diagnostics should be verbose, structured, and present across boot, data,
+  engine, state, URL sync, and rendering paths

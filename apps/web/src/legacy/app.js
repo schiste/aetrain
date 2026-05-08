@@ -1,10 +1,14 @@
+import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
+import { createPlannerClient } from "../engine/planner-client.js";
 import {
   getRequestedDataSourceId,
   loadPlannerDataSource,
   navigateToDataSource
 } from "../data/runtime-data.js";
+import { createPlannerStore } from "../state/planner-store.js";
+import { bindPlannerUrlState } from "../state/planner-url-state.js";
+import { createLeafletMapSurface } from "../map/leaflet-map-surface.js";
 import {
-  createPlannerModel,
   escapeHtml,
   formatMinutes,
   formatPopulation,
@@ -12,6 +16,8 @@ import {
 } from "./core.js";
 import { borderData, bordersToGeoJSON } from "./landmass.js";
 import { EMPTY_TRIP_MARKUP, renderShell } from "./shell.js";
+
+const diagnostics = createDiagnostics("web/ui/legacy-app");
 
 function getRefs(root) {
   const required = [
@@ -101,6 +107,7 @@ async function copyText(text) {
 }
 
 export async function mountLegacyApp(root) {
+  diagnostics.info("mounting legacy app shell");
   if (!window.L) {
     throw new Error("Leaflet did not load");
   }
@@ -110,13 +117,19 @@ export async function mountLegacyApp(root) {
   const refs = getRefs(root);
   refs["fi-txt"].textContent = "Loading dataset…";
   const requestedSourceId = getRequestedDataSourceId();
+  diagnostics.info("resolved requested data source", {
+    source_id: requestedSourceId
+  });
 
   let dataset;
   let loadWarning = "";
   try {
     dataset = await loadPlannerDataSource(requestedSourceId);
   } catch (error) {
-    console.error("Failed to load selected data source, falling back to POC", error);
+    diagnostics.error("failed to load requested data source, falling back to poc", {
+      requested_source_id: requestedSourceId,
+      error: summarizeError(error)
+    });
     dataset = await loadPlannerDataSource("poc");
     if (requestedSourceId !== "poc") {
       loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${error.message || String(error)}`;
@@ -125,9 +138,19 @@ export async function mountLegacyApp(root) {
 
   const cities = dataset.cities;
   const routeData = dataset.routeData;
-  const model = createPlannerModel(cities, routeData);
-  if (model.invalidRouteKeys.length > 0) {
-    root.dataset.invalidRouteCount = String(model.invalidRouteKeys.length);
+  diagnostics.info("dataset loaded into legacy app", {
+    source_id: dataset.id,
+    city_count: cities.length,
+    route_count: Object.keys(routeData).length,
+    dataset_version: dataset.meta?.dataset_version || null
+  });
+  const planner = await createPlannerClient(cities, routeData);
+  const graph = planner.metadata;
+  if (graph.invalidRouteKeys.length > 0) {
+    root.dataset.invalidRouteCount = String(graph.invalidRouteKeys.length);
+    diagnostics.warn("planner metadata contains invalid route keys", {
+      invalid_route_count: graph.invalidRouteKeys.length
+    });
   }
 
   refs["source-meta"].textContent = loadWarning
@@ -141,116 +164,46 @@ export async function mountLegacyApp(root) {
     root.dataset.sourceVersion = dataset.meta.dataset_version;
   }
 
-  const state = {
-    cityLabels: [],
-    distFromLast: {},
-    filterInterest: 5,
-    filterPop: 100,
-    legDynMax: 1440,
-    legMax: 1440,
-    legMin: 0,
-    routeLines: [],
-    trip: []
-  };
-
-  const map = window.L.map("map", {
-    center: [50, 10],
-    zoom: 5,
-    minZoom: 3,
-    maxZoom: 15,
-    zoomControl: false
-  });
-  window.L.control.zoom({ position: "bottomright" }).addTo(map);
-
-  window.L.rectangle(
-    [
-      [-90, -180],
-      [90, 180]
-    ],
-    {
-      fillColor: "#0f1729",
-      fillOpacity: 1,
-      color: "none",
-      weight: 0,
-      interactive: false
-    }
-  ).addTo(map);
-
-  window.L.geoJSON(bordersToGeoJSON(borderData), {
-    style() {
-      return {
-        fillColor: "#151d2e",
-        fillOpacity: 1,
-        color: "none",
-        weight: 0,
-        opacity: 0
-      };
+  let mapSurface = null;
+  let stopUrlSync = null;
+  let searchResultsOpen = false;
+  const plannerStore = createPlannerStore({
+    cities,
+    planner,
+    onStateChange() {
+      updateFilterBadges();
+      updateLegFilter();
+      updateSidebar();
+      updateRenderedVisibility();
+      updateStats();
+      updateSearchResults();
     },
-    interactive: false
-  }).addTo(map);
-
-  for (const edge of model.edges) {
-    const fromCity = model.cityMap[edge.from];
-    const toCity = model.cityMap[edge.to];
-    if (!fromCity || !toCity) {
-      continue;
+    onStatusChange(text) {
+      refs["fi-txt"].textContent = text;
     }
-
-    window.L.polyline(
-      [
-        [fromCity.lat, fromCity.lon],
-        [toCity.lat, toCity.lon]
-      ],
-      {
-        color: "#1e293b",
-        weight: 0.6,
-        opacity: 0.5,
-        interactive: false
-      }
-    ).addTo(map);
-  }
-
-  const markers = {};
-
-  function markerRadius(interest, zoom) {
-    const base = interest >= 9 ? 6 : interest >= 7 ? 4.5 : interest >= 5 ? 3.5 : 2.5;
-    const zoomFactor = zoom <= 4 ? 0.8 : zoom <= 6 ? 1 : zoom <= 8 ? 1.3 : 1.6;
-    return Math.max(2, Math.round(base * zoomFactor));
-  }
-
-  function markerColor(interest) {
-    if (interest >= 9) return "#f59e0b";
-    if (interest >= 7) return "#38bdf8";
-    if (interest >= 5) return "#94a3b8";
-    return "#475569";
-  }
-
-  function markerStyle(city, zoom, inTrip) {
-    const color = inTrip ? "#f59e0b" : markerColor(city.interest);
-    const radius = inTrip ? Math.max(8, markerRadius(city.interest, zoom) + 3) : markerRadius(city.interest, zoom);
-    return {
-      radius,
-      color,
-      fillColor: color,
-      fillOpacity: inTrip ? 0.7 : city.interest >= 9 ? 0.5 : city.interest >= 7 ? 0.35 : 0.25,
-      weight: inTrip ? 2.5 : city.interest >= 7 ? 1.5 : 1,
-      opacity: inTrip ? 1 : 0.8
-    };
-  }
+  });
+  const state = plannerStore.getState();
+  mapSurface = createLeafletMapSurface({
+    L: window.L,
+    borderData,
+    bordersToGeoJSON,
+    cities,
+    elementId: "map",
+    escapeHtml,
+    formatMinutes,
+    formatPopulation,
+    graph,
+    labelThreshold,
+    onCitySelect(name) {
+      toggleCity(name);
+    },
+    onRenderStatsChange(stats) {
+      applyRenderedVisibility(stats);
+    }
+  });
 
   function getSegments() {
-    const segments = [];
-    for (let index = 0; index < state.trip.length - 1; index += 1) {
-      segments.push(model.dijkstra(state.trip[index], state.trip[index + 1]));
-    }
-    return segments;
-  }
-
-  function clearLabels() {
-    for (const label of state.cityLabels) {
-      map.removeLayer(label);
-    }
-    state.cityLabels = [];
+    return state.segments;
   }
 
   function updateDualFill() {
@@ -265,172 +218,41 @@ export async function mountLegacyApp(root) {
     }
   }
 
+  function updateRenderedVisibility() {
+    mapSurface.render(state);
+  }
+
+  function applyRenderedVisibility(stats) {
+    diagnostics.debug("applied rendered visibility stats", stats);
+    refs["cc-n"].textContent = String(stats.shown);
+    refs["cc-t"].textContent = String(stats.total);
+    refs["fi-txt"].textContent = `Showing ${stats.shown} of ${stats.total} cities`;
+    if (state.trip.length >= 1) {
+      refs["leg-info"].textContent = `Reachable in ${formatLeg(state.legMin)} - ${formatLeg(state.legMax)}: ${stats.reachable} cities`;
+    }
+  }
+
+  function updateFilterBadges() {
+    refs["f-int"].value = String(state.filterInterest);
+    refs["fv-int"].textContent = `${state.filterInterest}+`;
+    refs["f-pop"].value = String(state.filterPop);
+    refs["fv-pop"].textContent = state.filterPop === 0 ? "All" : `${state.filterPop}k+`;
+  }
+
   function updateLegFilter() {
     if (state.trip.length < 1) {
       refs["leg-filter"].style.display = "none";
-      state.distFromLast = {};
       return;
     }
 
     refs["leg-filter"].style.display = "block";
     const lastStop = state.trip[state.trip.length - 1];
     refs["leg-from"].textContent = lastStop;
-    state.distFromLast = model.dijkstraAll(lastStop);
-
-    let maxTime = 0;
-    for (const city of cities) {
-      const travelTime = state.distFromLast[city.name];
-      if (travelTime !== undefined && travelTime !== Infinity && travelTime > maxTime) {
-        maxTime = travelTime;
-      }
-    }
-
-    state.legDynMax = Math.max(60, Math.ceil(maxTime / 60) * 60);
     refs["f-leg-min"].max = String(state.legDynMax);
     refs["f-leg-max"].max = String(state.legDynMax);
-
-    state.legMin = Math.min(state.legMin, state.legDynMax);
-    if (state.legMax >= state.legDynMax || state.legMax >= 1440) {
-      state.legMax = state.legDynMax;
-    }
-    if (state.legMax < state.legMin) {
-      state.legMax = state.legMin;
-    }
-
     refs["f-leg-min"].value = String(state.legMin);
     refs["f-leg-max"].value = String(state.legMax);
     updateDualFill();
-  }
-
-  function applyFilters() {
-    const zoom = map.getZoom();
-    const threshold = labelThreshold(zoom);
-    const hasLegFilter = state.trip.length >= 1;
-    const legFilterActive = hasLegFilter && (state.legMin > 0 || state.legMax < state.legDynMax);
-    let shown = 0;
-    let reachable = 0;
-
-    clearLabels();
-
-    for (const city of cities) {
-      const marker = markers[city.name];
-      const inTrip = state.trip.includes(city.name);
-      let visible = inTrip || (city.interest >= state.filterInterest && city.pop >= state.filterPop * 1000);
-
-      if (visible && hasLegFilter && !inTrip) {
-        const travelTime = state.distFromLast[city.name];
-        if (travelTime !== undefined && travelTime !== Infinity) {
-          if (travelTime < state.legMin || travelTime > state.legMax) {
-            visible = false;
-          } else {
-            reachable += 1;
-          }
-        } else if (legFilterActive) {
-          visible = false;
-        }
-      }
-
-      if (!visible) {
-        if (map.hasLayer(marker)) {
-          map.removeLayer(marker);
-        }
-        continue;
-      }
-
-      const style = markerStyle(city, zoom, inTrip);
-      if (!map.hasLayer(marker)) {
-        marker.addTo(map);
-      }
-      marker.setStyle(style);
-      marker.setRadius(style.radius);
-      shown += 1;
-
-      const showLabel = inTrip || (city.interest >= threshold.interest && city.pop >= threshold.pop);
-      if (!showLabel) {
-        continue;
-      }
-
-      let className = "city-lbl";
-      let labelText = city.name;
-      if (inTrip) {
-        className = "city-lbl trip-lbl";
-        labelText = `${state.trip.indexOf(city.name) + 1}. ${city.name}`;
-      } else if (city.interest >= 9) {
-        className = "city-lbl top";
-      }
-
-      const travelTime = state.distFromLast[city.name];
-      if (hasLegFilter && !inTrip && travelTime !== undefined && travelTime < Infinity) {
-        labelText = `${city.name} (${formatMinutes(travelTime)})`;
-      }
-
-      const label = window.L.tooltip({
-        permanent: true,
-        direction: "right",
-        offset: [style.radius + 3, 0],
-        className,
-        interactive: false
-      });
-      label.setContent(labelText);
-      label.setLatLng([city.lat, city.lon]);
-      label.addTo(map);
-      state.cityLabels.push(label);
-    }
-
-    refs["cc-n"].textContent = String(shown);
-    refs["cc-t"].textContent = String(cities.length);
-    refs["fi-txt"].textContent = `Showing ${shown} of ${cities.length} cities`;
-    if (hasLegFilter) {
-      refs["leg-info"].textContent = `Reachable in ${formatLeg(state.legMin)} - ${formatLeg(state.legMax)}: ${reachable} cities`;
-    }
-  }
-
-  function clearLines() {
-    for (const line of state.routeLines) {
-      map.removeLayer(line);
-    }
-    state.routeLines = [];
-  }
-
-  function drawLines() {
-    clearLines();
-    if (state.trip.length < 2) {
-      return;
-    }
-
-    for (const segment of getSegments()) {
-      if (!segment?.path) {
-        continue;
-      }
-
-      const coords = segment.path
-        .map((name) => model.cityMap[name])
-        .filter(Boolean)
-        .map((city) => [city.lat, city.lon]);
-      if (coords.length < 2) {
-        continue;
-      }
-
-      state.routeLines.push(
-        window.L.polyline(coords, {
-          color: "#f59e0b",
-          weight: 7,
-          opacity: 0.12,
-          lineCap: "round",
-          interactive: false
-        }).addTo(map)
-      );
-      state.routeLines.push(
-        window.L.polyline(coords, {
-          color: "#f59e0b",
-          weight: 3,
-          opacity: 0.8,
-          dashArray: "8 4",
-          lineCap: "round",
-          interactive: false
-        }).addTo(map)
-      );
-    }
   }
 
   function updateStats() {
@@ -442,7 +264,7 @@ export async function mountLegacyApp(root) {
 
     const countries = {};
     for (const stop of state.trip) {
-      const city = model.cityMap[stop];
+      const city = graph.cityMap[stop];
       if (city) {
         countries[city.country] = true;
       }
@@ -451,8 +273,8 @@ export async function mountLegacyApp(root) {
 
     let distanceKm = 0;
     for (let index = 1; index < state.trip.length; index += 1) {
-      const from = model.cityMap[state.trip[index - 1]];
-      const to = model.cityMap[state.trip[index]];
+      const from = graph.cityMap[state.trip[index - 1]];
+      const to = graph.cityMap[state.trip[index]];
       if (from && to) {
         distanceKm += haversine(from, to);
       }
@@ -467,12 +289,12 @@ export async function mountLegacyApp(root) {
     }
 
     const segments = getSegments();
-    const suggestions = model.findInterestingStops(segments, state.trip);
+    const suggestions = state.suggestions;
     let html = "";
 
     for (let index = 0; index < state.trip.length; index += 1) {
       const cityName = state.trip[index];
-      const city = model.cityMap[cityName];
+      const city = graph.cityMap[cityName];
       const segment = index > 0 ? segments[index - 1] : null;
       let tripBadge = "";
 
@@ -526,6 +348,7 @@ export async function mountLegacyApp(root) {
 
   async function shareTrip() {
     if (state.trip.length === 0) {
+      diagnostics.debug("ignored share for empty trip");
       return;
     }
 
@@ -533,7 +356,7 @@ export async function mountLegacyApp(root) {
     const lines = ["My Aetrain Trip\n"];
     for (let index = 0; index < state.trip.length; index += 1) {
       const cityName = state.trip[index];
-      const city = model.cityMap[cityName];
+      const city = graph.cityMap[cityName];
       const segment = index > 0 ? segments[index - 1] : null;
       const segmentTime = segment?.time ? ` (${formatMinutes(segment.time)})` : "";
       lines.push(`${index + 1}. ${cityName}, ${city ? city.country : ""}${segmentTime}`);
@@ -543,12 +366,12 @@ export async function mountLegacyApp(root) {
     const countries = {};
     let distanceKm = 0;
     for (let index = 0; index < state.trip.length; index += 1) {
-      const city = model.cityMap[state.trip[index]];
+      const city = graph.cityMap[state.trip[index]];
       if (city) {
         countries[city.country] = true;
       }
       if (index > 0) {
-        const previous = model.cityMap[state.trip[index - 1]];
+        const previous = graph.cityMap[state.trip[index - 1]];
         if (previous && city) {
           distanceKm += haversine(previous, city);
         }
@@ -558,72 +381,68 @@ export async function mountLegacyApp(root) {
     lines.push(
       `\n${state.trip.length} stops / ${formatMinutes(totalMinutes)} / ${Math.round(distanceKm)}km / ${Object.keys(countries).length} countries`
     );
+    lines.push(`\n${window.location.href}`);
 
     await copyText(lines.join("\n"));
+    diagnostics.info("copied trip summary", {
+      trip_length: state.trip.length,
+      total_minutes,
+      distance_km: Math.round(distanceKm),
+      country_count: Object.keys(countries).length
+    });
     refs["copyBtn"].textContent = "Copied!";
     window.setTimeout(() => {
       refs["copyBtn"].textContent = "Copy Summary";
     }, 1500);
   }
 
-  function updateAll() {
-    updateLegFilter();
-    updateSidebar();
-    applyFilters();
-    drawLines();
-    updateStats();
-  }
-
   function toggleCity(name) {
-    const existingIndex = state.trip.indexOf(name);
-    if (existingIndex === 0 && state.trip.length >= 2) {
-      if (state.trip[state.trip.length - 1] === name) {
-        state.trip.pop();
-      } else {
-        state.trip.push(name);
-      }
-    } else if (existingIndex >= 0) {
-      state.trip.splice(existingIndex, 1);
-    } else {
-      state.trip.push(name);
-    }
-
-    updateAll();
+    diagnostics.info("toggle city requested", {
+      city_name: name
+    });
+    void plannerStore.toggleCity(name).catch(handlePlannerMutationError);
   }
 
   function removeStop(index) {
-    state.trip.splice(index, 1);
-    updateAll();
+    diagnostics.info("remove stop requested", {
+      index
+    });
+    void plannerStore.removeStop(index).catch(handlePlannerMutationError);
   }
 
   function addStopAfter(index, name) {
-    state.trip.splice(index + 1, 0, name);
-    updateAll();
+    diagnostics.info("add stop requested", {
+      index,
+      city_name: name
+    });
+    void plannerStore.addStopAfter(index, name).catch(handlePlannerMutationError);
   }
 
   function clearTrip() {
-    state.trip = [];
-    updateAll();
+    diagnostics.info("clear trip requested");
+    void plannerStore.clearTrip().catch(handlePlannerMutationError);
+  }
+
+  function handlePlannerMutationError(error) {
+    diagnostics.error("failed to update planner view", {
+      error: summarizeError(error)
+    });
   }
 
   function updateSearchResults() {
-    const query = refs["sinput"].value.toLowerCase().trim();
-    if (query.length < 1) {
+    refs["sinput"].value = state.searchQuery;
+    if (state.searchQuery.trim().length < 1) {
       refs["sr"].style.display = "none";
       return;
     }
 
-    const matches = cities
-      .filter((city) => city.name.toLowerCase().includes(query) || city.country.toLowerCase().includes(query))
-      .sort((a, b) => b.interest - a.interest || b.pop - a.pop)
-      .slice(0, 14);
-
-    if (matches.length === 0) {
+    const searchMatches = state.searchResults;
+    if (searchMatches.length === 0 || !searchResultsOpen) {
       refs["sr"].style.display = "none";
       return;
     }
 
-    refs["sr"].innerHTML = matches
+    refs["sr"].innerHTML = searchMatches
       .map((city) => {
         const active = state.trip.includes(city.name);
         const dots = Array.from({ length: 5 }, (_, index) => {
@@ -752,12 +571,10 @@ export async function mountLegacyApp(root) {
           [nextMin, nextMax] = [nextMax, nextMin];
         }
 
-        state.legMin = Math.round(nextMin * 60);
-        state.legMax = Math.round(nextMax * 60);
-        refs["f-leg-min"].value = String(state.legMin);
-        refs["f-leg-max"].value = String(state.legMax);
-        updateDualFill();
-        applyFilters();
+        plannerStore.setLegRange({
+          min: Math.round(nextMin * 60),
+          max: Math.round(nextMax * 60)
+        });
         replacement.textContent = `${formatLeg(state.legMin)} — ${formatLeg(state.legMax)}`;
       }
 
@@ -797,59 +614,26 @@ export async function mountLegacyApp(root) {
     });
   }
 
-  for (const city of cities) {
-    const marker = window.L.circleMarker([city.lat, city.lon], markerStyle(city, 5, false));
-    const stars = "★".repeat(Math.min(city.interest, 10));
-    marker.bindTooltip(
-      () => {
-        let tooltip = `<b>${escapeHtml(city.name)}</b><br><span style="color:#94a3b8;font-size:10px">${escapeHtml(city.country)} · ${escapeHtml(formatPopulation(city.pop))}</span><br><span style="color:#f59e0b;font-size:10px">${escapeHtml(stars)} ${city.interest}/10</span>`;
-        const travelTime = state.distFromLast[city.name];
-        if (
-          state.trip.length >= 1 &&
-          travelTime !== undefined &&
-          travelTime < Infinity &&
-          !state.trip.includes(city.name)
-        ) {
-          tooltip += `<br><span style="color:#10b981;font-size:10px">🚂 ${escapeHtml(formatMinutes(travelTime))} from ${escapeHtml(state.trip[state.trip.length - 1])}</span>`;
-        }
-        return tooltip;
-      },
-      { direction: "top", offset: [0, -8] }
-    );
-    marker.on("click", () => toggleCity(city.name));
-    markers[city.name] = marker;
-  }
-
   refs["f-int"].addEventListener("input", (event) => {
-    state.filterInterest = Number.parseInt(event.target.value, 10);
-    refs["fv-int"].textContent = `${state.filterInterest}+`;
-    applyFilters();
+    plannerStore.setFilterInterest(event.target.value);
   });
 
   refs["f-pop"].addEventListener("input", (event) => {
-    state.filterPop = Number.parseInt(event.target.value, 10);
-    refs["fv-pop"].textContent = state.filterPop === 0 ? "All" : `${state.filterPop}k+`;
-    applyFilters();
+    plannerStore.setFilterPop(event.target.value);
   });
 
   refs["f-leg-min"].addEventListener("input", (event) => {
-    state.legMin = Number.parseInt(event.target.value, 10);
-    if (state.legMin > state.legMax) {
-      state.legMin = state.legMax;
-      event.target.value = String(state.legMin);
-    }
-    updateDualFill();
-    applyFilters();
+    plannerStore.setLegRange({
+      min: event.target.value,
+      max: state.legMax
+    });
   });
 
   refs["f-leg-max"].addEventListener("input", (event) => {
-    state.legMax = Number.parseInt(event.target.value, 10);
-    if (state.legMax < state.legMin) {
-      state.legMax = state.legMin;
-      event.target.value = String(state.legMax);
-    }
-    updateDualFill();
-    applyFilters();
+    plannerStore.setLegRange({
+      min: state.legMin,
+      max: event.target.value
+    });
   });
 
   makeEditable(refs["fv-int"], {
@@ -858,9 +642,8 @@ export async function mountLegacyApp(root) {
     step: 1,
     getValue: () => state.filterInterest,
     setValue: (value) => {
-      state.filterInterest = value;
-      refs["f-int"].value = String(value);
-      applyFilters();
+      plannerStore.setFilterInterest(value);
+      refs["f-int"].value = String(state.filterInterest);
     },
     formatValue: (value) => `${value}+`
   });
@@ -871,23 +654,31 @@ export async function mountLegacyApp(root) {
     step: 10,
     getValue: () => state.filterPop,
     setValue: (value) => {
-      state.filterPop = value;
-      refs["f-pop"].value = String(value);
-      applyFilters();
+      plannerStore.setFilterPop(value);
+      refs["f-pop"].value = String(state.filterPop);
     },
     formatValue: (value) => (value === 0 ? "All" : `${value}k+`)
   });
 
   installLegEditor();
 
-  refs["sinput"].addEventListener("input", updateSearchResults);
+  refs["sinput"].addEventListener("input", (event) => {
+    searchResultsOpen = true;
+    diagnostics.debug("search input changed", {
+      query: event.target.value
+    });
+    void plannerStore.setSearchQuery(event.target.value).catch(handlePlannerMutationError);
+  });
   refs["sinput"].addEventListener("blur", () => {
     window.setTimeout(() => {
+      searchResultsOpen = false;
       refs["sr"].style.display = "none";
     }, 200);
   });
   refs["sinput"].addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
+      searchResultsOpen = false;
+      diagnostics.debug("search input dismissed with escape");
       refs["sr"].style.display = "none";
       refs["sinput"].blur();
     }
@@ -900,13 +691,14 @@ export async function mountLegacyApp(root) {
     }
 
     const cityName = decodeURIComponent(item.getAttribute("data-city"));
+    diagnostics.info("selected search result", {
+      city_name: cityName
+    });
     toggleCity(cityName);
-    refs["sinput"].value = "";
+    searchResultsOpen = false;
+    void plannerStore.setSearchQuery("").catch(handlePlannerMutationError);
     refs["sr"].style.display = "none";
-    const city = model.cityMap[cityName];
-    if (city) {
-      map.flyTo([city.lat, city.lon], 7, { duration: 0.7 });
-    }
+    mapSurface.flyToCity(cityName);
   });
 
   refs["tl"].addEventListener("click", (event) => {
@@ -945,6 +737,10 @@ export async function mountLegacyApp(root) {
     if (sourceButton) {
       const nextSourceId = sourceButton.getAttribute("data-source-id");
       if (nextSourceId && nextSourceId !== dataset.id) {
+        diagnostics.info("source toggle requested", {
+          from_source_id: dataset.id,
+          to_source_id: nextSourceId
+        });
         navigateToDataSource(nextSourceId);
       }
       return;
@@ -969,6 +765,19 @@ export async function mountLegacyApp(root) {
     }
   });
 
-  map.on("zoomend", applyFilters);
-  updateAll();
+  window.addEventListener("beforeunload", () => {
+    diagnostics.info("legacy app beforeunload cleanup");
+    planner.close();
+    stopUrlSync?.();
+  });
+
+  const urlStateController = bindPlannerUrlState({
+    plannerStore,
+    mapSurface
+  });
+  await urlStateController.hydrate();
+  diagnostics.info("url state hydrated");
+  stopUrlSync = urlStateController.start();
+  plannerStore.initialize();
+  diagnostics.info("legacy app mounted");
 }

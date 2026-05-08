@@ -8,5 +8,6 @@ Its role is intentionally narrow:
 - worker wrappers
 - browser-safe adapters
 - small convenience layers for the web app
+- diagnostics and instrumentation helpers that are browser-facing by nature
 
 It is not the place for the shared routing or product engine.
