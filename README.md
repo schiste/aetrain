@@ -57,7 +57,8 @@ web renderer, worker boundary, and runtime dataset contracts harden.
 # Run the shared Rust workspace checks
 cargo test
 
-# Fetch or refresh the first live SNCF sources and build canonical Stage 1 outputs
+# Fetch or refresh the Stage 1 sources, build the selected target, and sync
+# the runtime debug projection into the web app
 tools/pipeline/run-stage1.sh
 
 # Browse the current modularized web app (any static server works)
@@ -67,9 +68,12 @@ python3 -m http.server --directory apps/web 8080
 
 The web app is now split into modules, but it still contains a transitional
 `src/legacy/` implementation while the long-term renderer, worker, and wasm
-boundaries are being introduced. The first live import pipeline writes raw
-source cache state under `data/cache/` and canonical build artifacts under
-`data/build/stage1/sncf-fr/`.
+boundaries are being introduced. The Stage 1 pipeline now manages:
+
+- raw source cache state under `data/cache/`
+- target-scoped canonical artifacts under `data/build/stage1/<target>/canonical/`
+- a runtime `web-debug` projection under `data/build/stage1/<target>/runtime/web-debug/`
+- optional sync into `apps/web/public/data/production/`
 
 ## Repository layout
 

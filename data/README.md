@@ -5,12 +5,15 @@ cache, and generated artifacts.
 
 Subdirectories:
 
-- `manifests/`: source manifests and ingest policy
+- `manifests/`: source manifests, target definitions, and ingest policy
 - `overrides/`: tracked manual exceptions with rationale
 - `cache/`: raw fetch cache and update state
-- `build/`: canonical generated outputs
+- `build/`: target-scoped generated outputs
 
 Rules:
 
 - browser-shipped artifacts belong in `apps/web/public/data/`
 - canonical pipeline outputs belong here first
+- each build target owns its own artifact root:
+  - `build/stage1/<target>/canonical/`
+  - `build/stage1/<target>/runtime/web-debug/`

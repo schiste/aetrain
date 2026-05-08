@@ -187,12 +187,21 @@ Consequence:
 
 The pipeline output is the product interface between build-time and runtime.
 
+Stage 1 should emit artifacts in two layers:
+
+- `data/build/stage1/<target>/canonical/` for rich traceable build outputs
+- `data/build/stage1/<target>/runtime/web-debug/` for the current browser-facing
+  debug projection
+
+The web app may sync that runtime projection into `apps/web/public/data/production/`
+for local development and deployment, but the authoritative build output still
+lives under `data/build/`.
+
 Stage 1 artifacts should be versioned and immutable, for example:
 
 - `meta.json`
-- `countries.json`
 - `cities.json`
-- `graph.json`
+- `edges.json`
 - `aliases.json`
 - `stations.json`
 - `attribution.json`
@@ -217,9 +226,8 @@ The important split is:
 The browser hot path should eagerly load only:
 
 - `meta.json`
-- `countries.json`
 - `cities.json`
-- `graph.json`
+- `edges.json`
 
 The browser should load these only when needed:
 
