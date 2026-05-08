@@ -108,9 +108,6 @@ async function copyText(text) {
 
 export async function mountLegacyApp(root) {
   diagnostics.info("mounting legacy app shell");
-  if (!window.L) {
-    throw new Error("Leaflet did not load");
-  }
 
   renderShell(root);
 
@@ -184,7 +181,6 @@ export async function mountLegacyApp(root) {
   });
   const state = plannerStore.getState();
   mapSurface = createLeafletMapSurface({
-    L: window.L,
     borderData,
     cities,
     elementId: "map",

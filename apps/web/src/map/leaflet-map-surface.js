@@ -1,5 +1,14 @@
 import { createDiagnostics } from "../app-shell/diagnostics.js";
 import {
+  mercatorProject,
+  mercatorUnproject,
+  panCameraByPixels,
+  projectWorldToScreen,
+  scaleForZoom,
+  zoomCameraAroundPoint
+} from "./camera-model.js";
+import { buildLandmassPolygons } from "./landmass-model.js";
+import {
   buildLodProfile,
   createSpatialGrid,
   hitTestSpatialGrid,
@@ -7,24 +16,28 @@ import {
   pointInViewport,
   selectLabelCandidates
 } from "./render-model.js";
-import { buildLandmassPolygons } from "./landmass-model.js";
 
-const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
-const HOT_RENDER_INFO_INTERVAL_MS = 350;
+const DEFAULT_VIEW = {
+  lat: 50,
+  lon: 10,
+  zoom: 5
+};
 const MAX_CANVAS_PIXEL_RATIO = 3;
 const MIN_CANVAS_PIXEL_RATIO = 1.5;
+const MIN_ZOOM = 3;
+const MAX_ZOOM = 15;
+const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
+const ZOOM_SETTLE_DELAY_MS = 120;
+const HOT_RENDER_INFO_INTERVAL_MS = 350;
 const INTERACTION_LABEL_OPACITY = "0.18";
-const ZOOM_MOVEEND_SUPPRESSION_MS = 60;
 const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
-const TARGET_ZOOM_SCALE_RATIO = 1.02;
-const ZOOM_LEVEL_STEP = Math.log(TARGET_ZOOM_SCALE_RATIO) / Math.LN2;
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
+const BUTTON_ZOOM_DELTA = 0.35;
 
-const diagnostics = createDiagnostics("web/map/leaflet-surface");
+const diagnostics = createDiagnostics("web/map/canvas-surface");
 
 export function createLeafletMapSurface({
-  L,
   borderData,
   cities,
   elementId,
@@ -36,44 +49,30 @@ export function createLeafletMapSurface({
   onCitySelect,
   onRenderStatsChange
 }) {
-  diagnostics.info("creating leaflet map surface", {
+  diagnostics.info("creating canvas map surface", {
     city_count: cities.length,
     edge_count: graph.edges.length
   });
 
-  const map = L.map(elementId, {
-    center: [50, 10],
-    zoom: 5,
-    minZoom: 3,
-    maxZoom: 15,
-    fadeAnimation: false,
-    scrollWheelZoom: true,
-    wheelDebounceTime: 16,
-    wheelPxPerZoomLevel: WHEEL_PIXELS_PER_ZOOM_LEVEL,
-    zoomAnimationThreshold: 8,
-    zoomControl: false,
-    zoomDelta: ZOOM_LEVEL_STEP,
-    zoomSnap: 0
-  });
-  L.control.zoom({ position: "bottomright" }).addTo(map);
+  const mapRoot = document.getElementById(elementId);
+  if (!mapRoot) {
+    throw new Error(`Missing map root #${elementId}`);
+  }
 
-  const overlayPane = map.getPanes().overlayPane;
-  const surfaceRoot = L.DomUtil.create(
-    "div",
-    "aetrain-map-surface leaflet-zoom-animated",
-    overlayPane
-  );
+  mapRoot.replaceChildren();
+  mapRoot.style.position = "relative";
+  mapRoot.style.overflow = "hidden";
+  mapRoot.style.background = OCEAN_FILL_COLOR;
+  mapRoot.style.touchAction = "none";
+  mapRoot.style.userSelect = "none";
+
+  const surfaceRoot = document.createElement("div");
+  surfaceRoot.className = "aetrain-map-surface";
   surfaceRoot.style.position = "absolute";
-  surfaceRoot.style.pointerEvents = "none";
-  surfaceRoot.style.left = "0";
-  surfaceRoot.style.top = "0";
-  surfaceRoot.style.zIndex = "250";
+  surfaceRoot.style.inset = "0";
   surfaceRoot.style.contain = "layout style paint";
-
-  const landmassPolygons = buildLandmassPolygons(borderData);
-  diagnostics.info("landmass backdrop prepared", {
-    polygon_count: landmassPolygons.length
-  });
+  surfaceRoot.style.cursor = "grab";
+  mapRoot.appendChild(surfaceRoot);
 
   const backgroundCanvas = createCanvas("aetrain-map-canvas background", surfaceRoot);
   const networkCanvas = createCanvas("aetrain-map-canvas network", surfaceRoot);
@@ -89,23 +88,63 @@ export function createLeafletMapSurface({
   labelsLayer.style.willChange = "opacity";
   surfaceRoot.appendChild(labelsLayer);
 
+  const tooltip = document.createElement("div");
+  tooltip.className = "leaflet-tooltip";
+  tooltip.style.position = "absolute";
+  tooltip.style.pointerEvents = "none";
+  tooltip.style.display = "none";
+  tooltip.style.zIndex = "35";
+  surfaceRoot.appendChild(tooltip);
+
+  const zoomControls = createZoomControls(surfaceRoot);
+
   const backgroundContext = backgroundCanvas.getContext("2d");
   const networkContext = networkCanvas.getContext("2d");
   const cityContext = cityCanvas.getContext("2d");
   const routeContext = routeCanvas.getContext("2d");
-  const hoverTooltip = L.tooltip({
-    direction: "top",
-    offset: [0, -8]
+
+  const cityWorldByName = new Map();
+  const preparedCities = cities.map((city) => {
+    const world = mercatorProject(city.lon, city.lat);
+    cityWorldByName.set(city.name, world);
+    return {
+      city,
+      world
+    };
+  });
+  const landmassPolygons = buildLandmassPolygons(borderData).map((polygon) =>
+    polygon.map((ring) =>
+      ring.map((point) => mercatorProject(point.lon, point.lat))
+    )
+  );
+  const edgeRefs = graph.edges
+    .map((edge) => {
+      const fromCity = graph.cityMap[edge.from];
+      const toCity = graph.cityMap[edge.to];
+      const fromWorld = cityWorldByName.get(edge.from);
+      const toWorld = cityWorldByName.get(edge.to);
+      if (!fromCity || !toCity || !fromWorld || !toWorld) {
+        return null;
+      }
+
+      return {
+        ...edge,
+        fromCity,
+        fromWorld,
+        toCity,
+        toWorld
+      };
+    })
+    .filter(Boolean);
+
+  diagnostics.info("prepared map scene data", {
+    edge_count: edgeRefs.length,
+    landmass_polygon_count: landmassPolygons.length
   });
 
-  const edgeRefs = graph.edges
-    .map((edge) => ({
-      ...edge,
-      fromCity: graph.cityMap[edge.from],
-      toCity: graph.cityMap[edge.to]
-    }))
-    .filter((edge) => edge.fromCity && edge.toCity);
-
+  let camera = { ...DEFAULT_VIEW };
+  let semanticZoom = camera.zoom;
+  let currentSize = readSize(mapRoot);
   let currentState = createEmptyPlannerState();
   let currentSignature = summarizePlannerRenderState(currentState);
   let currentFrame = null;
@@ -132,92 +171,44 @@ export function createLeafletMapSurface({
     routes: true
   });
   let viewChangeTimeoutId = 0;
+  let zoomSettleTimeoutId = 0;
+  let flyAnimationId = 0;
   let lastHotRenderInfoAt = 0;
   let isZooming = false;
-  let suppressMoveEndUntil = 0;
-  let zoomAnimationSnapshot = null;
+  let pointerState = null;
 
-  map.on("click", (event) => {
-    const hit = hitTestSpatialGrid(hitGrid, event.containerPoint);
-    if (!hit) {
-      return;
-    }
+  const resizeObserver =
+    typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => {
+          currentSize = readSize(mapRoot);
+          invalidateView("canvas-resize", {
+            notifyViewChange: true
+          });
+        })
+      : null;
 
-    diagnostics.info("map hit city", {
-      city_name: hit.city.name,
-      x: event.containerPoint.x,
-      y: event.containerPoint.y
-    });
-    onCitySelect?.(hit.city.name);
+  if (resizeObserver) {
+    resizeObserver.observe(mapRoot);
+  } else {
+    window.addEventListener("resize", handleWindowResize);
+  }
+
+  surfaceRoot.addEventListener("wheel", onWheel, {
+    passive: false
+  });
+  surfaceRoot.addEventListener("pointerdown", onPointerDown);
+  surfaceRoot.addEventListener("pointermove", onPointerMove);
+  surfaceRoot.addEventListener("pointerup", onPointerUp);
+  surfaceRoot.addEventListener("pointercancel", onPointerCancel);
+  surfaceRoot.addEventListener("pointerleave", onPointerLeave);
+  zoomControls.zoomIn.addEventListener("click", () => {
+    zoomByDelta(BUTTON_ZOOM_DELTA);
+  });
+  zoomControls.zoomOut.addEventListener("click", () => {
+    zoomByDelta(-BUTTON_ZOOM_DELTA);
   });
 
-  map.on("mousemove", (event) => {
-    const hit = hitTestSpatialGrid(hitGrid, event.containerPoint);
-    map.getContainer().style.cursor = hit ? "pointer" : "";
-
-    if (!hit) {
-      if (map.hasLayer(hoverTooltip)) {
-        map.removeLayer(hoverTooltip);
-      }
-      return;
-    }
-
-    hoverTooltip.setLatLng([hit.city.lat, hit.city.lon]);
-    hoverTooltip.setContent(buildTooltipHtml(hit, currentState, escapeHtml, formatMinutes, formatPopulation));
-    if (!map.hasLayer(hoverTooltip)) {
-      hoverTooltip.addTo(map);
-    }
-  });
-
-  map.on("mouseout", () => {
-    map.getContainer().style.cursor = "";
-    if (map.hasLayer(hoverTooltip)) {
-      map.removeLayer(hoverTooltip);
-    }
-  });
-
-  map.on("zoomstart", () => {
-    isZooming = true;
-    zoomAnimationSnapshot = {
-      bounds: map.getBounds(),
-      zoom: map.getZoom()
-    };
-    labelsLayer.style.opacity = INTERACTION_LABEL_OPACITY;
-  });
-
-  map.on("zoomanim", (event) => {
-    if (!zoomAnimationSnapshot) {
-      return;
-    }
-
-    applyZoomAnimationFrame(event);
-  });
-
-  map.on("zoomend", () => {
-    isZooming = false;
-    zoomAnimationSnapshot = null;
-    suppressMoveEndUntil = now() + ZOOM_MOVEEND_SUPPRESSION_MS;
-    labelsLayer.style.opacity = "";
-    invalidateView("leaflet-zoom-settle", {
-      notifyViewChange: true
-    });
-  });
-
-  map.on("moveend", () => {
-    if (isZooming || now() < suppressMoveEndUntil) {
-      return;
-    }
-
-    invalidateView("leaflet-move-settle", {
-      notifyViewChange: true
-    });
-  });
-
-  map.on("resize", () => {
-    invalidateView("leaflet-resize", {
-      notifyViewChange: true
-    });
-  });
+  scheduleRender("surface-init", pendingDirty);
 
   return {
     flyToCity(name) {
@@ -234,7 +225,11 @@ export function createLeafletMapSurface({
         lat: city.lat,
         lon: city.lon
       });
-      map.flyTo([city.lat, city.lon], 7, { duration: 0.7 });
+      animateCameraTo({
+        lat: city.lat,
+        lon: city.lon,
+        zoom: Math.max(camera.zoom, 7)
+      });
     },
     getViewState,
     render(nextState) {
@@ -260,7 +255,10 @@ export function createLeafletMapSurface({
       }
 
       diagnostics.info("setting map view state", viewState);
-      map.setView([viewState.lat, viewState.lon], viewState.zoom, { animate: false });
+      stopFlyAnimation();
+      clearZoomInteraction();
+      camera = clampCamera(viewState);
+      semanticZoom = camera.zoom;
       invalidateView("set-view-state");
     },
     subscribeViewChange(listener) {
@@ -277,12 +275,232 @@ export function createLeafletMapSurface({
     }
   };
 
+  function handleWindowResize() {
+    currentSize = readSize(mapRoot);
+    invalidateView("window-resize", {
+      notifyViewChange: true
+    });
+  }
+
+  function onWheel(event) {
+    event.preventDefault();
+    stopFlyAnimation();
+    const point = getLocalPoint(event, mapRoot);
+    const wheelDelta = normalizeWheelDelta(event);
+    if (!wheelDelta) {
+      return;
+    }
+
+    beginZoomInteraction();
+    const nextZoom = clampZoom(camera.zoom - wheelDelta / WHEEL_PIXELS_PER_ZOOM_LEVEL);
+    if (Math.abs(nextZoom - camera.zoom) < 0.000001) {
+      scheduleZoomSettle();
+      return;
+    }
+
+    camera = clampCamera(
+      zoomCameraAroundPoint(camera, currentSize, point, nextZoom)
+    );
+    invalidateView("wheel-zoom");
+    scheduleZoomSettle();
+  }
+
+  function onPointerDown(event) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    stopFlyAnimation();
+    hideTooltip();
+    pointerState = {
+      dragDistance: 0,
+      id: event.pointerId,
+      lastPoint: getLocalPoint(event, mapRoot),
+      moved: false
+    };
+    surfaceRoot.setPointerCapture(event.pointerId);
+    surfaceRoot.style.cursor = "grabbing";
+  }
+
+  function onPointerMove(event) {
+    const point = getLocalPoint(event, mapRoot);
+
+    if (!pointerState || pointerState.id !== event.pointerId) {
+      updateHover(point);
+      return;
+    }
+
+    const deltaX = point.x - pointerState.lastPoint.x;
+    const deltaY = point.y - pointerState.lastPoint.y;
+    pointerState.dragDistance += Math.hypot(deltaX, deltaY);
+    pointerState.moved ||= pointerState.dragDistance > 3;
+    pointerState.lastPoint = point;
+
+    if (!pointerState.moved) {
+      updateHover(point);
+      return;
+    }
+
+    camera = clampCamera(panCameraByPixels(camera, deltaX, deltaY));
+    hideTooltip();
+    invalidateView("pointer-pan");
+  }
+
+  function onPointerUp(event) {
+    if (!pointerState || pointerState.id !== event.pointerId) {
+      return;
+    }
+
+    const point = getLocalPoint(event, mapRoot);
+    const wasDrag = pointerState.moved;
+    finishPointerInteraction(event.pointerId);
+
+    if (wasDrag) {
+      scheduleViewChangeNotification();
+      updateHover(point);
+      return;
+    }
+
+    updateHover(point);
+    const hit = hitTestSpatialGrid(hitGrid, point);
+    if (!hit) {
+      return;
+    }
+
+    diagnostics.info("map hit city", {
+      city_name: hit.city.name,
+      x: point.x,
+      y: point.y
+    });
+    onCitySelect?.(hit.city.name);
+  }
+
+  function onPointerCancel(event) {
+    finishPointerInteraction(event.pointerId);
+  }
+
+  function onPointerLeave() {
+    if (pointerState) {
+      return;
+    }
+
+    surfaceRoot.style.cursor = "grab";
+    hideTooltip();
+  }
+
+  function finishPointerInteraction(pointerId) {
+    if (!pointerState || pointerState.id !== pointerId) {
+      return;
+    }
+
+    if (surfaceRoot.hasPointerCapture(pointerId)) {
+      surfaceRoot.releasePointerCapture(pointerId);
+    }
+    pointerState = null;
+    surfaceRoot.style.cursor = "grab";
+  }
+
+  function zoomByDelta(delta) {
+    stopFlyAnimation();
+    const anchorPoint = {
+      x: currentSize.x / 2,
+      y: currentSize.y / 2
+    };
+    beginZoomInteraction();
+    camera = clampCamera(
+      zoomCameraAroundPoint(camera, currentSize, anchorPoint, clampZoom(camera.zoom + delta))
+    );
+    invalidateView("button-zoom");
+    scheduleZoomSettle();
+  }
+
+  function beginZoomInteraction() {
+    if (isZooming) {
+      return;
+    }
+
+    isZooming = true;
+    semanticZoom = camera.zoom;
+    labelsLayer.style.opacity = INTERACTION_LABEL_OPACITY;
+    diagnostics.debug("began smooth zoom interaction", {
+      semantic_zoom: semanticZoom
+    });
+  }
+
+  function scheduleZoomSettle() {
+    window.clearTimeout(zoomSettleTimeoutId);
+    zoomSettleTimeoutId = window.setTimeout(() => {
+      clearZoomInteraction(true);
+    }, ZOOM_SETTLE_DELAY_MS);
+  }
+
+  function clearZoomInteraction(notifyViewChange = false) {
+    if (!isZooming && !zoomSettleTimeoutId) {
+      return;
+    }
+
+    window.clearTimeout(zoomSettleTimeoutId);
+    zoomSettleTimeoutId = 0;
+    isZooming = false;
+    semanticZoom = camera.zoom;
+    labelsLayer.style.opacity = "";
+    invalidateView("zoom-settle", {
+      notifyViewChange
+    });
+  }
+
+  function animateCameraTo(target) {
+    stopFlyAnimation();
+
+    const startCamera = { ...camera };
+    const startWorld = mercatorProject(startCamera.lon, startCamera.lat);
+    const endCamera = clampCamera(target);
+    const endWorld = mercatorProject(endCamera.lon, endCamera.lat);
+    const startedAt = now();
+    const durationMs = 560;
+
+    const tick = () => {
+      const progress = Math.min(1, (now() - startedAt) / durationMs);
+      const eased = easeInOutCubic(progress);
+      const centerWorld = {
+        x: lerp(startWorld.x, endWorld.x, eased),
+        y: lerp(startWorld.y, endWorld.y, eased)
+      };
+      const center = mercatorUnproject(centerWorld.x, centerWorld.y);
+      camera = {
+        lat: center.lat,
+        lon: center.lon,
+        zoom: lerp(startCamera.zoom, endCamera.zoom, eased)
+      };
+      semanticZoom = camera.zoom;
+      invalidateView("fly-to");
+
+      if (progress < 1) {
+        flyAnimationId = window.requestAnimationFrame(tick);
+        return;
+      }
+
+      flyAnimationId = 0;
+      scheduleViewChangeNotification();
+    };
+
+    flyAnimationId = window.requestAnimationFrame(tick);
+  }
+
+  function stopFlyAnimation() {
+    if (!flyAnimationId) {
+      return;
+    }
+
+    window.cancelAnimationFrame(flyAnimationId);
+    flyAnimationId = 0;
+  }
+
   function getViewState() {
-    const center = map.getCenter();
     return {
-      lat: center.lat,
-      lon: center.lng,
-      zoom: map.getZoom()
+      lat: camera.lat,
+      lon: camera.lon,
+      zoom: camera.zoom
     };
   }
 
@@ -309,28 +527,6 @@ export function createLeafletMapSurface({
         listener(viewState);
       }
     }, VIEW_CHANGE_COMMIT_DELAY_MS);
-  }
-
-  function applyZoomAnimationFrame(event) {
-    const scale = map.getZoomScale(event.zoom, zoomAnimationSnapshot.zoom);
-    const offset = getZoomAnimationOffset(event);
-    L.DomUtil.setTransform(surfaceRoot, offset, scale);
-  }
-
-  function getZoomAnimationOffset(event) {
-    if (typeof map._latLngBoundsToNewLayerBounds === "function") {
-      return map._latLngBoundsToNewLayerBounds(
-        zoomAnimationSnapshot.bounds,
-        event.zoom,
-        event.center
-      ).min;
-    }
-
-    const startNorthWest = zoomAnimationSnapshot.bounds.getNorthWest();
-    const newTopLeft = map.project(startNorthWest, event.zoom)
-      .subtract(map.project(event.center, event.zoom))
-      .add(map.getSize().divideBy(2));
-    return newTopLeft;
   }
 
   function scheduleRender(reason, dirty) {
@@ -391,21 +587,29 @@ export function createLeafletMapSurface({
       return currentFrame;
     }
 
-    const size = map.getSize();
-    const topLeft = map.containerPointToLayerPoint([0, 0]);
+    const size = currentSize;
     const pixelRatio = Math.min(
       MAX_CANVAS_PIXEL_RATIO,
       Math.max(MIN_CANVAS_PIXEL_RATIO, globalThis.devicePixelRatio || 1)
     );
-    const zoom = map.getZoom();
-    const lod = buildLodProfile(zoom, labelThreshold);
-    const key = `${zoom}:${size.x}x${size.y}:${Math.round(topLeft.x)}:${Math.round(topLeft.y)}`;
-    const coordinateCache = new Map();
+    const key = [
+      size.x,
+      size.y,
+      roundCoordinate(camera.lat, 4),
+      roundCoordinate(camera.lon, 4),
+      roundCoordinate(camera.zoom, 4),
+      roundCoordinate(semanticZoom, 4)
+    ].join(":");
+    const cameraWorld = mercatorProject(camera.lon, camera.lat);
+    const lod = buildLodProfile(semanticZoom, labelThreshold);
     const projectCache = new Map();
+    const worldProjectCache = new Map();
 
-    syncSurfaceFrame({ pixelRatio, size, topLeft });
+    syncSurfaceFrame({ pixelRatio, size });
 
     currentFrame = {
+      camera,
+      cameraWorld,
       key,
       lod,
       pixelRatio,
@@ -415,34 +619,30 @@ export function createLeafletMapSurface({
           return cached;
         }
 
-        const projected = this.projectLngLat(city.lon, city.lat);
+        const worldPoint = cityWorldByName.get(city.name);
+        const projected = this.projectWorld(worldPoint);
         projectCache.set(city.name, projected);
         return projected;
       },
-      projectLngLat(lon, lat) {
-        const cacheKey = `${lat}:${lon}`;
-        const cached = coordinateCache.get(cacheKey);
+      projectWorld(worldPoint) {
+        const cacheKey = `${worldPoint.x}:${worldPoint.y}`;
+        const cached = worldProjectCache.get(cacheKey);
         if (cached) {
           return cached;
         }
 
-        const point = map
-          .latLngToLayerPoint([lat, lon])
-          .subtract(topLeft);
-        const projected = { x: point.x, y: point.y };
-        coordinateCache.set(cacheKey, projected);
+        const projected = projectWorldToScreen(worldPoint, camera, size);
+        worldProjectCache.set(cacheKey, projected);
         return projected;
       },
       size,
-      topLeft,
-      zoom
+      zoom: camera.zoom
     };
 
     return currentFrame;
   }
 
   function syncSurfaceFrame(frame) {
-    L.DomUtil.setPosition(surfaceRoot, frame.topLeft);
     surfaceRoot.style.width = `${frame.size.x}px`;
     surfaceRoot.style.height = `${frame.size.y}px`;
 
@@ -482,6 +682,28 @@ export function createLeafletMapSurface({
     return plan;
   }
 
+  function drawLandmass(frame) {
+    clearCanvas(backgroundContext, backgroundCanvas);
+    backgroundContext.save();
+    backgroundContext.fillStyle = OCEAN_FILL_COLOR;
+    backgroundContext.fillRect(0, 0, frame.size.x, frame.size.y);
+    backgroundContext.fillStyle = LANDMASS_FILL_COLOR;
+
+    for (const polygon of landmassPolygons) {
+      backgroundContext.beginPath();
+      for (const ring of polygon) {
+        traceWorldRing(backgroundContext, ring, frame);
+      }
+      backgroundContext.fill("evenodd");
+    }
+
+    backgroundContext.restore();
+    diagnostics.metric("landmass-layer-draw", landmassPolygons.length, {
+      polygon_count: landmassPolygons.length,
+      zoom: frame.zoom
+    });
+  }
+
   function drawBackgroundNetwork(frame) {
     clearCanvas(networkContext, networkCanvas);
     networkContext.save();
@@ -498,8 +720,8 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const fromPoint = frame.projectCity(edge.fromCity);
-      const toPoint = frame.projectCity(edge.toCity);
+      const fromPoint = frame.projectWorld(edge.fromWorld);
+      const toPoint = frame.projectWorld(edge.toWorld);
       if (!lineIntersectsViewport(fromPoint, toPoint, frame.size, frame.lod.networkPadding)) {
         continue;
       }
@@ -517,28 +739,6 @@ export function createLeafletMapSurface({
     });
   }
 
-  function drawLandmass(frame) {
-    clearCanvas(backgroundContext, backgroundCanvas);
-    backgroundContext.save();
-    backgroundContext.fillStyle = OCEAN_FILL_COLOR;
-    backgroundContext.fillRect(0, 0, frame.size.x, frame.size.y);
-    backgroundContext.fillStyle = LANDMASS_FILL_COLOR;
-
-    for (const polygon of landmassPolygons) {
-      backgroundContext.beginPath();
-      for (const ring of polygon) {
-        traceRing(backgroundContext, ring, frame);
-      }
-      backgroundContext.fill("evenodd");
-    }
-
-    backgroundContext.restore();
-    diagnostics.metric("landmass-layer-draw", landmassPolygons.length, {
-      polygon_count: landmassPolygons.length,
-      zoom: frame.zoom
-    });
-  }
-
   function drawRoutes(frame, segments) {
     clearCanvas(routeContext, routeCanvas);
     let drawnSegments = 0;
@@ -549,9 +749,9 @@ export function createLeafletMapSurface({
       }
 
       const points = segment.path
-        .map((name) => graph.cityMap[name])
+        .map((name) => cityWorldByName.get(name))
         .filter(Boolean)
-        .map((city) => frame.projectCity(city));
+        .map((worldPoint) => frame.projectWorld(worldPoint));
       if (points.length < 2) {
         continue;
       }
@@ -600,7 +800,7 @@ export function createLeafletMapSurface({
     clearCanvas(cityContext, cityCanvas);
 
     for (const visibleCity of visibleCities) {
-      drawMarker(visibleCity, visibleCity.style, frame.zoom);
+      drawMarker(visibleCity, visibleCity.style);
     }
   }
 
@@ -626,13 +826,13 @@ export function createLeafletMapSurface({
 
     let shown = 0;
     let reachable = 0;
-    let rendered = 0;
     let culledByViewport = 0;
     let culledByLod = 0;
     const visibleCities = [];
     const labelCandidates = [];
 
-    for (const city of cities) {
+    for (const entry of preparedCities) {
+      const city = entry.city;
       const inTrip = tripSet.has(city.name);
       let visible =
         inTrip ||
@@ -656,8 +856,6 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      shown += 1;
-
       const lodVisible =
         inTrip ||
         city.interest >= frame.lod.minInterest ||
@@ -667,13 +865,13 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const point = frame.projectCity(city);
+      const point = frame.projectWorld(entry.world);
       if (!pointInViewport(point, frame.size, frame.lod.cityPadding)) {
         culledByViewport += 1;
         continue;
       }
 
-      rendered += 1;
+      shown += 1;
       const style = markerStyle(city, frame.zoom, inTrip);
       const visibleCity = {
         city,
@@ -716,7 +914,7 @@ export function createLeafletMapSurface({
         culledByViewport,
         labelCount: labels.length,
         reachable,
-        rendered,
+        rendered: shown,
         shown,
         total: cities.length
       },
@@ -758,6 +956,36 @@ export function createLeafletMapSurface({
     }
   }
 
+  function updateHover(point) {
+    const hit = hitTestSpatialGrid(hitGrid, point);
+    surfaceRoot.style.cursor = pointerState?.moved
+      ? "grabbing"
+      : hit
+        ? "pointer"
+        : "grab";
+
+    if (!hit) {
+      hideTooltip();
+      return;
+    }
+
+    tooltip.innerHTML = buildTooltipHtml(
+      hit,
+      currentState,
+      escapeHtml,
+      formatMinutes,
+      formatPopulation
+    );
+    tooltip.style.display = "block";
+    tooltip.style.left = `${Math.round(point.x)}px`;
+    tooltip.style.top = `${Math.round(point.y - 12)}px`;
+    tooltip.style.transform = "translate(-50%, -100%)";
+  }
+
+  function hideTooltip() {
+    tooltip.style.display = "none";
+  }
+
   function emitRenderDiagnostics(reason, dirty, durationMs, frame, stats) {
     diagnostics.metric("map-render", stats.rendered, {
       culled_by_lod: stats.culledByLod,
@@ -772,7 +1000,7 @@ export function createLeafletMapSurface({
       zoom: frame.zoom
     });
 
-    const renderedHotPath = reason === "planner-state" || reason === "leaflet-view-change";
+    const renderedHotPath = reason === "planner-state" || reason === "wheel-zoom" || reason === "pointer-pan";
     if (renderedHotPath && now() - lastHotRenderInfoAt < HOT_RENDER_INFO_INTERVAL_MS) {
       return;
     }
@@ -929,8 +1157,8 @@ function createCanvas(className, parent) {
 }
 
 function syncCanvasSize(canvas, context, size, pixelRatio) {
-  const width = Math.round(size.x * pixelRatio);
-  const height = Math.round(size.y * pixelRatio);
+  const width = Math.max(1, Math.round(size.x * pixelRatio));
+  const height = Math.max(1, Math.round(size.y * pixelRatio));
   if (canvas.width !== width || canvas.height !== height) {
     canvas.width = width;
     canvas.height = height;
@@ -955,15 +1183,15 @@ function tracePoints(context, points) {
   }
 }
 
-function traceRing(context, ring, frame) {
+function traceWorldRing(context, ring, frame) {
   if (!ring || ring.length < 3) {
     return;
   }
 
-  const first = frame.projectLngLat(ring[0].lon, ring[0].lat);
+  const first = frame.projectWorld(ring[0]);
   context.moveTo(first.x, first.y);
   for (let index = 1; index < ring.length; index += 1) {
-    const point = frame.projectLngLat(ring[index].lon, ring[index].lat);
+    const point = frame.projectWorld(ring[index]);
     context.lineTo(point.x, point.y);
   }
   context.closePath();
@@ -1010,6 +1238,118 @@ function toCanvasColor(hexColor, alpha) {
   const green = Number.parseInt(expanded.slice(2, 4), 16);
   const blue = Number.parseInt(expanded.slice(4, 6), 16);
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
+function createZoomControls(parent) {
+  const root = document.createElement("div");
+  root.style.position = "absolute";
+  root.style.right = "12px";
+  root.style.bottom = "12px";
+  root.style.display = "flex";
+  root.style.flexDirection = "column";
+  root.style.border = "1px solid #1e293b";
+  root.style.borderRadius = "6px";
+  root.style.overflow = "hidden";
+  root.style.background = "#121827";
+  root.style.zIndex = "30";
+
+  const zoomIn = document.createElement("button");
+  zoomIn.type = "button";
+  zoomIn.textContent = "+";
+  styleZoomButton(zoomIn, true);
+
+  const zoomOut = document.createElement("button");
+  zoomOut.type = "button";
+  zoomOut.textContent = "−";
+  styleZoomButton(zoomOut, false);
+
+  root.appendChild(zoomIn);
+  root.appendChild(zoomOut);
+  parent.appendChild(root);
+
+  return {
+    root,
+    zoomIn,
+    zoomOut
+  };
+}
+
+function styleZoomButton(button, isTop) {
+  button.style.width = "30px";
+  button.style.height = "30px";
+  button.style.border = "none";
+  button.style.background = "#121827";
+  button.style.color = "#f1f5f9";
+  button.style.fontSize = "18px";
+  button.style.cursor = "pointer";
+  button.style.lineHeight = "1";
+  button.style.fontFamily = "'Outfit', sans-serif";
+  if (isTop) {
+    button.style.borderBottom = "1px solid #1e293b";
+  }
+  button.addEventListener("mouseenter", () => {
+    button.style.background = "#1a2035";
+    button.style.color = "#f59e0b";
+  });
+  button.addEventListener("mouseleave", () => {
+    button.style.background = "#121827";
+    button.style.color = "#f1f5f9";
+  });
+}
+
+function readSize(element) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: Math.max(1, Math.round(rect.width)),
+    y: Math.max(1, Math.round(rect.height))
+  };
+}
+
+function getLocalPoint(event, element) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+}
+
+function normalizeWheelDelta(event) {
+  let deltaY = event.deltaY;
+  if (event.deltaMode === 1) {
+    deltaY *= 16;
+  } else if (event.deltaMode === 2) {
+    deltaY *= 100;
+  }
+  return deltaY;
+}
+
+function clampCamera(camera) {
+  const centerWorld = mercatorProject(camera.lon, camera.lat);
+  const clampedCenter = mercatorUnproject(centerWorld.x, centerWorld.y);
+  return {
+    lat: clampedCenter.lat,
+    lon: clampedCenter.lon,
+    zoom: clampZoom(camera.zoom)
+  };
+}
+
+function clampZoom(zoom) {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+}
+
+function easeInOutCubic(value) {
+  return value < 0.5
+    ? 4 * value * value * value
+    : 1 - ((-2 * value + 2) ** 3) / 2;
+}
+
+function lerp(from, to, progress) {
+  return from + (to - from) * progress;
+}
+
+function roundCoordinate(value, digits) {
+  const power = 10 ** digits;
+  return Math.round(value * power) / power;
 }
 
 function now() {
