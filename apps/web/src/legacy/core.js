@@ -54,7 +54,13 @@ export function buildPlannerGraph(cities, routeData, options = {}) {
 
   if (Array.isArray(options.routePairs) && options.routePairs.length > 0) {
     for (const routePair of options.routePairs) {
-      addRoute(routePair.from, routePair.to, routePair.minutes, `${routePair.from}-${routePair.to}`);
+      addRoute(
+        routePair.from,
+        routePair.to,
+        routePair.minutes,
+        `${routePair.from}-${routePair.to}`,
+        routePair.geometry
+      );
     }
   } else {
     for (const [routeKey, travelMinutes] of Object.entries(routeData || {})) {
@@ -80,7 +86,7 @@ export function buildPlannerGraph(cities, routeData, options = {}) {
     searchIndex
   };
 
-  function addRoute(fromName, toName, travelMinutes, routeKey) {
+  function addRoute(fromName, toName, travelMinutes, routeKey, geometry) {
     const fromIndex = cityIndexByName.get(fromName);
     const toIndex = cityIndexByName.get(toName);
     if (fromIndex === undefined || toIndex === undefined || fromIndex === toIndex) {
@@ -88,11 +94,16 @@ export function buildPlannerGraph(cities, routeData, options = {}) {
       return;
     }
 
-    adjacency[fromIndex].push({ toIndex, t: travelMinutes });
-    adjacency[toIndex].push({ toIndex: fromIndex, t: travelMinutes });
+    adjacency[fromIndex].push({ geometry, t: travelMinutes, toIndex });
+    adjacency[toIndex].push({
+      geometry: reverseGeometry(geometry),
+      t: travelMinutes,
+      toIndex: fromIndex
+    });
     edges.push({
       from: fromName,
       fromIndex,
+      geometry,
       key: routeKey,
       minutes: travelMinutes,
       to: toName,
@@ -166,6 +177,7 @@ export function createPlannerModel(cities, routeData, options = {}) {
     }
 
     return {
+      geometry: buildPathGeometry(result.pathIndexes),
       path: result.pathIndexes.map((index) => cities[index].name),
       time: result.distance
     };
@@ -290,6 +302,23 @@ export function createPlannerModel(cities, routeData, options = {}) {
     },
     searchIndex
   };
+
+  function buildPathGeometry(pathIndexes) {
+    const merged = [];
+    for (let index = 1; index < pathIndexes.length; index += 1) {
+      const fromIndex = pathIndexes[index - 1];
+      const toIndex = pathIndexes[index];
+      const edge = adjacency[fromIndex].find((candidate) => candidate.toIndex === toIndex);
+      const segmentGeometry =
+        edge?.geometry ||
+        [
+          { lat: cities[fromIndex].lat, lon: cities[fromIndex].lon },
+          { lat: cities[toIndex].lat, lon: cities[toIndex].lon }
+        ];
+      appendGeometry(merged, segmentGeometry);
+    }
+    return merged;
+  }
 }
 
 function parseRouteKeyFactory(cityMap) {
@@ -346,6 +375,29 @@ function createSearchIndex(cities, searchEntries) {
         searchText: `${cityNameNormalized} ${countryNormalized}`
       };
     });
+}
+
+function reverseGeometry(geometry) {
+  if (!Array.isArray(geometry)) {
+    return geometry;
+  }
+  return [...geometry].reverse();
+}
+
+function appendGeometry(target, segment) {
+  if (!Array.isArray(segment) || segment.length === 0) {
+    return target;
+  }
+
+  for (const point of segment) {
+    const last = target[target.length - 1];
+    if (last && last.lat === point.lat && last.lon === point.lon) {
+      continue;
+    }
+    target.push(point);
+  }
+
+  return target;
 }
 
 function dijkstraIndexed(adjacency, startIndex, endIndex) {

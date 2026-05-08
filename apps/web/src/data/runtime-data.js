@@ -105,13 +105,14 @@ async function loadProductionDataSource() {
 
 async function loadProductionDataSourceInline() {
   return diagnostics.timeAsync("load-production-inline", async () => {
-    const [meta, rawCities, rawEdges] = await Promise.all([
+    const [meta, rawCities, rawEdges, rawEdgeGeometries] = await Promise.all([
       fetchJsonWithFallback("meta.json"),
       fetchJsonWithFallback("cities.json"),
-      fetchJsonWithFallback("edges.json")
+      fetchJsonWithFallback("edges.json"),
+      fetchJsonWithFallback("edge-geometries.json")
     ]);
 
-    const dataset = buildProductionPlannerData({ meta, rawCities, rawEdges });
+    const dataset = buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries });
     diagnostics.info("built production dataset inline", {
       dataset_version: dataset.meta?.dataset_version || null,
       city_count: dataset.cities.length,

@@ -17,13 +17,14 @@ self.addEventListener("message", async (event) => {
 
   try {
     const dataset = await diagnostics.timeAsync("load-production-dataset", async () => {
-      const [meta, rawCities, rawEdges] = await Promise.all([
+      const [meta, rawCities, rawEdges, rawEdgeGeometries] = await Promise.all([
         fetchJsonWithFallback(basePaths, "meta.json"),
         fetchJsonWithFallback(basePaths, "cities.json"),
-        fetchJsonWithFallback(basePaths, "edges.json")
+        fetchJsonWithFallback(basePaths, "edges.json"),
+        fetchJsonWithFallback(basePaths, "edge-geometries.json")
       ]);
 
-      return buildProductionPlannerData({ meta, rawCities, rawEdges });
+      return buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries });
     }, {
       request_id: requestId
     });

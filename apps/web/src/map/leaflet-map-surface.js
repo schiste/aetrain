@@ -131,6 +131,9 @@ export function createLeafletMapSurface({
         ...edge,
         fromCity,
         fromWorld,
+        geometryWorld: Array.isArray(edge.geometry)
+          ? edge.geometry.map((point) => mercatorProject(point.lon, point.lat))
+          : null,
         toCity,
         toWorld
       };
@@ -709,7 +712,6 @@ export function createLeafletMapSurface({
     networkContext.save();
     networkContext.strokeStyle = "rgba(30,41,59,0.5)";
     networkContext.lineWidth = 0.6;
-    networkContext.beginPath();
 
     let drawnEdges = 0;
     for (const edge of edgeRefs) {
@@ -720,18 +722,17 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const fromPoint = frame.projectWorld(edge.fromWorld);
-      const toPoint = frame.projectWorld(edge.toWorld);
-      if (!lineIntersectsViewport(fromPoint, toPoint, frame.size, frame.lod.networkPadding)) {
+      const worldPoints = edge.geometryWorld || [edge.fromWorld, edge.toWorld];
+      const points = worldPoints.map((worldPoint) => frame.projectWorld(worldPoint));
+      if (!polylineIntersectsViewport(points, frame.size, frame.lod.networkPadding)) {
         continue;
       }
 
-      networkContext.moveTo(fromPoint.x, fromPoint.y);
-      networkContext.lineTo(toPoint.x, toPoint.y);
+      networkContext.beginPath();
+      tracePoints(networkContext, points);
+      networkContext.stroke();
       drawnEdges += 1;
     }
-
-    networkContext.stroke();
     networkContext.restore();
     diagnostics.metric("network-layer-draw", drawnEdges, {
       drawn_edges: drawnEdges,
@@ -744,28 +745,24 @@ export function createLeafletMapSurface({
     let drawnSegments = 0;
 
     for (const segment of segments || []) {
-      if (!segment?.path || segment.path.length < 2) {
+      if ((!segment?.path || segment.path.length < 2) && (!segment?.geometry || segment.geometry.length < 2)) {
         continue;
       }
 
-      const points = segment.path
-        .map((name) => cityWorldByName.get(name))
-        .filter(Boolean)
-        .map((worldPoint) => frame.projectWorld(worldPoint));
+      const points = Array.isArray(segment.geometry) && segment.geometry.length >= 2
+        ? segment.geometry
+            .map((point) => mercatorProject(point.lon, point.lat))
+            .map((worldPoint) => frame.projectWorld(worldPoint))
+        : segment.path
+            .map((name) => cityWorldByName.get(name))
+            .filter(Boolean)
+            .map((worldPoint) => frame.projectWorld(worldPoint));
       if (points.length < 2) {
         continue;
       }
 
-      if (!points.some((point) => pointInViewport(point, frame.size, frame.lod.networkPadding))) {
-        const intersectsViewport = points.some((point, index) => {
-          if (index === 0) {
-            return false;
-          }
-          return lineIntersectsViewport(points[index - 1], point, frame.size, frame.lod.networkPadding);
-        });
-        if (!intersectsViewport) {
-          continue;
-        }
+      if (!polylineIntersectsViewport(points, frame.size, frame.lod.networkPadding)) {
+        continue;
       }
 
       routeContext.save();
@@ -1181,6 +1178,20 @@ function tracePoints(context, points) {
   for (let index = 1; index < points.length; index += 1) {
     context.lineTo(points[index].x, points[index].y);
   }
+}
+
+function polylineIntersectsViewport(points, size, padding) {
+  if (points.some((point) => pointInViewport(point, size, padding))) {
+    return true;
+  }
+
+  for (let index = 1; index < points.length; index += 1) {
+    if (lineIntersectsViewport(points[index - 1], points[index], size, padding)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function traceWorldRing(context, ring, frame) {

@@ -10,15 +10,16 @@ const COUNTRY_LABELS = {
 };
 const diagnostics = createDiagnostics("web/data/production-adapter");
 
-export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
+export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries }) {
   assertProductionArtifactBundle(
-    { meta, rawCities, rawEdges },
+    { meta, rawCities, rawEdges, rawEdgeGeometries },
     "Production runtime artifact bundle"
   );
   diagnostics.debug("adapting production runtime bundle", {
     dataset_version: meta.dataset_version,
     raw_city_count: rawCities.length,
-    raw_edge_count: rawEdges.length
+    raw_edge_count: rawEdges.length,
+    raw_geometry_count: rawEdgeGeometries.geometries.length
   });
 
   const neighborMap = new Map();
@@ -67,6 +68,17 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
     };
   });
 
+  const fallbackLocationByCityId = new Map(
+    rawCities.map((city) => [city.city_id, city.location])
+  );
+  const geometryByDirectedKey = new Map();
+  for (const geometry of rawEdgeGeometries.geometries) {
+    geometryByDirectedKey.set(
+      `${geometry.from_city_id}->${geometry.to_city_id}`,
+      decodeGeometryPoints(geometry.points)
+    );
+  }
+
   const routeData = {};
   const routePairs = [];
   for (const edge of rawEdges) {
@@ -79,7 +91,13 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
     routePairs.push({
       from,
       minutes: edge.duration_min,
-      to
+      to,
+      geometry:
+        geometryByDirectedKey.get(`${edge.from_city_id}->${edge.to_city_id}`) ||
+        [
+          fallbackLocationByCityId.get(edge.from_city_id),
+          fallbackLocationByCityId.get(edge.to_city_id)
+        ].filter(Boolean)
     });
     const routeKey = from.localeCompare(to) <= 0 ? `${from}-${to}` : `${to}-${from}`;
     routeData[routeKey] = Math.min(routeData[routeKey] ?? Infinity, edge.duration_min);
@@ -114,6 +132,13 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
     route_count: Object.keys(dataset.routeData).length
   });
   return dataset;
+}
+
+function decodeGeometryPoints(points) {
+  return points.map((point) => ({
+    lat: point.lat_e5 / 100_000,
+    lon: point.lon_e5 / 100_000
+  }));
 }
 
 function countryLabel(countryCode) {

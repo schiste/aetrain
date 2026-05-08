@@ -33,6 +33,7 @@ export function assertProductionArtifactBundle(bundle, context = "production art
   assertRuntimeArtifactMeta(bundle.meta, `${context}.meta`);
   assertRuntimeCities(bundle.rawCities, `${context}.rawCities`);
   assertRuntimeEdges(bundle.rawEdges, `${context}.rawEdges`);
+  assertRuntimeEdgeGeometries(bundle.rawEdgeGeometries, `${context}.rawEdgeGeometries`);
   return bundle;
 }
 
@@ -124,6 +125,23 @@ function assertRuntimeEdges(rawEdges, context) {
   }
 }
 
+function assertRuntimeEdgeGeometries(rawEdgeGeometries, context) {
+  assertRecord(rawEdgeGeometries, context);
+  if (!Array.isArray(rawEdgeGeometries.geometries)) {
+    throw new Error(`${context}.geometries must be an array`);
+  }
+
+  for (let index = 0; index < rawEdgeGeometries.geometries.length; index += 1) {
+    const geometry = rawEdgeGeometries.geometries[index];
+    const geometryContext = `${context}.geometries[${index}]`;
+    assertRecord(geometry, geometryContext);
+    assertString(geometry.from_city_id, `${geometryContext}.from_city_id`);
+    assertString(geometry.to_city_id, `${geometryContext}.to_city_id`);
+    assertString(geometry.source, `${geometryContext}.source`);
+    assertPolylinePoints(geometry.points, `${geometryContext}.points`);
+  }
+}
+
 function assertPlannerArtifacts(artifacts, context) {
   assertRecord(artifacts, context);
 
@@ -139,6 +157,9 @@ function assertPlannerArtifacts(artifacts, context) {
       assertString(route.from, `${routeContext}.from`);
       assertString(route.to, `${routeContext}.to`);
       assertFiniteNumber(route.minutes, `${routeContext}.minutes`);
+      if (route.geometry !== undefined) {
+        assertLatLonPolyline(route.geometry, `${routeContext}.geometry`);
+      }
     }
   }
 
@@ -163,6 +184,30 @@ function assertLocation(location, context) {
   assertRecord(location, context);
   assertFiniteNumber(location.lat, `${context}.lat`);
   assertFiniteNumber(location.lon, `${context}.lon`);
+}
+
+function assertPolylinePoints(points, context) {
+  if (!Array.isArray(points) || points.length < 2) {
+    throw new Error(`${context} must be an array with at least 2 points`);
+  }
+
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index];
+    const pointContext = `${context}[${index}]`;
+    assertRecord(point, pointContext);
+    assertFiniteNumber(point.lat_e5, `${pointContext}.lat_e5`);
+    assertFiniteNumber(point.lon_e5, `${pointContext}.lon_e5`);
+  }
+}
+
+function assertLatLonPolyline(points, context) {
+  if (!Array.isArray(points) || points.length < 2) {
+    throw new Error(`${context} must be an array with at least 2 points`);
+  }
+
+  for (let index = 0; index < points.length; index += 1) {
+    assertLocation(points[index], `${context}[${index}]`);
+  }
 }
 
 function assertRecord(value, context) {

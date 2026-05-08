@@ -23,10 +23,13 @@ test("createPlannerModel builds fastest path with indexed routing", () => {
   const model = createPlannerModel(cities, routeData);
   const route = model.dijkstra("Paris", "Marseille");
 
-  assert.deepEqual(route, {
-    path: ["Paris", "Lyon", "Marseille"],
-    time: 225
-  });
+  assert.deepEqual(route.path, ["Paris", "Lyon", "Marseille"]);
+  assert.equal(route.time, 225);
+  assert.deepEqual(route.geometry, [
+    { lat: 48.8566, lon: 2.3522 },
+    { lat: 45.764, lon: 4.8357 },
+    { lat: 43.2965, lon: 5.3698 }
+  ]);
 });
 
 test("dijkstraAll returns sparse reachable distances", () => {
@@ -66,7 +69,16 @@ test("createPlannerModel accepts prepared route pairs and search index", () => {
   }));
   const model = createPlannerModel(cities, routeData, {
     routePairs: [
-      { from: "Paris", minutes: 120, to: "Lyon" },
+      {
+        from: "Paris",
+        geometry: [
+          { lat: 48.8566, lon: 2.3522 },
+          { lat: 47.8, lon: 3.4 },
+          { lat: 45.764, lon: 4.8357 }
+        ],
+        minutes: 120,
+        to: "Lyon"
+      },
       { from: "Paris", minutes: 95, to: "Dijon" },
       { from: "Dijon", minutes: 70, to: "Lyon" },
       { from: "Lyon", minutes: 105, to: "Marseille" },
@@ -77,4 +89,9 @@ test("createPlannerModel accepts prepared route pairs and search index", () => {
 
   assert.equal(model.dijkstra("Paris", "Aix-en-Provence")?.time, 240);
   assert.deepEqual(model.searchCities("aix", 1).map((city) => city.name), ["Aix-en-Provence"]);
+  assert.deepEqual(model.dijkstra("Paris", "Lyon")?.geometry, [
+    { lat: 48.8566, lon: 2.3522 },
+    { lat: 47.8, lon: 3.4 },
+    { lat: 45.764, lon: 4.8357 }
+  ]);
 });
