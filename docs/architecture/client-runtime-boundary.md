@@ -22,6 +22,8 @@ The web app should have three explicit seams:
    - Location: `apps/web/src/data/`
    - Responsibility: load versioned runtime artifacts, validate them, and adapt
      them into a browser-facing planner dataset.
+   - Preferred shape: planner-ready artifacts should be precomputed here when
+     possible, for example prepared route pairs or normalized search indexes.
    - Rule: UI code never parses `meta.json`, `cities.json`, or other raw files
      directly.
 
@@ -62,7 +64,8 @@ surface, but the intended layering is now:
 - `workers/planner.worker.js`: worker adapter
 - `state/planner-store.js`: planner orchestration
 - `state/planner-url-state.js`: readable share-state adapter
-- `map/leaflet-map-surface.js`: rendering surface with Leaflet as camera/input
+- `map/leaflet-map-surface.js`: scheduled rendering surface with Leaflet as
+  camera/input and canvas layers behind a stable map API
 - `legacy/app.js`: current UI consumer of those boundaries
 
 That is the migration path toward:

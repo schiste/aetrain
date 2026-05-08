@@ -29,6 +29,16 @@ Long-term intent:
 - verbose structured diagnostics remain available across boot, data, engine,
   state, URL sync, and rendering
 
+Current performance-oriented web model:
+
+- planner graph build, routing, and search happen behind the planner gateway in
+  a worker-first flow
+- production datasets may carry planner-ready artifacts such as prepared route
+  pairs and search indexes
+- the map surface renders through scheduled canvas layers with viewport culling,
+  label budgets, and cached projected inputs
+- URL state is readable but committed off the immediate render hot path
+
 ## Current layout
 
 - `src/legacy/`: modularized transition app built from the original prototype

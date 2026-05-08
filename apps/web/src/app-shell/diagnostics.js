@@ -228,6 +228,7 @@ function elapsedSince(startedAt) {
 
 function resolveConsoleLevel() {
   const root = globalThis;
+  const inBrowser = typeof root.window !== "undefined" && root.window === root;
   const fromGlobal = root.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__;
   if (KNOWN_LEVELS.includes(fromGlobal)) {
     return fromGlobal;
@@ -240,6 +241,10 @@ function resolveConsoleLevel() {
       return fromQuery;
     }
   } catch {}
+
+  if (!inBrowser) {
+    return DEFAULT_CONSOLE_LEVEL;
+  }
 
   try {
     const fromStorage = root.localStorage?.getItem("aetrain-diagnostics-console-level");
