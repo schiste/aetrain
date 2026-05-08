@@ -3,41 +3,49 @@ const DEFAULT_HIT_GRID_CELL_SIZE = 48;
 export function buildLodProfile(zoom, labelThreshold) {
   return {
     cityPadding: Math.round(interpolateByZoom(zoom, [
-      [3, 24],
-      [5, 28],
-      [7, 32],
-      [10, 40]
+      [3, 28],
+      [5, 30],
+      [7, 34],
+      [10, 42]
     ])),
     labelBudget: Math.round(interpolateByZoom(zoom, [
-      [3, 16],
-      [5, 24],
-      [7, 40],
-      [10, 72]
+      [3, 20],
+      [4.5, 28],
+      [6, 38],
+      [7.5, 52],
+      [9, 68],
+      [10, 84]
     ])),
     labelThreshold: interpolateLabelThreshold(zoom, labelThreshold),
     minInterest: interpolateByZoom(zoom, [
-      [3, 7],
-      [5, 6],
-      [7, 4],
+      [3, 6.5],
+      [4.5, 5.8],
+      [6, 4.8],
+      [7.5, 3.5],
+      [9, 2],
       [10, 1]
     ]),
     minPopulation: Math.round(interpolateByZoom(zoom, [
-      [3, 250_000],
-      [5, 120_000],
-      [7, 40_000],
+      [3, 180_000],
+      [4.5, 120_000],
+      [6, 70_000],
+      [7.5, 30_000],
+      [9, 8_000],
       [10, 0]
     ])),
     networkMinInterest: interpolateByZoom(zoom, [
-      [3, 7],
-      [5, 6],
-      [7, 4],
+      [3, 6],
+      [4.5, 5.3],
+      [6, 4.5],
+      [7.5, 3],
+      [9, 1.8],
       [10, 1]
     ]),
     networkPadding: Math.round(interpolateByZoom(zoom, [
-      [3, 120],
-      [5, 132],
-      [7, 144],
-      [10, 156]
+      [3, 124],
+      [5, 136],
+      [7, 148],
+      [10, 164]
     ]))
   };
 }

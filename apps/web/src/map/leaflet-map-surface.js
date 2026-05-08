@@ -11,14 +11,15 @@ import { buildLandmassPolygons } from "./landmass-model.js";
 
 const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
-const MAX_CANVAS_PIXEL_RATIO = 2;
-const INTERACTION_LABEL_OPACITY = "0";
+const MAX_CANVAS_PIXEL_RATIO = 3;
+const MIN_CANVAS_PIXEL_RATIO = 1.5;
+const INTERACTION_LABEL_OPACITY = "0.18";
 const ZOOM_MOVEEND_SUPPRESSION_MS = 60;
 const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const TARGET_ZOOM_SCALE_RATIO = 1.02;
 const ZOOM_LEVEL_STEP = Math.log(TARGET_ZOOM_SCALE_RATIO) / Math.LN2;
-const WHEEL_PIXEL_DELTA_PER_STEP = 60;
+const WHEEL_PIXEL_DELTA_PER_STEP = 48;
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = WHEEL_PIXEL_DELTA_PER_STEP / ZOOM_LEVEL_STEP;
 
 const diagnostics = createDiagnostics("web/map/leaflet-surface");
@@ -46,12 +47,14 @@ export function createLeafletMapSurface({
     zoom: 5,
     minZoom: 3,
     maxZoom: 15,
-    wheelDebounceTime: 12,
+    fadeAnimation: false,
+    scrollWheelZoom: true,
+    wheelDebounceTime: 16,
     wheelPxPerZoomLevel: WHEEL_PIXELS_PER_ZOOM_LEVEL,
     zoomAnimationThreshold: 8,
     zoomControl: false,
     zoomDelta: ZOOM_LEVEL_STEP,
-    zoomSnap: ZOOM_LEVEL_STEP
+    zoomSnap: 0
   });
   L.control.zoom({ position: "bottomright" }).addTo(map);
 
@@ -83,6 +86,8 @@ export function createLeafletMapSurface({
   labelsLayer.style.inset = "0";
   labelsLayer.style.pointerEvents = "none";
   labelsLayer.style.contain = "layout style paint";
+  labelsLayer.style.transition = "opacity 120ms ease-out";
+  labelsLayer.style.willChange = "opacity";
   surfaceRoot.appendChild(labelsLayer);
 
   const backgroundContext = backgroundCanvas.getContext("2d");
@@ -389,7 +394,10 @@ export function createLeafletMapSurface({
 
     const size = map.getSize();
     const topLeft = map.containerPointToLayerPoint([0, 0]);
-    const pixelRatio = Math.min(MAX_CANVAS_PIXEL_RATIO, globalThis.devicePixelRatio || 1);
+    const pixelRatio = Math.min(
+      MAX_CANVAS_PIXEL_RATIO,
+      Math.max(MIN_CANVAS_PIXEL_RATIO, globalThis.devicePixelRatio || 1)
+    );
     const zoom = map.getZoom();
     const lod = buildLodProfile(zoom, labelThreshold);
     const key = `${zoom}:${size.x}x${size.y}:${Math.round(topLeft.x)}:${Math.round(topLeft.y)}`;
