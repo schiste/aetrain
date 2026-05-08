@@ -44,7 +44,7 @@ export function haversine(a, b) {
   return radiusKm * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-export function buildPlannerGraph(cities, routeData) {
+export function buildPlannerGraph(cities, routeData, options = {}) {
   const cityMap = Object.fromEntries(cities.map((city) => [city.name, city]));
   const cityIndexByName = new Map(cities.map((city, index) => [city.name, index]));
   const adjacency = Array.from({ length: cities.length }, () => []);
@@ -52,33 +52,23 @@ export function buildPlannerGraph(cities, routeData) {
   const invalidRouteKeys = [];
   const parseRouteKey = parseRouteKeyFactory(cityMap);
 
-  for (const [routeKey, travelMinutes] of Object.entries(routeData || {})) {
-    const endpoints = parseRouteKey(routeKey);
-    if (!endpoints) {
-      invalidRouteKeys.push(routeKey);
-      continue;
+  if (Array.isArray(options.routePairs) && options.routePairs.length > 0) {
+    for (const routePair of options.routePairs) {
+      addRoute(routePair.from, routePair.to, routePair.minutes, `${routePair.from}-${routePair.to}`);
     }
+  } else {
+    for (const [routeKey, travelMinutes] of Object.entries(routeData || {})) {
+      const endpoints = parseRouteKey(routeKey);
+      if (!endpoints) {
+        invalidRouteKeys.push(routeKey);
+        continue;
+      }
 
-    const fromIndex = cityIndexByName.get(endpoints[0]);
-    const toIndex = cityIndexByName.get(endpoints[1]);
-    if (fromIndex === undefined || toIndex === undefined || fromIndex === toIndex) {
-      invalidRouteKeys.push(routeKey);
-      continue;
+      addRoute(endpoints[0], endpoints[1], travelMinutes, routeKey);
     }
-
-    adjacency[fromIndex].push({ toIndex, t: travelMinutes });
-    adjacency[toIndex].push({ toIndex: fromIndex, t: travelMinutes });
-    edges.push({
-      from: endpoints[0],
-      fromIndex,
-      key: routeKey,
-      minutes: travelMinutes,
-      to: endpoints[1],
-      toIndex
-    });
   }
 
-  const searchIndex = createSearchIndex(cities);
+  const searchIndex = createSearchIndex(cities, options.searchIndex);
 
   return {
     adjacency,
@@ -89,6 +79,26 @@ export function buildPlannerGraph(cities, routeData) {
     invalidRouteKeys,
     searchIndex
   };
+
+  function addRoute(fromName, toName, travelMinutes, routeKey) {
+    const fromIndex = cityIndexByName.get(fromName);
+    const toIndex = cityIndexByName.get(toName);
+    if (fromIndex === undefined || toIndex === undefined || fromIndex === toIndex) {
+      invalidRouteKeys.push(routeKey);
+      return;
+    }
+
+    adjacency[fromIndex].push({ toIndex, t: travelMinutes });
+    adjacency[toIndex].push({ toIndex: fromIndex, t: travelMinutes });
+    edges.push({
+      from: fromName,
+      fromIndex,
+      key: routeKey,
+      minutes: travelMinutes,
+      to: toName,
+      toIndex
+    });
+  }
 }
 
 export function deriveTripPlan(model, trip) {
@@ -129,7 +139,7 @@ export function searchCities(citiesOrModel, { query, limit = 14 }) {
     .map((entry) => entry.city);
 }
 
-export function createPlannerModel(cities, routeData) {
+export function createPlannerModel(cities, routeData, options = {}) {
   const {
     adjacency,
     cityIndexByName,
@@ -137,7 +147,7 @@ export function createPlannerModel(cities, routeData) {
     edges,
     invalidRouteKeys,
     searchIndex
-  } = buildPlannerGraph(cities, routeData);
+  } = buildPlannerGraph(cities, routeData, options);
 
   function dijkstra(startName, endName) {
     if (startName === endName) {
@@ -310,7 +320,18 @@ function normalizeSearchQuery(query) {
     .trim();
 }
 
-function createSearchIndex(cities) {
+function createSearchIndex(cities, searchEntries) {
+  if (Array.isArray(searchEntries) && searchEntries.length > 0) {
+    return searchEntries
+      .map((entry) => ({
+        city: cities[entry.cityIndex],
+        cityNameNormalized: entry.cityNameNormalized,
+        countryNormalized: entry.countryNormalized,
+        searchText: entry.searchText
+      }))
+      .filter((entry) => entry.city);
+  }
+
   return [...cities]
     .sort((left, right) => {
       return right.interest - left.interest || right.pop - left.pop || left.name.localeCompare(right.name);

@@ -18,8 +18,8 @@ self.addEventListener("message", async (event) => {
 
   try {
     if (message.type === PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE) {
-      const { cities, routeData } = message.payload || {};
-      model = createPlannerModel(cities || [], routeData || {});
+      const { cities, plannerArtifacts, routeData } = message.payload || {};
+      model = createPlannerModel(cities || [], routeData || {}, plannerArtifacts || {});
       diagnostics.info("planner worker initialized model", {
         city_count: model.cities.length,
         edge_count: model.edges.length,

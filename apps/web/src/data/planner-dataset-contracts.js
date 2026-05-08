@@ -17,6 +17,9 @@ export function assertPlannerDataset(dataset, context = "planner dataset") {
   assertString(dataset.description, `${context}.description`);
   assertCities(dataset.cities, `${context}.cities`);
   assertRouteData(dataset.routeData, `${context}.routeData`);
+  if (dataset.plannerArtifacts !== undefined) {
+    assertPlannerArtifacts(dataset.plannerArtifacts, `${context}.plannerArtifacts`);
+  }
 
   if (dataset.meta !== undefined) {
     assertRuntimeArtifactMeta(dataset.meta, `${context}.meta`);
@@ -118,6 +121,41 @@ function assertRuntimeEdges(rawEdges, context) {
     assertString(edge.from_city_id, `${edgeContext}.from_city_id`);
     assertString(edge.to_city_id, `${edgeContext}.to_city_id`);
     assertFiniteNumber(edge.duration_min, `${edgeContext}.duration_min`);
+  }
+}
+
+function assertPlannerArtifacts(artifacts, context) {
+  assertRecord(artifacts, context);
+
+  if (artifacts.routePairs !== undefined) {
+    if (!Array.isArray(artifacts.routePairs)) {
+      throw new Error(`${context}.routePairs must be an array`);
+    }
+
+    for (let index = 0; index < artifacts.routePairs.length; index += 1) {
+      const route = artifacts.routePairs[index];
+      const routeContext = `${context}.routePairs[${index}]`;
+      assertRecord(route, routeContext);
+      assertString(route.from, `${routeContext}.from`);
+      assertString(route.to, `${routeContext}.to`);
+      assertFiniteNumber(route.minutes, `${routeContext}.minutes`);
+    }
+  }
+
+  if (artifacts.searchIndex !== undefined) {
+    if (!Array.isArray(artifacts.searchIndex)) {
+      throw new Error(`${context}.searchIndex must be an array`);
+    }
+
+    for (let index = 0; index < artifacts.searchIndex.length; index += 1) {
+      const entry = artifacts.searchIndex[index];
+      const entryContext = `${context}.searchIndex[${index}]`;
+      assertRecord(entry, entryContext);
+      assertFiniteNumber(entry.cityIndex, `${entryContext}.cityIndex`);
+      assertString(entry.cityNameNormalized, `${entryContext}.cityNameNormalized`);
+      assertString(entry.countryNormalized, `${entryContext}.countryNormalized`);
+      assertString(entry.searchText, `${entryContext}.searchText`);
+    }
   }
 }
 

@@ -144,7 +144,7 @@ export async function mountLegacyApp(root) {
     route_count: Object.keys(routeData).length,
     dataset_version: dataset.meta?.dataset_version || null
   });
-  const planner = await createPlannerClient(cities, routeData);
+  const planner = await createPlannerClient(cities, routeData, dataset.plannerArtifacts);
   const graph = planner.metadata;
   if (graph.invalidRouteKeys.length > 0) {
     root.dataset.invalidRouteCount = String(graph.invalidRouteKeys.length);

@@ -9,11 +9,11 @@ import {
 
 const diagnostics = createDiagnostics("web/engine/planner-client");
 
-export async function createPlannerClient(cities, routeData) {
+export async function createPlannerClient(cities, routeData, plannerArtifacts = {}) {
   return diagnostics.timeAsync("create-planner-client", async () => {
     if (typeof Worker === "undefined") {
       diagnostics.warn("worker api unavailable, using inline planner client");
-      return createInlinePlannerClient(cities, routeData);
+      return createInlinePlannerClient(cities, routeData, plannerArtifacts);
     }
 
     const worker = new Worker(new URL("../workers/planner.worker.js", import.meta.url), {
@@ -84,7 +84,11 @@ export async function createPlannerClient(cities, routeData) {
       });
     }
 
-    const metadata = await request(PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE, { cities, routeData });
+    const metadata = await request(PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE, {
+      cities,
+      plannerArtifacts,
+      routeData
+    });
     diagnostics.info("planner worker initialized", {
       city_count: metadata?.cities?.length || cities.length,
       edge_count: metadata?.edges?.length || 0,
@@ -105,12 +109,13 @@ export async function createPlannerClient(cities, routeData) {
       }
     };
   }, {
-    city_count: cities.length
+    city_count: cities.length,
+    prepared_route_count: plannerArtifacts.routePairs?.length || 0
   });
 }
 
-function createInlinePlannerClient(cities, routeData) {
-  const model = createPlannerModel(cities, routeData);
+function createInlinePlannerClient(cities, routeData, plannerArtifacts) {
+  const model = createPlannerModel(cities, routeData, plannerArtifacts);
   const metadata = {
     cities: model.cities,
     cityMap: model.cityMap,

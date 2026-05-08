@@ -68,6 +68,7 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
   });
 
   const routeData = {};
+  const routePairs = [];
   for (const edge of rawEdges) {
     const from = nameByCityId.get(edge.from_city_id);
     const to = nameByCityId.get(edge.to_city_id);
@@ -75,9 +76,25 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
       continue;
     }
 
+    routePairs.push({
+      from,
+      minutes: edge.duration_min,
+      to
+    });
     const routeKey = from.localeCompare(to) <= 0 ? `${from}-${to}` : `${to}-${from}`;
     routeData[routeKey] = Math.min(routeData[routeKey] ?? Infinity, edge.duration_min);
   }
+
+  const searchIndex = cities.map((city, cityIndex) => {
+    const cityNameNormalized = normalizeSearchValue(city.name);
+    const countryNormalized = normalizeSearchValue(city.country);
+    return {
+      cityIndex,
+      cityNameNormalized,
+      countryNormalized,
+      searchText: `${cityNameNormalized} ${countryNormalized}`
+    };
+  });
 
   const dataset = assertPlannerDataset({
     id: "production",
@@ -85,6 +102,10 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
     description: `SNCF Stage 1 debug snapshot · ${rawCities.length} cities · ${Object.keys(routeData).length} undirected routes · interest/pop derived heuristics`,
     meta,
     cities,
+    plannerArtifacts: {
+      routePairs,
+      searchIndex
+    },
     routeData
   }, "Production planner dataset");
   diagnostics.info("adapted production planner dataset", {
@@ -116,4 +137,12 @@ function derivePopulation(degree, stationCount) {
   if (degree >= 4) return 160_000;
   if (degree >= 2) return 110_000;
   return Math.max(50_000, stationCount * 25_000);
+}
+
+function normalizeSearchValue(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replaceAll(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
 }

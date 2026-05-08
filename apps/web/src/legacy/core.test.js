@@ -56,3 +56,25 @@ test("model searchCities reuses prepared search index", () => {
 
   assert.deepEqual(results.map((city) => city.name), ["Paris", "Marseille"]);
 });
+
+test("createPlannerModel accepts prepared route pairs and search index", () => {
+  const preparedSearchIndex = cities.map((city, cityIndex) => ({
+    cityIndex,
+    cityNameNormalized: city.name.toLowerCase(),
+    countryNormalized: city.country.toLowerCase(),
+    searchText: `${city.name.toLowerCase()} ${city.country.toLowerCase()}`
+  }));
+  const model = createPlannerModel(cities, routeData, {
+    routePairs: [
+      { from: "Paris", minutes: 120, to: "Lyon" },
+      { from: "Paris", minutes: 95, to: "Dijon" },
+      { from: "Dijon", minutes: 70, to: "Lyon" },
+      { from: "Lyon", minutes: 105, to: "Marseille" },
+      { from: "Marseille", minutes: 15, to: "Aix-en-Provence" }
+    ],
+    searchIndex: preparedSearchIndex
+  });
+
+  assert.equal(model.dijkstra("Paris", "Aix-en-Provence")?.time, 240);
+  assert.deepEqual(model.searchCities("aix", 1).map((city) => city.name), ["Aix-en-Provence"]);
+});
