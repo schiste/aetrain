@@ -1,75 +1,9 @@
-import { cities as pocCities, routeData as pocRouteData } from "./data.js";
-
-const DATA_SOURCE_STORAGE_KEY = "aetrain-data-source";
-const DATA_SOURCE_QUERY_PARAM = "source";
-const PRODUCTION_BASE_PATHS = ["./public/data/production", "./data/production"];
-
 const COUNTRY_LABELS = {
   FR: "France",
   ZZ: "Imported"
 };
 
-function isKnownDataSourceId(value) {
-  return value === "poc" || value === "production";
-}
-
-export function getRequestedDataSourceId() {
-  const url = new URL(window.location.href);
-  const fromQuery = url.searchParams.get(DATA_SOURCE_QUERY_PARAM);
-  if (isKnownDataSourceId(fromQuery)) {
-    return fromQuery;
-  }
-
-  try {
-    const stored = window.localStorage.getItem(DATA_SOURCE_STORAGE_KEY);
-    if (isKnownDataSourceId(stored)) {
-      return stored;
-    }
-  } catch {}
-
-  return "poc";
-}
-
-export function navigateToDataSource(sourceId) {
-  if (!isKnownDataSourceId(sourceId)) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(DATA_SOURCE_STORAGE_KEY, sourceId);
-  } catch {}
-
-  const url = new URL(window.location.href);
-  if (sourceId === "poc") {
-    url.searchParams.delete(DATA_SOURCE_QUERY_PARAM);
-  } else {
-    url.searchParams.set(DATA_SOURCE_QUERY_PARAM, sourceId);
-  }
-
-  window.location.assign(url.toString());
-}
-
-export async function loadPlannerDataSource(sourceId) {
-  if (sourceId === "production") {
-    return loadProductionDataSource();
-  }
-
-  return {
-    id: "poc",
-    label: "POC",
-    description: "Embedded proof-of-concept dataset.",
-    cities: pocCities,
-    routeData: pocRouteData
-  };
-}
-
-async function loadProductionDataSource() {
-  const [meta, rawCities, rawEdges] = await Promise.all([
-    fetchJsonWithFallback("meta.json"),
-    fetchJsonWithFallback("cities.json"),
-    fetchJsonWithFallback("edges.json")
-  ]);
-
+export function buildProductionPlannerData({ meta, rawCities, rawEdges }) {
   const neighborMap = new Map();
   for (const edge of rawEdges) {
     if (!neighborMap.has(edge.from_city_id)) {
@@ -136,23 +70,6 @@ async function loadProductionDataSource() {
     cities,
     routeData
   };
-}
-
-async function fetchJsonWithFallback(fileName) {
-  let lastError = null;
-  for (const basePath of PRODUCTION_BASE_PATHS) {
-    try {
-      const response = await fetch(`${basePath}/${fileName}`, { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError || new Error(`Failed to load ${fileName}`);
 }
 
 function countryLabel(countryCode) {

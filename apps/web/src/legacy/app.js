@@ -2,7 +2,7 @@ import {
   getRequestedDataSourceId,
   loadPlannerDataSource,
   navigateToDataSource
-} from "./data-sources.js";
+} from "../data/runtime-data.js";
 import {
   createPlannerModel,
   escapeHtml,
