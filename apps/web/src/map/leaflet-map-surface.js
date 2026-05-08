@@ -1,4 +1,16 @@
 import { createDiagnostics } from "../app-shell/diagnostics.js";
+import {
+  buildLodProfile,
+  createSpatialGrid,
+  hitTestSpatialGrid,
+  lineIntersectsViewport,
+  pointInViewport,
+  selectLabelCandidates
+} from "./render-model.js";
+
+const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
+const HOT_RENDER_INFO_INTERVAL_MS = 350;
+const MAX_CANVAS_PIXEL_RATIO = 2;
 
 const diagnostics = createDiagnostics("web/map/leaflet-surface");
 
@@ -20,6 +32,7 @@ export function createLeafletMapSurface({
     city_count: cities.length,
     edge_count: graph.edges.length
   });
+
   const map = L.map(elementId, {
     center: [50, 10],
     zoom: 5,
@@ -63,6 +76,7 @@ export function createLeafletMapSurface({
   surfaceRoot.style.left = "0";
   surfaceRoot.style.top = "0";
   surfaceRoot.style.zIndex = "250";
+  surfaceRoot.style.contain = "layout style paint";
 
   const networkCanvas = createCanvas("aetrain-map-canvas network", surfaceRoot);
   const cityCanvas = createCanvas("aetrain-map-canvas cities", surfaceRoot);
@@ -72,6 +86,7 @@ export function createLeafletMapSurface({
   labelsLayer.style.position = "absolute";
   labelsLayer.style.inset = "0";
   labelsLayer.style.pointerEvents = "none";
+  labelsLayer.style.contain = "layout style paint";
   surfaceRoot.appendChild(labelsLayer);
 
   const networkContext = networkCanvas.getContext("2d");
@@ -82,29 +97,58 @@ export function createLeafletMapSurface({
     offset: [0, -8]
   });
 
+  const edgeRefs = graph.edges
+    .map((edge) => ({
+      ...edge,
+      fromCity: graph.cityMap[edge.from],
+      toCity: graph.cityMap[edge.to]
+    }))
+    .filter((edge) => edge.fromCity && edge.toCity);
+
   let currentState = createEmptyPlannerState();
-  let visibleCities = [];
-  let viewChangeListeners = new Set();
+  let currentSignature = summarizePlannerRenderState(currentState);
+  let currentFrame = null;
+  let renderPlanCache = null;
   let lastRenderStats = {
+    culledByLod: 0,
+    culledByViewport: 0,
+    labelCount: 0,
     reachable: 0,
+    rendered: 0,
     shown: 0,
     total: cities.length
   };
+  let hitGrid = createSpatialGrid([]);
+  let viewChangeListeners = new Set();
+  let labelPool = [];
+  let scheduledFrameId = 0;
+  let pendingReason = null;
+  let pendingDirty = createDirtyFlags({
+    cities: true,
+    frame: true,
+    labels: true,
+    network: true,
+    routes: true
+  });
+  let viewChangeTimeoutId = 0;
+  let lastHotRenderInfoAt = 0;
 
   map.on("click", (event) => {
-    const hit = hitTest(event.containerPoint);
-    if (hit) {
-      diagnostics.info("map hit city", {
-        city_name: hit.city.name,
-        x: event.containerPoint.x,
-        y: event.containerPoint.y
-      });
-      onCitySelect?.(hit.city.name);
+    const hit = hitTestSpatialGrid(hitGrid, event.containerPoint);
+    if (!hit) {
+      return;
     }
+
+    diagnostics.info("map hit city", {
+      city_name: hit.city.name,
+      x: event.containerPoint.x,
+      y: event.containerPoint.y
+    });
+    onCitySelect?.(hit.city.name);
   });
 
   map.on("mousemove", (event) => {
-    const hit = hitTest(event.containerPoint);
+    const hit = hitTestSpatialGrid(hitGrid, event.containerPoint);
     map.getContainer().style.cursor = hit ? "pointer" : "";
 
     if (!hit) {
@@ -115,7 +159,7 @@ export function createLeafletMapSurface({
     }
 
     hoverTooltip.setLatLng([hit.city.lat, hit.city.lon]);
-    hoverTooltip.setContent(buildTooltipHtml(hit, currentState));
+    hoverTooltip.setContent(buildTooltipHtml(hit, currentState, escapeHtml, formatMinutes, formatPopulation));
     if (!map.hasLayer(hoverTooltip)) {
       hoverTooltip.addTo(map);
     }
@@ -128,30 +172,8 @@ export function createLeafletMapSurface({
     }
   });
 
-  function notifyViewChange() {
-    for (const listener of viewChangeListeners) {
-      listener(getViewState());
-    }
-  }
-
-  function redrawCurrentState() {
-    lastRenderStats = diagnostics.time("redraw-current-state", () => {
-      return drawPlannerState(currentState);
-    }, {
-      trip_length: currentState.trip.length,
-      zoom: map.getZoom()
-    });
-    onRenderStatsChange?.(lastRenderStats);
-    diagnostics.info("redrew planner map surface", {
-      ...lastRenderStats,
-      zoom: map.getZoom(),
-      trip_length: currentState.trip.length
-    });
-  }
-
-  map.on("moveend zoomend resize", () => {
-    redrawCurrentState();
-    notifyViewChange();
+  map.on("moveend resize", () => {
+    invalidateView("leaflet-view-change");
   });
 
   return {
@@ -173,14 +195,20 @@ export function createLeafletMapSurface({
     },
     getViewState,
     render(nextState) {
-      currentState = normalizePlannerState(nextState);
-      diagnostics.debug("received map render request", {
-        trip_length: currentState.trip.length,
-        filter_interest: currentState.filterInterest,
-        filter_pop: currentState.filterPop,
-        zoom: map.getZoom()
-      });
-      redrawCurrentState();
+      const normalizedState = normalizePlannerState(nextState);
+      const nextSignature = summarizePlannerRenderState(normalizedState);
+      const dirty = diffPlannerState(currentSignature, nextSignature);
+      currentState = normalizedState;
+      currentSignature = nextSignature;
+
+      if (!hasDirtyFlags(dirty)) {
+        diagnostics.debug("skipped map render for non-visual planner state change", {
+          search_query_length: String(normalizedState.searchQuery || "").length
+        });
+        return lastRenderStats;
+      }
+
+      scheduleRender("planner-state", dirty);
       return lastRenderStats;
     },
     setViewState(viewState) {
@@ -190,6 +218,7 @@ export function createLeafletMapSurface({
 
       diagnostics.info("setting map view state", viewState);
       map.setView([viewState.lat, viewState.lon], viewState.zoom, { animate: false });
+      invalidateView("set-view-state");
     },
     subscribeViewChange(listener) {
       diagnostics.debug("subscribed map view change listener", {
@@ -207,71 +236,199 @@ export function createLeafletMapSurface({
 
   function getViewState() {
     const center = map.getCenter();
-    const view = {
+    return {
       lat: center.lat,
       lon: center.lng,
       zoom: map.getZoom()
     };
-    diagnostics.debug("read map view state", view);
-    return view;
   }
 
-  function drawPlannerState(plannerState) {
-    const frame = syncSurfaceFrame();
-    clearCanvas(networkContext, networkCanvas);
-    clearCanvas(cityContext, cityCanvas);
-    clearCanvas(routeContext, routeCanvas);
-    labelsLayer.replaceChildren();
-
-    drawBackgroundNetwork(frame.topLeft);
-    drawRoutes(frame.topLeft, plannerState.segments);
-    return drawCitiesAndLabels(frame.topLeft, plannerState);
+  function invalidateView(reason) {
+    currentFrame = null;
+    renderPlanCache = null;
+    scheduleRender(reason, createDirtyFlags({
+      cities: true,
+      frame: true,
+      labels: true,
+      network: true,
+      routes: true
+    }));
+    scheduleViewChangeNotification();
   }
 
-  function syncSurfaceFrame() {
+  function scheduleViewChangeNotification() {
+    window.clearTimeout(viewChangeTimeoutId);
+    viewChangeTimeoutId = window.setTimeout(() => {
+      const viewState = getViewState();
+      for (const listener of viewChangeListeners) {
+        listener(viewState);
+      }
+    }, VIEW_CHANGE_COMMIT_DELAY_MS);
+  }
+
+  function scheduleRender(reason, dirty) {
+    mergeDirtyFlags(pendingDirty, dirty);
+    pendingReason = pendingReason || reason;
+
+    if (scheduledFrameId) {
+      return;
+    }
+
+    scheduledFrameId = window.requestAnimationFrame(() => {
+      scheduledFrameId = 0;
+      flushRender();
+    });
+  }
+
+  function flushRender() {
+    const dirty = pendingDirty;
+    const reason = pendingReason || "render";
+    pendingDirty = createDirtyFlags();
+    pendingReason = null;
+
+    const frame = getFrame();
+    const startedAt = now();
+
+    if (dirty.network) {
+      drawBackgroundNetwork(frame);
+    }
+
+    if (dirty.routes) {
+      drawRoutes(frame, currentState.segments);
+    }
+
+    if (dirty.cities || dirty.labels) {
+      const plan = getRenderPlan(frame, currentState, currentSignature);
+      if (dirty.cities) {
+        drawCities(frame, plan.visibleCities);
+      }
+      if (dirty.labels) {
+        applyLabels(plan.labels);
+      }
+      hitGrid = plan.hitGrid;
+      lastRenderStats = plan.stats;
+    }
+
+    onRenderStatsChange?.(lastRenderStats);
+    emitRenderDiagnostics(reason, dirty, now() - startedAt, frame, lastRenderStats);
+  }
+
+  function getFrame() {
+    if (currentFrame) {
+      return currentFrame;
+    }
+
     const size = map.getSize();
     const topLeft = map.containerPointToLayerPoint([0, 0]);
-    L.DomUtil.setPosition(surfaceRoot, topLeft);
-    surfaceRoot.style.width = `${size.x}px`;
-    surfaceRoot.style.height = `${size.y}px`;
+    const pixelRatio = Math.min(MAX_CANVAS_PIXEL_RATIO, globalThis.devicePixelRatio || 1);
+    const zoom = map.getZoom();
+    const lod = buildLodProfile(zoom, labelThreshold);
+    const key = `${zoom}:${size.x}x${size.y}:${Math.round(topLeft.x)}:${Math.round(topLeft.y)}`;
+    const projectCache = new Map();
 
-    syncCanvasSize(networkCanvas, size);
-    syncCanvasSize(cityCanvas, size);
-    syncCanvasSize(routeCanvas, size);
+    syncSurfaceFrame({ pixelRatio, size, topLeft });
 
-    labelsLayer.style.width = `${size.x}px`;
-    labelsLayer.style.height = `${size.y}px`;
+    currentFrame = {
+      key,
+      lod,
+      pixelRatio,
+      projectCity(city) {
+        const cached = projectCache.get(city.name);
+        if (cached) {
+          return cached;
+        }
 
-    return {
+        const point = map
+          .latLngToLayerPoint([city.lat, city.lon])
+          .subtract(topLeft);
+        const projected = { x: point.x, y: point.y };
+        projectCache.set(city.name, projected);
+        return projected;
+      },
       size,
-      topLeft
+      topLeft,
+      zoom
     };
+
+    return currentFrame;
   }
 
-  function drawBackgroundNetwork(topLeft) {
+  function syncSurfaceFrame(frame) {
+    L.DomUtil.setPosition(surfaceRoot, frame.topLeft);
+    surfaceRoot.style.width = `${frame.size.x}px`;
+    surfaceRoot.style.height = `${frame.size.y}px`;
+
+    syncCanvasSize(networkCanvas, networkContext, frame.size, frame.pixelRatio);
+    syncCanvasSize(cityCanvas, cityContext, frame.size, frame.pixelRatio);
+    syncCanvasSize(routeCanvas, routeContext, frame.size, frame.pixelRatio);
+
+    labelsLayer.style.width = `${frame.size.x}px`;
+    labelsLayer.style.height = `${frame.size.y}px`;
+  }
+
+  function getRenderPlan(frame, plannerState, signature) {
+    if (
+      renderPlanCache &&
+      renderPlanCache.frameKey === frame.key &&
+      renderPlanCache.distRef === signature.distRef &&
+      renderPlanCache.filterKey === signature.filterKey &&
+      renderPlanCache.legKey === signature.legKey &&
+      renderPlanCache.tripKey === signature.tripKey
+    ) {
+      return renderPlanCache.plan;
+    }
+
+    const plan = buildRenderPlan(frame, plannerState);
+    renderPlanCache = {
+      distRef: signature.distRef,
+      filterKey: signature.filterKey,
+      frameKey: frame.key,
+      legKey: signature.legKey,
+      plan,
+      tripKey: signature.tripKey
+    };
+    return plan;
+  }
+
+  function drawBackgroundNetwork(frame) {
+    clearCanvas(networkContext, networkCanvas);
     networkContext.save();
     networkContext.strokeStyle = "rgba(30,41,59,0.5)";
     networkContext.lineWidth = 0.6;
     networkContext.beginPath();
 
-    for (const edge of graph.edges) {
-      const fromCity = graph.cityMap[edge.from];
-      const toCity = graph.cityMap[edge.to];
-      if (!fromCity || !toCity) {
+    let drawnEdges = 0;
+    for (const edge of edgeRefs) {
+      if (
+        edge.fromCity.interest < frame.lod.networkMinInterest &&
+        edge.toCity.interest < frame.lod.networkMinInterest
+      ) {
         continue;
       }
 
-      const fromPoint = projectCityPoint(fromCity, topLeft);
-      const toPoint = projectCityPoint(toCity, topLeft);
+      const fromPoint = frame.projectCity(edge.fromCity);
+      const toPoint = frame.projectCity(edge.toCity);
+      if (!lineIntersectsViewport(fromPoint, toPoint, frame.size, frame.lod.networkPadding)) {
+        continue;
+      }
+
       networkContext.moveTo(fromPoint.x, fromPoint.y);
       networkContext.lineTo(toPoint.x, toPoint.y);
+      drawnEdges += 1;
     }
 
     networkContext.stroke();
     networkContext.restore();
+    diagnostics.metric("network-layer-draw", drawnEdges, {
+      drawn_edges: drawnEdges,
+      zoom: frame.zoom
+    });
   }
 
-  function drawRoutes(topLeft, segments) {
+  function drawRoutes(frame, segments) {
+    clearCanvas(routeContext, routeCanvas);
+    let drawnSegments = 0;
+
     for (const segment of segments || []) {
       if (!segment?.path || segment.path.length < 2) {
         continue;
@@ -280,9 +437,21 @@ export function createLeafletMapSurface({
       const points = segment.path
         .map((name) => graph.cityMap[name])
         .filter(Boolean)
-        .map((city) => projectCityPoint(city, topLeft));
+        .map((city) => frame.projectCity(city));
       if (points.length < 2) {
         continue;
+      }
+
+      if (!points.some((point) => pointInViewport(point, frame.size, frame.lod.networkPadding))) {
+        const intersectsViewport = points.some((point, index) => {
+          if (index === 0) {
+            return false;
+          }
+          return lineIntersectsViewport(points[index - 1], point, frame.size, frame.lod.networkPadding);
+        });
+        if (!intersectsViewport) {
+          continue;
+        }
       }
 
       routeContext.save();
@@ -303,23 +472,53 @@ export function createLeafletMapSurface({
       routeContext.lineCap = "round";
       routeContext.stroke();
       routeContext.restore();
+
+      drawnSegments += 1;
+    }
+
+    diagnostics.metric("route-layer-draw", drawnSegments, {
+      drawn_segments: drawnSegments,
+      zoom: frame.zoom
+    });
+  }
+
+  function drawCities(frame, visibleCities) {
+    clearCanvas(cityContext, cityCanvas);
+
+    for (const visibleCity of visibleCities) {
+      drawMarker(visibleCity, visibleCity.style, frame.zoom);
     }
   }
 
-  function drawCitiesAndLabels(topLeft, plannerState) {
-    const zoom = map.getZoom();
-    const threshold = labelThreshold(zoom);
+  function drawMarker(visibleCity, style) {
+    cityContext.save();
+    cityContext.beginPath();
+    cityContext.arc(visibleCity.x, visibleCity.y, style.radius, 0, Math.PI * 2);
+    cityContext.fillStyle = toCanvasColor(style.fillColor, style.fillOpacity);
+    cityContext.fill();
+    cityContext.lineWidth = style.weight;
+    cityContext.strokeStyle = toCanvasColor(style.color, style.opacity);
+    cityContext.stroke();
+    cityContext.restore();
+  }
+
+  function buildRenderPlan(frame, plannerState) {
+    const tripSet = new Set(plannerState.trip);
     const hasLegFilter = plannerState.trip.length >= 1;
     const legFilterActive =
       hasLegFilter &&
       (plannerState.legMin > 0 || plannerState.legMax < plannerState.legDynMax);
-    const labelFragment = document.createDocumentFragment();
+
     let shown = 0;
     let reachable = 0;
-    visibleCities = [];
+    let rendered = 0;
+    let culledByViewport = 0;
+    let culledByLod = 0;
+    const visibleCities = [];
+    const labelCandidates = [];
 
     for (const city of cities) {
-      const inTrip = plannerState.trip.includes(city.name);
+      const inTrip = tripSet.has(city.name);
       let visible =
         inTrip ||
         (city.interest >= plannerState.filterInterest &&
@@ -343,117 +542,182 @@ export function createLeafletMapSurface({
       }
 
       shown += 1;
-      const point = projectCityPoint(city, topLeft);
-      const style = markerStyle(city, zoom, inTrip);
-      drawMarker(point, style);
-      visibleCities.push({
+
+      const lodVisible =
+        inTrip ||
+        city.interest >= frame.lod.minInterest ||
+        city.pop >= frame.lod.minPopulation;
+      if (!lodVisible) {
+        culledByLod += 1;
+        continue;
+      }
+
+      const point = frame.projectCity(city);
+      if (!pointInViewport(point, frame.size, frame.lod.cityPadding)) {
+        culledByViewport += 1;
+        continue;
+      }
+
+      rendered += 1;
+      const style = markerStyle(city, frame.zoom, inTrip);
+      const visibleCity = {
         city,
         inTrip,
         radius: style.radius,
+        style,
         travelTime,
         x: point.x,
         y: point.y
-      });
+      };
+      visibleCities.push(visibleCity);
 
       const showLabel =
-        inTrip || (city.interest >= threshold.interest && city.pop >= threshold.pop);
+        inTrip ||
+        (city.interest >= frame.lod.labelThreshold.interest &&
+          city.pop >= frame.lod.labelThreshold.pop);
       if (!showLabel) {
         continue;
       }
 
-      const label = document.createElement("div");
-      let className = "city-lbl";
-      let labelText = city.name;
-      if (inTrip) {
-        className = "city-lbl trip-lbl";
-        labelText = `${plannerState.trip.indexOf(city.name) + 1}. ${city.name}`;
-      } else if (city.interest >= 9) {
-        className = "city-lbl top";
-      }
-
-      if (hasLegFilter && !inTrip && travelTime !== undefined && travelTime < Infinity) {
-        labelText = `${city.name} (${formatMinutes(travelTime)})`;
-      }
-
-      label.className = className;
-      label.textContent = labelText;
-      label.style.position = "absolute";
-      label.style.left = `${point.x + style.radius + 3}px`;
-      label.style.top = `${point.y - 7}px`;
-      labelFragment.appendChild(label);
+      labelCandidates.push(buildLabelCandidate(visibleCity, plannerState, formatMinutes));
     }
 
-    labelsLayer.appendChild(labelFragment);
-    diagnostics.debug("drew visible cities and labels", {
-      shown,
-      reachable,
-      label_count: labelsLayer.childElementCount,
-      total: cities.length,
-      zoom
-    });
+    labelCandidates.sort((left, right) => right.priority - left.priority);
+    const labels = selectLabelCandidates(labelCandidates, frame.lod.labelBudget);
+
     return {
-      reachable,
-      shown,
-      total: cities.length
+      hitGrid: createSpatialGrid(visibleCities),
+      labels,
+      stats: {
+        culledByLod,
+        culledByViewport,
+        labelCount: labels.length,
+        reachable,
+        rendered,
+        shown,
+        total: cities.length
+      },
+      visibleCities
     };
   }
 
-  function drawMarker(point, style) {
-    cityContext.save();
-    cityContext.beginPath();
-    cityContext.arc(point.x, point.y, style.radius, 0, Math.PI * 2);
-    cityContext.fillStyle = toCanvasColor(style.fillColor, style.fillOpacity);
-    cityContext.fill();
-    cityContext.lineWidth = style.weight;
-    cityContext.strokeStyle = toCanvasColor(style.color, style.opacity);
-    cityContext.stroke();
-    cityContext.restore();
-  }
+  function applyLabels(labels) {
+    ensureLabelPool(labels.length);
 
-  function hitTest(containerPoint) {
-    let bestHit = null;
-    let bestDistanceSq = Infinity;
-
-    for (const visibleCity of visibleCities) {
-      const dx = containerPoint.x - visibleCity.x;
-      const dy = containerPoint.y - visibleCity.y;
-      const distanceSq = dx * dx + dy * dy;
-      const hitRadius = Math.max(8, visibleCity.radius + 4);
-      if (distanceSq > hitRadius * hitRadius) {
-        continue;
+    for (let index = 0; index < labels.length; index += 1) {
+      const label = labels[index];
+      const node = labelPool[index];
+      if (node.className !== label.className) {
+        node.className = label.className;
       }
-
-      if (distanceSq < bestDistanceSq) {
-        bestDistanceSq = distanceSq;
-        bestHit = visibleCity;
+      if (node.textContent !== label.text) {
+        node.textContent = label.text;
       }
+      node.style.display = "block";
+      node.style.transform = `translate3d(${Math.round(label.x)}px, ${Math.round(label.y)}px, 0)`;
     }
 
-    return bestHit;
+    for (let index = labels.length; index < labelPool.length; index += 1) {
+      labelPool[index].style.display = "none";
+    }
   }
 
-  function buildTooltipHtml(hit, plannerState) {
-    const stars = "★".repeat(Math.min(hit.city.interest, 10));
-    let tooltip = `<b>${escapeHtml(hit.city.name)}</b><br><span style="color:#94a3b8;font-size:10px">${escapeHtml(hit.city.country)} · ${escapeHtml(formatPopulation(hit.city.pop))}</span><br><span style="color:#f59e0b;font-size:10px">${escapeHtml(stars)} ${hit.city.interest}/10</span>`;
+  function ensureLabelPool(count) {
+    while (labelPool.length < count) {
+      const node = document.createElement("div");
+      node.style.position = "absolute";
+      node.style.left = "0";
+      node.style.top = "0";
+      node.style.willChange = "transform";
+      node.style.display = "none";
+      labelsLayer.appendChild(node);
+      labelPool.push(node);
+    }
+  }
 
-    if (
-      plannerState.trip.length >= 1 &&
-      hit.travelTime !== undefined &&
-      hit.travelTime < Infinity &&
-      !plannerState.trip.includes(hit.city.name)
-    ) {
-      tooltip += `<br><span style="color:#10b981;font-size:10px">🚂 ${escapeHtml(formatMinutes(hit.travelTime))} from ${escapeHtml(plannerState.trip[plannerState.trip.length - 1])}</span>`;
+  function emitRenderDiagnostics(reason, dirty, durationMs, frame, stats) {
+    diagnostics.metric("map-render", stats.rendered, {
+      culled_by_lod: stats.culledByLod,
+      culled_by_viewport: stats.culledByViewport,
+      dirty,
+      duration_ms: roundMs(durationMs),
+      label_count: stats.labelCount,
+      reachable: stats.reachable,
+      reason,
+      rendered: stats.rendered,
+      shown: stats.shown,
+      zoom: frame.zoom
+    });
+
+    const renderedHotPath = reason === "planner-state" || reason === "leaflet-view-change";
+    if (renderedHotPath && now() - lastHotRenderInfoAt < HOT_RENDER_INFO_INTERVAL_MS) {
+      return;
     }
 
-    return tooltip;
+    lastHotRenderInfoAt = now();
+    diagnostics.info("rendered planner map surface", {
+      culled_by_lod: stats.culledByLod,
+      culled_by_viewport: stats.culledByViewport,
+      duration_ms: roundMs(durationMs),
+      label_count: stats.labelCount,
+      reason,
+      rendered: stats.rendered,
+      shown: stats.shown,
+      zoom: frame.zoom
+    });
+  }
+}
+
+function buildLabelCandidate(visibleCity, plannerState, formatMinutes) {
+  let className = "city-lbl";
+  let text = visibleCity.city.name;
+  if (visibleCity.inTrip) {
+    className = "city-lbl trip-lbl";
+    text = `${plannerState.trip.indexOf(visibleCity.city.name) + 1}. ${visibleCity.city.name}`;
+  } else if (visibleCity.city.interest >= 9) {
+    className = "city-lbl top";
   }
 
-  function projectCityPoint(city, topLeft) {
-    const point = map
-      .latLngToLayerPoint([city.lat, city.lon])
-      .subtract(topLeft);
-    return { x: point.x, y: point.y };
+  if (
+    plannerState.trip.length >= 1 &&
+    !visibleCity.inTrip &&
+    visibleCity.travelTime !== undefined &&
+    visibleCity.travelTime < Infinity
+  ) {
+    text = `${visibleCity.city.name} (${formatMinutes(visibleCity.travelTime)})`;
   }
+
+  return {
+    className,
+    priority: labelPriority(visibleCity, plannerState),
+    text,
+    x: visibleCity.x + visibleCity.radius + 3,
+    y: visibleCity.y - 7
+  };
+}
+
+function labelPriority(visibleCity, plannerState) {
+  if (visibleCity.inTrip) {
+    return 100_000 - plannerState.trip.indexOf(visibleCity.city.name);
+  }
+
+  return visibleCity.city.interest * 10_000 + visibleCity.city.pop / 1000;
+}
+
+function buildTooltipHtml(hit, plannerState, escapeHtml, formatMinutes, formatPopulation) {
+  const stars = "★".repeat(Math.min(hit.city.interest, 10));
+  let tooltip = `<b>${escapeHtml(hit.city.name)}</b><br><span style="color:#94a3b8;font-size:10px">${escapeHtml(hit.city.country)} · ${escapeHtml(formatPopulation(hit.city.pop))}</span><br><span style="color:#f59e0b;font-size:10px">${escapeHtml(stars)} ${hit.city.interest}/10</span>`;
+
+  if (
+    plannerState.trip.length >= 1 &&
+    hit.travelTime !== undefined &&
+    hit.travelTime < Infinity &&
+    !plannerState.trip.includes(hit.city.name)
+  ) {
+    tooltip += `<br><span style="color:#10b981;font-size:10px">🚂 ${escapeHtml(formatMinutes(hit.travelTime))} from ${escapeHtml(plannerState.trip[plannerState.trip.length - 1])}</span>`;
+  }
+
+  return tooltip;
 }
 
 function createEmptyPlannerState() {
@@ -464,6 +728,7 @@ function createEmptyPlannerState() {
     legDynMax: 1440,
     legMax: 1440,
     legMin: 0,
+    searchQuery: "",
     segments: [],
     trip: []
   };
@@ -476,6 +741,58 @@ function normalizePlannerState(state) {
   };
 }
 
+function summarizePlannerRenderState(state) {
+  return {
+    distRef: state.distFromLast,
+    filterKey: `${state.filterInterest}:${state.filterPop}`,
+    legKey: `${state.legMin}:${state.legMax}:${state.legDynMax}`,
+    segmentsRef: state.segments,
+    tripKey: state.trip.join("\u0000")
+  };
+}
+
+function diffPlannerState(previous, next) {
+  const dirty = createDirtyFlags();
+
+  if (previous.tripKey !== next.tripKey || previous.segmentsRef !== next.segmentsRef) {
+    dirty.routes = true;
+  }
+
+  if (
+    previous.tripKey !== next.tripKey ||
+    previous.filterKey !== next.filterKey ||
+    previous.legKey !== next.legKey ||
+    previous.distRef !== next.distRef
+  ) {
+    dirty.cities = true;
+    dirty.labels = true;
+  }
+
+  return dirty;
+}
+
+function createDirtyFlags(flags = {}) {
+  return {
+    cities: Boolean(flags.cities),
+    frame: Boolean(flags.frame),
+    labels: Boolean(flags.labels),
+    network: Boolean(flags.network),
+    routes: Boolean(flags.routes)
+  };
+}
+
+function mergeDirtyFlags(target, next) {
+  target.cities ||= next.cities;
+  target.frame ||= next.frame;
+  target.labels ||= next.labels;
+  target.network ||= next.network;
+  target.routes ||= next.routes;
+}
+
+function hasDirtyFlags(flags) {
+  return flags.cities || flags.frame || flags.labels || flags.network || flags.routes;
+}
+
 function createCanvas(className, parent) {
   const canvas = document.createElement("canvas");
   canvas.className = className;
@@ -483,29 +800,35 @@ function createCanvas(className, parent) {
   canvas.style.left = "0";
   canvas.style.top = "0";
   canvas.style.pointerEvents = "none";
+  canvas.style.willChange = "transform";
   parent.appendChild(canvas);
   return canvas;
 }
 
-function syncCanvasSize(canvas, size) {
-  if (canvas.width === size.x && canvas.height === size.y) {
-    return;
+function syncCanvasSize(canvas, context, size, pixelRatio) {
+  const width = Math.round(size.x * pixelRatio);
+  const height = Math.round(size.y * pixelRatio);
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = `${size.x}px`;
+    canvas.style.height = `${size.y}px`;
   }
 
-  canvas.width = size.x;
-  canvas.height = size.y;
-  canvas.style.width = `${size.x}px`;
-  canvas.style.height = `${size.y}px`;
+  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 }
 
 function clearCanvas(context, canvas) {
+  context.save();
+  context.setTransform(1, 0, 0, 1, 0, 0);
   context.clearRect(0, 0, canvas.width, canvas.height);
+  context.restore();
 }
 
 function tracePoints(context, points) {
   context.moveTo(points[0].x, points[0].y);
-  for (const point of points.slice(1)) {
-    context.lineTo(point.x, point.y);
+  for (let index = 1; index < points.length; index += 1) {
+    context.lineTo(points[index].x, points[index].y);
   }
 }
 
@@ -524,14 +847,16 @@ function markerColor(interest) {
 
 function markerStyle(city, zoom, inTrip) {
   const color = inTrip ? "#f59e0b" : markerColor(city.interest);
-  const radius = inTrip ? Math.max(8, markerRadius(city.interest, zoom) + 3) : markerRadius(city.interest, zoom);
+  const radius = inTrip
+    ? Math.max(8, markerRadius(city.interest, zoom) + 3)
+    : markerRadius(city.interest, zoom);
   return {
-    radius,
     color,
     fillColor: color,
     fillOpacity: inTrip ? 0.7 : city.interest >= 9 ? 0.5 : city.interest >= 7 ? 0.35 : 0.25,
-    weight: inTrip ? 2.5 : city.interest >= 7 ? 1.5 : 1,
-    opacity: inTrip ? 1 : 0.8
+    opacity: inTrip ? 1 : 0.8,
+    radius,
+    weight: inTrip ? 2.5 : city.interest >= 7 ? 1.5 : 1
   };
 }
 
@@ -548,4 +873,15 @@ function toCanvasColor(hexColor, alpha) {
   const green = Number.parseInt(expanded.slice(2, 4), 16);
   const blue = Number.parseInt(expanded.slice(4, 6), 16);
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
+function now() {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+function roundMs(value) {
+  return Math.round(value * 1000) / 1000;
 }

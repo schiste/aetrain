@@ -1,6 +1,8 @@
 import { createDiagnostics } from "../app-shell/diagnostics.js";
 
 const URL_STATE_VERSION = "v1";
+const STORE_COMMIT_DELAY_MS = 50;
+const VIEW_COMMIT_DELAY_MS = 180;
 const diagnostics = createDiagnostics("web/state/planner-url-state");
 
 export function parsePlannerUrlHash(hash) {
@@ -94,9 +96,10 @@ export function writePlannerUrlHash({ plannerState, mapView }) {
 
 export function bindPlannerUrlState({ plannerStore, mapSurface }) {
   let muted = false;
+  let scheduledCommitTimer = 0;
   diagnostics.info("bound planner url state");
 
-  function commit() {
+  function commit(reason) {
     if (muted) {
       diagnostics.debug("skipped url commit while muted");
       return;
@@ -116,9 +119,29 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
 
     url.hash = nextHash;
     diagnostics.info("committing planner url hash", {
-      hash: nextHash
+      hash: nextHash,
+      reason
     });
     window.history.replaceState(null, "", url.toString());
+  }
+
+  function scheduleCommit(reason, delayMs) {
+    if (muted) {
+      diagnostics.debug("skipped scheduling url commit while muted", {
+        reason
+      });
+      return;
+    }
+
+    window.clearTimeout(scheduledCommitTimer);
+    diagnostics.debug("scheduled planner url commit", {
+      delay_ms: delayMs,
+      reason
+    });
+    scheduledCommitTimer = window.setTimeout(() => {
+      scheduledCommitTimer = 0;
+      commit(reason);
+    }, delayMs);
   }
 
   return {
@@ -140,19 +163,20 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
         muted = false;
       }
 
-      commit();
+      commit("hydrate");
     },
     start() {
       diagnostics.info("starting planner url synchronization");
       const unsubscribeStore = plannerStore.subscribe(() => {
-        commit();
+        scheduleCommit("planner-store", STORE_COMMIT_DELAY_MS);
       });
       const unsubscribeMap = mapSurface.subscribeViewChange(() => {
-        commit();
+        scheduleCommit("map-view", VIEW_COMMIT_DELAY_MS);
       });
 
       return () => {
         diagnostics.info("stopping planner url synchronization");
+        window.clearTimeout(scheduledCommitTimer);
         unsubscribeStore();
         unsubscribeMap();
       };
