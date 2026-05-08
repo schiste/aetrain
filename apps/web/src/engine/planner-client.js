@@ -1,7 +1,6 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
 import {
-  createPlannerModel,
-  searchCities
+  createPlannerModel
 } from "../legacy/core.js";
 import {
   deserializePlannerError,
@@ -12,22 +11,9 @@ const diagnostics = createDiagnostics("web/engine/planner-client");
 
 export async function createPlannerClient(cities, routeData) {
   return diagnostics.timeAsync("create-planner-client", async () => {
-    const metadataModel = createPlannerModel(cities, routeData);
-    const metadata = {
-      cities,
-      cityMap: metadataModel.cityMap,
-      edges: metadataModel.edges,
-      invalidRouteKeys: metadataModel.invalidRouteKeys
-    };
-    diagnostics.info("planner metadata prepared", {
-      city_count: cities.length,
-      edge_count: metadata.edges.length,
-      invalid_route_count: metadata.invalidRouteKeys.length
-    });
-
     if (typeof Worker === "undefined") {
       diagnostics.warn("worker api unavailable, using inline planner client");
-      return createInlinePlannerClient(cities, routeData, metadata);
+      return createInlinePlannerClient(cities, routeData);
     }
 
     const worker = new Worker(new URL("../workers/planner.worker.js", import.meta.url), {
@@ -98,8 +84,12 @@ export async function createPlannerClient(cities, routeData) {
       });
     }
 
-    await request(PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE, { cities, routeData });
-    diagnostics.info("planner worker initialized");
+    const metadata = await request(PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE, { cities, routeData });
+    diagnostics.info("planner worker initialized", {
+      city_count: metadata?.cities?.length || cities.length,
+      edge_count: metadata?.edges?.length || 0,
+      invalid_route_count: metadata?.invalidRouteKeys?.length || 0
+    });
 
     return {
       metadata,
@@ -119,8 +109,14 @@ export async function createPlannerClient(cities, routeData) {
   });
 }
 
-function createInlinePlannerClient(cities, routeData, metadata) {
+function createInlinePlannerClient(cities, routeData) {
   const model = createPlannerModel(cities, routeData);
+  const metadata = {
+    cities: model.cities,
+    cityMap: model.cityMap,
+    edges: model.edges,
+    invalidRouteKeys: model.invalidRouteKeys
+  };
   diagnostics.info("created inline planner client", {
     city_count: cities.length,
     edge_count: metadata.edges.length
@@ -140,7 +136,7 @@ function createInlinePlannerClient(cities, routeData, metadata) {
     },
     async searchCities({ query, limit }) {
       return diagnostics.timeAsync("inline-search-cities", async () => {
-        return searchCities(cities, { query, limit });
+        return model.searchCities(query, limit);
       }, {
         query_length: String(query || "").length,
         limit

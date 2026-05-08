@@ -1,5 +1,5 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
-import { createPlannerModel, searchCities } from "../legacy/core.js";
+import { createPlannerModel } from "../legacy/core.js";
 import {
   PLANNER_WORKER_MESSAGE_TYPES,
   serializePlannerError
@@ -26,7 +26,12 @@ self.addEventListener("message", async (event) => {
         invalid_route_count: model.invalidRouteKeys.length,
         duration_ms: elapsedSince(startedAt)
       });
-      postSuccess(message.requestId, { ok: true });
+      postSuccess(message.requestId, {
+        cities: model.cities,
+        cityMap: model.cityMap,
+        edges: model.edges,
+        invalidRouteKeys: model.invalidRouteKeys
+      });
       return;
     }
 
@@ -55,7 +60,7 @@ self.addEventListener("message", async (event) => {
 
       const query = message.payload?.query || "";
       const limit = message.payload?.limit || 14;
-      const results = searchCities(model.cities, { query, limit });
+      const results = model.searchCities(query, limit);
       diagnostics.info("planner worker searched cities", {
         request_id: message.requestId,
         query,

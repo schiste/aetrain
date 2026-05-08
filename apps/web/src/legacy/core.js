@@ -44,57 +44,50 @@ export function haversine(a, b) {
   return radiusKm * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-function parseRouteKeyFactory(cityMap) {
-  const cityNames = Object.keys(cityMap).sort((a, b) => b.length - a.length);
-
-  return function parseRouteKey(routeKey) {
-    for (const cityName of cityNames) {
-      const prefix = `${cityName}-`;
-      if (!routeKey.startsWith(prefix)) {
-        continue;
-      }
-
-      const destination = routeKey.slice(prefix.length);
-      if (cityMap[destination]) {
-        return [cityName, destination];
-      }
-    }
-
-    return null;
-  };
-}
-
 export function buildPlannerGraph(cities, routeData) {
   const cityMap = Object.fromEntries(cities.map((city) => [city.name, city]));
-  const adj = {};
+  const cityIndexByName = new Map(cities.map((city, index) => [city.name, index]));
+  const adjacency = Array.from({ length: cities.length }, () => []);
   const edges = [];
   const invalidRouteKeys = [];
   const parseRouteKey = parseRouteKeyFactory(cityMap);
 
-  function addEdge(a, b, travelMinutes) {
-    adj[a] ||= [];
-    adj[b] ||= [];
-    adj[a].push({ to: b, t: travelMinutes });
-    adj[b].push({ to: a, t: travelMinutes });
-  }
-
-  for (const [routeKey, travelMinutes] of Object.entries(routeData)) {
+  for (const [routeKey, travelMinutes] of Object.entries(routeData || {})) {
     const endpoints = parseRouteKey(routeKey);
     if (!endpoints) {
       invalidRouteKeys.push(routeKey);
       continue;
     }
 
-    addEdge(endpoints[0], endpoints[1], travelMinutes);
-    edges.push({ from: endpoints[0], to: endpoints[1], minutes: travelMinutes, key: routeKey });
+    const fromIndex = cityIndexByName.get(endpoints[0]);
+    const toIndex = cityIndexByName.get(endpoints[1]);
+    if (fromIndex === undefined || toIndex === undefined || fromIndex === toIndex) {
+      invalidRouteKeys.push(routeKey);
+      continue;
+    }
+
+    adjacency[fromIndex].push({ toIndex, t: travelMinutes });
+    adjacency[toIndex].push({ toIndex: fromIndex, t: travelMinutes });
+    edges.push({
+      from: endpoints[0],
+      fromIndex,
+      key: routeKey,
+      minutes: travelMinutes,
+      to: endpoints[1],
+      toIndex
+    });
   }
 
+  const searchIndex = createSearchIndex(cities);
+
   return {
-    adj,
+    adjacency,
     cities,
+    cityIndexByName,
     cityMap,
     edges,
-    invalidRouteKeys
+    invalidRouteKeys,
+    searchIndex
   };
 }
 
@@ -114,121 +107,82 @@ export function deriveTripPlan(model, trip) {
   };
 }
 
-export function searchCities(cities, { query, limit = 14 }) {
-  const normalizedQuery = String(query || "")
-    .toLowerCase()
-    .trim();
-
-  if (normalizedQuery.length < 1) {
+export function searchCities(citiesOrModel, { query, limit = 14 }) {
+  const normalizedQuery = normalizeSearchQuery(query);
+  if (!normalizedQuery) {
     return [];
   }
 
-  return cities
-    .filter((city) => {
+  const searchIndex = Array.isArray(citiesOrModel)
+    ? createSearchIndex(citiesOrModel)
+    : citiesOrModel.searchIndex || createSearchIndex(citiesOrModel.cities || []);
+
+  return searchIndex
+    .filter((entry) => {
       return (
-        city.name.toLowerCase().includes(normalizedQuery) ||
-        city.country.toLowerCase().includes(normalizedQuery)
+        entry.cityNameNormalized.includes(normalizedQuery) ||
+        entry.countryNormalized.includes(normalizedQuery) ||
+        entry.searchText.includes(normalizedQuery)
       );
     })
-    .sort((left, right) => right.interest - left.interest || right.pop - left.pop)
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((entry) => entry.city);
 }
 
 export function createPlannerModel(cities, routeData) {
-  const { adj, cityMap, edges, invalidRouteKeys } = buildPlannerGraph(cities, routeData);
+  const {
+    adjacency,
+    cityIndexByName,
+    cityMap,
+    edges,
+    invalidRouteKeys,
+    searchIndex
+  } = buildPlannerGraph(cities, routeData);
 
-  function dijkstra(start, end) {
-    if (start === end) {
-      return { time: 0, path: [start] };
+  function dijkstra(startName, endName) {
+    if (startName === endName) {
+      return { time: 0, path: [startName] };
     }
 
-    if (!adj[start] || !adj[end]) {
+    const startIndex = cityIndexByName.get(startName);
+    const endIndex = cityIndexByName.get(endName);
+    if (startIndex === undefined || endIndex === undefined) {
       return null;
     }
 
-    const distance = {};
-    const previous = {};
-    const visited = {};
-    const queue = [start];
-
-    for (const node of Object.keys(adj)) {
-      distance[node] = Infinity;
-    }
-    distance[start] = 0;
-
-    while (queue.length > 0) {
-      queue.sort((a, b) => distance[a] - distance[b]);
-      const current = queue.shift();
-      if (!current || visited[current]) {
-        continue;
-      }
-
-      visited[current] = true;
-      if (current === end) {
-        break;
-      }
-
-      for (const edge of adj[current] || []) {
-        const alt = distance[current] + edge.t;
-        if (alt < distance[edge.to]) {
-          distance[edge.to] = alt;
-          previous[edge.to] = current;
-          queue.push(edge.to);
-        }
-      }
-    }
-
-    if (distance[end] === Infinity) {
+    const result = dijkstraIndexed(adjacency, startIndex, endIndex);
+    if (!result) {
       return null;
     }
 
-    const path = [];
-    let cursor = end;
-    while (cursor) {
-      path.unshift(cursor);
-      cursor = previous[cursor];
-    }
-
-    return { time: distance[end], path };
+    return {
+      path: result.pathIndexes.map((index) => cities[index].name),
+      time: result.distance
+    };
   }
 
-  function dijkstraAll(start) {
-    const distance = {};
-    const visited = {};
-    const queue = [start];
-
-    for (const node of Object.keys(adj)) {
-      distance[node] = Infinity;
+  function dijkstraAll(startName) {
+    const startIndex = cityIndexByName.get(startName);
+    if (startIndex === undefined) {
+      return {};
     }
 
-    if (!adj[start]) {
-      return distance;
-    }
-
-    distance[start] = 0;
-
-    while (queue.length > 0) {
-      queue.sort((a, b) => distance[a] - distance[b]);
-      const current = queue.shift();
-      if (!current || visited[current]) {
+    const distances = dijkstraAllIndexed(adjacency, startIndex);
+    const result = {};
+    for (let index = 0; index < distances.length; index += 1) {
+      const distance = distances[index];
+      if (!Number.isFinite(distance)) {
         continue;
       }
-
-      visited[current] = true;
-      for (const edge of adj[current] || []) {
-        const alt = distance[current] + edge.t;
-        if (alt < distance[edge.to]) {
-          distance[edge.to] = alt;
-          queue.push(edge.to);
-        }
-      }
+      result[cities[index].name] = distance;
     }
 
-    return distance;
+    return result;
   }
 
   function findInterestingStops(segments, tripNames) {
     const suggestions = [];
+    const tripSet = new Set(tripNames);
 
     for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
       const segment = segments[segmentIndex];
@@ -238,7 +192,7 @@ export function createPlannerModel(cities, routeData) {
 
       for (let pathIndex = 1; pathIndex < segment.path.length - 1; pathIndex += 1) {
         const name = segment.path[pathIndex];
-        if (tripNames.includes(name)) {
+        if (tripSet.has(name)) {
           continue;
         }
 
@@ -258,7 +212,7 @@ export function createPlannerModel(cities, routeData) {
 
       const routeSet = Object.fromEntries(segment.path.map((name) => [name, true]));
       for (const city of cities) {
-        if (city.interest < 7 || routeSet[city.name] || tripNames.includes(city.name)) {
+        if (city.interest < 7 || routeSet[city.name] || tripSet.has(city.name)) {
           continue;
         }
 
@@ -296,12 +250,15 @@ export function createPlannerModel(cities, routeData) {
         seen.add(suggestion.name);
         return true;
       })
-      .sort((a, b) => b.city.interest - a.city.interest || a.detourMin - b.detourMin);
+      .sort((left, right) => {
+        return right.city.interest - left.city.interest || left.detourMin - right.detourMin;
+      });
   }
 
   return {
-    adj,
+    adjacency,
     cities,
+    cityIndexByName,
     cityMap,
     deriveTripPlan(trip) {
       return deriveTripPlan(
@@ -317,6 +274,207 @@ export function createPlannerModel(cities, routeData) {
     dijkstraAll,
     edges,
     findInterestingStops,
-    invalidRouteKeys
+    invalidRouteKeys,
+    searchCities(query, limit) {
+      return searchCities({ cities, searchIndex }, { query, limit });
+    },
+    searchIndex
   };
+}
+
+function parseRouteKeyFactory(cityMap) {
+  const cityNames = Object.keys(cityMap).sort((left, right) => right.length - left.length);
+
+  return function parseRouteKey(routeKey) {
+    for (const cityName of cityNames) {
+      const prefix = `${cityName}-`;
+      if (!routeKey.startsWith(prefix)) {
+        continue;
+      }
+
+      const destination = routeKey.slice(prefix.length);
+      if (cityMap[destination]) {
+        return [cityName, destination];
+      }
+    }
+
+    return null;
+  };
+}
+
+function normalizeSearchQuery(query) {
+  return String(query || "")
+    .normalize("NFKD")
+    .replaceAll(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function createSearchIndex(cities) {
+  return [...cities]
+    .sort((left, right) => {
+      return right.interest - left.interest || right.pop - left.pop || left.name.localeCompare(right.name);
+    })
+    .map((city) => {
+      const cityNameNormalized = normalizeSearchQuery(city.name);
+      const countryNormalized = normalizeSearchQuery(city.country);
+      return {
+        city,
+        cityNameNormalized,
+        countryNormalized,
+        searchText: `${cityNameNormalized} ${countryNormalized}`
+      };
+    });
+}
+
+function dijkstraIndexed(adjacency, startIndex, endIndex) {
+  const distance = new Float64Array(adjacency.length);
+  distance.fill(Number.POSITIVE_INFINITY);
+  const previous = new Int32Array(adjacency.length);
+  previous.fill(-1);
+  const visited = new Uint8Array(adjacency.length);
+  const queue = createMinHeap();
+
+  distance[startIndex] = 0;
+  queue.push(startIndex, 0);
+
+  while (!queue.isEmpty()) {
+    const current = queue.pop();
+    if (!current || visited[current.node]) {
+      continue;
+    }
+
+    visited[current.node] = 1;
+    if (current.node === endIndex) {
+      break;
+    }
+
+    for (const edge of adjacency[current.node]) {
+      const alt = distance[current.node] + edge.t;
+      if (alt >= distance[edge.toIndex]) {
+        continue;
+      }
+
+      distance[edge.toIndex] = alt;
+      previous[edge.toIndex] = current.node;
+      queue.push(edge.toIndex, alt);
+    }
+  }
+
+  if (!Number.isFinite(distance[endIndex])) {
+    return null;
+  }
+
+  const pathIndexes = [];
+  for (let cursor = endIndex; cursor >= 0; cursor = previous[cursor]) {
+    pathIndexes.unshift(cursor);
+    if (cursor === startIndex) {
+      break;
+    }
+  }
+
+  return {
+    distance: distance[endIndex],
+    pathIndexes
+  };
+}
+
+function dijkstraAllIndexed(adjacency, startIndex) {
+  const distance = new Float64Array(adjacency.length);
+  distance.fill(Number.POSITIVE_INFINITY);
+  const visited = new Uint8Array(adjacency.length);
+  const queue = createMinHeap();
+
+  distance[startIndex] = 0;
+  queue.push(startIndex, 0);
+
+  while (!queue.isEmpty()) {
+    const current = queue.pop();
+    if (!current || visited[current.node]) {
+      continue;
+    }
+
+    visited[current.node] = 1;
+    for (const edge of adjacency[current.node]) {
+      const alt = distance[current.node] + edge.t;
+      if (alt >= distance[edge.toIndex]) {
+        continue;
+      }
+
+      distance[edge.toIndex] = alt;
+      queue.push(edge.toIndex, alt);
+    }
+  }
+
+  return distance;
+}
+
+function createMinHeap() {
+  const items = [];
+
+  return {
+    isEmpty() {
+      return items.length === 0;
+    },
+    pop() {
+      if (items.length === 0) {
+        return null;
+      }
+
+      const top = items[0];
+      const last = items.pop();
+      if (items.length > 0 && last) {
+        items[0] = last;
+        siftDown(items, 0);
+      }
+      return top;
+    },
+    push(node, distance) {
+      items.push({ distance, node });
+      siftUp(items, items.length - 1);
+    }
+  };
+}
+
+function siftUp(items, index) {
+  let cursor = index;
+  while (cursor > 0) {
+    const parentIndex = Math.floor((cursor - 1) / 2);
+    if (items[parentIndex].distance <= items[cursor].distance) {
+      break;
+    }
+
+    [items[parentIndex], items[cursor]] = [items[cursor], items[parentIndex]];
+    cursor = parentIndex;
+  }
+}
+
+function siftDown(items, index) {
+  let cursor = index;
+  while (cursor < items.length) {
+    const leftIndex = cursor * 2 + 1;
+    const rightIndex = cursor * 2 + 2;
+    let smallestIndex = cursor;
+
+    if (
+      leftIndex < items.length &&
+      items[leftIndex].distance < items[smallestIndex].distance
+    ) {
+      smallestIndex = leftIndex;
+    }
+
+    if (
+      rightIndex < items.length &&
+      items[rightIndex].distance < items[smallestIndex].distance
+    ) {
+      smallestIndex = rightIndex;
+    }
+
+    if (smallestIndex === cursor) {
+      break;
+    }
+
+    [items[cursor], items[smallestIndex]] = [items[smallestIndex], items[cursor]];
+    cursor = smallestIndex;
+  }
 }
