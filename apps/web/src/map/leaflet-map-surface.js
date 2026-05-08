@@ -19,8 +19,7 @@ const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const TARGET_ZOOM_SCALE_RATIO = 1.02;
 const ZOOM_LEVEL_STEP = Math.log(TARGET_ZOOM_SCALE_RATIO) / Math.LN2;
-const WHEEL_PIXEL_DELTA_PER_STEP = 48;
-const WHEEL_PIXELS_PER_ZOOM_LEVEL = WHEEL_PIXEL_DELTA_PER_STEP / ZOOM_LEVEL_STEP;
+const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
 
 const diagnostics = createDiagnostics("web/map/leaflet-surface");
 
