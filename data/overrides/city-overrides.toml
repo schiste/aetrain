@@ -1,9 +1,12 @@
 # Keep this file empty until the first real override is justified.
 #
-# [[override]]
+# [[city_override]]
 # id = "paris-station-cluster"
 # target_city_id = "paris-fr"
-# source_refs = ["sncf-fr:stop:8727100", "sncf-fr:stop:8727101"]
+# source_refs = [
+#   { source_id = "sncf-fr-gtfs", entity_kind = "station", raw_id = "stop:8727100" },
+#   { source_id = "sncf-fr-gtfs", entity_kind = "station", raw_id = "stop:8727101" },
+# ]
 # reason = "Feed-level station naming remains ambiguous after normalization."
 # added_by = "name"
 # added_at = "2026-05-07"

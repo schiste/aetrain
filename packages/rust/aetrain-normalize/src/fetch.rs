@@ -112,6 +112,44 @@ pub fn fetch_sources(
     Ok(fetched_sources)
 }
 
+pub fn resolve_cached_sources(
+    manifest: &SourceManifest,
+    cache_root: &Path,
+) -> Result<Vec<FetchedSource>> {
+    let registry = load_source_state_registry(cache_root)?;
+    let mut resolved = Vec::new();
+
+    for definition in manifest.active_sources() {
+        let state = registry
+            .sources
+            .iter()
+            .find(|record| record.source_id == definition.id)
+            .with_context(|| format!("missing cached source state for {}", definition.id))?;
+        let local_path = PathBuf::from(&state.local_path);
+        if !local_path.exists() {
+            return Err(anyhow!(
+                "cached source file for {} is missing at {}",
+                definition.id,
+                local_path.display()
+            ));
+        }
+
+        resolved.push(FetchedSource {
+            definition: definition.clone(),
+            local_path,
+            fetched_at: state.fetched_at.clone(),
+            probe_version: state.probe_version.clone(),
+            etag: state.etag.clone(),
+            last_modified: state.last_modified.clone(),
+            content_length: state.content_length,
+            sha256: state.sha256.clone(),
+            status: FetchStatus::SkippedUpToDate,
+        });
+    }
+
+    Ok(resolved)
+}
+
 impl FetchedSource {
     fn to_state_record(&self) -> SourceStateRecord {
         SourceStateRecord {
@@ -345,6 +383,7 @@ mod tests {
             file_name: Some("gtfs.zip".to_string()),
             version_probe_url: None,
             active: true,
+            role: Some("schedule".to_string()),
             include_service_classes: vec![ServiceClass::Regional],
             notes: None,
         }

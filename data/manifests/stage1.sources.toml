@@ -1,12 +1,23 @@
 dataset_id = "stage1"
 schema_version = 1
 description = "Stage 1 feed inventory for the static journey builder."
+default_target_id = "sncf-fr"
+
+[[target]]
+id = "sncf-fr"
+adapter = "sncf_fr"
+source_ids = ["sncf-fr-gtfs", "sncf-fr-stations"]
+active = true
+canonical_export = true
+web_debug_export = true
+notes = "Official SNCF Stage 1 target with canonical and runtime web-debug exports."
 
 [[source]]
 id = "sncf-fr-gtfs"
 kind = "gtfs"
 country_code = "FR"
 adapter = "sncf_fr"
+role = "schedule"
 url = "https://eu.ftp.opendatasoft.com/sncf/plandata/Export_OpenData_SNCF_GTFS_NewTripId.zip"
 file_name = "sncf-fr-gtfs.zip"
 active = true
@@ -18,6 +29,7 @@ id = "sncf-fr-stations"
 kind = "supplementary"
 country_code = "FR"
 adapter = "sncf_fr"
+role = "stations_reference"
 url = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/gares-de-voyageurs/exports/csv?limit=-1&timezone=Europe%2FParis&delimiter=%2C"
 file_name = "sncf-fr-stations.csv"
 version_probe_url = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/gares-de-voyageurs"

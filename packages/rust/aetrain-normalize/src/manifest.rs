@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 
 use aetrain_domain::{CityId, ServiceClass, SourceRef};
-use anyhow::Context;
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -24,6 +24,8 @@ pub struct SourceDefinition {
     pub version_probe_url: Option<String>,
     pub active: bool,
     #[serde(default)]
+    pub role: Option<String>,
+    #[serde(default)]
     pub include_service_classes: Vec<ServiceClass>,
     #[serde(default)]
     pub notes: Option<String>,
@@ -31,7 +33,7 @@ pub struct SourceDefinition {
 
 impl SourceDefinition {
     pub fn is_stage_one_compatible(&self) -> bool {
-        self.active && !self.include_service_classes.is_empty()
+        self.active
     }
 
     pub fn resolved_file_name(&self) -> String {
@@ -48,12 +50,32 @@ impl SourceDefinition {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TargetDefinition {
+    pub id: String,
+    pub adapter: String,
+    #[serde(default)]
+    pub source_ids: Vec<String>,
+    #[serde(default = "default_true")]
+    pub active: bool,
+    #[serde(default = "default_true")]
+    pub canonical_export: bool,
+    #[serde(default = "default_true")]
+    pub web_debug_export: bool,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SourceManifest {
     pub dataset_id: String,
     pub schema_version: u16,
     pub description: String,
+    #[serde(default)]
+    pub default_target_id: Option<String>,
     #[serde(rename = "source", default)]
     pub sources: Vec<SourceDefinition>,
+    #[serde(rename = "target", default)]
+    pub targets: Vec<TargetDefinition>,
 }
 
 impl SourceManifest {
@@ -68,6 +90,50 @@ impl SourceManifest {
             .iter()
             .filter(|source| source.is_stage_one_compatible())
             .collect()
+    }
+
+    pub fn active_targets(&self) -> Vec<&TargetDefinition> {
+        self.targets.iter().filter(|target| target.active).collect()
+    }
+
+    pub fn target(&self, target_id: &str) -> Option<&TargetDefinition> {
+        self.targets.iter().find(|target| target.id == target_id)
+    }
+
+    pub fn resolve_targets<'a>(
+        &'a self,
+        requested_ids: &[String],
+    ) -> Result<Vec<&'a TargetDefinition>> {
+        if requested_ids.is_empty() {
+            if let Some(default_target_id) = &self.default_target_id {
+                let target = self.target(default_target_id).with_context(|| {
+                    format!("default_target_id {default_target_id} not found in manifest")
+                })?;
+                if !target.active {
+                    bail!("default target {} is not active", target.id);
+                }
+                return Ok(vec![target]);
+            }
+
+            let active_targets = self.active_targets();
+            if active_targets.is_empty() {
+                bail!("manifest has no active targets");
+            }
+            return Ok(active_targets);
+        }
+
+        let mut targets = Vec::new();
+        for target_id in requested_ids {
+            let target = self
+                .target(target_id)
+                .with_context(|| format!("unknown target {}", target_id))?;
+            if !target.active {
+                bail!("target {} is not active", target.id);
+            }
+            targets.push(target);
+        }
+
+        Ok(targets)
     }
 }
 
@@ -88,9 +154,31 @@ pub struct ManualOverrideRegistry {
 }
 
 impl ManualOverrideRegistry {
+    pub fn load(path: &Path) -> Result<Self> {
+        if !path.exists() {
+            return Ok(Self::default());
+        }
+
+        let raw = fs::read_to_string(path)
+            .with_context(|| format!("failed to read overrides {}", path.display()))?;
+        let parsed: ManualOverrideFile = toml::from_str(&raw)
+            .with_context(|| format!("failed to parse overrides {}", path.display()))?;
+        let mut city_overrides = parsed.city_overrides;
+        city_overrides.extend(parsed.overrides);
+        Ok(Self { city_overrides })
+    }
+
     pub fn is_empty(&self) -> bool {
         self.city_overrides.is_empty()
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+struct ManualOverrideFile {
+    #[serde(rename = "city_override", default)]
+    city_overrides: Vec<ManualCityOverride>,
+    #[serde(rename = "override", default)]
+    overrides: Vec<ManualCityOverride>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -124,6 +212,7 @@ mod tests {
             file_name: Some("feed.zip".to_string()),
             version_probe_url: None,
             active: true,
+            role: Some("schedule".to_string()),
             include_service_classes: vec![
                 ServiceClass::Intercity,
                 ServiceClass::Regional,
@@ -151,6 +240,7 @@ mod tests {
             file_name: Some("from-manifest.zip".to_string()),
             version_probe_url: None,
             active: true,
+            role: None,
             include_service_classes: vec![ServiceClass::Regional],
             notes: None,
         };
@@ -163,4 +253,64 @@ mod tests {
         let registry = ManualOverrideRegistry::default();
         assert!(registry.is_empty());
     }
+
+    #[test]
+    fn supplementary_source_can_be_active_without_service_classes() {
+        let source = SourceDefinition {
+            id: "wikidata-city-enrichment".to_string(),
+            kind: SourceKind::Supplementary,
+            country_code: "ZZ".to_string(),
+            adapter: "wikidata".to_string(),
+            url: "https://example.invalid/wikidata.json".to_string(),
+            file_name: None,
+            version_probe_url: None,
+            active: true,
+            role: Some("enrichment".to_string()),
+            include_service_classes: Vec::new(),
+            notes: None,
+        };
+
+        assert!(source.is_stage_one_compatible());
+    }
+
+    #[test]
+    fn resolve_targets_prefers_default_target_when_unspecified() {
+        let manifest = SourceManifest {
+            dataset_id: "stage1".to_string(),
+            schema_version: 1,
+            description: "test".to_string(),
+            default_target_id: Some("sncf-fr".to_string()),
+            sources: Vec::new(),
+            targets: vec![
+                TargetDefinition {
+                    id: "sncf-fr".to_string(),
+                    adapter: "sncf_fr".to_string(),
+                    source_ids: vec!["sncf-fr-gtfs".to_string()],
+                    active: true,
+                    canonical_export: true,
+                    web_debug_export: true,
+                    notes: None,
+                },
+                TargetDefinition {
+                    id: "inactive".to_string(),
+                    adapter: "other".to_string(),
+                    source_ids: Vec::new(),
+                    active: false,
+                    canonical_export: true,
+                    web_debug_export: true,
+                    notes: None,
+                },
+            ],
+        };
+
+        let resolved = manifest
+            .resolve_targets(&[])
+            .expect("default target should resolve");
+        assert_eq!(resolved.len(), 1);
+        assert_eq!(resolved[0].id, "sncf-fr");
+    }
+}
+
+fn default_true() -> bool {
+    true
 }
