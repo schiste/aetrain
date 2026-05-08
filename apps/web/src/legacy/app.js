@@ -1,4 +1,8 @@
-import { cities, routeData } from "./data.js";
+import {
+  getRequestedDataSourceId,
+  loadPlannerDataSource,
+  navigateToDataSource
+} from "./data-sources.js";
 import {
   createPlannerModel,
   escapeHtml,
@@ -29,6 +33,9 @@ function getRefs(root) {
     "map",
     "side",
     "sinput",
+    "source-meta",
+    "source-poc",
+    "source-production",
     "sr",
     "sv-c",
     "sv-d",
@@ -93,7 +100,7 @@ async function copyText(text) {
   document.body.removeChild(input);
 }
 
-export function mountLegacyApp(root) {
+export async function mountLegacyApp(root) {
   if (!window.L) {
     throw new Error("Leaflet did not load");
   }
@@ -101,9 +108,37 @@ export function mountLegacyApp(root) {
   renderShell(root);
 
   const refs = getRefs(root);
+  refs["fi-txt"].textContent = "Loading dataset…";
+  const requestedSourceId = getRequestedDataSourceId();
+
+  let dataset;
+  let loadWarning = "";
+  try {
+    dataset = await loadPlannerDataSource(requestedSourceId);
+  } catch (error) {
+    console.error("Failed to load selected data source, falling back to POC", error);
+    dataset = await loadPlannerDataSource("poc");
+    if (requestedSourceId !== "poc") {
+      loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${error.message || String(error)}`;
+    }
+  }
+
+  const cities = dataset.cities;
+  const routeData = dataset.routeData;
   const model = createPlannerModel(cities, routeData);
   if (model.invalidRouteKeys.length > 0) {
     root.dataset.invalidRouteCount = String(model.invalidRouteKeys.length);
+  }
+
+  refs["source-meta"].textContent = loadWarning
+    ? `${dataset.description} ${loadWarning}`
+    : dataset.description;
+  refs["source-poc"].classList.toggle("active", dataset.id === "poc");
+  refs["source-production"].classList.toggle("active", dataset.id === "production");
+  root.dataset.sourceId = dataset.id;
+  root.dataset.requestedSourceId = requestedSourceId;
+  if (dataset.meta?.dataset_version) {
+    root.dataset.sourceVersion = dataset.meta.dataset_version;
   }
 
   const state = {
@@ -906,6 +941,15 @@ export function mountLegacyApp(root) {
   });
 
   refs["side"].addEventListener("click", async (event) => {
+    const sourceButton = event.target.closest("[data-source-id]");
+    if (sourceButton) {
+      const nextSourceId = sourceButton.getAttribute("data-source-id");
+      if (nextSourceId && nextSourceId !== dataset.id) {
+        navigateToDataSource(nextSourceId);
+      }
+      return;
+    }
+
     const button = event.target.closest("[data-action]");
     if (!button) {
       return;

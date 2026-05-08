@@ -6,4 +6,4 @@ if (!(root instanceof HTMLDivElement)) {
   throw new Error("Expected #app root element");
 }
 
-mountLegacyApp(root);
+await mountLegacyApp(root);

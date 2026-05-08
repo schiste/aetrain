@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "dataset_version": "20260507-193205.102006",
+  "generated_at": "2026-05-07T19:32:05.102006Z",
+  "source_snapshots": [
+    {
+      "source_id": "sncf-fr-gtfs",
+      "fetched_at": "2026-05-07T19:22:54.582858Z",
+      "version_hint": "\"69fb9c61-544e2d\""
+    },
+    {
+      "source_id": "sncf-fr-stations",
+      "fetched_at": "2026-05-07T19:31:47.665816Z",
+      "version_hint": null
+    }
+  ],
+  "attribution_path": "attribution.json"
+}
