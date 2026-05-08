@@ -14,7 +14,7 @@ import {
   formatPopulation,
   haversine
 } from "./core.js";
-import { borderData, bordersToGeoJSON } from "./landmass.js";
+import { borderData } from "./landmass.js";
 import { EMPTY_TRIP_MARKUP, renderShell } from "./shell.js";
 
 const diagnostics = createDiagnostics("web/ui/legacy-app");
@@ -186,7 +186,6 @@ export async function mountLegacyApp(root) {
   mapSurface = createLeafletMapSurface({
     L: window.L,
     borderData,
-    bordersToGeoJSON,
     cities,
     elementId: "map",
     escapeHtml,

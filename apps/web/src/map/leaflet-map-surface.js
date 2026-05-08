@@ -7,19 +7,21 @@ import {
   pointInViewport,
   selectLabelCandidates
 } from "./render-model.js";
+import { buildLandmassPolygons } from "./landmass-model.js";
 
 const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
 const MAX_CANVAS_PIXEL_RATIO = 2;
 const INTERACTION_LABEL_OPACITY = "0";
 const ZOOM_MOVEEND_SUPPRESSION_MS = 60;
+const OCEAN_FILL_COLOR = "#0f1729";
+const LANDMASS_FILL_COLOR = "#151d2e";
 
 const diagnostics = createDiagnostics("web/map/leaflet-surface");
 
 export function createLeafletMapSurface({
   L,
   borderData,
-  bordersToGeoJSON,
   cities,
   elementId,
   escapeHtml,
@@ -44,33 +46,6 @@ export function createLeafletMapSurface({
   });
   L.control.zoom({ position: "bottomright" }).addTo(map);
 
-  L.rectangle(
-    [
-      [-90, -180],
-      [90, 180]
-    ],
-    {
-      fillColor: "#0f1729",
-      fillOpacity: 1,
-      color: "none",
-      weight: 0,
-      interactive: false
-    }
-  ).addTo(map);
-
-  L.geoJSON(bordersToGeoJSON(borderData), {
-    style() {
-      return {
-        fillColor: "#151d2e",
-        fillOpacity: 1,
-        color: "none",
-        weight: 0,
-        opacity: 0
-      };
-    },
-    interactive: false
-  }).addTo(map);
-
   const overlayPane = map.getPanes().overlayPane;
   const surfaceRoot = L.DomUtil.create(
     "div",
@@ -84,6 +59,12 @@ export function createLeafletMapSurface({
   surfaceRoot.style.zIndex = "250";
   surfaceRoot.style.contain = "layout style paint";
 
+  const landmassPolygons = buildLandmassPolygons(borderData);
+  diagnostics.info("landmass backdrop prepared", {
+    polygon_count: landmassPolygons.length
+  });
+
+  const backgroundCanvas = createCanvas("aetrain-map-canvas background", surfaceRoot);
   const networkCanvas = createCanvas("aetrain-map-canvas network", surfaceRoot);
   const cityCanvas = createCanvas("aetrain-map-canvas cities", surfaceRoot);
   const routeCanvas = createCanvas("aetrain-map-canvas routes", surfaceRoot);
@@ -95,6 +76,7 @@ export function createLeafletMapSurface({
   labelsLayer.style.contain = "layout style paint";
   surfaceRoot.appendChild(labelsLayer);
 
+  const backgroundContext = backgroundCanvas.getContext("2d");
   const networkContext = networkCanvas.getContext("2d");
   const cityContext = cityCanvas.getContext("2d");
   const routeContext = routeCanvas.getContext("2d");
@@ -362,6 +344,7 @@ export function createLeafletMapSurface({
     const startedAt = now();
 
     if (dirty.network) {
+      drawLandmass(frame);
       drawBackgroundNetwork(frame);
     }
 
@@ -401,6 +384,7 @@ export function createLeafletMapSurface({
     const zoom = map.getZoom();
     const lod = buildLodProfile(zoom, labelThreshold);
     const key = `${zoom}:${size.x}x${size.y}:${Math.round(topLeft.x)}:${Math.round(topLeft.y)}`;
+    const coordinateCache = new Map();
     const projectCache = new Map();
 
     syncSurfaceFrame({ pixelRatio, size, topLeft });
@@ -415,11 +399,22 @@ export function createLeafletMapSurface({
           return cached;
         }
 
+        const projected = this.projectLngLat(city.lon, city.lat);
+        projectCache.set(city.name, projected);
+        return projected;
+      },
+      projectLngLat(lon, lat) {
+        const cacheKey = `${lat}:${lon}`;
+        const cached = coordinateCache.get(cacheKey);
+        if (cached) {
+          return cached;
+        }
+
         const point = map
-          .latLngToLayerPoint([city.lat, city.lon])
+          .latLngToLayerPoint([lat, lon])
           .subtract(topLeft);
         const projected = { x: point.x, y: point.y };
-        projectCache.set(city.name, projected);
+        coordinateCache.set(cacheKey, projected);
         return projected;
       },
       size,
@@ -435,6 +430,7 @@ export function createLeafletMapSurface({
     surfaceRoot.style.width = `${frame.size.x}px`;
     surfaceRoot.style.height = `${frame.size.y}px`;
 
+    syncCanvasSize(backgroundCanvas, backgroundContext, frame.size, frame.pixelRatio);
     syncCanvasSize(networkCanvas, networkContext, frame.size, frame.pixelRatio);
     syncCanvasSize(cityCanvas, cityContext, frame.size, frame.pixelRatio);
     syncCanvasSize(routeCanvas, routeContext, frame.size, frame.pixelRatio);
@@ -501,6 +497,28 @@ export function createLeafletMapSurface({
     networkContext.restore();
     diagnostics.metric("network-layer-draw", drawnEdges, {
       drawn_edges: drawnEdges,
+      zoom: frame.zoom
+    });
+  }
+
+  function drawLandmass(frame) {
+    clearCanvas(backgroundContext, backgroundCanvas);
+    backgroundContext.save();
+    backgroundContext.fillStyle = OCEAN_FILL_COLOR;
+    backgroundContext.fillRect(0, 0, frame.size.x, frame.size.y);
+    backgroundContext.fillStyle = LANDMASS_FILL_COLOR;
+
+    for (const polygon of landmassPolygons) {
+      backgroundContext.beginPath();
+      for (const ring of polygon) {
+        traceRing(backgroundContext, ring, frame);
+      }
+      backgroundContext.fill("evenodd");
+    }
+
+    backgroundContext.restore();
+    diagnostics.metric("landmass-layer-draw", landmassPolygons.length, {
+      polygon_count: landmassPolygons.length,
       zoom: frame.zoom
     });
   }
@@ -919,6 +937,20 @@ function tracePoints(context, points) {
   for (let index = 1; index < points.length; index += 1) {
     context.lineTo(points[index].x, points[index].y);
   }
+}
+
+function traceRing(context, ring, frame) {
+  if (!ring || ring.length < 3) {
+    return;
+  }
+
+  const first = frame.projectLngLat(ring[0].lon, ring[0].lat);
+  context.moveTo(first.x, first.y);
+  for (let index = 1; index < ring.length; index += 1) {
+    const point = frame.projectLngLat(ring[index].lon, ring[index].lat);
+    context.lineTo(point.x, point.y);
+  }
+  context.closePath();
 }
 
 function markerRadius(interest, zoom) {
