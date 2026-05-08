@@ -293,6 +293,9 @@ fn print_build_summary(artifacts: &[PipelineArtifactManifest]) {
         if let Some(canonical_dir) = &artifact.outputs.canonical_dir {
             println!("  canonical: {}", canonical_dir);
         }
+        if let Some(web_dir) = &artifact.outputs.web_dir {
+            println!("  runtime/web: {}", web_dir);
+        }
         if let Some(web_debug_dir) = &artifact.outputs.web_debug_dir {
             println!("  runtime/web-debug: {}", web_debug_dir);
         }

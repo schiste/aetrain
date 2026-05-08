@@ -72,6 +72,7 @@ boundaries are being introduced. The Stage 1 pipeline now manages:
 
 - raw source cache state under `data/cache/`
 - target-scoped canonical artifacts under `data/build/stage1/<target>/canonical/`
+- a compact runtime projection under `data/build/stage1/<target>/runtime/web/`
 - a runtime `web-debug` projection under `data/build/stage1/<target>/runtime/web-debug/`
 - optional sync into `apps/web/public/data/production/`
 

@@ -30,6 +30,7 @@ That command:
 - stores raw files under `data/cache/raw/`
 - builds the default manifest target from cached or freshly fetched sources
 - writes canonical artifacts under `data/build/stage1/<target>/canonical/`
+- writes compact runtime artifacts under `data/build/stage1/<target>/runtime/web/`
 - writes runtime debug artifacts under `data/build/stage1/<target>/runtime/web-debug/`
 - syncs the selected target runtime projection into `apps/web/public/data/production/`
 

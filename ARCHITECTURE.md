@@ -190,6 +190,7 @@ The pipeline output is the product interface between build-time and runtime.
 Stage 1 should emit artifacts in two layers:
 
 - `data/build/stage1/<target>/canonical/` for rich traceable build outputs
+- `data/build/stage1/<target>/runtime/web/` for the long-term compact browser runtime
 - `data/build/stage1/<target>/runtime/web-debug/` for the current browser-facing
   debug projection
 

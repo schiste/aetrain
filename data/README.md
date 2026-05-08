@@ -16,4 +16,5 @@ Rules:
 - canonical pipeline outputs belong here first
 - each build target owns its own artifact root:
   - `build/stage1/<target>/canonical/`
+  - `build/stage1/<target>/runtime/web/`
   - `build/stage1/<target>/runtime/web-debug/`

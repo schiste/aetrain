@@ -11,6 +11,7 @@ Current responsibilities:
 - `build`: resolve cached sources, build one or more manifest targets, and
   write target-scoped artifacts
 - `run`: fetch first, then build
+- compact `runtime/web` export generation
 - optional runtime debug sync into `apps/web/public/data/production/`
 
 This crate should stay thin. Adapter logic, manifest contracts, fetch state,
