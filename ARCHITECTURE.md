@@ -203,6 +203,8 @@ Stage 1 artifacts should be versioned and immutable, for example:
 - `meta.json`
 - `cities.json`
 - `edges.json`
+- `edge-geometries.json`
+- `route-geometries.json`
 - `aliases.json`
 - `stations.json`
 - `station-mappings.json`
@@ -233,12 +235,20 @@ The browser hot path should eagerly load only:
 - `meta.json`
 - `cities.json`
 - `edges.json`
+- `edge-geometries.json` for the current debug-facing browser path
 
 The browser should load these only when needed:
 
 - `aliases.json` on first search interaction if it is large enough to matter
 - `stations.json` only for future station-aware product surfaces
 - `attribution.json` from an about/help surface, not as part of initial route rendering
+
+Route geometry should be produced as a separate artifact, not embedded directly
+into the logical edge table. The intended source order is:
+
+- GTFS `shapes.txt` segment extraction when available
+- deterministic straight-line fallback when shape geometry is absent
+- OSM-derived rail graph fallback as the next geometry-quality layer
 
 ## Decision 4: The browser consumes a city graph, not raw GTFS
 

@@ -31,7 +31,9 @@ That command:
 - builds the default manifest target from cached or freshly fetched sources
 - writes canonical artifacts under `data/build/stage1/<target>/canonical/`
   - including `station-mappings.json` for normalization auditability
+  - including `edge-geometries.json` for route-shape export
 - writes compact runtime artifacts under `data/build/stage1/<target>/runtime/web/`
+  - including `route-geometries.json` for browser rendering
 - writes runtime debug artifacts under `data/build/stage1/<target>/runtime/web-debug/`
 - syncs the selected target runtime projection into `apps/web/public/data/production/`
 

@@ -16,6 +16,8 @@ Rules:
 - canonical pipeline outputs belong here first
 - each build target owns its own artifact root:
   - `build/stage1/<target>/canonical/`
-    - rich outputs such as `bundle.json`, `issues.json`, and `station-mappings.json`
+    - rich outputs such as `bundle.json`, `issues.json`, `station-mappings.json`, and `edge-geometries.json`
   - `build/stage1/<target>/runtime/web/`
+    - compact browser artifacts including `route-geometries.json`
   - `build/stage1/<target>/runtime/web-debug/`
+    - current web-facing debug artifacts including `edge-geometries.json`
