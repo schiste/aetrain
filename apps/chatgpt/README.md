@@ -8,4 +8,5 @@ When it exists, it should reuse:
 - the readable URL or state codec
 - shared Rust domain and routing logic
 
-It should not become a second source of product truth.
+It should not become a second source of product truth, and it should not drive
+architecture decisions for the core consumer product.

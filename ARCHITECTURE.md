@@ -130,43 +130,57 @@ Consequence:
 
 ## Key Technical Decisions
 
-## Decision 1: Separate the runtime app from the data pipeline
+## Decision 1: Separate client surfaces from the shared core and data pipeline
 
-Use a static browser app for runtime and a dedicated offline pipeline for
-ingestion, normalization, enrichment, and artifact generation.
+Use a dedicated offline pipeline for ingestion, normalization, enrichment, and
+artifact generation, and keep each runtime client surface thin.
 
 Chosen shape:
 
-- `apps/web/`: the static browser application
-- `packages/`: shared browser-safe domain code
-- `scripts/`: pipeline entry points and build utilities
+- `apps/web/`: browser surface
+- `apps/ios/`: future native iOS surface
+- `apps/android/`: future native Android surface
+- `packages/rust/`: shared engine and pipeline crates
+- `packages/ts/`: browser-only glue and bindings
+- `tools/`: operator entry points and utilities
 
 Rationale:
 
-- Product requirements are static-hosting-friendly.
-- The hard problem is data preparation, not request/response serving.
-- This keeps Stage 1 deployable anywhere.
+- Product requirements are static-hosting-friendly on the web.
+- The hard problem is data preparation and route computation, not generic
+  request/response serving.
+- Performance-first architecture requires that the engine and data contracts
+  outlive any single UI stack.
 
-## Decision 2: Use Rust for the shared core, TypeScript for the web shell
+## Decision 2: Use Rust for the shared core, thin TypeScript on the web, and native mobile apps later
 
 Rust is the primary implementation language for shared domain logic, routing,
-normalization, and build pipeline code. TypeScript is used for the web
-application shell and browser integration.
+normalization, dataset parsing, and build pipeline code. TypeScript is used
+only for the browser shell, browser APIs, and renderer orchestration.
+
+Planned client stack:
+
+- Web: thin TypeScript shell around workers, wasm bindings, and a custom map
+  renderer
+- iOS: Swift native client over the Rust core
+- Android: Kotlin native client over the Rust core
 
 Rationale:
 
 - Rust gives the best long-term combination of performance, portability, and
-  logic reuse across multiple app surfaces.
-- The same core can be compiled to WebAssembly for the web app and exposed
-  natively later for iOS, Android, desktop, CLI, or server components.
-- TypeScript remains the pragmatic language for browser UI composition,
-  platform APIs, and fast frontend iteration.
+  logic reuse across all product surfaces.
+- The browser cannot avoid JavaScript entirely, but JavaScript or TypeScript
+  should not own the heavy business logic or the dense data model.
+- A performance-first product should not force one shared UI framework across
+  web, iOS, and Android.
 
 Consequence:
 
-- Shared business logic should live in Rust crates, not be reimplemented per
-  client.
-- Browser-facing bindings should be thin wrappers around the Rust core.
+- Shared business logic lives in Rust crates, not in web-only or mobile-only
+  code.
+- TypeScript remains a thin browser integration layer, not the product engine.
+- Future Swift and Kotlin apps should bind to the Rust core instead of
+  reimplementing routing, parsing, or state codecs.
 - Artifact schemas remain the contract between build-time and runtime.
 
 ## Decision 3: Treat generated artifacts as the public contract
@@ -525,8 +539,8 @@ Rationale:
 - Shared logic is a strategic asset.
 - We want future iOS, Android, ChatGPT, CLI, or server surfaces to reuse core
   logic instead of cloning it.
-- High portability requires separation between core logic and presentation
-  layers from the beginning.
+- Performance-first architecture requires native-capable boundaries from the
+  beginning, not a late rewrite away from a web-only structure.
 
 ## Stage 1 Runtime Architecture
 
@@ -551,8 +565,26 @@ Target shape:
 aetrain/
 ├── ARCHITECTURE.md
 ├── apps/
+│   ├── android/
+│   │   ├── app/
+│   │   ├── bridge/
+│   │   ├── features/
+│   │   └── map/
+│   ├── ios/
+│   │   ├── App/
+│   │   ├── Bridge/
+│   │   ├── Features/
+│   │   └── Map/
 │   ├── web/
 │   │   ├── src/
+│   │   │   ├── app-shell/
+│   │   │   ├── data/
+│   │   │   ├── engine/
+│   │   │   ├── legacy/
+│   │   │   ├── map/
+│   │   │   ├── state/
+│   │   │   ├── ui/
+│   │   │   └── workers/
 │   │   ├── public/
 │   │   │   └── data/
 │   │   └── index.html
@@ -564,6 +596,7 @@ aetrain/
 │   │   ├── aetrain-urlstate/
 │   │   ├── aetrain-normalize/
 │   │   ├── aetrain-dataset/
+│   │   ├── aetrain-pipeline/
 │   │   └── aetrain-wikidata/
 │   └── ts/
 │       └── web-bindings/ # thin app-facing wrappers around wasm/core bindings
@@ -571,6 +604,8 @@ aetrain/
 │   ├── manifests/        # source manifests and feed definitions
 │   ├── overrides/        # tracked manual overrides with rationale
 │   └── cache/            # build-time cache, usually gitignored
+├── docs/
+│   └── architecture/
 └── tools/
     ├── pipeline/         # orchestration entry points
     └── docx_to_md.py
@@ -579,6 +614,7 @@ aetrain/
 Notes:
 
 - `packages/rust/` is the reusable core.
+- `apps/web/` is the first shipped surface, not the architectural center.
 - `apps/*` should stay thin and presentation-focused.
 - `data/overrides/` is mandatory if manual curation exists at all.
 - `tools/pipeline/` orchestrates builds, but the heavy logic should still live

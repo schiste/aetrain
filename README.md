@@ -40,10 +40,16 @@ modularized version of that same proof of concept while shared Rust crates and
 generated static datasets take shape underneath it. Expect breaking changes;
 APIs, data contracts, and repo structure are intentionally still moving.
 
-The architectural direction — a weekly GTFS pipeline producing static JSON
-plus an optional dynamic timetable layer — is documented in
+The architectural direction is now explicit:
+
+- `Rust` is the shared performance-critical core
+- `apps/web` is a thin browser surface around generated datasets and the core
+- future `apps/ios` and `apps/android` are intended to be native clients, not
+  web wrappers
+
+The staged technical decisions are documented in
 [ARCHITECTURE.md](./ARCHITECTURE.md). Expect that document to evolve as the
-Stage 1 data model and pipeline harden.
+web renderer, worker boundary, and runtime dataset contracts harden.
 
 ## Quick start
 
@@ -59,31 +65,37 @@ python3 -m http.server --directory apps/web 8080
 # then open http://localhost:8080/
 ```
 
-The web app is now split into modules, but it still uses embedded prototype
-data and is not yet wired to live generated datasets or wasm bindings. The
-first live import pipeline writes raw source cache state under `data/cache/`
-and canonical build artifacts under `data/build/stage1/sncf-fr/`.
+The web app is now split into modules, but it still contains a transitional
+`src/legacy/` implementation while the long-term renderer, worker, and wasm
+boundaries are being introduced. The first live import pipeline writes raw
+source cache state under `data/cache/` and canonical build artifacts under
+`data/build/stage1/sncf-fr/`.
 
 ## Repository layout
 
 ```
 aetrain/
 ├── apps/
-│   ├── web/              # current web shell + legacy prototype under prototype/
-│   └── chatgpt/          # future app surface placeholder
+│   ├── web/              # current web surface, future high-performance browser app
+│   ├── ios/              # future native iOS client
+│   ├── android/          # future native Android client
+│   └── chatgpt/          # secondary assistant surface, never product truth
 ├── ARCHITECTURE.md       # public architecture and staged technical decisions
-├── data/                 # source manifests, overrides, build-time cache
+├── data/                 # source manifests, overrides, cache, build artifacts
 ├── packages/
-│   ├── rust/             # shared domain, routing, url state, pipeline logic
-│   └── ts/               # thin app-facing bindings and wrappers
-├── tools/                # pipeline orchestration and local utilities
-├── docs/                 # generated docs (not tracked) — see tools/
+│   ├── rust/             # shared engine: domain, routing, parsing, normalization
+│   └── ts/               # thin browser-only glue around the Rust core
+├── tools/                # operator-facing utilities and orchestration
+├── docs/                 # architecture notes and long-form repo documentation
 ├── scripts/              # compatibility shims for relocated tools
 ├── LICENSE               # AGPL-3.0
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 └── SECURITY.md
 ```
+
+The detailed folder intent is documented in the per-directory `README.md`
+files throughout the repo.
 
 ## Contributing
 
