@@ -9,7 +9,8 @@ This crate currently owns:
 - manual override registry loading
 - normalization issue reporting
 - adapter-facing pipeline orchestration
-- the first `sncf_fr` adapter entrypoint
+- the `sncf_fr` and `gtfs_basic` adapter entrypoints
+- compact `runtime/web` export preparation alongside `runtime/web-debug`
 
 This is the place for durable pipeline structure, not for browser-facing code
 or product UI concerns.

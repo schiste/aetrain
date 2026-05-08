@@ -4,13 +4,19 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use aetrain_dataset::{DatasetBundle, DatasetMeta, SourceSnapshot};
+use aetrain_dataset::{
+    DatasetBundle, DatasetMeta, RuntimeAliasIndex, RuntimeAliasRecord, RuntimeCountryRecord,
+    RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeGraph, RuntimeStationArtifact,
+    RuntimeStationRecord, SourceSnapshot,
+};
+use aetrain_domain::{ServiceClass, ServiceKind};
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     DuplicateCityReport, FetchedSource, ManualOverrideRegistry, NormalizationIssue, SourceKind,
-    SourceManifest, TargetDefinition, build_sncf_dataset, bundle_from_output,
+    SourceManifest, TargetDefinition, build_gtfs_basic_dataset, build_sncf_dataset,
+    bundle_from_basic_output, bundle_from_output,
 };
 
 pub trait PipelineAdapter {
@@ -20,6 +26,9 @@ pub trait PipelineAdapter {
 
 #[derive(Clone, Copy)]
 struct SncfAdapter;
+
+#[derive(Clone, Copy)]
+struct GtfsBasicAdapter;
 
 #[derive(Clone)]
 pub struct AdapterBuildRequest<'a> {
@@ -75,6 +84,7 @@ pub struct PipelineSourceArtifact {
 pub struct PipelineOutputPaths {
     pub target_root: String,
     pub canonical_dir: Option<String>,
+    pub web_dir: Option<String>,
     pub web_debug_dir: Option<String>,
 }
 
@@ -238,6 +248,16 @@ fn export_pipeline_target(
         None
     };
 
+    let web_dir = if target.web_debug_export {
+        let runtime_dir = target_root.join("runtime").join("web");
+        fs::create_dir_all(&runtime_dir)
+            .with_context(|| format!("failed to create {}", runtime_dir.display()))?;
+        export_web_runtime_bundle(&runtime_dir, &artifacts.canonical, &attribution)?;
+        Some(runtime_dir)
+    } else {
+        None
+    };
+
     let web_debug_dir = if target.web_debug_export {
         let runtime_dir = target_root.join("runtime").join("web-debug");
         fs::create_dir_all(&runtime_dir)
@@ -276,6 +296,7 @@ fn export_pipeline_target(
             canonical_dir: canonical_dir
                 .as_ref()
                 .map(|path| path.display().to_string()),
+            web_dir: web_dir.as_ref().map(|path| path.display().to_string()),
             web_debug_dir: web_debug_dir
                 .as_ref()
                 .map(|path| path.display().to_string()),
@@ -334,16 +355,341 @@ fn export_web_debug_bundle(
     Ok(())
 }
 
+fn export_web_runtime_bundle(
+    output_dir: &Path,
+    canonical: &DatasetBundle,
+    attribution: &PipelineAttributionFile,
+) -> Result<()> {
+    let (runtime_bundle, station_artifact) = build_web_runtime_bundle(canonical)?;
+    write_json(&output_dir.join("meta.json"), &runtime_bundle.meta)?;
+    write_json(
+        &output_dir.join("countries.json"),
+        &runtime_bundle.countries,
+    )?;
+    write_json(&output_dir.join("cities.json"), &runtime_bundle.cities)?;
+    write_json(&output_dir.join("graph.json"), &runtime_bundle.graph)?;
+    write_json(&output_dir.join("aliases.json"), &runtime_bundle.aliases)?;
+    write_json(&output_dir.join("stations.json"), &station_artifact)?;
+    write_json(&output_dir.join("attribution.json"), attribution)?;
+    Ok(())
+}
+
+fn build_web_runtime_bundle(
+    canonical: &DatasetBundle,
+) -> Result<(RuntimeDatasetBundle, RuntimeStationArtifact)> {
+    let mut country_index_by_code = BTreeMap::<String, u16>::new();
+    let mut countries = Vec::<RuntimeCountryRecord>::new();
+    for city in &canonical.cities {
+        if country_index_by_code.contains_key(&city.country_code) {
+            continue;
+        }
+        let index = countries.len() as u16;
+        country_index_by_code.insert(city.country_code.clone(), index);
+        countries.push(RuntimeCountryRecord {
+            code: city.country_code.clone(),
+            display_name: country_display_name(&city.country_code),
+        });
+    }
+
+    let city_index_by_id = canonical
+        .cities
+        .iter()
+        .enumerate()
+        .map(|(index, city)| (city.city_id.clone(), index as u32))
+        .collect::<HashMap<_, _>>();
+
+    let cities = canonical
+        .cities
+        .iter()
+        .map(|city| {
+            let country_index = *country_index_by_code
+                .get(&city.country_code)
+                .expect("country should exist");
+            Ok(aetrain_dataset::RuntimeCityRecord {
+                city_id: city.city_id.clone(),
+                slug: city.slug.clone(),
+                display_name: city.display_name.clone(),
+                country_index,
+                lat_e5: scale_coord_e5(city.location.lat)?,
+                lon_e5: scale_coord_e5(city.location.lon)?,
+                population: city
+                    .population
+                    .map(|value| value.min(u32::MAX as u64) as u32),
+                interest_score: city.interest_score,
+                map_rank: Some(compute_map_rank(city)),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+
+    let graph = build_runtime_graph(canonical, &city_index_by_id)?;
+    let aliases = build_runtime_alias_index(canonical, &city_index_by_id)?;
+    let station_artifact = build_runtime_station_artifact(canonical, &city_index_by_id)?;
+    let meta = RuntimeDatasetMeta::from_canonical(
+        &canonical.meta,
+        countries.len() as u16,
+        cities.len() as u32,
+        graph.edge_count() as u32,
+        aliases.records.len() as u32,
+    );
+    let runtime_bundle = RuntimeDatasetBundle {
+        meta,
+        countries,
+        cities,
+        graph,
+        aliases,
+    };
+    runtime_bundle
+        .validate()
+        .map_err(|error| anyhow::anyhow!("runtime web bundle validation failed: {error:?}"))?;
+
+    Ok((runtime_bundle, station_artifact))
+}
+
+fn build_runtime_graph(
+    canonical: &DatasetBundle,
+    city_index_by_id: &HashMap<aetrain_domain::CityId, u32>,
+) -> Result<RuntimeGraph> {
+    let city_count = canonical.cities.len();
+    let mut outgoing = vec![Vec::<(u32, u16, u8)>::new(); city_count];
+    for edge in &canonical.edges {
+        let from_index = *city_index_by_id
+            .get(&edge.from_city_id)
+            .with_context(|| format!("missing from_city_id {}", edge.from_city_id))?
+            as usize;
+        let to_index = *city_index_by_id
+            .get(&edge.to_city_id)
+            .with_context(|| format!("missing to_city_id {}", edge.to_city_id))?;
+        let duration_min = edge.duration_min.min(u16::MAX as u32) as u16;
+        outgoing[from_index].push((to_index, duration_min, encode_mode_flags(edge)));
+    }
+
+    let mut edge_offsets = Vec::with_capacity(city_count + 1);
+    let mut edge_targets = Vec::new();
+    let mut edge_durations_min = Vec::new();
+    let mut edge_mode_flags = Vec::new();
+    edge_offsets.push(0);
+    for edges in &mut outgoing {
+        edges.sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
+        for (target, duration, mode_flags) in edges {
+            edge_targets.push(*target);
+            edge_durations_min.push(*duration);
+            edge_mode_flags.push(*mode_flags);
+        }
+        edge_offsets.push(edge_targets.len() as u32);
+    }
+
+    Ok(RuntimeGraph {
+        edge_offsets,
+        edge_targets,
+        edge_durations_min,
+        edge_mode_flags,
+    })
+}
+
+fn build_runtime_alias_index(
+    canonical: &DatasetBundle,
+    city_index_by_id: &HashMap<aetrain_domain::CityId, u32>,
+) -> Result<RuntimeAliasIndex> {
+    let mut records = canonical
+        .aliases
+        .iter()
+        .map(|alias| {
+            let city_index = *city_index_by_id
+                .get(&alias.city_id)
+                .with_context(|| format!("missing alias city_id {}", alias.city_id))?;
+            Ok(RuntimeAliasRecord {
+                normalized_alias: alias.alias.clone(),
+                city_index,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    records.sort_by(|left, right| {
+        left.normalized_alias
+            .cmp(&right.normalized_alias)
+            .then_with(|| left.city_index.cmp(&right.city_index))
+    });
+    Ok(RuntimeAliasIndex { records })
+}
+
+fn build_runtime_station_artifact(
+    canonical: &DatasetBundle,
+    city_index_by_id: &HashMap<aetrain_domain::CityId, u32>,
+) -> Result<RuntimeStationArtifact> {
+    let stations = canonical
+        .stations
+        .iter()
+        .map(|station| {
+            let city_index = *city_index_by_id
+                .get(&station.city_id)
+                .with_context(|| format!("missing station city_id {}", station.city_id))?;
+            Ok(RuntimeStationRecord {
+                station_id: station.station_id.as_str().to_string(),
+                city_index,
+                display_name: station.display_name.clone(),
+                lat_e5: scale_coord_e5(station.location.lat)?,
+                lon_e5: scale_coord_e5(station.location.lon)?,
+                uic_code: station.uic_code.clone(),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(RuntimeStationArtifact { stations })
+}
+
+fn scale_coord_e5(value: f64) -> Result<i32> {
+    let scaled = (value * 100_000.0).round();
+    if scaled < i32::MIN as f64 || scaled > i32::MAX as f64 {
+        bail!("coordinate {value} is out of i32 e5 range");
+    }
+    Ok(scaled as i32)
+}
+
+fn compute_map_rank(city: &aetrain_domain::City) -> u16 {
+    let population_rank = city
+        .population
+        .map(|value| (value / 100_000).min(u16::MAX as u64) as u16)
+        .unwrap_or(0);
+    let interest_rank = city.interest_score.unwrap_or(0) as u16 * 10;
+    population_rank
+        .max(interest_rank)
+        .max(city.station_ids.len() as u16)
+}
+
+fn encode_mode_flags(edge: &aetrain_domain::TravelEdge) -> u8 {
+    let mut flags = 0u8;
+    match edge.service_kind {
+        ServiceKind::Rail => flags |= 0b0000_0001,
+        ServiceKind::Ferry => flags |= 0b0000_0010,
+    }
+    match edge.service_class {
+        ServiceClass::Intercity => flags |= 0b0000_0100,
+        ServiceClass::Regional => flags |= 0b0000_1000,
+        ServiceClass::Ferry => flags |= 0b0001_0000,
+    }
+    flags
+}
+
+fn country_display_name(country_code: &str) -> String {
+    match country_code {
+        "FR" => "France".to_string(),
+        "ZZ" => "Imported".to_string(),
+        other => other.to_string(),
+    }
+}
+
 fn write_json(path: &Path, value: &impl Serialize) -> Result<()> {
     let bytes = serde_json::to_vec_pretty(value).context("failed to serialize JSON output")?;
     fs::write(path, bytes).with_context(|| format!("failed to write {}", path.display()))
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use aetrain_dataset::{AliasRecord, DatasetMeta};
+    use aetrain_domain::{City, CityId, GeoPoint, Station, StationId, TravelEdge};
+
+    #[test]
+    fn compact_web_runtime_bundle_validates() {
+        let canonical = DatasetBundle {
+            meta: DatasetMeta::new("2026-05-08", "2026-05-08T18:00:00Z"),
+            cities: vec![
+                City {
+                    city_id: CityId::new("paris-fr").expect("valid city id"),
+                    slug: "paris".to_string(),
+                    display_name: "Paris".to_string(),
+                    country_code: "FR".to_string(),
+                    location: GeoPoint {
+                        lat: 48.8566,
+                        lon: 2.3522,
+                    },
+                    wikidata_qid: None,
+                    population: Some(2_100_000),
+                    interest_score: Some(10),
+                    station_ids: vec![StationId::new("sncf-fr-8727100").expect("valid station id")],
+                    aliases: vec!["Paris Nord".to_string()],
+                },
+                City {
+                    city_id: CityId::new("lyon-fr").expect("valid city id"),
+                    slug: "lyon".to_string(),
+                    display_name: "Lyon".to_string(),
+                    country_code: "FR".to_string(),
+                    location: GeoPoint {
+                        lat: 45.764,
+                        lon: 4.8357,
+                    },
+                    wikidata_qid: None,
+                    population: Some(500_000),
+                    interest_score: Some(7),
+                    station_ids: vec![StationId::new("sncf-fr-8772319").expect("valid station id")],
+                    aliases: Vec::new(),
+                },
+            ],
+            stations: vec![
+                Station {
+                    station_id: StationId::new("sncf-fr-8727100").expect("valid station id"),
+                    city_id: CityId::new("paris-fr").expect("valid city id"),
+                    display_name: "Paris Nord".to_string(),
+                    location: GeoPoint {
+                        lat: 48.8809,
+                        lon: 2.3553,
+                    },
+                    uic_code: Some("8727100".to_string()),
+                    source_refs: Vec::new(),
+                },
+                Station {
+                    station_id: StationId::new("sncf-fr-8772319").expect("valid station id"),
+                    city_id: CityId::new("lyon-fr").expect("valid city id"),
+                    display_name: "Lyon Part Dieu".to_string(),
+                    location: GeoPoint {
+                        lat: 45.7604,
+                        lon: 4.8599,
+                    },
+                    uic_code: Some("8772319".to_string()),
+                    source_refs: Vec::new(),
+                },
+            ],
+            edges: vec![TravelEdge {
+                from_city_id: CityId::new("paris-fr").expect("valid city id"),
+                to_city_id: CityId::new("lyon-fr").expect("valid city id"),
+                duration_min: 120,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Intercity,
+                change_count_estimate: Some(0),
+                source_confidence: 100,
+                provenance: vec!["test:R1".to_string()],
+            }],
+            aliases: vec![
+                AliasRecord {
+                    alias: "paris".to_string(),
+                    city_id: CityId::new("paris-fr").expect("valid city id"),
+                },
+                AliasRecord {
+                    alias: "lyon".to_string(),
+                    city_id: CityId::new("lyon-fr").expect("valid city id"),
+                },
+            ],
+        };
+
+        let (runtime_bundle, station_artifact) =
+            build_web_runtime_bundle(&canonical).expect("runtime bundle should build");
+
+        assert_eq!(runtime_bundle.countries.len(), 1);
+        assert_eq!(runtime_bundle.cities.len(), 2);
+        assert_eq!(runtime_bundle.graph.edge_count(), 1);
+        assert_eq!(runtime_bundle.aliases.records.len(), 2);
+        assert_eq!(station_artifact.stations.len(), 2);
+        runtime_bundle
+            .validate()
+            .expect("runtime bundle should validate");
+    }
+}
+
 fn adapter_for(adapter_id: &str) -> Option<&'static dyn PipelineAdapter> {
     static SNCF_ADAPTER: SncfAdapter = SncfAdapter;
+    static GTFS_BASIC_ADAPTER: GtfsBasicAdapter = GtfsBasicAdapter;
 
     match adapter_id {
         "sncf_fr" => Some(&SNCF_ADAPTER),
+        "gtfs_basic" => Some(&GTFS_BASIC_ADAPTER),
         _ => None,
     }
 }
@@ -357,19 +703,13 @@ impl PipelineAdapter for SncfAdapter {
         let gtfs = request.source_by_kind(SourceKind::Gtfs)?;
         let stations = request.source_by_kind(SourceKind::Supplementary)?;
 
-        if !request.overrides.is_empty() {
-            bail!(
-                "adapter {} does not yet apply manual overrides; clear overrides or implement override application first",
-                self.adapter_id()
-            );
-        }
-
         let output = build_sncf_dataset(
             &gtfs.local_path,
             &stations.local_path,
             request.dataset_version,
             request.generated_at,
             request.source_snapshots,
+            request.overrides,
         )?;
 
         let counters = BTreeMap::from([
@@ -399,6 +739,42 @@ impl PipelineAdapter for SncfAdapter {
             notes: vec![
                 format!("adapter={}", self.adapter_id()),
                 format!("target={}", request.target.id),
+            ],
+        })
+    }
+}
+
+impl PipelineAdapter for GtfsBasicAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "gtfs_basic"
+    }
+
+    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
+        let gtfs = request.source_by_kind(SourceKind::Gtfs)?;
+        let country_code = gtfs.definition.country_code.clone();
+        let output = build_gtfs_basic_dataset(
+            &gtfs.local_path,
+            &country_code,
+            request.dataset_version,
+            request.generated_at,
+            request.source_snapshots,
+            request.overrides,
+        )?;
+
+        let counters = BTreeMap::from([(
+            "gtfs_station_count".to_string(),
+            output.summary.gtfs_station_count as u64,
+        )]);
+
+        Ok(AdapterBuildArtifacts {
+            canonical: bundle_from_basic_output(&output),
+            duplicates: output.duplicates,
+            issues: output.issues,
+            counters,
+            notes: vec![
+                format!("adapter={}", self.adapter_id()),
+                format!("target={}", request.target.id),
+                format!("country_code={country_code}"),
             ],
         })
     }

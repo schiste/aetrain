@@ -4,8 +4,8 @@
 # id = "paris-station-cluster"
 # target_city_id = "paris-fr"
 # source_refs = [
-#   { source_id = "sncf-fr-gtfs", entity_kind = "station", raw_id = "stop:8727100" },
-#   { source_id = "sncf-fr-gtfs", entity_kind = "station", raw_id = "stop:8727101" },
+#   { source_id = "sncf-fr-gtfs", raw_id = "StopArea:OCE8727100" },
+#   { source_id = "sncf-fr-gtfs", raw_id = "StopArea:OCE8727101" },
 # ]
 # reason = "Feed-level station naming remains ambiguous after normalization."
 # added_by = "name"
