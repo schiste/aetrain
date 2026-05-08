@@ -205,6 +205,7 @@ Stage 1 artifacts should be versioned and immutable, for example:
 - `edges.json`
 - `aliases.json`
 - `stations.json`
+- `station-mappings.json`
 - `attribution.json`
 
 Stored under a versioned directory such as:
@@ -223,6 +224,9 @@ The important split is:
 
 - Canonical artifacts can be rich, traceable, and station-aware.
 - Runtime artifacts must be optimized for browser startup and route queries.
+
+Canonical normalization should also emit explicit mapping audit artifacts so a
+human can inspect how raw stop areas were resolved into canonical cities.
 
 The browser hot path should eagerly load only:
 

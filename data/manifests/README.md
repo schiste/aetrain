@@ -24,6 +24,10 @@ Manifest structure:
 - `[[source]]`: a raw feed or supplementary dataset with fetch metadata and
   normalization role
 
+The `role` field matters once a target has more than one source of the same
+kind. Adapters should resolve sources by declared role such as `schedule` or
+`stations_reference`, not by positional assumptions.
+
 Sources may also carry a version probe URL when the download endpoint does not
 publish stable `ETag` or `Last-Modified` headers. That lets the pipeline skip
 unchanged sources without redownloading them blindly.
