@@ -18,7 +18,9 @@ use deunicode::deunicode;
 use serde::{Deserialize, Serialize};
 use zip::ZipArchive;
 
-use crate::{IssueSeverity, ManualOverrideRegistry, NormalizationIssue};
+use crate::{
+    IssueSeverity, ManualOverrideRegistry, NormalizationIssue, rail_geometry::RailGeometryNetwork,
+};
 
 pub const DEFAULT_DUPLICATE_DISTANCE_METERS: u32 = 25_000;
 const NAME_MATCH_DISTANCE_METERS: f64 = 2_000.0;
@@ -184,7 +186,7 @@ struct StopVisit {
 struct EdgeAccumulator {
     duration_min: u32,
     source_confidence: u8,
-    provenance: String,
+    provenance: Vec<String>,
     geometry_points: Vec<GeoPoint>,
     geometry_source: EdgeGeometrySource,
 }
@@ -247,8 +249,10 @@ struct TripDescriptor {
 pub fn build_sncf_dataset(
     gtfs_path: &Path,
     stations_csv_path: &Path,
+    rail_geometry_path: Option<&Path>,
     gtfs_source_id: &str,
     station_reference_source_id: &str,
+    rail_geometry_source_id: Option<&str>,
     dataset_version: &str,
     generated_at: &str,
     source_snapshots: Vec<SourceSnapshot>,
@@ -258,6 +262,9 @@ pub fn build_sncf_dataset(
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
     let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path)?;
     let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
+    let rail_geometry_network = rail_geometry_path
+        .map(RailGeometryNetwork::load_sncf_rfn_geojson)
+        .transpose()?;
     let used_station_keys =
         collect_used_station_keys(gtfs_path, &trip_descriptors, &stop_to_station_key)?;
     let gtfs_stations = gtfs_stations
@@ -293,6 +300,8 @@ pub fn build_sncf_dataset(
         gtfs_source_id,
         &trip_descriptors,
         &shapes_by_id,
+        rail_geometry_network.as_ref(),
+        rail_geometry_source_id,
         &stop_to_station_key,
         &station_locations,
         &station_key_to_city,
@@ -383,6 +392,8 @@ pub fn build_gtfs_basic_dataset(
         gtfs_source_id,
         &trip_descriptors,
         &shapes_by_id,
+        None,
+        None,
         &stop_to_station_key,
         &station_locations,
         &station_key_to_city,
@@ -1091,6 +1102,8 @@ fn build_city_edges(
     gtfs_source_id: &str,
     trip_descriptors: &HashMap<String, TripDescriptor>,
     shapes_by_id: &HashMap<String, Vec<GeoPoint>>,
+    rail_geometry_network: Option<&RailGeometryNetwork>,
+    rail_geometry_source_id: Option<&str>,
     stop_to_station_key: &HashMap<String, String>,
     station_locations: &HashMap<String, GeoPoint>,
     station_key_to_city: &HashMap<String, CityId>,
@@ -1107,6 +1120,13 @@ fn build_city_edges(
     let mut reader = ReaderBuilder::new().from_reader(stop_times);
     let mut edge_map = BTreeMap::<(CityId, CityId), EdgeAccumulator>::new();
     let mut previous_by_trip = HashMap::<String, StopVisit>::new();
+    let mut geometry_cache = HashMap::<(String, String), Option<Vec<GeoPoint>>>::new();
+    let station_snap_nodes = rail_geometry_network.map(|network| {
+        station_locations
+            .iter()
+            .map(|(station_key, location)| (station_key.clone(), network.snap_point(*location)))
+            .collect::<HashMap<_, _>>()
+    });
     let mut missing_stop_mappings = 0usize;
 
     for row in reader.deserialize::<GtfsStopTimeRow>() {
@@ -1165,17 +1185,24 @@ fn build_city_edges(
                         .copied()
                         .unwrap_or(50),
                 );
-            let (geometry_points, geometry_source) = build_edge_geometry(
+            let (geometry_points, geometry_source, geometry_provenance) = build_edge_geometry(
                 previous.location,
                 location,
                 trip_descriptor
                     .shape_id
                     .as_deref()
                     .and_then(|shape_id| shapes_by_id.get(shape_id)),
+                rail_geometry_network,
+                rail_geometry_source_id,
+                &mut geometry_cache,
+                station_snap_nodes.as_ref(),
+                &previous.station_key,
+                station_key,
             );
 
             let key = (previous.city_id.clone(), city_id.clone());
-            let provenance = format!("{gtfs_source_id}:{}", trip_descriptor.route_id);
+            let mut provenance = vec![format!("{gtfs_source_id}:{}", trip_descriptor.route_id)];
+            provenance.extend(geometry_provenance);
             edge_map
                 .entry(key)
                 .and_modify(|edge| {
@@ -1219,7 +1246,7 @@ fn build_city_edges(
             service_class: ServiceClass::Regional,
             change_count_estimate: Some(0),
             source_confidence: edge.source_confidence,
-            provenance: vec![edge.provenance.clone()],
+            provenance: edge.provenance.clone(),
         });
         geometries.push(EdgeGeometryRecord {
             from_city_id,
@@ -1230,7 +1257,7 @@ fn build_city_edges(
                 .map(scale_geo_point_e5)
                 .collect::<Result<Vec<_>>>()?,
             source: edge.geometry_source,
-            provenance: vec![edge.provenance],
+            provenance: edge.provenance,
         });
     }
 
@@ -1241,16 +1268,52 @@ fn build_edge_geometry(
     from_location: GeoPoint,
     to_location: GeoPoint,
     shape_points: Option<&Vec<GeoPoint>>,
-) -> (Vec<GeoPoint>, EdgeGeometrySource) {
+    rail_geometry_network: Option<&RailGeometryNetwork>,
+    rail_geometry_source_id: Option<&str>,
+    geometry_cache: &mut HashMap<(String, String), Option<Vec<GeoPoint>>>,
+    station_snap_nodes: Option<&HashMap<String, Option<usize>>>,
+    from_station_key: &str,
+    to_station_key: &str,
+) -> (Vec<GeoPoint>, EdgeGeometrySource, Vec<String>) {
     if let Some(shape_points) = shape_points {
         if let Some(points) = extract_shape_segment(shape_points, from_location, to_location) {
-            return (points, EdgeGeometrySource::GtfsShapeSegment);
+            return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
+        }
+    }
+
+    if let Some(rail_geometry_network) = rail_geometry_network {
+        let cache_key = (from_station_key.to_string(), to_station_key.to_string());
+        let start_node = station_snap_nodes
+            .and_then(|snap_nodes| snap_nodes.get(from_station_key))
+            .and_then(|node| *node);
+        let end_node = station_snap_nodes
+            .and_then(|snap_nodes| snap_nodes.get(to_station_key))
+            .and_then(|node| *node);
+        let cached = geometry_cache
+            .entry(cache_key)
+            .or_insert_with(|| match (start_node, end_node) {
+                (Some(start_node), Some(end_node)) => rail_geometry_network
+                    .route_polyline_between_nodes(from_location, to_location, start_node, end_node),
+                _ => rail_geometry_network.route_polyline(from_location, to_location),
+            })
+            .clone();
+        if let Some(points) = cached {
+            let mut provenance = Vec::new();
+            if let Some(source_id) = rail_geometry_source_id {
+                provenance.push(format!("geometry:{source_id}"));
+            }
+            return (
+                points,
+                EdgeGeometrySource::InfrastructureGraphFallback,
+                provenance,
+            );
         }
     }
 
     (
         vec![from_location, to_location],
         EdgeGeometrySource::StraightLineFallback,
+        Vec::new(),
     )
 }
 
@@ -2157,8 +2220,10 @@ ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
         let output = build_sncf_dataset(
             &zip_path,
             &stations_csv_path,
+            None,
             "sncf-fr-gtfs",
             "sncf-fr-stations",
+            None,
             "test-version",
             "2026-05-08T18:00:00Z",
             Vec::new(),
@@ -2176,6 +2241,91 @@ ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
 
         let _ = fs::remove_file(zip_path);
         let _ = fs::remove_file(stations_csv_path);
+    }
+
+    #[test]
+    fn sncf_dataset_uses_rfn_geometry_when_shapes_are_missing() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-rfn-fallback-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:OCE8727100,Paris Nord,48.8809,2.3553,1,\n\
+StopArea:OCE8772319,Lyon Part Dieu,45.7604,4.8599,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:OCE8727100,1\n\
+T1,10:00:00,10:05:00,StopArea:OCE8772319,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+        let stations_csv_path = write_text_file(
+            "aetrain-rfn-stations-test.csv",
+            "id,nom,position_geographique,codeinsee,codes_uic\n\
+ref-paris-nord,Paris Nord,\"48.8809,2.3553\",75056,8727100\n\
+ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
+        )
+        .expect("station reference CSV should be created");
+        let rail_geojson_path = write_text_file(
+            "aetrain-rfn-lines-test.geojson",
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2.3553, 48.8809],
+          [2.9000, 48.3000],
+          [3.7000, 47.3000],
+          [4.3000, 46.4000],
+          [4.8599, 45.7604]
+        ]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("rail geojson should be created");
+
+        let output = build_sncf_dataset(
+            &zip_path,
+            &stations_csv_path,
+            Some(&rail_geojson_path),
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            Some("sncf-fr-rfn-lines"),
+            "test-version",
+            "2026-05-08T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("sncf dataset should build");
+
+        assert_eq!(output.summary.edge_count, 1);
+        assert_eq!(
+            output.edge_geometries.geometries[0].source,
+            EdgeGeometrySource::InfrastructureGraphFallback
+        );
+        assert!(
+            output.edge_geometries.geometries[0]
+                .provenance
+                .iter()
+                .any(|entry| entry == "geometry:sncf-fr-rfn-lines")
+        );
+        assert!(output.edge_geometries.geometries[0].points.len() >= 3);
+
+        let _ = fs::remove_file(zip_path);
+        let _ = fs::remove_file(stations_csv_path);
+        let _ = fs::remove_file(rail_geojson_path);
     }
 
     fn write_test_gtfs_zip(

@@ -247,8 +247,9 @@ Route geometry should be produced as a separate artifact, not embedded directly
 into the logical edge table. The intended source order is:
 
 - GTFS `shapes.txt` segment extraction when available
-- deterministic straight-line fallback when shape geometry is absent
-- OSM-derived rail graph fallback as the next geometry-quality layer
+- official SNCF RFN geometry graph fallback when GTFS shapes are absent
+- deterministic straight-line fallback when neither source can produce a path
+- OSM-derived rail graph fallback as the next cross-country geometry layer
 
 ## Decision 4: The browser consumes a city graph, not raw GTFS
 

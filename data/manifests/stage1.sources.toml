@@ -6,7 +6,7 @@ default_target_id = "sncf-fr"
 [[target]]
 id = "sncf-fr"
 adapter = "sncf_fr"
-source_ids = ["sncf-fr-gtfs", "sncf-fr-stations"]
+source_ids = ["sncf-fr-gtfs", "sncf-fr-stations", "sncf-fr-rfn-lines"]
 active = true
 canonical_export = true
 web_debug_export = true
@@ -36,3 +36,16 @@ version_probe_url = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/d
 active = true
 include_service_classes = ["intercity", "regional"]
 notes = "Official SNCF passenger-station reference export with UIC codes and coordinates."
+
+[[source]]
+id = "sncf-fr-rfn-lines"
+kind = "supplementary"
+country_code = "FR"
+adapter = "sncf_fr"
+role = "rail_geometry"
+url = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/formes-des-lignes-du-rfn/exports/geojson?limit=-1&timezone=Europe%2FParis"
+file_name = "sncf-fr-rfn-lines.geojson"
+version_probe_url = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/formes-des-lignes-du-rfn"
+active = true
+include_service_classes = ["intercity", "regional"]
+notes = "Official SNCF RFN exploited-line geometry export used as route-shape fallback when GTFS does not include shapes.txt."

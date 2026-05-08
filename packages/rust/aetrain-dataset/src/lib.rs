@@ -60,6 +60,7 @@ pub struct PolylinePointE5 {
 #[serde(rename_all = "snake_case")]
 pub enum EdgeGeometrySource {
     GtfsShapeSegment,
+    InfrastructureGraphFallback,
     StraightLineFallback,
     OsmGraphFallbackPlanned,
 }

@@ -1,6 +1,7 @@
 mod fetch;
 mod manifest;
 mod pipeline;
+mod rail_geometry;
 mod sncf;
 
 pub use fetch::{

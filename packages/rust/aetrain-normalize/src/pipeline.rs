@@ -68,6 +68,13 @@ impl<'a> AdapterBuildRequest<'a> {
         self.source_by_role(role)
             .or_else(|_| self.source_by_kind(kind))
     }
+
+    pub fn optional_source_by_role(&self, role: &str) -> Option<&'a FetchedSource> {
+        self.sources
+            .iter()
+            .copied()
+            .find(|source| source.definition.role.as_deref() == Some(role))
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -867,12 +874,15 @@ impl PipelineAdapter for SncfAdapter {
         let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
         let stations =
             request.source_by_role_or_kind("stations_reference", SourceKind::Supplementary)?;
+        let rail_geometry = request.optional_source_by_role("rail_geometry");
 
         let output = build_sncf_dataset(
             &gtfs.local_path,
             &stations.local_path,
+            rail_geometry.map(|source| source.local_path.as_path()),
             &gtfs.definition.id,
             &stations.definition.id,
+            rail_geometry.map(|source| source.definition.id.as_str()),
             request.dataset_version,
             request.generated_at,
             request.source_snapshots,

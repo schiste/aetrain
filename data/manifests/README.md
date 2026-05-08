@@ -16,6 +16,7 @@ The current `stage1.sources.toml` includes:
 - one `sncf-fr` target using the `sncf_fr` adapter
 - the official SNCF static GTFS export
 - the official SNCF passenger-station reference export
+- the official SNCF RFN line-geometry export used for route-shape fallback
 
 Manifest structure:
 
@@ -27,6 +28,12 @@ Manifest structure:
 The `role` field matters once a target has more than one source of the same
 kind. Adapters should resolve sources by declared role such as `schedule` or
 `stations_reference`, not by positional assumptions.
+
+For the SNCF target, the route-geometry precedence is:
+
+- GTFS `shapes.txt` when the timetable feed provides usable shapes
+- the RFN geometry source via the `rail_geometry` role when GTFS has no shapes
+- straight-line fallback only when neither source can provide a usable path
 
 Sources may also carry a version probe URL when the download endpoint does not
 publish stable `ETag` or `Last-Modified` headers. That lets the pipeline skip

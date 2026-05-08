@@ -29,6 +29,7 @@ That command:
 - fetches or skips active sources based on cached `ETag` / `Last-Modified`
 - stores raw files under `data/cache/raw/`
 - builds the default manifest target from cached or freshly fetched sources
+  - including the official RFN geometry source when the target declares `rail_geometry`
 - writes canonical artifacts under `data/build/stage1/<target>/canonical/`
   - including `station-mappings.json` for normalization auditability
   - including `edge-geometries.json` for route-shape export
