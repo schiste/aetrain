@@ -1,5 +1,15 @@
 const DIAGNOSTICS_KEY = "__AETRAIN_DIAGNOSTICS__";
 const DEFAULT_MAX_EVENTS = 5000;
+const DEFAULT_CONSOLE_LEVEL = "info";
+const KNOWN_LEVELS = ["debug", "metric", "info", "warn", "error", "silent"];
+const LEVEL_PRIORITY = {
+  debug: 10,
+  metric: 10,
+  info: 20,
+  warn: 30,
+  error: 40,
+  silent: 100
+};
 
 export function createDiagnostics(scope) {
   const store = ensureDiagnosticsStore();
@@ -54,6 +64,7 @@ function ensureDiagnosticsStore() {
   const store = {
     startedAtIso: new Date().toISOString(),
     startedAtMs,
+    consoleLevel: resolveConsoleLevel(),
     maxEvents: DEFAULT_MAX_EVENTS,
     nextIndex: 0,
     events: [],
@@ -63,6 +74,25 @@ function ensureDiagnosticsStore() {
     },
     dump() {
       return [...store.events];
+    },
+    setConsoleLevel(level) {
+      if (!KNOWN_LEVELS.includes(level)) {
+        throw new Error(`Unknown diagnostics console level: ${level}`);
+      }
+      store.consoleLevel = level;
+      console.info("[aetrain][diagnostics] updated console level", {
+        console_level: level
+      });
+    },
+    setMaxEvents(count) {
+      if (!Number.isFinite(count) || count < 1) {
+        throw new Error(`Invalid diagnostics max event count: ${count}`);
+      }
+      store.maxEvents = Math.floor(count);
+      trimEvents(store);
+      console.info("[aetrain][diagnostics] updated max event buffer", {
+        max_events: store.maxEvents
+      });
     },
     table() {
       console.table(
@@ -79,6 +109,7 @@ function ensureDiagnosticsStore() {
 
   root[DIAGNOSTICS_KEY] = store;
   console.info("[aetrain][diagnostics] initialized", {
+    console_level: store.consoleLevel,
     started_at: store.startedAtIso,
     max_events: store.maxEvents
   });
@@ -138,11 +169,12 @@ function logEvent(store, level, scope, message, data) {
   store.nextIndex += 1;
 
   store.events.push(event);
-  if (store.events.length > store.maxEvents) {
-    store.events.shift();
-  }
+  trimEvents(store);
 
   const prefix = `[aetrain][${scope}][${level}] ${message}`;
+  if (!shouldEmitToConsole(store, level)) {
+    return;
+  }
   const consoleMethod = selectConsoleMethod(level);
   if (event.data !== undefined) {
     consoleMethod(prefix, event.data);
@@ -167,6 +199,10 @@ function selectConsoleMethod(level) {
   return console.debug.bind(console);
 }
 
+function shouldEmitToConsole(store, level) {
+  return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[store.consoleLevel];
+}
+
 function sanitizeData(data) {
   if (data === undefined) {
     return undefined;
@@ -188,4 +224,35 @@ function now() {
 
 function elapsedSince(startedAt) {
   return Math.round((now() - startedAt) * 1000) / 1000;
+}
+
+function resolveConsoleLevel() {
+  const root = globalThis;
+  const fromGlobal = root.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__;
+  if (KNOWN_LEVELS.includes(fromGlobal)) {
+    return fromGlobal;
+  }
+
+  try {
+    const url = new URL(root.location?.href || "http://localhost/");
+    const fromQuery = url.searchParams.get("diag");
+    if (KNOWN_LEVELS.includes(fromQuery)) {
+      return fromQuery;
+    }
+  } catch {}
+
+  try {
+    const fromStorage = root.localStorage?.getItem("aetrain-diagnostics-console-level");
+    if (KNOWN_LEVELS.includes(fromStorage)) {
+      return fromStorage;
+    }
+  } catch {}
+
+  return DEFAULT_CONSOLE_LEVEL;
+}
+
+function trimEvents(store) {
+  while (store.events.length > store.maxEvents) {
+    store.events.shift();
+  }
 }
