@@ -1698,6 +1698,32 @@ fn derive_city_display_name(names: &[String]) -> String {
         return title_case(&common.join(" "));
     }
 
+    let mut prefix_counts = HashMap::<String, usize>::new();
+    for tokens in &tokenized {
+        for prefix_len in 1..tokens.len() {
+            let prefix = tokens[..prefix_len].join(" ");
+            *prefix_counts.entry(prefix).or_default() += 1;
+        }
+    }
+
+    if let Some((prefix, _)) = prefix_counts
+        .into_iter()
+        .filter(|(_, count)| *count >= 2)
+        .max_by(|left, right| {
+            left.1
+                .cmp(&right.1)
+                .then_with(|| {
+                    left.0
+                        .split_whitespace()
+                        .count()
+                        .cmp(&right.0.split_whitespace().count())
+                })
+                .then_with(|| right.0.len().cmp(&left.0.len()))
+        })
+    {
+        return title_case(&prefix);
+    }
+
     names
         .iter()
         .min_by_key(|name| normalize_name(name).len())
@@ -1965,6 +1991,17 @@ mod tests {
         ];
 
         assert_eq!(derive_city_display_name(&names), "Paris");
+    }
+
+    #[test]
+    fn majority_prefix_city_name_is_preferred_when_common_prefix_is_empty() {
+        let names = vec![
+            "Avignon TGV".to_string(),
+            "Avignon Centre".to_string(),
+            "Montfavet".to_string(),
+        ];
+
+        assert_eq!(derive_city_display_name(&names), "Avignon");
     }
 
     #[test]

@@ -11,6 +11,8 @@ use serde_json::Value;
 
 const DEFAULT_SNAP_DISTANCE_METERS: f64 = 25_000.0;
 const ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
+const NODE_MERGE_TOLERANCE_METERS: f64 = 120.0;
+const NODE_BUCKET_SCALE: f64 = 1_000.0;
 
 #[derive(Clone, Debug)]
 pub struct RailGeometryNetwork {
@@ -61,6 +63,7 @@ impl RailGeometryNetwork {
         let mut nodes = Vec::<GeoPoint>::new();
         let mut adjacency = Vec::<Vec<GraphEdge>>::new();
         let mut node_index_by_key = HashMap::<(i32, i32), usize>::new();
+        let mut node_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
 
         for feature in features {
             if !feature_is_active(feature.get("properties")) {
@@ -79,7 +82,13 @@ impl RailGeometryNetwork {
             match geometry_type {
                 "LineString" => {
                     if let Some(points) = parse_linestring_coordinates(coordinates) {
-                        add_polyline(&points, &mut nodes, &mut adjacency, &mut node_index_by_key);
+                        add_polyline(
+                            &points,
+                            &mut nodes,
+                            &mut adjacency,
+                            &mut node_index_by_key,
+                            &mut node_indexes_by_bucket,
+                        );
                     }
                 }
                 "MultiLineString" => {
@@ -91,6 +100,7 @@ impl RailGeometryNetwork {
                                     &mut nodes,
                                     &mut adjacency,
                                     &mut node_index_by_key,
+                                    &mut node_indexes_by_bucket,
                                 );
                             }
                         }
@@ -252,10 +262,23 @@ fn add_polyline(
     nodes: &mut Vec<GeoPoint>,
     adjacency: &mut Vec<Vec<GraphEdge>>,
     node_index_by_key: &mut HashMap<(i32, i32), usize>,
+    node_indexes_by_bucket: &mut HashMap<(i32, i32), Vec<usize>>,
 ) {
     for window in points.windows(2) {
-        let from_index = get_or_insert_node(window[0], nodes, adjacency, node_index_by_key);
-        let to_index = get_or_insert_node(window[1], nodes, adjacency, node_index_by_key);
+        let from_index = get_or_insert_node(
+            window[0],
+            nodes,
+            adjacency,
+            node_index_by_key,
+            node_indexes_by_bucket,
+        );
+        let to_index = get_or_insert_node(
+            window[1],
+            nodes,
+            adjacency,
+            node_index_by_key,
+            node_indexes_by_bucket,
+        );
         if from_index == to_index {
             continue;
         }
@@ -277,16 +300,45 @@ fn get_or_insert_node(
     nodes: &mut Vec<GeoPoint>,
     adjacency: &mut Vec<Vec<GraphEdge>>,
     node_index_by_key: &mut HashMap<(i32, i32), usize>,
+    node_indexes_by_bucket: &mut HashMap<(i32, i32), Vec<usize>>,
 ) -> usize {
     let key = quantize_point_key(point);
     if let Some(index) = node_index_by_key.get(&key) {
         return *index;
     }
 
+    let bucket = quantize_bucket_key(point);
+    let mut nearest_existing = None::<(usize, f64)>;
+    for lat_bucket in (bucket.0 - 1)..=(bucket.0 + 1) {
+        for lon_bucket in (bucket.1 - 1)..=(bucket.1 + 1) {
+            let Some(candidates) = node_indexes_by_bucket.get(&(lat_bucket, lon_bucket)) else {
+                continue;
+            };
+            for candidate_index in candidates {
+                let distance = haversine_meters(nodes[*candidate_index], point);
+                if distance > NODE_MERGE_TOLERANCE_METERS {
+                    continue;
+                }
+                match nearest_existing {
+                    Some((_, best_distance)) if distance >= best_distance => {}
+                    _ => nearest_existing = Some((*candidate_index, distance)),
+                }
+            }
+        }
+    }
+    if let Some((index, _)) = nearest_existing {
+        node_index_by_key.insert(key, index);
+        return index;
+    }
+
     let index = nodes.len();
     nodes.push(point);
     adjacency.push(Vec::new());
     node_index_by_key.insert(key, index);
+    node_indexes_by_bucket
+        .entry(bucket)
+        .or_default()
+        .push(index);
     index
 }
 
@@ -294,6 +346,13 @@ fn quantize_point_key(point: GeoPoint) -> (i32, i32) {
     (
         (point.lat * 100_000.0).round() as i32,
         (point.lon * 100_000.0).round() as i32,
+    )
+}
+
+fn quantize_bucket_key(point: GeoPoint) -> (i32, i32) {
+    (
+        (point.lat * NODE_BUCKET_SCALE).floor() as i32,
+        (point.lon * NODE_BUCKET_SCALE).floor() as i32,
     )
 }
 
@@ -380,6 +439,52 @@ mod tests {
             .expect("route should exist");
         assert!(route.len() >= 3);
         assert!(route.iter().any(|point| (point.lon - 3.0).abs() < 0.0001));
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn nearby_segment_endpoints_are_merged_into_one_graph_node() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0, 48.0], [3.0, 48.0]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[3.0007, 48.0002], [4.0, 48.0]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.0,
+                },
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 4.0,
+                },
+            )
+            .expect("route should exist through merged node");
+        assert!(route.len() >= 3);
 
         let _ = fs::remove_file(path);
     }

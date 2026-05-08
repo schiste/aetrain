@@ -20,6 +20,7 @@ test("buildProductionPlannerData carries decoded route geometry into planner art
         population: 2_100_000
       },
       {
+        aliases: ["Avignon Centre", "Avignon TGV"],
         city_id: "lyon-fr",
         country_code: "FR",
         display_name: "Lyon",
@@ -57,4 +58,5 @@ test("buildProductionPlannerData carries decoded route geometry into planner art
     { lat: 48.3, lon: 2.9 },
     { lat: 45.764, lon: 4.8357 }
   ]);
+  assert.match(dataset.plannerArtifacts.searchIndex[1].searchText, /avignon centre/);
 });

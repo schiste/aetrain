@@ -106,11 +106,14 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
   const searchIndex = cities.map((city, cityIndex) => {
     const cityNameNormalized = normalizeSearchValue(city.name);
     const countryNormalized = normalizeSearchValue(city.country);
+    const aliasNormalized = (rawCities[cityIndex].aliases || [])
+      .map((alias) => normalizeSearchValue(alias))
+      .filter(Boolean);
     return {
       cityIndex,
       cityNameNormalized,
       countryNormalized,
-      searchText: `${cityNameNormalized} ${countryNormalized}`
+      searchText: `${cityNameNormalized} ${countryNormalized} ${aliasNormalized.join(" ")}`
     };
   });
 
