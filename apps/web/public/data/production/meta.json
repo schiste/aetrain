@@ -1,17 +1,22 @@
 {
   "schema_version": 1,
-  "dataset_version": "20260508-175553.864267",
-  "generated_at": "2026-05-08T17:55:53.864267Z",
+  "dataset_version": "20260508-184153.879551",
+  "generated_at": "2026-05-08T18:41:53.879551Z",
   "source_snapshots": [
     {
       "source_id": "sncf-fr-gtfs",
-      "fetched_at": "2026-05-07T19:22:54.582858Z",
-      "version_hint": "\"69fb9c61-544e2d\""
+      "fetched_at": "2026-05-08T18:37:55.454867Z",
+      "version_hint": "\"69fcf0c5-5455dc\""
     },
     {
       "source_id": "sncf-fr-stations",
-      "fetched_at": "2026-05-07T19:31:47.665816Z",
-      "version_hint": "2026-05-07T12:43:06+00:00"
+      "fetched_at": "2026-05-08T18:37:57.530961Z",
+      "version_hint": "2026-05-08T12:43:05+00:00"
+    },
+    {
+      "source_id": "sncf-fr-rfn-lines",
+      "fetched_at": "2026-05-08T18:38:00.181474Z",
+      "version_hint": "2022-03-24T10:14:03+00:00"
     }
   ],
   "attribution_path": "attribution.json"

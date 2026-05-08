@@ -1,22 +1,29 @@
 {
   "dataset_id": "stage1",
   "target_id": "sncf-fr",
-  "dataset_version": "20260508-175553.864267",
-  "generated_at": "2026-05-08T17:55:53.864267Z",
+  "dataset_version": "20260508-184153.879551",
+  "generated_at": "2026-05-08T18:41:53.879551Z",
   "sources": [
     {
       "source_id": "sncf-fr-gtfs",
       "local_path": "data/cache/raw/sncf-fr-gtfs/sncf-fr-gtfs.zip",
-      "fetched_at": "2026-05-07T19:22:54.582858Z",
-      "sha256": "88778c88c91e10df8960d7b87a134d9e303c90ce89e4b547f467a8046f00fda6",
-      "version_hint": "\"69fb9c61-544e2d\""
+      "fetched_at": "2026-05-08T18:37:55.454867Z",
+      "sha256": "8693bc9645db5e71043fbf54c375763d231daf9ed15a1f40626863ed5e011bb3",
+      "version_hint": "\"69fcf0c5-5455dc\""
     },
     {
       "source_id": "sncf-fr-stations",
       "local_path": "data/cache/raw/sncf-fr-stations/sncf-fr-stations.csv",
-      "fetched_at": "2026-05-07T19:31:47.665816Z",
-      "sha256": "333587736fc2eef8dea59f0cbc84b464bcd9f82ca7174e3c575287b8041b5b24",
-      "version_hint": "2026-05-07T12:43:06+00:00"
+      "fetched_at": "2026-05-08T18:37:57.530961Z",
+      "sha256": "f8417b48550a633b3c99b5f0a756c350bfc06e2156a3a0f3b36ea34e53e663dd",
+      "version_hint": "2026-05-08T12:43:05+00:00"
+    },
+    {
+      "source_id": "sncf-fr-rfn-lines",
+      "local_path": "data/cache/raw/sncf-fr-rfn-lines/sncf-fr-rfn-lines.geojson",
+      "fetched_at": "2026-05-08T18:38:00.181474Z",
+      "sha256": "872afbb93b45de996b9515a1275a34834a58b05b516df1234d5c9f3e700a2a20",
+      "version_hint": "2022-03-24T10:14:03+00:00"
     }
   ]
 }
