@@ -11,6 +11,8 @@ import {
 const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
 const MAX_CANVAS_PIXEL_RATIO = 2;
+const INTERACTION_LABEL_OPACITY = "0";
+const ZOOM_MOVEEND_SUPPRESSION_MS = 60;
 
 const diagnostics = createDiagnostics("web/map/leaflet-surface");
 
@@ -132,6 +134,8 @@ export function createLeafletMapSurface({
   });
   let viewChangeTimeoutId = 0;
   let lastHotRenderInfoAt = 0;
+  let isZooming = false;
+  let suppressMoveEndUntil = 0;
 
   map.on("click", (event) => {
     const hit = hitTestSpatialGrid(hitGrid, event.containerPoint);
@@ -172,8 +176,34 @@ export function createLeafletMapSurface({
     }
   });
 
-  map.on("moveend resize", () => {
-    invalidateView("leaflet-view-change");
+  map.on("zoomstart", () => {
+    isZooming = true;
+    labelsLayer.style.opacity = INTERACTION_LABEL_OPACITY;
+  });
+
+  map.on("zoomend", () => {
+    isZooming = false;
+    suppressMoveEndUntil = now() + ZOOM_MOVEEND_SUPPRESSION_MS;
+    labelsLayer.style.opacity = "";
+    invalidateView("leaflet-zoom-settle", {
+      notifyViewChange: true
+    });
+  });
+
+  map.on("moveend", () => {
+    if (isZooming || now() < suppressMoveEndUntil) {
+      return;
+    }
+
+    invalidateView("leaflet-move-settle", {
+      notifyViewChange: true
+    });
+  });
+
+  map.on("resize", () => {
+    invalidateView("leaflet-resize", {
+      notifyViewChange: true
+    });
   });
 
   return {
@@ -243,7 +273,7 @@ export function createLeafletMapSurface({
     };
   }
 
-  function invalidateView(reason) {
+  function invalidateView(reason, options = {}) {
     currentFrame = null;
     renderPlanCache = null;
     scheduleRender(reason, createDirtyFlags({
@@ -253,7 +283,9 @@ export function createLeafletMapSurface({
       network: true,
       routes: true
     }));
-    scheduleViewChangeNotification();
+    if (options.notifyViewChange) {
+      scheduleViewChangeNotification();
+    }
   }
 
   function scheduleViewChangeNotification() {
@@ -298,12 +330,17 @@ export function createLeafletMapSurface({
     }
 
     if (dirty.cities || dirty.labels) {
-      const plan = getRenderPlan(frame, currentState, currentSignature);
+      const shouldRenderLabels = !isZooming;
+      const plan = getRenderPlan(frame, currentState, currentSignature, {
+        includeLabels: shouldRenderLabels
+      });
       if (dirty.cities) {
         drawCities(frame, plan.visibleCities);
       }
-      if (dirty.labels) {
+      if (shouldRenderLabels && dirty.labels) {
         applyLabels(plan.labels);
+      } else if (isZooming) {
+        applyLabels([]);
       }
       hitGrid = plan.hitGrid;
       lastRenderStats = plan.stats;
@@ -366,10 +403,12 @@ export function createLeafletMapSurface({
     labelsLayer.style.height = `${frame.size.y}px`;
   }
 
-  function getRenderPlan(frame, plannerState, signature) {
+  function getRenderPlan(frame, plannerState, signature, options = {}) {
+    const includeLabels = options.includeLabels !== false;
     if (
       renderPlanCache &&
       renderPlanCache.frameKey === frame.key &&
+      renderPlanCache.includeLabels === includeLabels &&
       renderPlanCache.distRef === signature.distRef &&
       renderPlanCache.filterKey === signature.filterKey &&
       renderPlanCache.legKey === signature.legKey &&
@@ -378,11 +417,12 @@ export function createLeafletMapSurface({
       return renderPlanCache.plan;
     }
 
-    const plan = buildRenderPlan(frame, plannerState);
+    const plan = buildRenderPlan(frame, plannerState, { includeLabels });
     renderPlanCache = {
       distRef: signature.distRef,
       filterKey: signature.filterKey,
       frameKey: frame.key,
+      includeLabels,
       legKey: signature.legKey,
       plan,
       tripKey: signature.tripKey
@@ -502,7 +542,8 @@ export function createLeafletMapSurface({
     cityContext.restore();
   }
 
-  function buildRenderPlan(frame, plannerState) {
+  function buildRenderPlan(frame, plannerState, options = {}) {
+    const includeLabels = options.includeLabels !== false;
     const tripSet = new Set(plannerState.trip);
     const hasLegFilter = plannerState.trip.length >= 1;
     const legFilterActive =
@@ -571,6 +612,10 @@ export function createLeafletMapSurface({
       };
       visibleCities.push(visibleCity);
 
+      if (!includeLabels) {
+        continue;
+      }
+
       const showLabel =
         inTrip ||
         (city.interest >= frame.lod.labelThreshold.interest &&
@@ -582,8 +627,12 @@ export function createLeafletMapSurface({
       labelCandidates.push(buildLabelCandidate(visibleCity, plannerState, formatMinutes));
     }
 
-    labelCandidates.sort((left, right) => right.priority - left.priority);
-    const labels = selectLabelCandidates(labelCandidates, frame.lod.labelBudget);
+    const labels = includeLabels
+      ? selectLabelCandidates(
+          labelCandidates.sort((left, right) => right.priority - left.priority),
+          frame.lod.labelBudget
+        )
+      : [];
 
     return {
       hitGrid: createSpatialGrid(visibleCities),

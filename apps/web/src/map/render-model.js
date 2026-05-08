@@ -1,52 +1,44 @@
 const DEFAULT_HIT_GRID_CELL_SIZE = 48;
 
 export function buildLodProfile(zoom, labelThreshold) {
-  const label = labelThreshold(zoom);
-
-  if (zoom <= 4) {
-    return {
-      cityPadding: 24,
-      labelBudget: 16,
-      labelThreshold: label,
-      minInterest: 7,
-      minPopulation: 250_000,
-      networkMinInterest: 7,
-      networkPadding: 120
-    };
-  }
-
-  if (zoom <= 5) {
-    return {
-      cityPadding: 28,
-      labelBudget: 24,
-      labelThreshold: label,
-      minInterest: 6,
-      minPopulation: 120_000,
-      networkMinInterest: 6,
-      networkPadding: 132
-    };
-  }
-
-  if (zoom <= 7) {
-    return {
-      cityPadding: 32,
-      labelBudget: 40,
-      labelThreshold: label,
-      minInterest: 4,
-      minPopulation: 40_000,
-      networkMinInterest: 4,
-      networkPadding: 144
-    };
-  }
-
   return {
-    cityPadding: 40,
-    labelBudget: 72,
-    labelThreshold: label,
-    minInterest: 1,
-    minPopulation: 0,
-    networkMinInterest: 1,
-    networkPadding: 156
+    cityPadding: Math.round(interpolateByZoom(zoom, [
+      [3, 24],
+      [5, 28],
+      [7, 32],
+      [10, 40]
+    ])),
+    labelBudget: Math.round(interpolateByZoom(zoom, [
+      [3, 16],
+      [5, 24],
+      [7, 40],
+      [10, 72]
+    ])),
+    labelThreshold: interpolateLabelThreshold(zoom, labelThreshold),
+    minInterest: interpolateByZoom(zoom, [
+      [3, 7],
+      [5, 6],
+      [7, 4],
+      [10, 1]
+    ]),
+    minPopulation: Math.round(interpolateByZoom(zoom, [
+      [3, 250_000],
+      [5, 120_000],
+      [7, 40_000],
+      [10, 0]
+    ])),
+    networkMinInterest: interpolateByZoom(zoom, [
+      [3, 7],
+      [5, 6],
+      [7, 4],
+      [10, 1]
+    ]),
+    networkPadding: Math.round(interpolateByZoom(zoom, [
+      [3, 120],
+      [5, 132],
+      [7, 144],
+      [10, 156]
+    ]))
   };
 }
 
@@ -175,4 +167,40 @@ function rectsIntersect(left, right) {
 
 function keyForPoint(point, cellSize) {
   return `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+}
+
+function interpolateLabelThreshold(zoom, labelThreshold) {
+  const floorZoom = Math.floor(zoom);
+  const ceilZoom = Math.ceil(zoom);
+  const floorValue = labelThreshold(floorZoom);
+  const ceilValue = labelThreshold(ceilZoom);
+  const progress = zoom - floorZoom;
+
+  return {
+    interest: lerp(floorValue.interest, ceilValue.interest, progress),
+    pop: Math.round(lerp(floorValue.pop, ceilValue.pop, progress))
+  };
+}
+
+function interpolateByZoom(zoom, points) {
+  if (zoom <= points[0][0]) {
+    return points[0][1];
+  }
+
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    if (zoom > current[0]) {
+      continue;
+    }
+
+    const progress = (zoom - previous[0]) / (current[0] - previous[0]);
+    return lerp(previous[1], current[1], progress);
+  }
+
+  return points[points.length - 1][1];
+}
+
+function lerp(from, to, progress) {
+  return from + (to - from) * progress;
 }

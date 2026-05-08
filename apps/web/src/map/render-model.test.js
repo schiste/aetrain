@@ -18,6 +18,17 @@ test("buildLodProfile tightens budgets at low zoom", () => {
   assert.equal(low.minInterest > high.minInterest, true);
 });
 
+test("buildLodProfile interpolates between zoom levels", () => {
+  const profile = buildLodProfile(5.5, (zoom) => ({
+    interest: zoom <= 5 ? 8 : 6,
+    pop: zoom <= 5 ? 500_000 : 200_000
+  }));
+
+  assert.equal(profile.labelBudget > 24 && profile.labelBudget < 40, true);
+  assert.equal(profile.minInterest < 6 && profile.minInterest > 4, true);
+  assert.equal(profile.labelThreshold.interest < 8 && profile.labelThreshold.interest > 6, true);
+});
+
 test("pointInViewport respects padding", () => {
   assert.equal(pointInViewport({ x: -8, y: 10 }, { x: 100, y: 100 }, 10), true);
   assert.equal(pointInViewport({ x: -12, y: 10 }, { x: 100, y: 100 }, 10), false);
