@@ -12,6 +12,39 @@ pub enum SourceKind {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DirectoryListingStep {
+    pub href_pattern: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum SourceResolver {
+    DirectoryListingCascade {
+        index_url: String,
+        #[serde(default)]
+        steps: Vec<DirectoryListingStep>,
+    },
+    UdataLatestResource {
+        dataset_api_url: String,
+        #[serde(default)]
+        format: Option<String>,
+        #[serde(default)]
+        title_pattern: Option<String>,
+        #[serde(default)]
+        url_pattern: Option<String>,
+    },
+    CkanLatestResource {
+        package_show_url: String,
+        #[serde(default)]
+        format: Option<String>,
+        #[serde(default)]
+        name_pattern: Option<String>,
+        #[serde(default)]
+        url_pattern: Option<String>,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SourceDefinition {
     pub id: String,
     pub kind: SourceKind,
@@ -23,6 +56,8 @@ pub struct SourceDefinition {
     #[serde(default)]
     pub version_probe_url: Option<String>,
     pub active: bool,
+    #[serde(default)]
+    pub resolver: Option<SourceResolver>,
     #[serde(default)]
     pub role: Option<String>,
     #[serde(default)]
@@ -37,8 +72,12 @@ impl SourceDefinition {
     }
 
     pub fn resolved_file_name(&self) -> String {
+        self.resolved_file_name_for_url(&self.url)
+    }
+
+    pub fn resolved_file_name_for_url(&self, url: &str) -> String {
         self.file_name.clone().unwrap_or_else(|| {
-            let without_query = self.url.split('?').next().unwrap_or(self.url.as_str());
+            let without_query = url.split('?').next().unwrap_or(url);
             without_query
                 .rsplit('/')
                 .next()
@@ -212,6 +251,7 @@ mod tests {
             file_name: Some("feed.zip".to_string()),
             version_probe_url: None,
             active: true,
+            resolver: None,
             role: Some("schedule".to_string()),
             include_service_classes: vec![
                 ServiceClass::Intercity,
@@ -240,6 +280,7 @@ mod tests {
             file_name: Some("from-manifest.zip".to_string()),
             version_probe_url: None,
             active: true,
+            resolver: None,
             role: None,
             include_service_classes: vec![ServiceClass::Regional],
             notes: None,
@@ -265,12 +306,43 @@ mod tests {
             file_name: None,
             version_probe_url: None,
             active: true,
+            resolver: None,
             role: Some("enrichment".to_string()),
             include_service_classes: Vec::new(),
             notes: None,
         };
 
         assert!(source.is_stage_one_compatible());
+    }
+
+    #[test]
+    fn resolved_file_name_can_follow_resolved_download_url() {
+        let source = SourceDefinition {
+            id: "luxembourg-gtfs".to_string(),
+            kind: SourceKind::Gtfs,
+            country_code: "LU".to_string(),
+            adapter: "gtfs_basic".to_string(),
+            url: "https://data.public.lu/api/1/datasets/gtfs/".to_string(),
+            file_name: None,
+            version_probe_url: None,
+            active: true,
+            resolver: Some(SourceResolver::UdataLatestResource {
+                dataset_api_url: "https://data.public.lu/api/1/datasets/gtfs/".to_string(),
+                format: Some("zip".to_string()),
+                title_pattern: Some("^gtfs-.*\\.zip$".to_string()),
+                url_pattern: None,
+            }),
+            role: Some("schedule".to_string()),
+            include_service_classes: vec![ServiceClass::Regional],
+            notes: None,
+        };
+
+        assert_eq!(
+            source.resolved_file_name_for_url(
+                "https://download.data.public.lu/resources/gtfs/20260507/gtfs-20260506-20260712.zip"
+            ),
+            "gtfs-20260506-20260712.zip"
+        );
     }
 
     #[test]

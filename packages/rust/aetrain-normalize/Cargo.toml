@@ -12,6 +12,7 @@ anyhow = "1.0"
 csv = "1.4"
 deunicode = "1.6"
 hex = "0.4"
+regex = "1.12"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

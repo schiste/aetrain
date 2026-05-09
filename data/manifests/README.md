@@ -38,3 +38,24 @@ For the SNCF target, the route-geometry precedence is:
 Sources may also carry a version probe URL when the download endpoint does not
 publish stable `ETag` or `Last-Modified` headers. That lets the pipeline skip
 unchanged sources without redownloading them blindly.
+
+Sources can also carry a `resolver` when the manifest should point at an
+official catalog instead of a brittle dated file URL.
+
+Current resolver types:
+
+- `udata_latest_resource`: resolves the latest matching file from a Udata-style
+  dataset API such as `data.public.lu`
+- `directory_listing_cascade`: walks one or more directory-listing pages and
+  picks the latest matching link at each step
+- `ckan_latest_resource`: resolves the latest matching file from a CKAN
+  `package_show` response
+
+Resolvers are expected to produce a concrete download URL. The fetch cache then
+stores both:
+
+- the configured manifest URL
+- the resolved concrete download URL
+
+That makes change detection and audit trails explicit when a catalog rotates
+resource URLs over time.
