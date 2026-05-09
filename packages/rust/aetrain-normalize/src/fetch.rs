@@ -378,6 +378,10 @@ fn resolve_download_source(
         Some(SourceResolver::DirectoryListingCascade { index_url, steps }) => {
             resolve_directory_listing_cascade(client, index_url, steps)
         }
+        Some(SourceResolver::HtmlLatestMatch {
+            page_url,
+            href_pattern,
+        }) => resolve_html_latest_match(client, page_url, href_pattern),
         Some(SourceResolver::UdataLatestResource {
             dataset_api_url,
             format,
@@ -440,6 +444,29 @@ fn resolve_directory_listing_cascade(
     Ok(ResolvedRemoteSource {
         download_url: current_url.to_string(),
         resolver_version: latest_href.or_else(|| Some(current_url.to_string())),
+    })
+}
+
+fn resolve_html_latest_match(
+    client: &Client,
+    page_url: &str,
+    href_pattern: &str,
+) -> Result<ResolvedRemoteSource> {
+    let current_url =
+        Url::parse(page_url).with_context(|| format!("invalid HTML resolver page URL {page_url}"))?;
+    let response = client
+        .get(current_url.clone())
+        .send()
+        .with_context(|| format!("failed to fetch HTML resolver page {}", current_url))?
+        .error_for_status()
+        .with_context(|| format!("received error response for {}", current_url))?;
+    let html = response
+        .text()
+        .context("failed to read HTML resolver response body")?;
+    let (next_url, href) = select_latest_href(&current_url, &html, href_pattern)?;
+    Ok(ResolvedRemoteSource {
+        download_url: next_url.to_string(),
+        resolver_version: Some(href),
     })
 }
 
@@ -775,6 +802,26 @@ mod tests {
             select_latest_href(&base, html, r"^20\d{2}/$").expect("href should resolve");
         assert_eq!(href, "2025/");
         assert_eq!(url.as_str(), "https://example.invalid/archive/2025/");
+    }
+
+    #[test]
+    fn selector_can_pick_latest_absolute_zip_href_from_html_page() {
+        let base = Url::parse("https://example.invalid/page").expect("base URL should parse");
+        let html = r#"
+            <html><body>
+                <a href="https://cdn.example.invalid/gtfs_20260501.zip">older</a>
+                <a href="https://cdn.example.invalid/gtfs_20260508.zip">newer</a>
+            </body></html>
+        "#;
+
+        let (url, href) = select_latest_href(
+            &base,
+            html,
+            r"^https://cdn\.example\.invalid/gtfs_\d{8}\.zip$",
+        )
+        .expect("href should resolve");
+        assert_eq!(href, "https://cdn.example.invalid/gtfs_20260508.zip");
+        assert_eq!(url.as_str(), "https://cdn.example.invalid/gtfs_20260508.zip");
     }
 
     #[test]

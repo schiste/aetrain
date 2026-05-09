@@ -44,6 +44,8 @@ official catalog instead of a brittle dated file URL.
 
 Current resolver types:
 
+- `html_latest_match`: scrapes a public dataset page and picks the latest
+  matching link
 - `udata_latest_resource`: resolves the latest matching file from a Udata-style
   dataset API such as `data.public.lu`
 - `directory_listing_cascade`: walks one or more directory-listing pages and

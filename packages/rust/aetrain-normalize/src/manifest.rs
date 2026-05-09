@@ -24,6 +24,10 @@ pub enum SourceResolver {
         #[serde(default)]
         steps: Vec<DirectoryListingStep>,
     },
+    HtmlLatestMatch {
+        page_url: String,
+        href_pattern: String,
+    },
     UdataLatestResource {
         dataset_api_url: String,
         #[serde(default)]
