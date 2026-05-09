@@ -38,6 +38,9 @@ out/
 target/
 apps/web/dist/
 apps/web/.vite/
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
 data/cache/
 data/build/
 .playwright-mcp/

@@ -26,7 +26,7 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: `npm run preview -- --port ${PREVIEW_PORT} --strictPort`,
+    command: `npm run preview -- --port ${PREVIEW_PORT} --strictPort --host 127.0.0.1`,
     url: `http://127.0.0.1:${PREVIEW_PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
