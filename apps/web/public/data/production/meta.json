@@ -1,22 +1,52 @@
 {
   "schema_version": 1,
-  "dataset_version": "20260508-191625.876284",
-  "generated_at": "2026-05-08T19:16:25.876284Z",
+  "dataset_version": "20260509-054633.79983",
+  "generated_at": "2026-05-09T05:46:33.79983Z",
   "source_snapshots": [
+    {
+      "source_id": "at-oebb-gtfs",
+      "fetched_at": "2026-05-09T05:03:42Z",
+      "version_hint": "Fri, 12 Dec 2025 09:02:01 GMT"
+    },
+    {
+      "source_id": "ch-gtfs",
+      "fetched_at": "2026-05-09T05:25:00Z",
+      "version_hint": "gtfs_fp2026_20260425.zip"
+    },
+    {
+      "source_id": "de-delfi-gtfs",
+      "fetched_at": "2026-05-09T05:03:47Z",
+      "version_hint": "20251229_fahrplaene_gesamtdeutschland_gtfs.zip"
+    },
+    {
+      "source_id": "es-renfe-cercanias-gtfs",
+      "fetched_at": "2026-05-09T00:00:00Z",
+      "version_hint": null
+    },
+    {
+      "source_id": "es-renfe-mainline-gtfs",
+      "fetched_at": "2026-05-09T00:00:00Z",
+      "version_hint": null
+    },
+    {
+      "source_id": "lu-atp-gtfs",
+      "fetched_at": "2026-05-09T04:50:57.432897Z",
+      "version_hint": "2026-05-07T04:33:17.174000+00:00"
+    },
     {
       "source_id": "sncf-fr-gtfs",
       "fetched_at": "2026-05-08T18:37:55.454867Z",
       "version_hint": "\"69fcf0c5-5455dc\""
     },
     {
-      "source_id": "sncf-fr-stations",
-      "fetched_at": "2026-05-08T18:37:57.530961Z",
-      "version_hint": "2026-05-08T12:43:05+00:00"
-    },
-    {
       "source_id": "sncf-fr-rfn-lines",
       "fetched_at": "2026-05-08T18:38:00.181474Z",
       "version_hint": "2022-03-24T10:14:03+00:00"
+    },
+    {
+      "source_id": "sncf-fr-stations",
+      "fetched_at": "2026-05-08T18:37:57.530961Z",
+      "version_hint": "2026-05-08T12:43:05+00:00"
     }
   ],
   "attribution_path": "attribution.json"

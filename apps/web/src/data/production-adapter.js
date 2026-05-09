@@ -4,10 +4,18 @@ import {
   assertProductionArtifactBundle
 } from "./planner-dataset-contracts.js";
 
-const COUNTRY_LABELS = {
+const FALLBACK_COUNTRY_LABELS = {
+  AT: "Austria",
+  CH: "Switzerland",
+  DE: "Germany",
+  ES: "Spain",
   FR: "France",
+  LU: "Luxembourg",
   ZZ: "Imported"
 };
+const countryDisplayNames = typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function"
+  ? new Intl.DisplayNames(["en"], { type: "region" })
+  : null;
 const diagnostics = createDiagnostics("web/data/production-adapter");
 
 export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries }) {
@@ -117,10 +125,12 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
     };
   });
 
+  const uniqueCountryCount = new Set(rawCities.map((city) => city.country_code)).size;
+
   const dataset = assertPlannerDataset({
     id: "production",
     label: "Production",
-    description: `SNCF Stage 1 debug snapshot · ${rawCities.length} cities · ${Object.keys(routeData).length} undirected routes · interest/pop derived heuristics`,
+    description: `Validated Europe runtime snapshot · ${uniqueCountryCount} countries · ${rawCities.length} cities · ${Object.keys(routeData).length} undirected routes · interest/pop derived heuristics`,
     meta,
     cities,
     plannerArtifacts: {
@@ -145,7 +155,15 @@ function decodeGeometryPoints(points) {
 }
 
 function countryLabel(countryCode) {
-  return COUNTRY_LABELS[countryCode] || countryCode || "Unknown";
+  const normalizedCode = String(countryCode || "").trim().toUpperCase();
+  if (!normalizedCode) {
+    return "Unknown";
+  }
+  return (
+    countryDisplayNames?.of(normalizedCode) ||
+    FALLBACK_COUNTRY_LABELS[normalizedCode] ||
+    normalizedCode
+  );
 }
 
 function deriveInterest(degree) {

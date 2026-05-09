@@ -146,7 +146,16 @@ fn build_targets(
     fetched_sources: &[FetchedSource],
 ) -> Result<Vec<PipelineArtifactManifest>> {
     let overrides = ManualOverrideRegistry::load(&args.overrides_path)?;
-    let targets = manifest.resolve_targets(&args.target_ids)?;
+    let requested_targets = manifest.resolve_targets(&args.target_ids)?;
+    let targets = if matches!(args.command, Command::Run) {
+        manifest.resolve_target_closure(&args.target_ids)?
+    } else {
+        requested_targets.clone()
+    };
+    let requested_target_ids = requested_targets
+        .iter()
+        .map(|target| target.id.as_str())
+        .collect::<HashSet<_>>();
     let generated_at = OffsetDateTime::now_utc()
         .format(&Rfc3339)
         .context("failed to format build timestamp")?;
@@ -171,7 +180,12 @@ fn build_targets(
     }
 
     if let Some(sync_root) = &args.sync_web_debug {
-        sync_runtime_projections(sync_root, &artifacts)?;
+        let selected_artifacts = artifacts
+            .iter()
+            .filter(|artifact| requested_target_ids.contains(artifact.target_id.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        sync_runtime_projections(sync_root, &selected_artifacts)?;
     }
 
     Ok(artifacts)
@@ -214,11 +228,7 @@ fn fetch_manifest_scope(
     manifest: &SourceManifest,
     target_ids: &[String],
 ) -> Result<SourceManifest> {
-    if target_ids.is_empty() {
-        return Ok(manifest.clone());
-    }
-
-    let targets = manifest.resolve_targets(target_ids)?;
+    let targets = manifest.resolve_target_closure(target_ids)?;
     Ok(scoped_manifest_for_targets(manifest, &targets))
 }
 

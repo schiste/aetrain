@@ -1,6 +1,34 @@
 dataset_id = "stage1-europe-gtfs"
 schema_version = 1
 description = "Direct GTFS seed feeds discovered during the Europe rail onboarding pass. These records stay inactive until endpoint and rail-scope validation are complete."
+default_target_id = "europe-validated"
+
+[[target]]
+id = "sncf-fr"
+adapter = "sncf_fr"
+source_ids = ["sncf-fr-gtfs", "sncf-fr-stations", "sncf-fr-rfn-lines"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Official SNCF Stage 1 target with rail-geometry fallback. Included here so the Europe aggregate can build from one manifest."
+
+[[target]]
+id = "europe-validated"
+adapter = "aggregate_bundle"
+source_ids = []
+input_target_ids = [
+  "sncf-fr",
+  "lu-national",
+  "at-national",
+  "de-national",
+  "ch-national",
+  "es-renfe-mainline",
+  "es-renfe-cercanias",
+]
+active = true
+canonical_export = true
+web_debug_export = true
+notes = "Aggregate Europe target built from the currently validated national rail targets."
 
 [[target]]
 id = "ee-national"
@@ -82,6 +110,44 @@ active = true
 canonical_export = true
 web_debug_export = false
 notes = "Spain official Renfe GTFS for Cercanías and Rodalies services. Validated on 2026-05-09 after adding CSV trimming for padded official headers/values."
+
+[[source]]
+id = "sncf-fr-gtfs"
+kind = "gtfs"
+country_code = "FR"
+adapter = "sncf_fr"
+role = "schedule"
+url = "https://eu.ftp.opendatasoft.com/sncf/plandata/Export_OpenData_SNCF_GTFS_NewTripId.zip"
+file_name = "sncf-fr-gtfs.zip"
+active = true
+include_service_classes = ["intercity", "regional"]
+notes = "Official SNCF GTFS static feed for the next 151 days."
+
+[[source]]
+id = "sncf-fr-stations"
+kind = "supplementary"
+country_code = "FR"
+adapter = "sncf_fr"
+role = "stations_reference"
+url = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/gares-de-voyageurs/exports/csv?limit=-1&timezone=Europe%2FParis&delimiter=%2C"
+file_name = "sncf-fr-stations.csv"
+version_probe_url = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/gares-de-voyageurs"
+active = true
+include_service_classes = ["intercity", "regional"]
+notes = "Official SNCF passenger-station reference export with UIC codes and coordinates."
+
+[[source]]
+id = "sncf-fr-rfn-lines"
+kind = "supplementary"
+country_code = "FR"
+adapter = "sncf_fr"
+role = "rail_geometry"
+url = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/formes-des-lignes-du-rfn/exports/geojson?limit=-1&timezone=Europe%2FParis"
+file_name = "sncf-fr-rfn-lines.geojson"
+version_probe_url = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/formes-des-lignes-du-rfn"
+active = true
+include_service_classes = ["intercity", "regional"]
+notes = "Official SNCF RFN exploited-line geometry export used as route-shape fallback when GTFS does not include shapes.txt."
 
 [[source]]
 id = "ee-peatus-gtfs"

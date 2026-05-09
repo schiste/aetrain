@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{collections::HashSet, fs, path::Path};
 
 use aetrain_domain::{CityId, ServiceClass, SourceRef};
 use anyhow::{Context, Result, bail};
@@ -98,6 +98,8 @@ pub struct TargetDefinition {
     pub adapter: String,
     #[serde(default)]
     pub source_ids: Vec<String>,
+    #[serde(default)]
+    pub input_target_ids: Vec<String>,
     #[serde(default = "default_true")]
     pub active: bool,
     #[serde(default = "default_true")]
@@ -177,6 +179,56 @@ impl SourceManifest {
         }
 
         Ok(targets)
+    }
+
+    pub fn resolve_target_closure<'a>(
+        &'a self,
+        requested_ids: &[String],
+    ) -> Result<Vec<&'a TargetDefinition>> {
+        let roots = self.resolve_targets(requested_ids)?;
+        let mut ordered = Vec::new();
+        let mut visiting = HashSet::new();
+        let mut visited = HashSet::new();
+
+        for target in roots {
+            self.visit_target_dependency_order(target, &mut visiting, &mut visited, &mut ordered)?;
+        }
+
+        Ok(ordered)
+    }
+
+    fn visit_target_dependency_order<'a>(
+        &'a self,
+        target: &'a TargetDefinition,
+        visiting: &mut HashSet<String>,
+        visited: &mut HashSet<String>,
+        ordered: &mut Vec<&'a TargetDefinition>,
+    ) -> Result<()> {
+        if visited.contains(&target.id) {
+            return Ok(());
+        }
+        if !visiting.insert(target.id.clone()) {
+            bail!("target dependency cycle detected at {}", target.id);
+        }
+
+        for dependency_id in &target.input_target_ids {
+            let dependency = self
+                .target(dependency_id)
+                .with_context(|| format!("unknown target dependency {dependency_id}"))?;
+            if !dependency.active {
+                bail!(
+                    "target {} depends on inactive target {}",
+                    target.id,
+                    dependency.id
+                );
+            }
+            self.visit_target_dependency_order(dependency, visiting, visited, ordered)?;
+        }
+
+        visiting.remove(&target.id);
+        visited.insert(target.id.clone());
+        ordered.push(target);
+        Ok(())
     }
 }
 
@@ -362,6 +414,7 @@ mod tests {
                     id: "sncf-fr".to_string(),
                     adapter: "sncf_fr".to_string(),
                     source_ids: vec!["sncf-fr-gtfs".to_string()],
+                    input_target_ids: Vec::new(),
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
@@ -371,6 +424,7 @@ mod tests {
                     id: "inactive".to_string(),
                     adapter: "other".to_string(),
                     source_ids: Vec::new(),
+                    input_target_ids: Vec::new(),
                     active: false,
                     canonical_export: true,
                     web_debug_export: true,
@@ -384,6 +438,58 @@ mod tests {
             .expect("default target should resolve");
         assert_eq!(resolved.len(), 1);
         assert_eq!(resolved[0].id, "sncf-fr");
+    }
+
+    #[test]
+    fn resolve_target_closure_returns_dependencies_before_aggregate() {
+        let manifest = SourceManifest {
+            dataset_id: "stage1".to_string(),
+            schema_version: 1,
+            description: "test".to_string(),
+            default_target_id: Some("europe".to_string()),
+            sources: Vec::new(),
+            targets: vec![
+                TargetDefinition {
+                    id: "fr".to_string(),
+                    adapter: "sncf_fr".to_string(),
+                    source_ids: vec!["sncf-fr-gtfs".to_string()],
+                    input_target_ids: Vec::new(),
+                    active: true,
+                    canonical_export: true,
+                    web_debug_export: true,
+                    notes: None,
+                },
+                TargetDefinition {
+                    id: "de".to_string(),
+                    adapter: "gtfs_basic".to_string(),
+                    source_ids: vec!["de-delfi-gtfs".to_string()],
+                    input_target_ids: Vec::new(),
+                    active: true,
+                    canonical_export: true,
+                    web_debug_export: true,
+                    notes: None,
+                },
+                TargetDefinition {
+                    id: "europe".to_string(),
+                    adapter: "aggregate_bundle".to_string(),
+                    source_ids: Vec::new(),
+                    input_target_ids: vec!["fr".to_string(), "de".to_string()],
+                    active: true,
+                    canonical_export: true,
+                    web_debug_export: true,
+                    notes: None,
+                },
+            ],
+        };
+
+        let resolved = manifest
+            .resolve_target_closure(&[])
+            .expect("aggregate closure should resolve");
+        let ids = resolved
+            .iter()
+            .map(|target| target.id.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(ids, vec!["fr", "de", "europe"]);
     }
 }
 

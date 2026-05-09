@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::{BTreeMap, BTreeSet, HashMap},
     fs,
     path::{Path, PathBuf},
 };
@@ -13,7 +13,8 @@ use aetrain_dataset::{
 };
 use aetrain_domain::{ServiceClass, ServiceKind};
 use anyhow::{Context, Result, bail};
-use serde::{Deserialize, Serialize};
+use deunicode::deunicode;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
     DuplicateCityReport, FetchedSource, ManualOverrideRegistry, NormalizationIssue, SourceKind,
@@ -32,11 +33,15 @@ struct SncfAdapter;
 #[derive(Clone, Copy)]
 struct GtfsBasicAdapter;
 
+#[derive(Clone, Copy)]
+struct AggregateBundleAdapter;
+
 #[derive(Clone)]
 pub struct AdapterBuildRequest<'a> {
     pub manifest: &'a SourceManifest,
     pub target: &'a TargetDefinition,
     pub sources: Vec<&'a FetchedSource>,
+    pub output_root: &'a Path,
     pub dataset_version: &'a str,
     pub generated_at: &'a str,
     pub source_snapshots: Vec<SourceSnapshot>,
@@ -86,6 +91,7 @@ pub struct AdapterBuildArtifacts {
     pub issues: Vec<NormalizationIssue>,
     pub counters: BTreeMap<String, u64>,
     pub notes: Vec<String>,
+    pub source_artifacts: Vec<PipelineSourceArtifact>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -198,6 +204,7 @@ pub fn build_pipeline_target(
         manifest,
         target,
         sources: sources.clone(),
+        output_root,
         dataset_version,
         generated_at,
         source_snapshots: source_snapshots.clone(),
@@ -215,7 +222,7 @@ pub fn build_pipeline_target(
         output_root,
         dataset_version,
         generated_at,
-        source_snapshots,
+        artifacts.canonical.meta.source_snapshots.clone(),
     )
 }
 
@@ -251,12 +258,8 @@ fn export_pipeline_target(
     fs::create_dir_all(&target_root)
         .with_context(|| format!("failed to create {}", target_root.display()))?;
 
-    let attribution = PipelineAttributionFile {
-        dataset_id: manifest.dataset_id.clone(),
-        target_id: target.id.clone(),
-        dataset_version: dataset_version.to_string(),
-        generated_at: generated_at.to_string(),
-        sources: sources
+    let source_artifacts = if artifacts.source_artifacts.is_empty() {
+        sources
             .iter()
             .map(|source| PipelineSourceArtifact {
                 source_id: source.definition.id.clone(),
@@ -269,7 +272,17 @@ fn export_pipeline_target(
                     .or_else(|| source.etag.clone())
                     .or_else(|| source.last_modified.clone()),
             })
-            .collect(),
+            .collect::<Vec<_>>()
+    } else {
+        artifacts.source_artifacts.clone()
+    };
+
+    let attribution = PipelineAttributionFile {
+        dataset_id: manifest.dataset_id.clone(),
+        target_id: target.id.clone(),
+        dataset_version: dataset_version.to_string(),
+        generated_at: generated_at.to_string(),
+        sources: source_artifacts,
     };
 
     let canonical_dir = if target.canonical_export {
@@ -830,6 +843,536 @@ fn copy_dir_contents(source_dir: &Path, destination: &Path) -> Result<()> {
     Ok(())
 }
 
+#[derive(Clone, Debug)]
+struct AggregateTargetInput {
+    target_id: String,
+    manifest: PipelineArtifactManifest,
+    canonical: DatasetBundle,
+    edge_geometries: EdgeGeometryArtifact,
+    station_mappings: Option<StationMappingReport>,
+    issues: Vec<NormalizationIssue>,
+}
+
+fn load_aggregate_target_input(
+    output_root: &Path,
+    target_id: &str,
+) -> Result<AggregateTargetInput> {
+    let artifact_manifest_path = output_root.join(target_id).join("artifact-manifest.json");
+    let manifest: PipelineArtifactManifest = read_json(&artifact_manifest_path)
+        .with_context(|| format!("failed to load manifest for dependency target {target_id}"))?;
+    let canonical_dir = manifest.outputs.canonical_dir.as_ref().with_context(|| {
+        format!(
+            "target {} does not export canonical artifacts required for aggregation",
+            target_id
+        )
+    })?;
+    let canonical_dir = PathBuf::from(canonical_dir);
+
+    let canonical = read_json::<DatasetBundle>(&canonical_dir.join("bundle.json"))?;
+    let edge_geometries =
+        read_json::<EdgeGeometryArtifact>(&canonical_dir.join("edge-geometries.json"))?;
+    let station_mappings_path = canonical_dir.join("station-mappings.json");
+    let station_mappings = if station_mappings_path.exists() {
+        Some(read_json::<StationMappingReport>(&station_mappings_path)?)
+    } else {
+        None
+    };
+    let _duplicates =
+        read_json::<DuplicateCityReport>(&canonical_dir.join("duplicate-candidates.json"))?;
+    let issues = read_json::<Vec<NormalizationIssue>>(&canonical_dir.join("issues.json"))?;
+
+    Ok(AggregateTargetInput {
+        target_id: target_id.to_string(),
+        manifest,
+        canonical,
+        edge_geometries,
+        station_mappings,
+        issues,
+    })
+}
+
+fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
+    if request.target.input_target_ids.is_empty() {
+        bail!(
+            "aggregate target {} must declare input_target_ids",
+            request.target.id
+        );
+    }
+    if !request.target.source_ids.is_empty() {
+        bail!(
+            "aggregate target {} must not declare source_ids",
+            request.target.id
+        );
+    }
+
+    let dependency_inputs = request
+        .target
+        .input_target_ids
+        .iter()
+        .map(|target_id| load_aggregate_target_input(request.output_root, target_id))
+        .collect::<Result<Vec<_>>>()?;
+
+    let source_snapshots = merge_source_snapshots(&dependency_inputs);
+    let source_artifacts = merge_source_artifacts(&dependency_inputs);
+    let notes = vec![format!(
+        "Aggregated canonical outputs from {} validated targets.",
+        dependency_inputs.len()
+    )];
+    let counters = BTreeMap::from([
+        (
+            "dependency_target_count".to_string(),
+            dependency_inputs.len() as u64,
+        ),
+        (
+            "dependency_source_count".to_string(),
+            source_snapshots.len() as u64,
+        ),
+    ]);
+
+    let (cities, aliases, aggregate_issues) = merge_cities(&dependency_inputs, request.target.id.as_str());
+    let stations = merge_stations(&dependency_inputs, request.target.id.as_str())?;
+    let edges = merge_edges(&dependency_inputs);
+    let edge_geometries = merge_edge_geometries(&dependency_inputs);
+    let station_mappings = merge_station_mappings(&dependency_inputs);
+    let duplicates = recompute_duplicates(request.generated_at, &cities);
+
+    let mut issues = dependency_inputs
+        .iter()
+        .flat_map(|input| input.issues.iter().cloned())
+        .collect::<Vec<_>>();
+    issues.extend(aggregate_issues);
+
+    let canonical = DatasetBundle {
+        meta: DatasetMeta {
+            schema_version: request.manifest.schema_version,
+            dataset_version: request.dataset_version.to_string(),
+            generated_at: request.generated_at.to_string(),
+            source_snapshots,
+            attribution_path: "attribution.json".to_string(),
+        },
+        cities,
+        stations,
+        edges,
+        aliases,
+    };
+
+    Ok(AdapterBuildArtifacts {
+        canonical,
+        edge_geometries: Some(edge_geometries),
+        station_mappings: Some(station_mappings),
+        duplicates,
+        issues,
+        counters,
+        notes,
+        source_artifacts,
+    })
+}
+
+fn merge_source_snapshots(inputs: &[AggregateTargetInput]) -> Vec<SourceSnapshot> {
+    let mut seen = BTreeSet::new();
+    let mut snapshots = Vec::new();
+    for input in inputs {
+        for snapshot in &input.manifest.source_snapshots {
+            let key = (
+                snapshot.source_id.clone(),
+                snapshot.fetched_at.clone(),
+                snapshot.version_hint.clone(),
+            );
+            if seen.insert(key) {
+                snapshots.push(snapshot.clone());
+            }
+        }
+    }
+    snapshots.sort_by(|left, right| left.source_id.cmp(&right.source_id));
+    snapshots
+}
+
+fn merge_source_artifacts(inputs: &[AggregateTargetInput]) -> Vec<PipelineSourceArtifact> {
+    let mut deduped = BTreeMap::<String, PipelineSourceArtifact>::new();
+    for input in inputs {
+        for artifact in &input.manifest.source_artifacts {
+            deduped
+                .entry(artifact.source_id.clone())
+                .and_modify(|existing| {
+                    if artifact.fetched_at > existing.fetched_at {
+                        *existing = artifact.clone();
+                    }
+                })
+                .or_insert_with(|| artifact.clone());
+        }
+    }
+    deduped.into_values().collect()
+}
+
+fn merge_cities(
+    inputs: &[AggregateTargetInput],
+    aggregate_source_id: &str,
+) -> (Vec<aetrain_domain::City>, Vec<aetrain_dataset::AliasRecord>, Vec<NormalizationIssue>) {
+    let mut merged = BTreeMap::<aetrain_domain::CityId, aetrain_domain::City>::new();
+    let mut alias_pairs = BTreeSet::<(String, aetrain_domain::CityId)>::new();
+    let mut issues = Vec::new();
+
+    for input in inputs {
+        for city in &input.canonical.cities {
+            merged
+                .entry(city.city_id.clone())
+                .and_modify(|existing| {
+                    if existing.slug != city.slug || existing.country_code != city.country_code {
+                        issues.push(NormalizationIssue {
+                            severity: crate::IssueSeverity::Warning,
+                            source_id: aggregate_source_id.to_string(),
+                            entity_ref: city.city_id.to_string(),
+                            message: format!(
+                                "conflicting city identity while aggregating {} from {}",
+                                city.city_id, input.target_id
+                            ),
+                        });
+                        return;
+                    }
+
+                    if existing.display_name != city.display_name {
+                        if !existing.aliases.iter().any(|alias| alias == &city.display_name) {
+                            existing.aliases.push(city.display_name.clone());
+                        }
+                        if city.population.unwrap_or(0) > existing.population.unwrap_or(0) {
+                            existing.display_name = city.display_name.clone();
+                        }
+                    }
+
+                    if existing.wikidata_qid.is_none() {
+                        existing.wikidata_qid = city.wikidata_qid.clone();
+                    }
+                    existing.population = merge_optional_u64(existing.population, city.population);
+                    existing.interest_score =
+                        merge_optional_u8(existing.interest_score, city.interest_score);
+                    existing.location = merge_geo_points(existing.location, city.location);
+                    merge_station_ids(&mut existing.station_ids, &city.station_ids);
+                    merge_string_vec(&mut existing.aliases, &city.aliases);
+                })
+                .or_insert_with(|| city.clone());
+        }
+
+        for alias in &input.canonical.aliases {
+            alias_pairs.insert((alias.alias.clone(), alias.city_id.clone()));
+        }
+    }
+
+    for city in merged.values_mut() {
+        city.aliases.sort();
+        city.aliases.dedup();
+        city.station_ids.sort_by(|left, right| left.as_str().cmp(right.as_str()));
+        city.station_ids.dedup_by(|left, right| left.as_str() == right.as_str());
+        for alias in &city.aliases {
+            alias_pairs.insert((alias.clone(), city.city_id.clone()));
+        }
+        alias_pairs.insert((normalize_alias(&city.display_name), city.city_id.clone()));
+    }
+
+    let aliases = alias_pairs
+        .into_iter()
+        .filter(|(alias, _)| !alias.trim().is_empty())
+        .map(|(alias, city_id)| aetrain_dataset::AliasRecord { alias, city_id })
+        .collect::<Vec<_>>();
+
+    (merged.into_values().collect(), aliases, issues)
+}
+
+fn merge_stations(
+    inputs: &[AggregateTargetInput],
+    aggregate_source_id: &str,
+) -> Result<Vec<aetrain_domain::Station>> {
+    let mut merged = BTreeMap::<aetrain_domain::StationId, aetrain_domain::Station>::new();
+
+    for input in inputs {
+        for station in &input.canonical.stations {
+            merged
+                .entry(station.station_id.clone())
+                .and_modify(|existing| {
+                    if existing.city_id != station.city_id {
+                        existing
+                            .source_refs
+                            .push(aetrain_domain::SourceRef {
+                                source_id: aggregate_source_id.to_string(),
+                                raw_id: format!(
+                                    "conflicting-city:{}:{}",
+                                    existing.city_id, station.city_id
+                                ),
+                            });
+                        return;
+                    }
+
+                    if station.display_name.len() > existing.display_name.len() {
+                        existing.display_name = station.display_name.clone();
+                    }
+                    if existing.uic_code.is_none() {
+                        existing.uic_code = station.uic_code.clone();
+                    }
+                    existing.location = merge_geo_points(existing.location, station.location);
+                    merge_source_refs(&mut existing.source_refs, &station.source_refs);
+                })
+                .or_insert_with(|| station.clone());
+        }
+    }
+
+    let stations = merged.into_values().collect::<Vec<_>>();
+    for station in &stations {
+        if station.display_name.trim().is_empty() {
+            bail!("aggregate station {} has an empty display name", station.station_id);
+        }
+    }
+    Ok(stations)
+}
+
+fn merge_edges(inputs: &[AggregateTargetInput]) -> Vec<aetrain_domain::TravelEdge> {
+    let mut merged = BTreeMap::<
+        (aetrain_domain::CityId, aetrain_domain::CityId),
+        aetrain_domain::TravelEdge,
+    >::new();
+
+    for input in inputs {
+        for edge in &input.canonical.edges {
+            let key = (edge.from_city_id.clone(), edge.to_city_id.clone());
+            merged
+                .entry(key)
+                .and_modify(|existing| merge_edge_record(existing, edge))
+                .or_insert_with(|| edge.clone());
+        }
+    }
+
+    merged.into_values().collect()
+}
+
+fn merge_edge_geometries(inputs: &[AggregateTargetInput]) -> EdgeGeometryArtifact {
+    let mut merged = BTreeMap::<
+        (aetrain_domain::CityId, aetrain_domain::CityId),
+        EdgeGeometryRecord,
+    >::new();
+
+    for input in inputs {
+        for geometry in &input.edge_geometries.geometries {
+            let key = (geometry.from_city_id.clone(), geometry.to_city_id.clone());
+            merged
+                .entry(key)
+                .and_modify(|existing| merge_edge_geometry_record(existing, geometry))
+                .or_insert_with(|| geometry.clone());
+        }
+    }
+
+    EdgeGeometryArtifact {
+        geometries: merged.into_values().collect(),
+    }
+}
+
+fn merge_station_mappings(inputs: &[AggregateTargetInput]) -> StationMappingReport {
+    let mut records = BTreeMap::<String, crate::StationMappingRecord>::new();
+    for input in inputs {
+        if let Some(report) = &input.station_mappings {
+            for record in &report.records {
+                records
+                    .entry(record.station_id.as_str().to_string())
+                    .or_insert_with(|| record.clone());
+            }
+        }
+    }
+    StationMappingReport {
+        records: records.into_values().collect(),
+    }
+}
+
+fn recompute_duplicates(
+    generated_at: &str,
+    cities: &[aetrain_domain::City],
+) -> DuplicateCityReport {
+    let mut grouped = BTreeMap::<String, Vec<&aetrain_domain::City>>::new();
+    for city in cities {
+        grouped
+            .entry(normalize_name(&city.display_name))
+            .or_default()
+            .push(city);
+    }
+
+    let mut candidates = Vec::new();
+    for (normalized_name, group) in grouped {
+        for left_index in 0..group.len() {
+            for right_index in (left_index + 1)..group.len() {
+                let left = group[left_index];
+                let right = group[right_index];
+                let distance_meters = geo_distance_meters(left.location, right.location).round() as u32;
+                if distance_meters <= crate::DEFAULT_DUPLICATE_DISTANCE_METERS {
+                    candidates.push(crate::DuplicateCityCandidate {
+                        left_city_id: left.city_id.clone(),
+                        left_display_name: left.display_name.clone(),
+                        right_city_id: right.city_id.clone(),
+                        right_display_name: right.display_name.clone(),
+                        normalized_name: normalized_name.clone(),
+                        distance_meters,
+                    });
+                }
+            }
+        }
+    }
+
+    DuplicateCityReport {
+        generated_at: generated_at.to_string(),
+        threshold_meters: crate::DEFAULT_DUPLICATE_DISTANCE_METERS,
+        candidates,
+    }
+}
+
+fn merge_edge_record(
+    existing: &mut aetrain_domain::TravelEdge,
+    incoming: &aetrain_domain::TravelEdge,
+) {
+    let incoming_is_better = incoming.duration_min < existing.duration_min
+        || (incoming.duration_min == existing.duration_min
+            && incoming.source_confidence > existing.source_confidence);
+
+    if incoming_is_better {
+        existing.duration_min = incoming.duration_min;
+        existing.service_kind = incoming.service_kind.clone();
+        existing.service_class = incoming.service_class.clone();
+    }
+
+    existing.change_count_estimate =
+        merge_optional_u8_min(existing.change_count_estimate, incoming.change_count_estimate);
+    existing.source_confidence = existing.source_confidence.max(incoming.source_confidence);
+    merge_string_vec(&mut existing.provenance, &incoming.provenance);
+}
+
+fn merge_edge_geometry_record(existing: &mut EdgeGeometryRecord, incoming: &EdgeGeometryRecord) {
+    let existing_rank = edge_geometry_source_rank(&existing.source);
+    let incoming_rank = edge_geometry_source_rank(&incoming.source);
+    let incoming_is_better = incoming_rank < existing_rank
+        || (incoming_rank == existing_rank && incoming.points.len() > existing.points.len());
+
+    if incoming_is_better {
+        existing.points = incoming.points.clone();
+        existing.source = incoming.source.clone();
+    }
+
+    merge_string_vec(&mut existing.provenance, &incoming.provenance);
+}
+
+fn edge_geometry_source_rank(source: &EdgeGeometrySource) -> u8 {
+    match source {
+        EdgeGeometrySource::GtfsShapeSegment => 0,
+        EdgeGeometrySource::InfrastructureGraphFallback => 1,
+        EdgeGeometrySource::OsmGraphFallbackPlanned => 2,
+        EdgeGeometrySource::StraightLineFallback => 3,
+    }
+}
+
+fn merge_geo_points(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> aetrain_domain::GeoPoint {
+    aetrain_domain::GeoPoint {
+        lat: (left.lat + right.lat) / 2.0,
+        lon: (left.lon + right.lon) / 2.0,
+    }
+}
+
+fn merge_optional_u64(left: Option<u64>, right: Option<u64>) -> Option<u64> {
+    match (left, right) {
+        (Some(left), Some(right)) => Some(left.max(right)),
+        (Some(left), None) => Some(left),
+        (None, Some(right)) => Some(right),
+        (None, None) => None,
+    }
+}
+
+fn merge_optional_u8(left: Option<u8>, right: Option<u8>) -> Option<u8> {
+    match (left, right) {
+        (Some(left), Some(right)) => Some(left.max(right)),
+        (Some(left), None) => Some(left),
+        (None, Some(right)) => Some(right),
+        (None, None) => None,
+    }
+}
+
+fn merge_optional_u8_min(left: Option<u8>, right: Option<u8>) -> Option<u8> {
+    match (left, right) {
+        (Some(left), Some(right)) => Some(left.min(right)),
+        (Some(left), None) => Some(left),
+        (None, Some(right)) => Some(right),
+        (None, None) => None,
+    }
+}
+
+fn merge_string_vec(target: &mut Vec<String>, values: &[String]) {
+    let mut seen = target.iter().cloned().collect::<BTreeSet<_>>();
+    for value in values {
+        if seen.insert(value.clone()) {
+            target.push(value.clone());
+        }
+    }
+    target.sort();
+}
+
+fn merge_station_ids(
+    target: &mut Vec<aetrain_domain::StationId>,
+    values: &[aetrain_domain::StationId],
+) {
+    let mut seen = target
+        .iter()
+        .map(|station_id| station_id.as_str().to_string())
+        .collect::<BTreeSet<_>>();
+    for value in values {
+        if seen.insert(value.as_str().to_string()) {
+            target.push(value.clone());
+        }
+    }
+}
+
+fn merge_source_refs(target: &mut Vec<aetrain_domain::SourceRef>, values: &[aetrain_domain::SourceRef]) {
+    let mut seen = target
+        .iter()
+        .map(|source_ref| (source_ref.source_id.clone(), source_ref.raw_id.clone()))
+        .collect::<BTreeSet<_>>();
+    for value in values {
+        let key = (value.source_id.clone(), value.raw_id.clone());
+        if seen.insert(key) {
+            target.push(value.clone());
+        }
+    }
+    target.sort_by(|left, right| {
+        left.source_id
+            .cmp(&right.source_id)
+            .then_with(|| left.raw_id.cmp(&right.raw_id))
+    });
+}
+
+fn normalize_name(value: &str) -> String {
+    deunicode(value)
+        .to_lowercase()
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { ' ' })
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn normalize_alias(value: &str) -> String {
+    normalize_name(value)
+}
+
+fn geo_distance_meters(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> f64 {
+    let earth_radius_m = 6_371_000.0_f64;
+    let lat1 = left.lat.to_radians();
+    let lat2 = right.lat.to_radians();
+    let delta_lat = (right.lat - left.lat).to_radians();
+    let delta_lon = (right.lon - left.lon).to_radians();
+
+    let haversine = (delta_lat / 2.0).sin().powi(2)
+        + lat1.cos() * lat2.cos() * (delta_lon / 2.0).sin().powi(2);
+    let angular_distance = 2.0 * haversine.sqrt().asin();
+    earth_radius_m * angular_distance
+}
+
+fn read_json<T: DeserializeOwned>(path: &Path) -> Result<T> {
+    let bytes = fs::read(path).with_context(|| format!("failed to read {}", path.display()))?;
+    serde_json::from_slice(&bytes)
+        .with_context(|| format!("failed to parse JSON from {}", path.display()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -990,10 +1533,12 @@ mod tests {
 fn adapter_for(adapter_id: &str) -> Option<&'static dyn PipelineAdapter> {
     static SNCF_ADAPTER: SncfAdapter = SncfAdapter;
     static GTFS_BASIC_ADAPTER: GtfsBasicAdapter = GtfsBasicAdapter;
+    static AGGREGATE_BUNDLE_ADAPTER: AggregateBundleAdapter = AggregateBundleAdapter;
 
     match adapter_id {
         "sncf_fr" => Some(&SNCF_ADAPTER),
         "gtfs_basic" => Some(&GTFS_BASIC_ADAPTER),
+        "aggregate_bundle" => Some(&AGGREGATE_BUNDLE_ADAPTER),
         _ => None,
     }
 }
@@ -1052,6 +1597,7 @@ impl PipelineAdapter for SncfAdapter {
                 format!("adapter={}", self.adapter_id()),
                 format!("target={}", request.target.id),
             ],
+            source_artifacts: Vec::new(),
         })
     }
 }
@@ -1091,6 +1637,17 @@ impl PipelineAdapter for GtfsBasicAdapter {
                 format!("target={}", request.target.id),
                 format!("country_code={country_code}"),
             ],
+            source_artifacts: Vec::new(),
         })
+    }
+}
+
+impl PipelineAdapter for AggregateBundleAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "aggregate_bundle"
+    }
+
+    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
+        build_aggregate_bundle(request)
     }
 }
