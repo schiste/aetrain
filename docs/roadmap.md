@@ -160,7 +160,10 @@ Begins overlapping with Phase 2 once the new shell is half-migrated.
 Deliverables:
 
 - Lazy-load edge-geometry chunks by viewport (manifest already supports
-  per-chunk fetch).
+  per-chunk fetch). Note: viewport-aware geometry streaming is a Phase 3.x
+  follow-up — it requires a viewport-driven re-fetch loop in the map
+  renderer that streams chunks based on visible bounds, large enough to
+  warrant a dedicated PR with refreshed e2e coverage.
 - Pre-warm the planner worker during dataset fetch (currently serial).
 - Service worker keyed on `meta.dataset_version` for offline + instant
   revisits.

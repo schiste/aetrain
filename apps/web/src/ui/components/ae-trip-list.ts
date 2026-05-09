@@ -10,16 +10,28 @@ import type { PlannerSuggestion } from "../../types/planner-engine.ts";
 
 const diagnostics = createDiagnostics("web/ui/trip-list");
 
-defineComponent("ae-trip-list", () => ({
+defineComponent("ae-trip-list", (host) => {
+  // Mark the host element as a polite live region so screen readers
+  // announce stops being added or removed without stealing focus.
+  host.setAttribute("aria-live", "polite");
+  host.setAttribute("aria-relevant", "additions removals");
+  host.setAttribute("aria-label", "Trip itinerary");
+  // The first render produces children; mark it as ready so CSS can
+  // run a one-shot fade-in keyframe on each suggestion as it appears.
+  queueMicrotask(() => {
+    host.dataset.revealed = "true";
+  });
+
+  return {
   render() {
     const ctx = tryUseAppContext();
     if (!ctx) {
-      return html`<div id="tl">${renderEmpty()}</div>`;
+      return html`<div id="tl" role="list" aria-label="Trip stops">${renderEmpty()}</div>`;
     }
 
     const state = ctx.state();
     if (state.trip.length === 0) {
-      return html`<div id="tl">${renderEmpty()}</div>`;
+      return html`<div id="tl" role="list" aria-label="Trip stops">${renderEmpty()}</div>`;
     }
 
     const segments = ctx.segmentsOf(state);
@@ -58,10 +70,14 @@ defineComponent("ae-trip-list", () => ({
         : html``;
       const popLabel = city ? formatPopulation(city.pop) : "";
 
+      const tripStopAriaLabel = city
+        ? `Stop ${index + 1}: ${cityName}, ${city.country}`
+        : `Stop ${index + 1}: ${cityName}`;
+
       items.push(html`
-        <div class="ts">
+        <div class="ts" role="listitem" aria-label=${tripStopAriaLabel}>
           ${index > 0 ? html`<div class="tcon"></div>` : null}
-          <div class="tn">${String(index + 1)}</div>
+          <div class="tn" aria-hidden="true">${String(index + 1)}</div>
           <div class="ti">
             <div class="cn">
               ${cityName}
@@ -78,6 +94,7 @@ defineComponent("ae-trip-list", () => ({
             data-action="remove-stop"
             data-index=${String(index)}
             title="Remove"
+            aria-label=${`Remove stop ${index + 1}: ${cityName}`}
             onclick=${onRemove(index)}
           >×</button>
         </div>
@@ -91,6 +108,7 @@ defineComponent("ae-trip-list", () => ({
           suggestion.detourMin > 0
             ? `+${formatMinutes(suggestion.detourMin)} detour`
             : "on your route";
+        const suggestionLabel = `Add ${suggestion.name} after stop ${index + 1}`;
         items.push(html`
           <div
             class="suggest"
@@ -99,10 +117,11 @@ defineComponent("ae-trip-list", () => ({
             data-city=${encodeURIComponent(suggestion.name)}
             role="button"
             tabindex="0"
+            aria-label=${suggestionLabel}
             onclick=${onAddAfter(index, suggestion.name)}
             onkeydown=${onSuggestionKeydown(onAddAfter(index, suggestion.name))}
           >
-            <span>💎</span>
+            <span aria-hidden="true">💎</span>
             <span class="sg-n">${suggestion.name}</span>
             <span style="color:#475569">${suggestion.city.country}</span>
             <span class="sg-i">${`★${String(suggestion.city.interest)} · ${detourLabel}`}</span>
@@ -111,14 +130,15 @@ defineComponent("ae-trip-list", () => ({
       }
     }
 
-    return html`<div id="tl">${items}</div>`;
+    return html`<div id="tl" role="list" aria-label="Trip stops">${items}</div>`;
   }
-}));
+  };
+});
 
 function renderEmpty(): DocumentFragment {
   return html`
     <div id="empty">
-      <div class="icon">🚂</div>
+      <div class="icon" aria-hidden="true">🚂</div>
       Click any city on the map<br />
       or search to build your trip.<br /><br />
       Interesting stops along your<br />

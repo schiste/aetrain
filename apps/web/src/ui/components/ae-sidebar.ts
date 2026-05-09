@@ -28,7 +28,7 @@ defineComponent("ae-sidebar", () => ({
     };
 
     return html`
-      <div id="side">
+      <aside id="side" role="complementary" aria-label="Trip planner">
         <div class="side-main">
           <div class="sh">
             <h1>Aetrain</h1>
@@ -45,6 +45,7 @@ defineComponent("ae-sidebar", () => ({
             class="btn bd"
             type="button"
             data-action="clear-trip"
+            aria-label="Clear all trip stops"
             onclick=${onClear}
           >Clear</button>
           <button
@@ -52,10 +53,11 @@ defineComponent("ae-sidebar", () => ({
             type="button"
             id="copyBtn"
             data-action="share-trip"
+            aria-label="Copy trip summary to clipboard"
             onclick=${onShare}
           >${copyLabel}</button>
         </div>
-      </div>
+      </aside>
     `;
   }
 }));

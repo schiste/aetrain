@@ -57,6 +57,12 @@ defineComponent("ae-filters", (host) => ({
         ? `Reachable in ${formatLeg(state.legMin)} - ${formatLeg(state.legMax)}: ${visibility.reachable} cities`
         : "Reachable cities: —";
 
+    const interestValueText = `${state.filterInterest} or higher`;
+    const popValueText =
+      state.filterPop === 0 ? "All populations" : `${state.filterPop} thousand or higher`;
+    const legMinValueText = `Minimum ${formatLeg(state.legMin)}`;
+    const legMaxValueText = `Maximum ${formatLeg(state.legMax)}`;
+
     return html`
       <details class="filters" ?open=${isOpen} ontoggle=${onToggle}>
         <summary>Map Filters</summary>
@@ -68,6 +74,8 @@ defineComponent("ae-filters", (host) => ({
               id="f-int"
               min="1"
               max="10"
+              aria-label="Minimum city interest rating"
+              aria-valuetext=${interestValueText}
               .value=${String(state.filterInterest)}
               oninput=${onIntChange}
             />
@@ -86,6 +94,8 @@ defineComponent("ae-filters", (host) => ({
               min="0"
               max="1000"
               step="10"
+              aria-label="Minimum city population in thousands"
+              aria-valuetext=${popValueText}
               .value=${String(state.filterPop)}
               oninput=${onPopChange}
             />
@@ -111,6 +121,8 @@ defineComponent("ae-filters", (host) => ({
                   min="0"
                   step="15"
                   max=${String(state.legDynMax)}
+                  aria-label="Minimum next leg duration"
+                  aria-valuetext=${legMinValueText}
                   .value=${String(state.legMin)}
                   oninput=${onLegMinChange}
                 />
@@ -120,6 +132,8 @@ defineComponent("ae-filters", (host) => ({
                   min="0"
                   step="15"
                   max=${String(state.legDynMax)}
+                  aria-label="Maximum next leg duration"
+                  aria-valuetext=${legMaxValueText}
                   .value=${String(state.legMax)}
                   oninput=${onLegMaxChange}
                 />

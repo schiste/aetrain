@@ -10,12 +10,16 @@
 // snapshot survives reloads.
 
 import { createDiagnostics, summarizeError } from "../../app-shell/diagnostics.ts";
+import { notifyServiceWorkerDatasetVersion } from "../../app-shell/service-worker.ts";
 import { borderData as rawBorderData } from "../../data/landmass-borders.ts";
 import {
   getRequestedDataSourceId,
   loadPlannerDataSource
 } from "../../data/runtime-data.ts";
-import { createPlannerClient } from "../../engine/planner-client.ts";
+import {
+  createPlannerClient,
+  prewarmPlannerClient
+} from "../../engine/planner-client.ts";
 import { createLeafletMapSurface } from "../../map/leaflet-map-surface.ts";
 import type { LabelThresholdValue } from "../../map/render-model.ts";
 import type { RawBorderRecord } from "../../map/landmass-model.ts";
@@ -107,23 +111,37 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     const sourceMeta = signal<string>("Loading dataset…");
     const searchOpen = signal<boolean>(false);
 
+    // Pre-warm the planner worker in parallel with the dataset fetch. This
+    // overlaps worker module resolution + WASM compile cost (typically
+    // 100-300ms) with the network/parse cost of loading the dataset, which
+    // would otherwise be serialised. The worker sits idle until INITIALIZE
+    // arrives below.
+    const prewarmedPlanner = prewarmPlannerClient();
+
     let dataset: PlannerDataset;
     let loadWarning = "";
     try {
-      dataset = await loadPlannerDataSource(requestedSourceId);
-    } catch (error) {
-      diagnostics.error(
-        "failed to load requested data source, falling back to poc",
-        {
-          requested_source_id: requestedSourceId,
-          error: summarizeError(error)
+      try {
+        dataset = await loadPlannerDataSource(requestedSourceId);
+      } catch (error) {
+        diagnostics.error(
+          "failed to load requested data source, falling back to poc",
+          {
+            requested_source_id: requestedSourceId,
+            error: summarizeError(error)
+          }
+        );
+        dataset = await loadPlannerDataSource("poc");
+        if (requestedSourceId !== "poc") {
+          const summary = summarizeError(error);
+          loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${summary.message}`;
         }
-      );
-      dataset = await loadPlannerDataSource("poc");
-      if (requestedSourceId !== "poc") {
-        const summary = summarizeError(error);
-        loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${summary.message}`;
       }
+    } catch (datasetError) {
+      // Both attempts failed — release the pre-warmed worker so we don't
+      // leak a Worker process into the page.
+      prewarmedPlanner.abort();
+      throw datasetError;
     }
 
     sourceActive.set(dataset.id);
@@ -141,11 +159,26 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       dataset_version: dataset.meta?.dataset_version || null
     });
 
-    const planner = await createPlannerClient(
-      dataset.cities,
-      dataset.routeData,
-      dataset.plannerArtifacts
-    );
+    void notifyServiceWorkerDatasetVersion(dataset.meta?.dataset_version);
+
+    let planner;
+    try {
+      planner = await prewarmedPlanner.initialize(
+        dataset.cities,
+        dataset.routeData,
+        dataset.plannerArtifacts
+      );
+    } catch (error) {
+      diagnostics.warn(
+        "pre-warmed worker initialize failed, falling back to fresh client",
+        { error: summarizeError(error) }
+      );
+      planner = await createPlannerClient(
+        dataset.cities,
+        dataset.routeData,
+        dataset.plannerArtifacts
+      );
+    }
     const graph = planner.metadata;
     if (graph.invalidRouteKeys.length > 0) {
       host.dataset.invalidRouteCount = String(graph.invalidRouteKeys.length);

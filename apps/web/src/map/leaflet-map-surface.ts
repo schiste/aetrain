@@ -210,6 +210,9 @@ const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
 const BUTTON_ZOOM_DELTA = 0.35;
 const BACKGROUND_NETWORK_SIMPLIFIED_ZOOM = 6.5;
+const ARRIVAL_PULSE_DURATION_MS = 600;
+const ARRIVAL_PULSE_MIN_RADIUS_PX = 8;
+const ARRIVAL_PULSE_MAX_RADIUS_PX = 28;
 
 const diagnostics = createDiagnostics("web/map/canvas-surface");
 
@@ -242,6 +245,20 @@ export function createLeafletMapSurface({
   mapRoot.style.background = OCEAN_FILL_COLOR;
   mapRoot.style.touchAction = "none";
   mapRoot.style.userSelect = "none";
+  // A11y: announce the surface as an interactive application so screen
+  // readers stop intercepting arrow-key navigation. Keyboard shortcuts:
+  //   Arrow keys  → pan the camera
+  //   + / =       → zoom in
+  //   - / _       → zoom out
+  //   Enter       → select the city under the pointer (if any)
+  mapRoot.setAttribute("role", "application");
+  mapRoot.setAttribute(
+    "aria-label",
+    "Interactive European rail map. Use arrow keys to pan, plus and minus to zoom, Enter to select the hovered city."
+  );
+  if (!mapRoot.hasAttribute("tabindex")) {
+    mapRoot.tabIndex = 0;
+  }
 
   const surfaceRoot = document.createElement("div");
   surfaceRoot.className = "aetrain-map-surface";
@@ -373,6 +390,12 @@ export function createLeafletMapSurface({
   let lastHotRenderInfoAt = 0;
   let isZooming = false;
   let pointerState: PointerState | null = null;
+  // Last observed pointer position inside the map (used by the Enter
+  // keyboard shortcut to pick the hovered city). null until first hover.
+  let lastPointerPoint: MapPoint | null = null;
+  // Pending fly-to scale-pulse target; consumed on the next render.
+  let pendingArrivalPulseFor: string | null = null;
+  let arrivalPulse: { city: string; startedAt: number } | null = null;
 
   const resizeObserver =
     typeof ResizeObserver !== "undefined"
@@ -404,6 +427,9 @@ export function createLeafletMapSurface({
   surfaceRoot.addEventListener("pointerup", onPointerUp);
   surfaceRoot.addEventListener("pointercancel", onPointerCancel);
   surfaceRoot.addEventListener("pointerleave", onPointerLeave);
+  // Keyboard a11y: arrows to pan, +/- to zoom, Enter to select the
+  // hovered city (the most recent pointer position is tracked below).
+  mapRoot.addEventListener("keydown", onKeyDown);
   zoomControls.zoomIn.addEventListener("click", () => {
     zoomByDelta(BUTTON_ZOOM_DELTA);
   });
@@ -428,6 +454,7 @@ export function createLeafletMapSurface({
         lat: city.lat,
         lon: city.lon
       });
+      pendingArrivalPulseFor = name;
       animateCameraTo({
         lat: city.lat,
         lon: city.lon,
@@ -609,6 +636,70 @@ export function createLeafletMapSurface({
     surfaceRoot.style.cursor = "grab";
   }
 
+  function onKeyDown(event: KeyboardEvent): void {
+    // Don't hijack keys when the user is typing in an input that bubbled
+    // here through composedPath() (defensive — the map isn't a form
+    // container today, but a future inline edit could change that).
+    const target = event.target;
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    const panStep = Math.max(24, Math.round(Math.min(currentSize.x, currentSize.y) * 0.1));
+    const zoomStep = BUTTON_ZOOM_DELTA;
+
+    switch (event.key) {
+      case "ArrowUp":
+        event.preventDefault();
+        camera = clampCamera(panCameraByPixels(camera, 0, panStep), currentSize);
+        invalidateView("keyboard-pan");
+        scheduleViewChangeNotification();
+        return;
+      case "ArrowDown":
+        event.preventDefault();
+        camera = clampCamera(panCameraByPixels(camera, 0, -panStep), currentSize);
+        invalidateView("keyboard-pan");
+        scheduleViewChangeNotification();
+        return;
+      case "ArrowLeft":
+        event.preventDefault();
+        camera = clampCamera(panCameraByPixels(camera, panStep, 0), currentSize);
+        invalidateView("keyboard-pan");
+        scheduleViewChangeNotification();
+        return;
+      case "ArrowRight":
+        event.preventDefault();
+        camera = clampCamera(panCameraByPixels(camera, -panStep, 0), currentSize);
+        invalidateView("keyboard-pan");
+        scheduleViewChangeNotification();
+        return;
+      case "+":
+      case "=":
+        event.preventDefault();
+        zoomByDelta(zoomStep);
+        return;
+      case "-":
+      case "_":
+        event.preventDefault();
+        zoomByDelta(-zoomStep);
+        return;
+      case "Enter":
+        if (!lastPointerPoint) return;
+        {
+          const hit = hitTestSpatialGrid(hitGrid, lastPointerPoint);
+          if (!hit) return;
+          event.preventDefault();
+          diagnostics.info("map keyboard-selected city", {
+            city_name: hit.city.name
+          });
+          onCitySelect?.(hit.city.name);
+        }
+        return;
+      default:
+        return;
+    }
+  }
+
   function zoomByDelta(delta: number): void {
     stopFlyAnimation();
     const anchorPoint: MapPoint = {
@@ -702,9 +793,32 @@ export function createLeafletMapSurface({
 
       flyAnimationId = 0;
       scheduleViewChangeNotification();
+      if (pendingArrivalPulseFor) {
+        startArrivalPulse(pendingArrivalPulseFor);
+        pendingArrivalPulseFor = null;
+      }
     };
 
     flyAnimationId = window.requestAnimationFrame(tick);
+  }
+
+  function startArrivalPulse(cityName: string): void {
+    arrivalPulse = { city: cityName, startedAt: now() };
+    diagnostics.debug("starting arrival pulse", { city_name: cityName });
+    schedulePulseFrame();
+  }
+
+  function schedulePulseFrame(): void {
+    if (!arrivalPulse) return;
+    const elapsed = now() - arrivalPulse.startedAt;
+    if (elapsed >= ARRIVAL_PULSE_DURATION_MS) {
+      arrivalPulse = null;
+      // Final clean repaint to drop the ring overlay.
+      invalidateView("arrival-pulse-end");
+      return;
+    }
+    invalidateView("arrival-pulse");
+    window.requestAnimationFrame(schedulePulseFrame);
   }
 
   function stopFlyAnimation(): void {
@@ -1036,6 +1150,31 @@ export function createLeafletMapSurface({
     for (const visibleCity of visibleCities) {
       drawMarker(visibleCity, visibleCity.style);
     }
+
+    drawArrivalPulse(visibleCities);
+  }
+
+  function drawArrivalPulse(visibleCities: VisibleCity[]): void {
+    if (!arrivalPulse) return;
+    const elapsed = now() - arrivalPulse.startedAt;
+    if (elapsed >= ARRIVAL_PULSE_DURATION_MS) return;
+
+    const target = visibleCities.find((entry) => entry.city.name === arrivalPulse?.city);
+    if (!target) return;
+
+    const progress = Math.min(1, elapsed / ARRIVAL_PULSE_DURATION_MS);
+    const eased = 1 - (1 - progress) ** 3;
+    const radius =
+      ARRIVAL_PULSE_MIN_RADIUS_PX + (ARRIVAL_PULSE_MAX_RADIUS_PX - ARRIVAL_PULSE_MIN_RADIUS_PX) * eased;
+    const opacity = 1 - progress;
+
+    cityContext.save();
+    cityContext.beginPath();
+    cityContext.arc(target.x, target.y, radius, 0, Math.PI * 2);
+    cityContext.lineWidth = 2;
+    cityContext.strokeStyle = `rgba(245, 158, 11, ${(opacity * 0.85).toFixed(3)})`;
+    cityContext.stroke();
+    cityContext.restore();
   }
 
   function drawMarker(visibleCity: VisibleCity, style: MarkerStyle): void {
@@ -1207,6 +1346,7 @@ export function createLeafletMapSurface({
   }
 
   function updateHover(point: MapPoint): void {
+    lastPointerPoint = point;
     const hit = hitTestSpatialGrid(hitGrid, point);
     surfaceRoot.style.cursor = pointerState?.moved
       ? "grabbing"

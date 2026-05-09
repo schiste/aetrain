@@ -220,6 +220,7 @@ function createContainer(): HTMLDivElement {
   root.id = "aetrain-perf-hud";
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "off");
+  root.setAttribute("aria-label", "Aetrain performance HUD");
   root.style.cssText = `
     position: fixed;
     top: 12px;
@@ -238,6 +239,23 @@ function createContainer(): HTMLDivElement {
     max-width: 280px;
     backdrop-filter: blur(4px);
   `.trim();
+
+  // Visually-hidden heading so screen readers can navigate to the HUD as
+  // a landmark without us also having to render a visible title bar.
+  const heading = document.createElement("h2");
+  heading.textContent = "Performance HUD";
+  heading.style.cssText = `
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  `.trim();
+  root.appendChild(heading);
   return root;
 }
 
@@ -258,7 +276,15 @@ function renderSnapshot(container: HTMLElement, snapshot: HudSnapshot): void {
   if (snapshot.recentErrors > 0) {
     lines.push(`! errors (5s) ${snapshot.recentErrors}`);
   }
-  container.textContent = lines.join("\n");
+  // Update only the body text node so we don't blow away the visually-
+  // hidden <h2> heading or any other structural children.
+  let body = container.querySelector<HTMLElement>("[data-hud-body]");
+  if (!body) {
+    body = document.createElement("span");
+    body.dataset.hudBody = "true";
+    container.appendChild(body);
+  }
+  body.textContent = lines.join("\n");
   container.style.borderColor =
     snapshot.recentErrors > 0
       ? "rgba(244, 63, 94, 0.55)"

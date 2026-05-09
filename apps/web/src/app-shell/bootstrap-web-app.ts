@@ -1,4 +1,5 @@
 import { createDiagnostics, summarizeError } from "./diagnostics.ts";
+import { ensureServiceWorker } from "./service-worker.ts";
 import { mountAetrainShell } from "../ui/shell/ae-app.ts";
 
 const diagnostics = createDiagnostics("web/bootstrap");
@@ -16,6 +17,11 @@ export async function bootstrapWebApp(): Promise<void> {
     if (!(root instanceof HTMLDivElement)) {
       throw new Error("Expected #app root element");
     }
+
+    // Fire-and-forget: registration runs in parallel with the rest of the
+    // boot. ensureServiceWorker self-gates on import.meta.env.PROD and
+    // unregisters leftover registrations in dev so HMR isn't poisoned.
+    void ensureServiceWorker();
 
     if (shouldLoadPerfHud()) {
       // Lazy-loaded so the HUD module is not included in the production
