@@ -9,6 +9,7 @@ mod merge;
 mod name_rules;
 mod osm;
 mod partition;
+mod pilot;
 mod schema;
 mod seed;
 mod wikidata;
@@ -40,11 +41,13 @@ pub use merge::{MergedRegistryCities, merge_registry_cities};
 pub use name_rules::{NameRule, NameRuleAction, NameRuleScope, NameRuleSet, apply_name_rules};
 pub use osm::{OsmPlaceObservation, OsmRelationRef, OsmStationObservation};
 pub use partition::{RegistryPartition, partition_bundle_by_country};
+pub use pilot::{PilotBuildSummary, build_pilot_registry};
 pub use schema::{
-    ExternalRecordRef, RegistryCanonicalBundle, RegistryCity, RegistryCityCollection,
-    RegistryCityStationMembership, RegistryMeta, RegistryNameVariant,
-    RegistryNameVariantCollection, RegistryNameVariantKind, RegistryObservationSource,
-    RegistryStation, RegistryStationCollection, RegistryStatus,
+    ExternalRecordRef, GeoBounds, RegistryCanonicalBundle, RegistryCity, RegistryCityCollection,
+    RegistryCityFacts, RegistryCityFactsCollection, RegistryCitySignals,
+    RegistryCitySignalsCollection, RegistryCityStationMembership, RegistryMeta,
+    RegistryNameVariant, RegistryNameVariantCollection, RegistryNameVariantKind,
+    RegistryObservationSource, RegistryStation, RegistryStationCollection, RegistryStatus,
 };
 pub use seed::{SeedPlan, build_seed_plan};
 pub use wikidata::{WikidataCityObservation, WikidataStationObservation};

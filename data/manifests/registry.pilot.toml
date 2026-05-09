@@ -1,0 +1,32 @@
+dataset_id = "aetrain-registry-pilot"
+schema_version = 1
+description = "Tiny reproducible registry pilot using frozen public-source observations."
+default_target_id = "pilot-city-registry"
+
+[[source]]
+id = "wikidata-pilot-cities"
+provider = "wikidata"
+entity_kind = "city_registry"
+access_strategy = "curated_snapshot"
+refresh_strategy = "manual_rerun"
+seed_once = true
+active = true
+notes = "Five-city pilot fixture frozen from public Wikidata entity snapshots."
+
+[[source]]
+id = "osm-pilot-stations"
+provider = "osm"
+entity_kind = "station_registry"
+access_strategy = "curated_snapshot"
+refresh_strategy = "manual_rerun"
+seed_once = true
+active = true
+notes = "Five-station pilot fixture frozen from public OSM/Nominatim lookups."
+
+[[target]]
+id = "pilot-city-registry"
+adapter = "registry_pilot"
+source_ids = ["wikidata-pilot-cities", "osm-pilot-stations"]
+canonical_export = true
+audit_export = true
+notes = "Tiny fixture-backed registry target for validating the city/station pipeline contracts."

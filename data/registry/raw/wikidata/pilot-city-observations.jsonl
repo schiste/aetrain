@@ -1,0 +1,5 @@
+{"qid":"Q90","label":"Paris","aliases":["City of Light","City of Love","Lutetia","Paris"],"country_code":"FR","location":{"lat":48.85666666666667,"lon":2.352222222222222},"population":2145906}
+{"qid":"Q6397","label":"Avignon","aliases":["Avinhon","Avignon"],"country_code":"FR","location":{"lat":43.948611111111,"lon":4.8083333333333},"population":90305}
+{"qid":"Q1842","label":"Luxembourg","aliases":["Luxembourg City","Ville de Luxembourg","Luxemburg"],"country_code":"LU","location":{"lat":49.610555555556,"lon":6.1327777777778},"population":null}
+{"qid":"Q72","label":"Zurich","aliases":["Zürich","City of Zurich","Stadt Zürich"],"country_code":"CH","location":{"lat":47.37444444444444,"lon":8.54111111111111},"population":null}
+{"qid":"Q1492","label":"Barcelona","aliases":["BCN","Barna","Ciutat Comtal"],"country_code":"ES","location":{"lat":41.3825,"lon":2.1769444444444},"population":1611822}

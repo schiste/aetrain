@@ -43,6 +43,18 @@ pub fn partition_bundle_by_country(
         .filter(|variant| city_ids.contains(&variant.city_id))
         .cloned()
         .collect::<Vec<_>>();
+    let city_facts = bundle
+        .city_facts
+        .iter()
+        .filter(|facts| city_ids.contains(&facts.city_id))
+        .cloned()
+        .collect::<Vec<_>>();
+    let city_signals = bundle
+        .city_signals
+        .iter()
+        .filter(|signals| city_ids.contains(&signals.city_id))
+        .cloned()
+        .collect::<Vec<_>>();
 
     RegistryCanonicalBundle {
         meta: bundle.meta.clone(),
@@ -50,6 +62,8 @@ pub fn partition_bundle_by_country(
         stations,
         memberships,
         name_variants,
+        city_facts,
+        city_signals,
     }
 }
 
@@ -74,9 +88,12 @@ mod tests {
             cities: vec![
                 RegistryCity {
                     city_id: CityId::new("paris-fr").expect("valid city id"),
+                    slug: "paris".to_string(),
                     display_name: "Paris".to_string(),
                     country_code: "FR".to_string(),
-                    location: GeoPoint { lat: 0.0, lon: 0.0 },
+                    identity_point: GeoPoint { lat: 0.0, lon: 0.0 },
+                    map_anchor_point: GeoPoint { lat: 0.0, lon: 0.0 },
+                    bbox: None,
                     wikidata_qid: None,
                     population: None,
                     status: RegistryStatus::Resolved,
@@ -84,9 +101,12 @@ mod tests {
                 },
                 RegistryCity {
                     city_id: CityId::new("baden-ch").expect("valid city id"),
+                    slug: "baden".to_string(),
                     display_name: "Baden".to_string(),
                     country_code: "CH".to_string(),
-                    location: GeoPoint { lat: 0.0, lon: 0.0 },
+                    identity_point: GeoPoint { lat: 0.0, lon: 0.0 },
+                    map_anchor_point: GeoPoint { lat: 0.0, lon: 0.0 },
+                    bbox: None,
                     wikidata_qid: None,
                     population: None,
                     status: RegistryStatus::Resolved,
@@ -131,6 +151,8 @@ mod tests {
                 kind: RegistryNameVariantKind::StationVariant,
                 source: "osm".to_string(),
             }],
+            city_facts: Vec::new(),
+            city_signals: Vec::new(),
         };
 
         let fr = partition_bundle_by_country(&bundle, "FR");

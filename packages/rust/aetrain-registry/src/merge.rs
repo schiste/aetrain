@@ -70,9 +70,12 @@ mod tests {
     fn city(city_id: &str, display_name: &str, country_code: &str) -> RegistryCity {
         RegistryCity {
             city_id: CityId::new(city_id).expect("valid city id"),
+            slug: display_name.to_ascii_lowercase(),
             display_name: display_name.to_string(),
             country_code: country_code.to_string(),
-            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            identity_point: GeoPoint { lat: 0.0, lon: 0.0 },
+            map_anchor_point: GeoPoint { lat: 0.0, lon: 0.0 },
+            bbox: None,
             wikidata_qid: None,
             population: None,
             status: RegistryStatus::Resolved,

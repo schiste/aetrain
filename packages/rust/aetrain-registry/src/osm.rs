@@ -11,6 +11,8 @@ pub struct OsmRelationRef {
 pub struct OsmStationObservation {
     pub object_id: String,
     pub name: String,
+    pub display_name: Option<String>,
+    pub city_hint: Option<String>,
     pub country_code: Option<String>,
     pub location: GeoPoint,
     #[serde(default)]
