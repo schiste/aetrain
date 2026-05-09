@@ -1,0 +1,15 @@
+schema_version = 1
+
+# Intentionally empty scaffold.
+#
+# Future entries here should be rare, tracked, and justified.
+#
+# Example shape:
+#
+# [[city_override]]
+# id = "luxembourg-gare-centrale"
+# target_city_id = "luxembourg-lu-bb74daf2"
+# reason = "Registry override example"
+# added_by = "maintainer"
+# added_at = "2026-05-09"
+# tracking_ref = "issue-000"

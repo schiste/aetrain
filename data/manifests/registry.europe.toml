@@ -1,0 +1,32 @@
+dataset_id = "aetrain-registry"
+schema_version = 1
+description = "Canonical Europe-wide city and station registry for Aetrain."
+default_target_id = "europe-city-registry"
+
+[[source]]
+id = "wikidata-city-seed"
+provider = "wikidata"
+entity_kind = "city_registry"
+access_strategy = "bulk_snapshot"
+refresh_strategy = "recent_changes"
+seed_once = true
+active = true
+notes = "Canonical city backbone. Design scaffold only; fetching is intentionally not wired yet."
+
+[[source]]
+id = "osm-station-seed"
+provider = "osm"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "replication_diff"
+seed_once = true
+active = true
+notes = "Passenger rail station and place backbone. Design scaffold only; fetching is intentionally not wired yet."
+
+[[target]]
+id = "europe-city-registry"
+adapter = "registry_europe"
+source_ids = ["wikidata-city-seed", "osm-station-seed"]
+canonical_export = true
+audit_export = true
+notes = "Canonical registry target used by later feed-to-registry resolution."

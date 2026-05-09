@@ -18,6 +18,11 @@ The current `stage1.sources.toml` includes:
 - the official SNCF passenger-station reference export
 - the official SNCF RFN line-geometry export used for route-shape fallback
 
+The new `registry.europe.toml` is intentionally a design-time manifest for the
+future canonical Europe-wide registry. It defines the seed/refresh contract for
+Wikidata and OSM-backed registry sources, but it is not wired into the current
+fetch/build CLI yet.
+
 Manifest structure:
 
 - `[[target]]`: a durable named build target, its adapter, source membership,

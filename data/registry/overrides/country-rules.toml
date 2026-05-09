@@ -1,0 +1,13 @@
+schema_version = 1
+
+[[rule]]
+id = "feed-country-is-only-a-fallback"
+kind = "policy"
+priority = 100
+note = "Registry design rule: source country is a prior, not canonical truth."
+
+[[rule]]
+id = "foreign-station-needs-evidence"
+kind = "policy"
+priority = 200
+note = "Foreign stations inside national feeds must be resolved by authoritative mapping, registry match, or coordinate evidence before city creation."

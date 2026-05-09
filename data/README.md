@@ -7,6 +7,7 @@ Subdirectories:
 
 - `manifests/`: source manifests, target definitions, and ingest policy
 - `inventory/`: source discovery registries and onboarding status
+- `registry/`: canonical city/station registry seed, state, overrides, and outputs
 - `overrides/`: tracked manual exceptions with rationale
 - `cache/`: raw fetch cache and update state
 - `build/`: target-scoped generated outputs

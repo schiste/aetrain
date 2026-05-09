@@ -8,6 +8,7 @@ It owns:
 - routing
 - URL state
 - dataset contracts
+- registry identity and audit models
 - normalization
 - pipeline logic
 - Wikidata enrichment support

@@ -1,0 +1,22 @@
+schema_version = 1
+
+[[rule]]
+id = "fr-expand-st"
+action = "expand_abbreviation"
+match_value = "St"
+replace_value = "Saint"
+scope = { country_codes = ["FR", "BE", "CH", "LU"] }
+note = "Example scaffold rule for Saint abbreviations in French-context feeds."
+
+[[rule]]
+id = "drop-bus-placeholder"
+action = "reject_token"
+match_value = "Bus"
+note = "Example scaffold rule for placeholder stop areas that must never become cities."
+
+[[rule]]
+id = "strip-gare-centrale"
+action = "strip_suffix"
+match_value = " Gare Centrale"
+scope = { country_codes = ["FR", "LU"] }
+note = "Example scaffold rule for station-qualified city labels."
