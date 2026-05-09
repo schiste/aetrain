@@ -175,7 +175,10 @@ test.describe("aetrain visual regression", () => {
     // Let the URL-debounce + filters re-render settle.
     await page.waitForTimeout(400);
 
-    const sidebar = page.locator("ae-sidebar");
+    // #side is the styled <aside> rendered by ae-sidebar. The custom
+    // element wrapper itself uses display: contents so it has no bounding
+    // box for screenshots — target the rendered child instead.
+    const sidebar = page.locator("#side");
     await maskedScreenshot(sidebar, "filters-slider-desktop.png");
   });
 });
