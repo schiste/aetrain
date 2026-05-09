@@ -17,9 +17,16 @@ import { buildProductionPlannerData } from "./production-adapter.ts";
 
 const DATA_SOURCE_STORAGE_KEY = "aetrain-data-source";
 const DATA_SOURCE_QUERY_PARAM = "source";
+// Vite serves `apps/web/public/` contents at the site root in both dev
+// (vite serve) and prod (vite build copies them to dist/). Anchoring the
+// path to the page origin gives a stable absolute URL in both modes.
+//
+// We previously used `new URL("../../public/data/production/", import.meta.url)`
+// here, but in dev Vite rewrites that to `/@fs/...` and drops the
+// `production/` segment, so the JSON fetch returned the SPA-fallback
+// HTML and dataset loading silently fell back to POC.
 const PRODUCTION_BASE_PATHS: readonly string[] = [
-  new URL("../../public/data/production/", import.meta.url).href,
-  new URL("../../data/production/", import.meta.url).href
+  new URL("/data/production/", window.location.origin).href
 ];
 const diagnostics = createDiagnostics("web/data/runtime");
 
