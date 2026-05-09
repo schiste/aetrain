@@ -3,7 +3,40 @@ const MIN_WORLD = 0;
 const MAX_WORLD = 1;
 const WORLD_SIZE = 256;
 
-export function boundsCenter(bounds) {
+export interface MapBounds {
+  west: number;
+  east: number;
+  south: number;
+  north: number;
+}
+
+export interface MapSize {
+  x: number;
+  y: number;
+}
+
+export interface MapPoint {
+  x: number;
+  y: number;
+}
+
+export interface WorldPoint {
+  x: number;
+  y: number;
+}
+
+export interface MapView {
+  lat: number;
+  lon: number;
+  zoom: number;
+}
+
+export interface LatLon {
+  lat: number;
+  lon: number;
+}
+
+export function boundsCenter(bounds: MapBounds): LatLon {
   const westNorth = mercatorProject(bounds.west, bounds.north);
   const eastSouth = mercatorProject(bounds.east, bounds.south);
   return mercatorUnproject(
@@ -12,7 +45,11 @@ export function boundsCenter(bounds) {
   );
 }
 
-export function fitBoundsZoom(bounds, size, padding = 0) {
+export function fitBoundsZoom(
+  bounds: MapBounds,
+  size: MapSize,
+  padding = 0
+): number {
   const westNorth = mercatorProject(bounds.west, bounds.north);
   const eastSouth = mercatorProject(bounds.east, bounds.south);
   const worldWidth = Math.max(0.000001, Math.abs(eastSouth.x - westNorth.x));
@@ -23,7 +60,7 @@ export function fitBoundsZoom(bounds, size, padding = 0) {
   return Math.log2(scale / WORLD_SIZE);
 }
 
-export function mercatorProject(lon, lat) {
+export function mercatorProject(lon: number, lat: number): WorldPoint {
   const clampedLat = clamp(lat, -MAX_MERCATOR_LAT, MAX_MERCATOR_LAT);
   const normalizedLon = clamp(lon, -180, 180);
   const latitudeRadians = (clampedLat * Math.PI) / 180;
@@ -36,7 +73,7 @@ export function mercatorProject(lon, lat) {
   };
 }
 
-export function mercatorUnproject(worldX, worldY) {
+export function mercatorUnproject(worldX: number, worldY: number): LatLon {
   const clampedX = clamp(worldX, MIN_WORLD, MAX_WORLD);
   const clampedY = clamp(worldY, MIN_WORLD, MAX_WORLD);
   const lon = clampedX * 360 - 180;
@@ -47,11 +84,15 @@ export function mercatorUnproject(worldX, worldY) {
   };
 }
 
-export function scaleForZoom(zoom) {
+export function scaleForZoom(zoom: number): number {
   return WORLD_SIZE * 2 ** zoom;
 }
 
-export function projectWorldToScreen(worldPoint, camera, size) {
+export function projectWorldToScreen(
+  worldPoint: WorldPoint,
+  camera: MapView,
+  size: MapSize
+): MapPoint {
   const centerWorld = mercatorProject(camera.lon, camera.lat);
   const scale = scaleForZoom(camera.zoom);
 
@@ -61,7 +102,11 @@ export function projectWorldToScreen(worldPoint, camera, size) {
   };
 }
 
-export function panCameraByPixels(camera, dx, dy) {
+export function panCameraByPixels(
+  camera: MapView,
+  dx: number,
+  dy: number
+): MapView {
   const centerWorld = mercatorProject(camera.lon, camera.lat);
   const scale = scaleForZoom(camera.zoom);
   const nextCenterWorld = {
@@ -77,7 +122,12 @@ export function panCameraByPixels(camera, dx, dy) {
   };
 }
 
-export function zoomCameraAroundPoint(camera, size, anchorPoint, nextZoom) {
+export function zoomCameraAroundPoint(
+  camera: MapView,
+  size: MapSize,
+  anchorPoint: MapPoint,
+  nextZoom: number
+): MapView {
   const centerWorld = mercatorProject(camera.lon, camera.lat);
   const currentScale = scaleForZoom(camera.zoom);
   const nextScale = scaleForZoom(nextZoom);
@@ -98,6 +148,6 @@ export function zoomCameraAroundPoint(camera, size, anchorPoint, nextZoom) {
   };
 }
 
-function clamp(value, min, max) {
+function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }

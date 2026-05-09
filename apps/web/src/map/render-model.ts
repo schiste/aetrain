@@ -1,6 +1,58 @@
+import type { MapPoint, MapSize } from "./camera-model.ts";
+
 const DEFAULT_HIT_GRID_CELL_SIZE = 48;
 
-export function buildLodProfile(zoom, labelThreshold) {
+export interface LabelThresholdValue {
+  interest: number;
+  pop: number;
+}
+
+export type LabelThresholdFn = (zoom: number) => LabelThresholdValue;
+
+export interface LodProfile {
+  cityPadding: number;
+  cityBudget: number;
+  labelBudget: number;
+  labelThreshold: LabelThresholdValue;
+  minInterest: number;
+  minPopulation: number;
+  networkMinInterest: number;
+  networkEdgeBudget: number;
+  networkPadding: number;
+}
+
+export interface SpatialGridEntry extends MapPoint {
+  radius: number;
+}
+
+export interface SpatialGrid<T extends SpatialGridEntry> {
+  buckets: Map<string, T[]>;
+  cellSize: number;
+}
+
+export interface LabelCandidate {
+  className: string;
+  text: string;
+  x: number;
+  y: number;
+  // Higher priority candidates are placed first; consumers must sort the input
+  // array by priority before calling selectLabelCandidates.
+  priority?: number;
+}
+
+interface LabelBounds {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+}
+
+type ZoomPoint = readonly [number, number];
+
+export function buildLodProfile(
+  zoom: number,
+  labelThreshold: LabelThresholdFn
+): LodProfile {
   return {
     cityPadding: Math.round(interpolateByZoom(zoom, [
       [3, 28],
@@ -68,53 +120,65 @@ export function buildLodProfile(zoom, labelThreshold) {
   };
 }
 
-export function pointInViewport(point, size, padding = 0) {
+export function pointInViewport(
+  point: MapPoint,
+  size: MapSize,
+  padding = 0
+): boolean {
   return (
-    point.x >= -padding &&
-    point.y >= -padding &&
-    point.x <= size.x + padding &&
-    point.y <= size.y + padding
+    point.x >= -padding
+    && point.y >= -padding
+    && point.x <= size.x + padding
+    && point.y <= size.y + padding
   );
 }
 
-export function lineIntersectsViewport(fromPoint, toPoint, size, padding = 0) {
+export function lineIntersectsViewport(
+  fromPoint: MapPoint,
+  toPoint: MapPoint,
+  size: MapSize,
+  padding = 0
+): boolean {
   const minX = -padding;
   const minY = -padding;
   const maxX = size.x + padding;
   const maxY = size.y + padding;
 
   return !(
-    Math.max(fromPoint.x, toPoint.x) < minX ||
-    Math.max(fromPoint.y, toPoint.y) < minY ||
-    Math.min(fromPoint.x, toPoint.x) > maxX ||
-    Math.min(fromPoint.y, toPoint.y) > maxY
+    Math.max(fromPoint.x, toPoint.x) < minX
+    || Math.max(fromPoint.y, toPoint.y) < minY
+    || Math.min(fromPoint.x, toPoint.x) > maxX
+    || Math.min(fromPoint.y, toPoint.y) > maxY
   );
 }
 
-export function createSpatialGrid(entries, cellSize = DEFAULT_HIT_GRID_CELL_SIZE) {
-  const buckets = new Map();
+export function createSpatialGrid<T extends SpatialGridEntry>(
+  entries: readonly T[],
+  cellSize: number = DEFAULT_HIT_GRID_CELL_SIZE
+): SpatialGrid<T> {
+  const buckets = new Map<string, T[]>();
 
   for (const entry of entries) {
     const cellKey = keyForPoint(entry, cellSize);
-    const bucket = buckets.get(cellKey) || [];
+    const bucket = buckets.get(cellKey) ?? [];
     bucket.push(entry);
     buckets.set(cellKey, bucket);
   }
 
-  return {
-    buckets,
-    cellSize
-  };
+  return { buckets, cellSize };
 }
 
-export function hitTestSpatialGrid(grid, point) {
+export function hitTestSpatialGrid<T extends SpatialGridEntry>(
+  grid: SpatialGrid<T> | null | undefined,
+  point: MapPoint
+): T | null {
   if (!grid) {
     return null;
   }
 
   const baseColumn = Math.floor(point.x / grid.cellSize);
   const baseRow = Math.floor(point.y / grid.cellSize);
-  let bestHit = null;
+  let bestHit: T | null = null;
   let bestDistanceSq = Number.POSITIVE_INFINITY;
 
   for (let column = baseColumn - 1; column <= baseColumn + 1; column += 1) {
@@ -144,9 +208,12 @@ export function hitTestSpatialGrid(grid, point) {
   return bestHit;
 }
 
-export function selectLabelCandidates(candidates, budget) {
-  const accepted = [];
-  const occupied = [];
+export function selectLabelCandidates<T extends LabelCandidate>(
+  candidates: readonly T[],
+  budget: number
+): T[] {
+  const accepted: T[] = [];
+  const occupied: LabelBounds[] = [];
 
   for (const candidate of candidates) {
     if (accepted.length >= budget) {
@@ -165,7 +232,7 @@ export function selectLabelCandidates(candidates, budget) {
   return accepted;
 }
 
-function estimateLabelBounds(candidate) {
+function estimateLabelBounds(candidate: LabelCandidate): LabelBounds {
   const fontSize = candidate.className.includes("trip-lbl")
     ? 12
     : candidate.className.includes("top")
@@ -182,20 +249,23 @@ function estimateLabelBounds(candidate) {
   };
 }
 
-function rectsIntersect(left, right) {
+function rectsIntersect(left: LabelBounds, right: LabelBounds): boolean {
   return !(
-    left.right < right.left ||
-    left.left > right.right ||
-    left.bottom < right.top ||
-    left.top > right.bottom
+    left.right < right.left
+    || left.left > right.right
+    || left.bottom < right.top
+    || left.top > right.bottom
   );
 }
 
-function keyForPoint(point, cellSize) {
+function keyForPoint(point: MapPoint, cellSize: number): string {
   return `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
 }
 
-function interpolateLabelThreshold(zoom, labelThreshold) {
+function interpolateLabelThreshold(
+  zoom: number,
+  labelThreshold: LabelThresholdFn
+): LabelThresholdValue {
   const floorZoom = Math.floor(zoom);
   const ceilZoom = Math.ceil(zoom);
   const floorValue = labelThreshold(floorZoom);
@@ -208,14 +278,24 @@ function interpolateLabelThreshold(zoom, labelThreshold) {
   };
 }
 
-function interpolateByZoom(zoom, points) {
-  if (zoom <= points[0][0]) {
-    return points[0][1];
+function interpolateByZoom(
+  zoom: number,
+  points: readonly ZoomPoint[]
+): number {
+  const first = points[0];
+  if (!first) {
+    return 0;
+  }
+  if (zoom <= first[0]) {
+    return first[1];
   }
 
   for (let index = 1; index < points.length; index += 1) {
     const previous = points[index - 1];
     const current = points[index];
+    if (!previous || !current) {
+      continue;
+    }
     if (zoom > current[0]) {
       continue;
     }
@@ -224,9 +304,9 @@ function interpolateByZoom(zoom, points) {
     return lerp(previous[1], current[1], progress);
   }
 
-  return points[points.length - 1][1];
+  return points[points.length - 1]?.[1] ?? 0;
 }
 
-function lerp(from, to, progress) {
+function lerp(from: number, to: number, progress: number): number {
   return from + (to - from) * progress;
 }
