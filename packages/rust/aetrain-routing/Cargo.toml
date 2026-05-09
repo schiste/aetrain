@@ -7,3 +7,4 @@ rust-version.workspace = true
 
 [dependencies]
 aetrain-domain = { path = "../aetrain-domain" }
+unicode-normalization = "0.1"
