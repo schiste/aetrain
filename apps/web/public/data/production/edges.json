@@ -2132,7 +2132,7 @@
   },
   {
     "from_city_id": "aeroport-charles-de-gaulle-tgv-ch-1a02ffe0",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
@@ -4140,6 +4140,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "ch-gtfs:91-41F-j26-1",
+      "de-delfi-gtfs:162327_101",
       "es-renfe-mainline-gtfs:8708960000AV016",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::237820F0-01B1-49D5-AB3A-3ACA662E322E:"
@@ -4161,14 +4163,15 @@
   {
     "from_city_id": "aix-en-provence-fr-13001",
     "to_city_id": "lyon-fr-69123",
-    "duration_min": 127,
+    "duration_min": 99,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::D1E5AD07-58C1-456A-B4E2-928E91061B0B:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-41F-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::D1E5AD07-58C1-456A-B4E2-928E91061B0B:"
     ]
   },
   {
@@ -4193,8 +4196,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::19ea029b-6782-421a-8481-7470f5718e47:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-1B-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::19ea029b-6782-421a-8481-7470f5718e47:"
     ]
   },
   {
@@ -4206,6 +4210,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:162224_101",
       "es-renfe-mainline-gtfs:6000087089AV016"
     ]
   },
@@ -4244,80 +4249,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::3C11D08B-6F1C-416C-A388-63B4074018CB:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "to_city_id": "avignon-fr-84007",
-    "duration_min": 18,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-41F-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "to_city_id": "avignon-tgv-de-bcfe06ca",
-    "duration_min": 19,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162327_101"
-    ]
-  },
-  {
-    "from_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "to_city_id": "lyon-fr-69123",
-    "duration_min": 99,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-41F-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "to_city_id": "marseille-fr-13055",
-    "duration_min": 11,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-1B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "to_city_id": "marseille-st-charles-de-f43cde94",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162224_101"
-    ]
-  },
-  {
-    "from_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "to_city_id": "toulon-fr-83137",
-    "duration_min": 47,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-E-j26-1"
+      "ch-gtfs:91-631-E-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::3C11D08B-6F1C-416C-A388-63B4074018CB:"
     ]
   },
   {
@@ -12032,7 +11966,7 @@
   },
   {
     "from_city_id": "amplepuis-fr-69006",
-    "to_city_id": "roanne-gare-routiere-zz-89d4f1fc",
+    "to_city_id": "roanne-fr-42187",
     "duration_min": 35,
     "service_kind": "rail",
     "service_class": "regional",
@@ -12901,26 +12835,15 @@
   },
   {
     "from_city_id": "andernach-de-51db3bd7",
-    "to_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
+    "to_city_id": "koblenz-de-758fbef3",
     "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:162532_102",
       "de-delfi-gtfs:650370_106"
-    ]
-  },
-  {
-    "from_city_id": "andernach-de-51db3bd7",
-    "to_city_id": "koblenz-de-758fbef3",
-    "duration_min": 11,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162532_102"
     ]
   },
   {
@@ -15007,7 +14930,7 @@
   },
   {
     "from_city_id": "apach-eglise-zz-eedeb47a",
-    "to_city_id": "perl-gare-routiere-zz-73fa94ef",
+    "to_city_id": "perl-de-7a1d5271",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -21568,6 +21491,18 @@
   },
   {
     "from_city_id": "aulendorf-de-3f5c8154",
+    "to_city_id": "biberach-de-b8717557",
+    "duration_min": 13,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2282288_106"
+    ]
+  },
+  {
+    "from_city_id": "aulendorf-de-3f5c8154",
     "to_city_id": "biberach-riss-ch-84744946",
     "duration_min": 12,
     "service_kind": "rail",
@@ -21576,18 +21511,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-3-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "aulendorf-de-3f5c8154",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
-    "duration_min": 13,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2282288_106"
     ]
   },
   {
@@ -23035,21 +22958,11 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "ch-gtfs:91-1B-j26-1",
+      "de-delfi-gtfs:162224_101",
       "es-renfe-mainline-gtfs:6000087089AV016",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:"
-    ]
-  },
-  {
-    "from_city_id": "avignon-fr-84007",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 18,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-1B-j26-1"
     ]
   },
   {
@@ -23132,6 +23045,18 @@
       "ch-gtfs:91-1B-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:"
+    ]
+  },
+  {
+    "from_city_id": "avignon-fr-84007",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
+    "duration_min": 65,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162224_101"
     ]
   },
   {
@@ -23320,18 +23245,6 @@
   },
   {
     "from_city_id": "avignon-fr-84007",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 54,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "avignon-fr-84007",
     "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 31,
     "service_kind": "rail",
@@ -23340,32 +23253,9 @@
     "source_confidence": 100,
     "provenance": [
       "ch-gtfs:91-41F-j26-1",
+      "ch-gtfs:91-631-B-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::6CC8BBE5-9508-49DB-95CD-797616EA49C6:"
-    ]
-  },
-  {
-    "from_city_id": "avignon-tgv-de-bcfe06ca",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 19,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162224_101"
-    ]
-  },
-  {
-    "from_city_id": "avignon-tgv-de-bcfe06ca",
-    "to_city_id": "lyon-part-dieu-de-cfdacf42",
-    "duration_min": 65,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162224_101"
     ]
   },
   {
@@ -29026,18 +28916,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-3-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bad-schussenried-de-4f1189b3",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230753_106"
     ]
   },
   {
@@ -42431,6 +42309,30 @@
   },
   {
     "from_city_id": "berlin-de-5b922f02",
+    "to_city_id": "berlin-gesundbrunnen-zz-5b13e95d",
+    "duration_min": 5,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-5b922f02",
+    "to_city_id": "berlin-suedkreuz-zz-0d988fa9",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-5b922f02",
     "to_city_id": "dallgow-doberitz-de-b8ec49cc",
     "duration_min": 3,
     "service_kind": "rail",
@@ -42443,7 +42345,7 @@
   },
   {
     "from_city_id": "berlin-de-5b922f02",
-    "to_city_id": "s-bahn-unten-at-3bca6a1e",
+    "to_city_id": "s-de-2feb1983",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -42491,32 +42393,8 @@
   },
   {
     "from_city_id": "berlin-gesundbrunnen-zz-5b13e95d",
-    "to_city_id": "berlin-hbf-lehrter-bahnhof-nord-zz-1fb4c6e1",
+    "to_city_id": "berlin-de-5b922f02",
     "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
-    ]
-  },
-  {
-    "from_city_id": "berlin-hbf-lehrter-bahnhof-nord-zz-1fb4c6e1",
-    "to_city_id": "berlin-gesundbrunnen-zz-5b13e95d",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
-    ]
-  },
-  {
-    "from_city_id": "berlin-hbf-lehrter-bahnhof-nord-zz-1fb4c6e1",
-    "to_city_id": "berlin-suedkreuz-zz-0d988fa9",
-    "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -42551,7 +42429,7 @@
   },
   {
     "from_city_id": "berlin-suedkreuz-zz-0d988fa9",
-    "to_city_id": "berlin-hbf-lehrter-bahnhof-nord-zz-1fb4c6e1",
+    "to_city_id": "berlin-de-5b922f02",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -44520,27 +44398,16 @@
   {
     "from_city_id": "bettembourg-lu-4235ba19",
     "to_city_id": "hettange-grande-fr-57323",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "geometry:sncf-fr-rfn-lines",
-      "sncf-fr-gtfs:FR:Line::6c285671-9f9c-44db-80ac-068653b4e95a:",
-      "sncf-fr-gtfs:FR:Line::94da6970-1eba-4166-9d52-74771396d651:"
-    ]
-  },
-  {
-    "from_city_id": "bettembourg-lu-4235ba19",
-    "to_city_id": "hettange-grande-gare-sncf-lu-961fbe85",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "lu-atp-gtfs:301"
+      "geometry:sncf-fr-rfn-lines",
+      "lu-atp-gtfs:301",
+      "sncf-fr-gtfs:FR:Line::6c285671-9f9c-44db-80ac-068653b4e95a:",
+      "sncf-fr-gtfs:FR:Line::94da6970-1eba-4166-9d52-74771396d651:"
     ]
   },
   {
@@ -46124,6 +45991,18 @@
   },
   {
     "from_city_id": "biberach-de-b8717557",
+    "to_city_id": "aulendorf-de-3f5c8154",
+    "duration_min": 13,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162304_102"
+    ]
+  },
+  {
+    "from_city_id": "biberach-de-b8717557",
     "to_city_id": "bad-schussenried-de-4f1189b3",
     "duration_min": 10,
     "service_kind": "rail",
@@ -46131,7 +46010,20 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:3108752_2"
+      "de-delfi-gtfs:3108752_2",
+      "de-delfi-gtfs:5254471_106"
+    ]
+  },
+  {
+    "from_city_id": "biberach-de-b8717557",
+    "to_city_id": "biberach-burgerh-de-f2612e8f",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:de:ding.eu:20217_:_106"
     ]
   },
   {
@@ -46148,25 +46040,62 @@
   },
   {
     "from_city_id": "biberach-de-b8717557",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
+    "to_city_id": "laupheim-de-f521e33d",
+    "duration_min": 7,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2230753_106"
+    ]
+  },
+  {
+    "from_city_id": "biberach-de-b8717557",
+    "to_city_id": "ravensburg-de-b37f51b2",
+    "duration_min": 27,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162319_101"
+    ]
+  },
+  {
+    "from_city_id": "biberach-de-b8717557",
+    "to_city_id": "schemmerberg-de-fc4d4a92",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2230753_106"
+    ]
+  },
+  {
+    "from_city_id": "biberach-de-b8717557",
+    "to_city_id": "ulm-de-c2b2c311",
+    "duration_min": 22,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7137800_106"
+    ]
+  },
+  {
+    "from_city_id": "biberach-de-b8717557",
+    "to_city_id": "warthausen-de-bc438750",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:3108757_106"
-    ]
-  },
-  {
-    "from_city_id": "biberach-de-b8717557",
-    "to_city_id": "warthausen-de-bc438750",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
+      "de-delfi-gtfs:3108752_106",
       "de-delfi-gtfs:de:ding.eu:72252_:_106"
     ]
   },
@@ -46324,114 +46253,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-3-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "aulendorf-de-3f5c8154",
-    "duration_min": 13,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162304_102"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "bad-schussenried-de-4f1189b3",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:5254471_106"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "biberach-burgerh-de-f2612e8f",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:ding.eu:20217_:_106"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "biberach-de-b8717557",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3108752_2"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "laupheim-de-f521e33d",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230753_106"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "ravensburg-de-b37f51b2",
-    "duration_min": 27,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162319_101"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "schemmerberg-de-fc4d4a92",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230753_106"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "ulm-de-c2b2c311",
-    "duration_min": 22,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137800_106"
-    ]
-  },
-  {
-    "from_city_id": "biberach-zob-de-c08f3b5e",
-    "to_city_id": "warthausen-de-bc438750",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3108752_106"
     ]
   },
   {
@@ -51346,7 +51167,7 @@
   },
   {
     "from_city_id": "blenod-les-toul-les-naux-zz-d9a93961",
-    "to_city_id": "toul-gare-routiere-zz-f41723ac",
+    "to_city_id": "toul-fr-54528",
     "duration_min": 12,
     "service_kind": "rail",
     "service_class": "regional",
@@ -52451,7 +52272,7 @@
   },
   {
     "from_city_id": "boblingen-de-2aa2c509",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 23,
     "service_kind": "rail",
     "service_class": "regional",
@@ -54027,6 +53848,30 @@
   },
   {
     "from_city_id": "bologna-centrale-ch-506dd8ee",
+    "to_city_id": "roma-stazione-di-roma-tiburtina-at-cbac6263",
+    "duration_min": 263,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:12-I3-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "bologna-centrale-ch-506dd8ee",
+    "to_city_id": "sev-at-2fb0f977",
+    "duration_min": 251,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:12-I3-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "bologna-centrale-ch-506dd8ee",
     "to_city_id": "tarvisio-boscoverde-de-ce3c6dd9",
     "duration_min": 251,
     "service_kind": "rail",
@@ -54047,30 +53892,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162330_101"
-    ]
-  },
-  {
-    "from_city_id": "bologna-stazione-di-bologna-centrale-at-b9bf2160",
-    "to_city_id": "roma-stazione-di-roma-tiburtina-at-cbac6263",
-    "duration_min": 263,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-I3-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bologna-stazione-di-bologna-centrale-at-b9bf2160",
-    "to_city_id": "sev-at-2fb0f977",
-    "duration_min": 251,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-I3-j26-1"
     ]
   },
   {
@@ -54431,7 +54252,7 @@
   },
   {
     "from_city_id": "bondorf-de-106c0014",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 10,
     "service_kind": "rail",
     "service_class": "regional",
@@ -57273,7 +57094,7 @@
   },
   {
     "from_city_id": "bourg-en-bresse-archives-zz-a15ba6a2",
-    "to_city_id": "bourg-en-bresse-gare-routiere-zz-8a84e631",
+    "to_city_id": "bourg-en-bresse-fr-01053",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -57299,7 +57120,7 @@
   },
   {
     "from_city_id": "bourg-en-bresse-charite-zz-8bdf2014",
-    "to_city_id": "bourg-en-bresse-gare-routiere-zz-8a84e631",
+    "to_city_id": "bourg-en-bresse-fr-01053",
     "duration_min": 5,
     "service_kind": "rail",
     "service_class": "regional",
@@ -57400,6 +57221,32 @@
   },
   {
     "from_city_id": "bourg-en-bresse-fr-01053",
+    "to_city_id": "bourg-en-bresse-archives-zz-a15ba6a2",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::02534A5F-903C-454E-A24F-E6E2E23B3CBF:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "bourg-en-bresse-fr-01053",
+    "to_city_id": "bourg-en-bresse-charite-zz-8bdf2014",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::02534A5F-903C-454E-A24F-E6E2E23B3CBF:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "bourg-en-bresse-fr-01053",
     "to_city_id": "ceyzeriat-fr-01072",
     "duration_min": 7,
     "service_kind": "rail",
@@ -57428,7 +57275,7 @@
   },
   {
     "from_city_id": "bourg-en-bresse-fr-01053",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 101,
     "service_kind": "rail",
     "service_class": "regional",
@@ -57523,6 +57370,19 @@
   },
   {
     "from_city_id": "bourg-en-bresse-fr-01053",
+    "to_city_id": "saint-paul-de-varax-fr-01383",
+    "duration_min": 18,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::BE0A8D1F-C84D-4D75-87C8-D89DF19D1D40:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "bourg-en-bresse-fr-01053",
     "to_city_id": "servas-lent-fr-01405",
     "duration_min": 6,
     "service_kind": "rail",
@@ -57545,45 +57405,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-P13-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bourg-en-bresse-gare-routiere-zz-8a84e631",
-    "to_city_id": "bourg-en-bresse-archives-zz-a15ba6a2",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::02534A5F-903C-454E-A24F-E6E2E23B3CBF:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "bourg-en-bresse-gare-routiere-zz-8a84e631",
-    "to_city_id": "bourg-en-bresse-charite-zz-8bdf2014",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::02534A5F-903C-454E-A24F-E6E2E23B3CBF:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "bourg-en-bresse-gare-routiere-zz-8a84e631",
-    "to_city_id": "saint-paul-de-varax-fr-01383",
-    "duration_min": 18,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BE0A8D1F-C84D-4D75-87C8-D89DF19D1D40:",
-      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -64442,7 +64263,7 @@
     ]
   },
   {
-    "from_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
+    "from_city_id": "bruck-fusch-de-bc74f662",
     "to_city_id": "gries-at-e806b46d",
     "duration_min": 4,
     "service_kind": "rail",
@@ -64451,42 +64272,6 @@
     "source_confidence": 60,
     "provenance": [
       "at-oebb-gtfs:3-R3-S-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
-    "to_city_id": "schwarzach-st-veit-at-194c6f62",
-    "duration_min": 25,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:10-A14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
-    "to_city_id": "taxenbach-rauris-at-b7c6b6ea",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:10-A14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
-    "to_city_id": "zell-am-see-at-3b4713b0",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:10-A14-j26-1"
     ]
   },
   {
@@ -64503,13 +64288,38 @@
   },
   {
     "from_city_id": "bruck-fusch-de-bc74f662",
-    "to_city_id": "zell-am-see-at-3b4713b0",
-    "duration_min": 6,
+    "to_city_id": "schwarzach-st-veit-at-194c6f62",
+    "duration_min": 25,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:10-A14-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "bruck-fusch-de-bc74f662",
+    "to_city_id": "taxenbach-rauris-at-b7c6b6ea",
+    "duration_min": 8,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:10-A14-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "bruck-fusch-de-bc74f662",
+    "to_city_id": "zell-am-see-at-3b4713b0",
+    "duration_min": 5,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:10-A14-j26-1",
       "de-delfi-gtfs:162260_109"
     ]
   },
@@ -64586,7 +64396,7 @@
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "frohnleiten-bahnhof-2-at-59c9c965",
     "duration_min": 18,
     "service_kind": "rail",
@@ -64598,7 +64408,7 @@
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "graz-at-b0b5969e",
     "duration_min": 35,
     "service_kind": "rail",
@@ -64606,11 +64416,12 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "at-oebb-gtfs:10-A12-j26-1"
+      "at-oebb-gtfs:10-A12-j26-1",
+      "de-delfi-gtfs:6627546_102"
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "kapfenberg-at-284354d3",
     "duration_min": 4,
     "service_kind": "rail",
@@ -64618,11 +64429,12 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "at-oebb-gtfs:1-S8-M-j26-1"
+      "at-oebb-gtfs:1-S8-M-j26-1",
+      "de-delfi-gtfs:162275_101"
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "leoben-at-de059f80",
     "duration_min": 9,
     "service_kind": "rail",
@@ -64634,19 +64446,20 @@
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "murzzuschlag-at-b23fb3ef",
-    "duration_min": 26,
+    "duration_min": 25,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "at-oebb-gtfs:12-A12-j26-1"
+      "at-oebb-gtfs:12-A12-j26-1",
+      "de-delfi-gtfs:6627546_102"
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "niklasdorf-bahnhof-2-at-f7284466",
     "duration_min": 6,
     "service_kind": "rail",
@@ -64658,7 +64471,7 @@
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "pernegg-bahnhof-2-at-2f62ccbb",
     "duration_min": 7,
     "service_kind": "rail",
@@ -64670,7 +64483,7 @@
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "wien-at-f42b6f0e",
     "duration_min": 101,
     "service_kind": "rail",
@@ -64682,7 +64495,7 @@
     ]
   },
   {
-    "from_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "from_city_id": "bruck-mur-de-eaa3948e",
     "to_city_id": "wiener-neustadt-at-2715c848",
     "duration_min": 82,
     "service_kind": "rail",
@@ -64691,42 +64504,6 @@
     "source_confidence": 60,
     "provenance": [
       "at-oebb-gtfs:10-A10-1-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "bruck-mur-de-eaa3948e",
-    "to_city_id": "graz-at-b0b5969e",
-    "duration_min": 35,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:6627546_102"
-    ]
-  },
-  {
-    "from_city_id": "bruck-mur-de-eaa3948e",
-    "to_city_id": "kapfenberg-at-284354d3",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162275_101"
-    ]
-  },
-  {
-    "from_city_id": "bruck-mur-de-eaa3948e",
-    "to_city_id": "murzzuschlag-at-b23fb3ef",
-    "duration_min": 25,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:6627546_102"
     ]
   },
   {
@@ -77357,21 +77134,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "cercottes-fr-45062",
-    "to_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "duration_min": 20,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:"
     ]
   },
   {
@@ -79144,7 +78908,7 @@
   },
   {
     "from_city_id": "chambery-challes-les-eaux-fr-73065",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 167,
     "service_kind": "rail",
     "service_class": "regional",
@@ -79806,20 +79570,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6D267C2D-7D54-4578-9380-B2C7C75C7010:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "champagne-ardenne-tgv-fr-51058",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "duration_min": 29,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-61C-j26-1"
+      "ch-gtfs:91-61C-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::6D267C2D-7D54-4578-9380-B2C7C75C7010:"
     ]
   },
   {
@@ -81104,8 +80857,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::9F945086-5773-42EF-92D0-CCD63F7C134E:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -81130,8 +80884,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -81169,8 +80923,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::22F6D4B9-BC1B-4BE6-B5CC-3B211E463B73:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -81183,6 +80938,19 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::2381a54a-1f59-4452-88c7-303179dd472b:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "chartres-fr-28085",
+    "to_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
+    "duration_min": 100,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -81209,58 +80977,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::A9EA26B0-3D69-4602-855E-C8D196A3FD89:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "to_city_id": "courville-sur-eure-fr-28116",
-    "duration_min": 31,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "to_city_id": "la-villette-saint-prest-gare-routiere-zz-b5cf38cc",
-    "duration_min": 13,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "to_city_id": "maintenon-gare-routiere-zz-15a7f9e7",
-    "duration_min": 30,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "to_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
-    "duration_min": 100,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -81307,7 +81023,7 @@
   },
   {
     "from_city_id": "chasse-sur-rhone-fr-38087",
-    "to_city_id": "vienne-gare-routiere-zz-e2ec54b5",
+    "to_city_id": "vienne-ch-66fb81d1",
     "duration_min": 20,
     "service_kind": "rail",
     "service_class": "regional",
@@ -83217,18 +82933,6 @@
   },
   {
     "from_city_id": "chemnitz-de-0261e766",
-    "to_city_id": "chemnitz-hbf-bahnhofstr-de-29a6cfe9",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:vms:52-C15_106"
-    ]
-  },
-  {
-    "from_city_id": "chemnitz-de-0261e766",
     "to_city_id": "chemnitz-hp-kinderwaldstatte-de-013caed8",
     "duration_min": 4,
     "service_kind": "rail",
@@ -83436,18 +83140,6 @@
     "from_city_id": "chemnitz-gustav-freytag-str-de-82d5f47c",
     "to_city_id": "chemnitz-de-0261e766",
     "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:vms:52-C11_106"
-    ]
-  },
-  {
-    "from_city_id": "chemnitz-hbf-bahnhofstr-de-29a6cfe9",
-    "to_city_id": "chemnitz-de-0261e766",
-    "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -91089,21 +90781,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::22F6D4B9-BC1B-4BE6-B5CC-3B211E463B73:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "courville-sur-eure-fr-28116",
-    "to_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "duration_min": 33,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -97156,7 +96836,7 @@
   },
   {
     "from_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
-    "to_city_id": "s-bahn-unten-at-3bca6a1e",
+    "to_city_id": "s-de-2feb1983",
     "duration_min": 154,
     "service_kind": "rail",
     "service_class": "regional",
@@ -100515,7 +100195,7 @@
   },
   {
     "from_city_id": "dijon-fr-21231",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 84,
     "service_kind": "rail",
     "service_class": "regional",
@@ -117610,18 +117290,6 @@
   },
   {
     "from_city_id": "empelde-de-58d7a665",
-    "to_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3448389_109"
-    ]
-  },
-  {
-    "from_city_id": "empelde-de-58d7a665",
     "to_city_id": "hannover-de-500deaa5",
     "duration_min": 2,
     "service_kind": "rail",
@@ -117629,7 +117297,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:3448387_109"
+      "de-delfi-gtfs:3448387_109",
+      "de-delfi-gtfs:3448389_109"
     ]
   },
   {
@@ -119095,8 +118764,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -119114,32 +118783,6 @@
   },
   {
     "from_city_id": "epernon-fr-28140",
-    "to_city_id": "rambouillet-fr-78517",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::22F6D4B9-BC1B-4BE6-B5CC-3B211E463B73:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "epernon-gare-routiere-zz-513cb050",
-    "to_city_id": "maintenon-gare-routiere-zz-15a7f9e7",
-    "duration_min": 17,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "epernon-gare-routiere-zz-513cb050",
     "to_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
     "duration_min": 76,
     "service_kind": "rail",
@@ -119148,6 +118791,19 @@
     "source_confidence": 50,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "epernon-fr-28140",
+    "to_city_id": "rambouillet-fr-78517",
+    "duration_min": 7,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::22F6D4B9-BC1B-4BE6-B5CC-3B211E463B73:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -123315,7 +122971,7 @@
   },
   {
     "from_city_id": "esslingen-neckar-ch-08cd34f8",
-    "to_city_id": "reutlingen-hbf-d-ch-e58919f9",
+    "to_city_id": "reutlingen-de-9fae8136",
     "duration_min": 30,
     "service_kind": "rail",
     "service_class": "regional",
@@ -125066,7 +124722,7 @@
   },
   {
     "from_city_id": "eutingen-im-gau-de-b9164085",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -126204,7 +125860,7 @@
   },
   {
     "from_city_id": "falkensee-essener-str-de-9ac1273a",
-    "to_city_id": "seegefeld-bahnhof-nord-de-0f9258cb",
+    "to_city_id": "seegefeld-de-143c6b4a",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -126384,7 +126040,7 @@
   },
   {
     "from_city_id": "falkensee-nedlitzer-str-de-4ea38eb1",
-    "to_city_id": "seegefeld-bahnhof-nord-de-0f9258cb",
+    "to_city_id": "seegefeld-de-143c6b4a",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -138861,7 +138517,7 @@
   },
   {
     "from_city_id": "frohnleiten-bahnhof-2-at-59c9c965",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 18,
     "service_kind": "rail",
     "service_class": "regional",
@@ -145396,32 +145052,6 @@
     ]
   },
   {
-    "from_city_id": "geneve-aeroport-zz-41b38f91",
-    "to_city_id": "geneve-cornavin-zz-3bc6e4e1",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "geneve-aeroport-zz-41b38f91",
-    "to_city_id": "lancy-pont-rouge-zz-e0f8289c",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "geneve-ch-aaf44349",
     "to_city_id": "allaman-ch-2824ab86",
     "duration_min": 20,
@@ -145483,6 +145113,19 @@
   },
   {
     "from_city_id": "geneve-ch-aaf44349",
+    "to_city_id": "geneve-cornavin-zz-3bc6e4e1",
+    "duration_min": 7,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "geneve-ch-aaf44349",
     "to_city_id": "lancy-ch-d6e5769b",
     "duration_min": 3,
     "service_kind": "rail",
@@ -145491,6 +145134,19 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-51-Y-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "geneve-ch-aaf44349",
+    "to_city_id": "lancy-pont-rouge-zz-e0f8289c",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -145618,7 +145274,7 @@
   },
   {
     "from_city_id": "geneve-cornavin-zz-3bc6e4e1",
-    "to_city_id": "geneve-aeroport-zz-41b38f91",
+    "to_city_id": "geneve-ch-aaf44349",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -147707,7 +147363,7 @@
   },
   {
     "from_city_id": "gien-fr-45155",
-    "to_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
+    "to_city_id": "les-aubrais-fr-45147",
     "duration_min": 70,
     "service_kind": "rail",
     "service_class": "regional",
@@ -148893,7 +148549,7 @@
   },
   {
     "from_city_id": "givors-fr-69091",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 34,
     "service_kind": "rail",
     "service_class": "regional",
@@ -151645,7 +151301,7 @@
   },
   {
     "from_city_id": "gopperding-at-abf8e15b",
-    "to_city_id": "scharding-bahnhof-1-at-c0dde88d",
+    "to_city_id": "scharding-de-597ee297",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -155040,18 +154696,6 @@
   },
   {
     "from_city_id": "graz-at-b0b5969e",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
-    "duration_min": 35,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:10-A10-1-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "graz-at-b0b5969e",
     "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 35,
     "service_kind": "rail",
@@ -155059,6 +154703,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:10-A10-1-j26-1",
       "de-delfi-gtfs:162275_101"
     ]
   },
@@ -155798,7 +155443,7 @@
   },
   {
     "from_city_id": "grenoble-fr-38185",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 89,
     "service_kind": "rail",
     "service_class": "regional",
@@ -156690,7 +156335,7 @@
   },
   {
     "from_city_id": "gries-at-e806b46d",
-    "to_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
+    "to_city_id": "bruck-fusch-de-bc74f662",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -165326,7 +164971,7 @@
   },
   {
     "from_city_id": "halberstadt-de-d3f1ec02",
-    "to_city_id": "wernigerode-hbf-hsb-de-8cf55027",
+    "to_city_id": "wernigerode-de-7c3779e9",
     "duration_min": 13,
     "service_kind": "rail",
     "service_class": "regional",
@@ -165577,32 +165222,8 @@
     ]
   },
   {
-    "from_city_id": "halle-bahnhof-zob-de-2568b35e",
-    "to_city_id": "halle-de-4c868803",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7140209_106"
-    ]
-  },
-  {
     "from_city_id": "halle-de-4c868803",
     "to_city_id": "borgh-de-96030c7a",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7140209_106"
-    ]
-  },
-  {
-    "from_city_id": "halle-de-4c868803",
-    "to_city_id": "halle-bahnhof-zob-de-2568b35e",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -168312,55 +167933,6 @@
     ]
   },
   {
-    "from_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
-    "to_city_id": "empelde-de-58d7a665",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3448389_109"
-    ]
-  },
-  {
-    "from_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
-    "to_city_id": "hannover-de-500deaa5",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3448391_109",
-      "de-delfi-gtfs:de:nds-gvh:gvh-2-13:_109"
-    ]
-  },
-  {
-    "from_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
-    "to_city_id": "springe-bahnhof-zob-de-375be012",
-    "duration_min": 18,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3448391_109"
-    ]
-  },
-  {
-    "from_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
-    "to_city_id": "weetzen-de-2199db96",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3448388_109"
-    ]
-  },
-  {
     "from_city_id": "hannover-bartold-knaust-strasse-de-b1bbd5c9",
     "to_city_id": "hannover-am-de-8a47cb2e",
     "duration_min": 2,
@@ -168670,7 +168242,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:3448388_109"
+      "de-delfi-gtfs:3448388_109",
+      "de-delfi-gtfs:3448389_109"
     ]
   },
   {
@@ -168791,19 +168364,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:de:nds-gvh:gvh-2-4:_109"
-    ]
-  },
-  {
-    "from_city_id": "hannover-de-500deaa5",
-    "to_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3448391_109",
-      "de-delfi-gtfs:de:nds-gvh:gvh-2-13:_109"
     ]
   },
   {
@@ -169530,6 +169090,18 @@
   },
   {
     "from_city_id": "hannover-de-500deaa5",
+    "to_city_id": "springe-bahnhof-zob-de-375be012",
+    "duration_min": 18,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:3448391_109"
+    ]
+  },
+  {
+    "from_city_id": "hannover-de-500deaa5",
     "to_city_id": "stendal-de-62273dbf",
     "duration_min": 60,
     "service_kind": "rail",
@@ -169550,6 +169122,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7137720_101"
+    ]
+  },
+  {
+    "from_city_id": "hannover-de-500deaa5",
+    "to_city_id": "weetzen-de-2199db96",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:3448388_109"
     ]
   },
   {
@@ -177065,24 +176649,13 @@
   {
     "from_city_id": "herbertingen-de-7b25baa2",
     "to_city_id": "riedlingen-de-6a7f7344",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-55-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "herbertingen-de-7b25baa2",
-    "to_city_id": "riedlingen-zob-de-d20353a0",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "ch-gtfs:91-55-A-j26-1",
       "de-delfi-gtfs:7137825_106"
     ]
   },
@@ -179140,7 +178713,7 @@
   },
   {
     "from_city_id": "hersbruck-r-pegnitz-de-24da5e78",
-    "to_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
+    "to_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "duration_min": 8,
     "service_kind": "rail",
     "service_class": "regional",
@@ -179905,13 +179478,14 @@
   {
     "from_city_id": "hettange-grande-fr-57323",
     "to_city_id": "bettembourg-lu-4235ba19",
-    "duration_min": 8,
+    "duration_min": 5,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
-    "source_confidence": 50,
+    "source_confidence": 60,
     "provenance": [
       "geometry:sncf-fr-rfn-lines",
+      "lu-atp-gtfs:301",
       "sncf-fr-gtfs:FR:Line::94da6970-1eba-4166-9d52-74771396d651:"
     ]
   },
@@ -179924,32 +179498,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6c285671-9f9c-44db-80ac-068653b4e95a:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "hettange-grande-gare-sncf-lu-961fbe85",
-    "to_city_id": "bettembourg-lu-4235ba19",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "lu-atp-gtfs:301"
-    ]
-  },
-  {
-    "from_city_id": "hettange-grande-gare-sncf-lu-961fbe85",
-    "to_city_id": "thionville-fr-57672",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "lu-atp-gtfs:301"
+      "geometry:sncf-fr-rfn-lines",
+      "lu-atp-gtfs:301",
+      "sncf-fr-gtfs:FR:Line::6c285671-9f9c-44db-80ac-068653b4e95a:"
     ]
   },
   {
@@ -180110,7 +179661,7 @@
   },
   {
     "from_city_id": "heudeber-danstedt-de-f1fc011b",
-    "to_city_id": "wernigerode-hbf-hsb-de-8cf55027",
+    "to_city_id": "wernigerode-de-7c3779e9",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -181675,7 +181226,7 @@
   },
   {
     "from_city_id": "hochdorf-de-d78ff507",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 11,
     "service_kind": "rail",
     "service_class": "regional",
@@ -185420,7 +184971,7 @@
     ]
   },
   {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "from_city_id": "horb-ch-8534d024",
     "to_city_id": "boblingen-de-2aa2c509",
     "duration_min": 24,
     "service_kind": "rail",
@@ -185432,7 +184983,7 @@
     ]
   },
   {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "from_city_id": "horb-ch-8534d024",
     "to_city_id": "bondorf-de-106c0014",
     "duration_min": 9,
     "service_kind": "rail",
@@ -185444,7 +184995,7 @@
     ]
   },
   {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "from_city_id": "horb-ch-8534d024",
     "to_city_id": "eutingen-im-gau-de-b9164085",
     "duration_min": 8,
     "service_kind": "rail",
@@ -185456,7 +185007,7 @@
     ]
   },
   {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "from_city_id": "horb-ch-8534d024",
     "to_city_id": "herrenberg-de-fdb525fc",
     "duration_min": 14,
     "service_kind": "rail",
@@ -185468,7 +185019,7 @@
     ]
   },
   {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "from_city_id": "horb-ch-8534d024",
     "to_city_id": "hochdorf-de-d78ff507",
     "duration_min": 11,
     "service_kind": "rail",
@@ -185477,42 +185028,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:2230823_106"
-    ]
-  },
-  {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
-    "to_city_id": "muhlen-de-97eeca50",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:4809396_106"
-    ]
-  },
-  {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
-    "to_city_id": "rottweil-de-2248175e",
-    "duration_min": 28,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137748_106"
-    ]
-  },
-  {
-    "from_city_id": "horb-bahnhof-zob-de-4c2bc70f",
-    "to_city_id": "sulz-neckar-de-d61a5f8c",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137748_106"
     ]
   },
   {
@@ -185525,6 +185040,42 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-6-N-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "horb-ch-8534d024",
+    "to_city_id": "muhlen-de-97eeca50",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:4809396_106"
+    ]
+  },
+  {
+    "from_city_id": "horb-ch-8534d024",
+    "to_city_id": "rottweil-de-2248175e",
+    "duration_min": 28,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7137748_106"
+    ]
+  },
+  {
+    "from_city_id": "horb-ch-8534d024",
+    "to_city_id": "sulz-neckar-de-d61a5f8c",
+    "duration_min": 9,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7137748_106"
     ]
   },
   {
@@ -189867,7 +189418,7 @@
   },
   {
     "from_city_id": "ilsenburg-de-e453f489",
-    "to_city_id": "wernigerode-hbf-hsb-de-8cf55027",
+    "to_city_id": "wernigerode-de-7c3779e9",
     "duration_min": 8,
     "service_kind": "rail",
     "service_class": "regional",
@@ -196556,8 +196107,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -196569,34 +196120,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "jouy-gare-routiere-zz-81dc6fbc",
-    "to_city_id": "la-villette-saint-prest-gare-routiere-zz-b5cf38cc",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "jouy-gare-routiere-zz-81dc6fbc",
-    "to_city_id": "saint-piat-gare-routiere-zz-a8325a6e",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -199155,18 +198680,6 @@
   },
   {
     "from_city_id": "kapfenberg-at-284354d3",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:1-S8-M-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "kapfenberg-at-284354d3",
     "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 5,
     "service_kind": "rail",
@@ -199174,6 +198687,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:1-S8-M-j26-1",
       "de-delfi-gtfs:162275_101"
     ]
   },
@@ -208209,66 +207723,6 @@
     ]
   },
   {
-    "from_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
-    "to_city_id": "andernach-de-51db3bd7",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:650370_106"
-    ]
-  },
-  {
-    "from_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
-    "to_city_id": "koblenz-de-758fbef3",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1464189_106"
-    ]
-  },
-  {
-    "from_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
-    "to_city_id": "koblenz-lutzel-bf-de-8d8fa6d8",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1464189_106"
-    ]
-  },
-  {
-    "from_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
-    "to_city_id": "mulheim-karlich-bf-de-946fbd5a",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162397_106"
-    ]
-  },
-  {
-    "from_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
-    "to_city_id": "neuwied-bf-de-ff8228cf",
-    "duration_min": 14,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:161883_106"
-    ]
-  },
-  {
     "from_city_id": "koblenz-de-1b9b881f",
     "to_city_id": "klingnau-ch-4b03eaf9",
     "duration_min": 2,
@@ -208333,13 +207787,14 @@
   {
     "from_city_id": "koblenz-de-758fbef3",
     "to_city_id": "andernach-de-51db3bd7",
-    "duration_min": 10,
+    "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:1449906_101"
+      "de-delfi-gtfs:1449906_101",
+      "de-delfi-gtfs:650370_106"
     ]
   },
   {
@@ -208440,18 +207895,6 @@
   },
   {
     "from_city_id": "koblenz-de-758fbef3",
-    "to_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137778_106"
-    ]
-  },
-  {
-    "from_city_id": "koblenz-de-758fbef3",
     "to_city_id": "koblenz-ehrenbreitstein-bf-de-a7af756e",
     "duration_min": 7,
     "service_kind": "rail",
@@ -208460,6 +207903,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:1464188_106"
+    ]
+  },
+  {
+    "from_city_id": "koblenz-de-758fbef3",
+    "to_city_id": "koblenz-lutzel-bf-de-8d8fa6d8",
+    "duration_min": 1,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:1464189_106"
     ]
   },
   {
@@ -208560,14 +208015,27 @@
   },
   {
     "from_city_id": "koblenz-de-758fbef3",
-    "to_city_id": "neuwied-bf-de-ff8228cf",
-    "duration_min": 20,
+    "to_city_id": "mulheim-karlich-bf-de-946fbd5a",
+    "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:1464188_106"
+      "de-delfi-gtfs:162397_106"
+    ]
+  },
+  {
+    "from_city_id": "koblenz-de-758fbef3",
+    "to_city_id": "neuwied-bf-de-ff8228cf",
+    "duration_min": 14,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:1464188_106",
+      "de-delfi-gtfs:161883_106"
     ]
   },
   {
@@ -208716,7 +208184,7 @@
   },
   {
     "from_city_id": "koblenz-lutzel-bf-de-8d8fa6d8",
-    "to_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
+    "to_city_id": "koblenz-de-758fbef3",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -218144,7 +217612,7 @@
   },
   {
     "from_city_id": "l-arbresle-fr-69010",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 40,
     "service_kind": "rail",
     "service_class": "regional",
@@ -225290,7 +224758,7 @@
   },
   {
     "from_city_id": "la-verpilliere-fr-38537",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 36,
     "service_kind": "rail",
     "service_class": "regional",
@@ -225530,8 +224998,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -225543,8 +225011,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -225555,32 +225023,6 @@
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "la-villette-saint-prest-gare-routiere-zz-b5cf38cc",
-    "to_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "la-villette-saint-prest-gare-routiere-zz-b5cf38cc",
-    "to_city_id": "jouy-gare-routiere-zz-81dc6fbc",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
       "geometry:sncf-fr-rfn-lines"
@@ -228210,7 +227652,7 @@
   },
   {
     "from_city_id": "lancy-pont-rouge-zz-e0f8289c",
-    "to_city_id": "geneve-aeroport-zz-41b38f91",
+    "to_city_id": "geneve-ch-aaf44349",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -233585,6 +233027,18 @@
   },
   {
     "from_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
+    "to_city_id": "hersbruck-r-pegnitz-de-24da5e78",
+    "duration_min": 7,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2230852_106"
+    ]
+  },
+  {
+    "from_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "to_city_id": "lauf-west-de-097b8a17",
     "duration_min": 1,
     "service_kind": "rail",
@@ -233597,14 +233051,39 @@
   },
   {
     "from_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
-    "to_city_id": "nurnberg-de-3a136409",
-    "duration_min": 12,
+    "to_city_id": "ludwigshohe-de-b1d9d128",
+    "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:2230812_106"
+      "de-delfi-gtfs:2230853_106"
+    ]
+  },
+  {
+    "from_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
+    "to_city_id": "neunkirchen-am-sand-de-537dc9bc",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2230853_106"
+    ]
+  },
+  {
+    "from_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
+    "to_city_id": "nurnberg-de-3a136409",
+    "duration_min": 8,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2230812_106",
+      "de-delfi-gtfs:2230853_106"
     ]
   },
   {
@@ -233620,55 +233099,7 @@
     ]
   },
   {
-    "from_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
-    "to_city_id": "hersbruck-r-pegnitz-de-24da5e78",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230852_106"
-    ]
-  },
-  {
-    "from_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
-    "to_city_id": "ludwigshohe-de-b1d9d128",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230853_106"
-    ]
-  },
-  {
-    "from_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
-    "to_city_id": "neunkirchen-am-sand-de-537dc9bc",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230853_106"
-    ]
-  },
-  {
-    "from_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
-    "to_city_id": "nurnberg-de-3a136409",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230853_106"
-    ]
-  },
-  {
-    "from_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
+    "from_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "to_city_id": "ruckersdorf-mittelfr-de-b3c4159c",
     "duration_min": 3,
     "service_kind": "rail",
@@ -234185,7 +233616,7 @@
   },
   {
     "from_city_id": "laupheim-de-f521e33d",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
+    "to_city_id": "biberach-de-b8717557",
     "duration_min": 8,
     "service_kind": "rail",
     "service_class": "regional",
@@ -236571,6 +236002,32 @@
   },
   {
     "from_city_id": "le-creusot-fr-71153",
+    "to_city_id": "lyon-fr-69123",
+    "duration_min": 37,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::5B76AFB9-244D-4AC6-9720-8142DC7F6A91:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "le-creusot-fr-71153",
+    "to_city_id": "macon-fr-71270",
+    "duration_min": 18,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::BAF1DE9A-72EC-4064-8BE9-C4EFF292CB6A:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "le-creusot-fr-71153",
     "to_city_id": "marmagne-sous-creusot-fr-71282",
     "duration_min": 6,
     "service_kind": "rail",
@@ -236585,6 +236042,19 @@
   },
   {
     "from_city_id": "le-creusot-fr-71153",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
+    "duration_min": 72,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::58E6B1CC-5FD9-4B7D-93CA-05062BA23E9C:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "le-creusot-fr-71153",
     "to_city_id": "montchanin-fr-71310",
     "duration_min": 5,
     "service_kind": "rail",
@@ -236595,6 +236065,19 @@
       "ch-gtfs:91-K6-A-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::1168BA7A-658F-406C-8925-11B53602684E:"
+    ]
+  },
+  {
+    "from_city_id": "le-creusot-fr-71153",
+    "to_city_id": "paris-fr-75056",
+    "duration_min": 80,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::8EDA0FF6-311A-4C83-8C18-63D890856B43:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -236635,7 +236118,7 @@
   },
   {
     "from_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 69,
     "service_kind": "rail",
     "service_class": "regional",
@@ -236667,58 +236150,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-601-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "le-creusot-tgv-fr-71187",
-    "to_city_id": "lyon-fr-69123",
-    "duration_min": 37,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::5B76AFB9-244D-4AC6-9720-8142DC7F6A91:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "le-creusot-tgv-fr-71187",
-    "to_city_id": "macon-fr-71270",
-    "duration_min": 18,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BAF1DE9A-72EC-4064-8BE9-C4EFF292CB6A:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "le-creusot-tgv-fr-71187",
-    "to_city_id": "marne-la-vallee-chessy-fr-77111",
-    "duration_min": 72,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::58E6B1CC-5FD9-4B7D-93CA-05062BA23E9C:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "le-creusot-tgv-fr-71187",
-    "to_city_id": "paris-fr-75056",
-    "duration_min": 80,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::8EDA0FF6-311A-4C83-8C18-63D890856B43:",
-      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -237573,7 +237004,7 @@
   },
   {
     "from_city_id": "le-mans-fr-72181",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 165,
     "service_kind": "rail",
     "service_class": "regional",
@@ -238151,7 +237582,7 @@
   },
   {
     "from_city_id": "le-peage-de-roussillon-fr-38298",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 26,
     "service_kind": "rail",
     "service_class": "regional",
@@ -238988,7 +238419,7 @@
   },
   {
     "from_city_id": "le-teil-ch-7c1327e4",
-    "to_city_id": "montelimar-gare-routiere-zz-4860fea9",
+    "to_city_id": "montelimar-fr-26198",
     "duration_min": 10,
     "service_kind": "rail",
     "service_class": "regional",
@@ -239013,7 +238444,7 @@
   },
   {
     "from_city_id": "le-teil-ch-7c1327e4",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 35,
     "service_kind": "rail",
     "service_class": "regional",
@@ -241864,7 +241295,7 @@
   },
   {
     "from_city_id": "leoben-at-de059f80",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 10,
     "service_kind": "rail",
     "service_class": "regional",
@@ -242901,8 +242332,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::10F46E5D-89F3-4F87-8660-54AECA5D3A62:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:"
     ]
   },
   {
@@ -242927,7 +242359,20 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:"
+    ]
+  },
+  {
+    "from_city_id": "les-aubrais-fr-45147",
+    "to_city_id": "gien-fr-45155",
+    "duration_min": 70,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::76213942-0D07-48A2-9108-99253D13D093:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -242978,6 +242423,20 @@
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 100,
+    "provenance": [
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
+      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:"
+    ]
+  },
+  {
+    "from_city_id": "les-aubrais-fr-45147",
+    "to_city_id": "paris-austerlitz-routiere-zz-6b835d00",
+    "duration_min": 120,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
       "geometry:sncf-fr-rfn-lines"
@@ -243070,8 +242529,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:"
     ]
   },
   {
@@ -243084,84 +242543,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::276892b7-b6aa-4a9b-a989-62f4abea526b:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "to_city_id": "blois-chambord-fr-41018",
-    "duration_min": 80,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "to_city_id": "cercottes-fr-45062",
-    "duration_min": 15,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "to_city_id": "gien-fr-45155",
-    "duration_min": 70,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::76213942-0D07-48A2-9108-99253D13D093:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "to_city_id": "orleans-fr-45234",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "to_city_id": "paris-austerlitz-routiere-zz-6b835d00",
-    "duration_min": 120,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "to_city_id": "toury-fr-28391",
-    "duration_min": 40,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -248227,7 +247608,7 @@
     ]
   },
   {
-    "from_city_id": "liezen-bahnhof-1-at-d34d717d",
+    "from_city_id": "liezen-de-77cec8ec",
     "to_city_id": "selzthal-at-1081882e",
     "duration_min": 5,
     "service_kind": "rail",
@@ -248235,11 +247616,12 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "at-oebb-gtfs:3-R9-S-j26-1"
+      "at-oebb-gtfs:3-R9-S-j26-1",
+      "de-delfi-gtfs:162263_102"
     ]
   },
   {
-    "from_city_id": "liezen-bahnhof-1-at-d34d717d",
+    "from_city_id": "liezen-de-77cec8ec",
     "to_city_id": "stainach-irdning-at-0b1f78e9",
     "duration_min": 9,
     "service_kind": "rail",
@@ -248247,11 +247629,12 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "at-oebb-gtfs:3-R9-S-j26-1"
+      "at-oebb-gtfs:3-R9-S-j26-1",
+      "de-delfi-gtfs:162263_102"
     ]
   },
   {
-    "from_city_id": "liezen-bahnhof-1-at-d34d717d",
+    "from_city_id": "liezen-de-77cec8ec",
     "to_city_id": "worschach-schwefelbad-at-9f31a1e1",
     "duration_min": 6,
     "service_kind": "rail",
@@ -248260,30 +247643,6 @@
     "source_confidence": 60,
     "provenance": [
       "at-oebb-gtfs:2-R70-O-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "liezen-de-77cec8ec",
-    "to_city_id": "selzthal-at-1081882e",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162263_102"
-    ]
-  },
-  {
-    "from_city_id": "liezen-de-77cec8ec",
-    "to_city_id": "stainach-irdning-at-0b1f78e9",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162263_102"
     ]
   },
   {
@@ -251036,7 +250395,7 @@
   },
   {
     "from_city_id": "livron-fr-26165",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
@@ -257566,18 +256925,6 @@
   },
   {
     "from_city_id": "ludwigshafen-bodensee-de-0b4c3122",
-    "to_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2282288_106"
-    ]
-  },
-  {
-    "from_city_id": "ludwigshafen-bodensee-de-0b4c3122",
     "to_city_id": "uberlingen-ch-ddfd0b4b",
     "duration_min": 10,
     "service_kind": "rail",
@@ -257585,7 +256932,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-3-N-j26-1"
+      "ch-gtfs:91-3-N-j26-1",
+      "de-delfi-gtfs:2282288_106"
     ]
   },
   {
@@ -257734,7 +257082,7 @@
   },
   {
     "from_city_id": "ludwigshohe-de-b1d9d128",
-    "to_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
+    "to_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -260938,20 +260286,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::D1E5AD07-58C1-456A-B4E2-928E91061B0B:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "lyon-fr-69123",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 139,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-E-j26-1"
+      "ch-gtfs:91-631-E-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::D1E5AD07-58C1-456A-B4E2-928E91061B0B:"
     ]
   },
   {
@@ -261275,19 +260612,7 @@
   },
   {
     "from_city_id": "lyon-fr-69123",
-    "to_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
-    "duration_min": 38,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-601-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "lyon-fr-69123",
-    "to_city_id": "le-creusot-tgv-fr-71187",
+    "to_city_id": "le-creusot-fr-71153",
     "duration_min": 38,
     "service_kind": "rail",
     "service_class": "regional",
@@ -261296,6 +260621,18 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::58E6B1CC-5FD9-4B7D-93CA-05062BA23E9C:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "lyon-fr-69123",
+    "to_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
+    "duration_min": 38,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-601-A-j26-1"
     ]
   },
   {
@@ -261405,26 +260742,15 @@
   {
     "from_city_id": "lyon-fr-69123",
     "to_city_id": "marne-la-vallee-chessy-fr-77111",
-    "duration_min": 105,
+    "duration_min": 103,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "lyon-fr-69123",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "duration_min": 103,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-601-A-j26-1"
+      "ch-gtfs:91-601-A-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:"
     ]
   },
   {
@@ -261660,18 +260986,6 @@
   },
   {
     "from_city_id": "lyon-fr-69123",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 54,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "lyon-fr-69123",
     "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 33,
     "service_kind": "rail",
@@ -261680,6 +260994,7 @@
     "source_confidence": 100,
     "provenance": [
       "ch-gtfs:91-41G-j26-1",
+      "ch-gtfs:91-631-B-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3544567F-7F17-4253-85BB-D1E6A7B27A9A:"
     ]
@@ -261737,7 +261052,20 @@
   },
   {
     "from_city_id": "lyon-part-dieu-de-cfdacf42",
-    "to_city_id": "avignon-tgv-de-bcfe06ca",
+    "to_city_id": "aix-les-bains-le-revard-fr-73008",
+    "duration_min": 87,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::6F1D7ABC-B729-498A-B3BD-DE55587C60E2:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
+    "to_city_id": "avignon-fr-84007",
     "duration_min": 63,
     "service_kind": "rail",
     "service_class": "regional",
@@ -261773,31 +261101,6 @@
   },
   {
     "from_city_id": "lyon-part-dieu-de-cfdacf42",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 33,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:8730371801AV016"
-    ]
-  },
-  {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
-    "to_city_id": "aix-les-bains-le-revard-fr-73008",
-    "duration_min": 87,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::6F1D7ABC-B729-498A-B3BD-DE55587C60E2:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
     "to_city_id": "chambery-challes-les-eaux-fr-73065",
     "duration_min": 90,
     "service_kind": "rail",
@@ -261810,7 +261113,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "givors-fr-69091",
     "duration_min": 36,
     "service_kind": "rail",
@@ -261823,7 +261126,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "grenoble-fr-38185",
     "duration_min": 85,
     "service_kind": "rail",
@@ -261836,7 +261139,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "l-arbresle-fr-69010",
     "duration_min": 40,
     "service_kind": "rail",
@@ -261849,7 +261152,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "la-pelletiere-crepieux-la-pape-arret-tcl-zz-299e673a",
     "duration_min": 20,
     "service_kind": "rail",
@@ -261862,7 +261165,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "la-verpilliere-fr-38537",
     "duration_min": 32,
     "service_kind": "rail",
@@ -261875,7 +261178,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "montluel-fr-01262",
     "duration_min": 28,
     "service_kind": "rail",
@@ -261888,7 +261191,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "pringy-fr-74010",
     "duration_min": 111,
     "service_kind": "rail",
@@ -261901,7 +261204,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "saint-andre-de-corcy-fr-01333",
     "duration_min": 30,
     "service_kind": "rail",
@@ -261914,7 +261217,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "saint-germain-au-mont-d-or-fr-69207",
     "duration_min": 40,
     "service_kind": "rail",
@@ -261927,7 +261230,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "saint-quentin-fallavier-fr-38449",
     "duration_min": 45,
     "service_kind": "rail",
@@ -261940,7 +261243,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "st-etienne-chatcrx-g-routiere-zz-30a6e029",
     "duration_min": 60,
     "service_kind": "rail",
@@ -261953,8 +261256,20 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
-    "to_city_id": "vienne-gare-routiere-zz-e2ec54b5",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "duration_min": 33,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-mainline-gtfs:8730371801AV016"
+    ]
+  },
+  {
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
+    "to_city_id": "vienne-ch-66fb81d1",
     "duration_min": 45,
     "service_kind": "rail",
     "service_class": "regional",
@@ -261966,7 +261281,7 @@
     ]
   },
   {
-    "from_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "villefranche-sur-saone-fr-69264",
     "duration_min": 40,
     "service_kind": "rail",
@@ -262029,7 +261344,7 @@
   },
   {
     "from_city_id": "lyon-saint-ch-766bd2e4",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 102,
     "service_kind": "rail",
     "service_class": "regional",
@@ -262049,18 +261364,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-621-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "lyon-saint-ch-766bd2e4",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 27,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-D-j26-1"
     ]
   },
   {
@@ -262940,7 +262243,7 @@
   },
   {
     "from_city_id": "macon-fr-71270",
-    "to_city_id": "le-creusot-tgv-fr-71187",
+    "to_city_id": "le-creusot-fr-71153",
     "duration_min": 19,
     "service_kind": "rail",
     "service_class": "regional",
@@ -263082,7 +262385,7 @@
   },
   {
     "from_city_id": "macon-loche-tgv-ch-a1b387bc",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 84,
     "service_kind": "rail",
     "service_class": "regional",
@@ -264824,8 +264127,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::9F945086-5773-42EF-92D0-CCD63F7C134E:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -264837,8 +264141,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -264863,47 +264167,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "maintenon-gare-routiere-zz-15a7f9e7",
-    "to_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
-    "duration_min": 34,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "maintenon-gare-routiere-zz-15a7f9e7",
-    "to_city_id": "epernon-gare-routiere-zz-513cb050",
-    "duration_min": 17,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "maintenon-gare-routiere-zz-15a7f9e7",
-    "to_city_id": "saint-piat-gare-routiere-zz-a8325a6e",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -270398,6 +269663,18 @@
   },
   {
     "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "aeroport-charles-de-gaulle-tgv-ch-1a02ffe0",
+    "duration_min": 10,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-61A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
     "to_city_id": "aix-en-provence-fr-13001",
     "duration_min": 176,
     "service_kind": "rail",
@@ -270424,6 +269701,30 @@
   },
   {
     "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "bourg-en-bresse-fr-01053",
+    "duration_min": 103,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-622-E-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "chambery-challes-les-eaux-fr-73065",
+    "duration_min": 170,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-1G-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
     "to_city_id": "champagne-ardenne-tgv-fr-51058",
     "duration_min": 29,
     "service_kind": "rail",
@@ -270431,8 +269732,21 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6D267C2D-7D54-4578-9380-B2C7C75C7010:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-61C-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::6D267C2D-7D54-4578-9380-B2C7C75C7010:"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "dijon-fr-21231",
+    "duration_min": 82,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-611-B-j26-1"
     ]
   },
   {
@@ -270450,15 +269764,52 @@
   },
   {
     "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
+    "duration_min": 71,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-601-A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "le-mans-fr-72181",
+    "duration_min": 170,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-61A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
     "to_city_id": "lyon-fr-69123",
-    "duration_min": 105,
+    "duration_min": 104,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-1B-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "lyon-saint-ch-766bd2e4",
+    "duration_min": 104,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-621-A-j26-1"
     ]
   },
   {
@@ -270476,6 +269827,18 @@
   },
   {
     "from_city_id": "marne-la-vallee-chessy-fr-77111",
+    "to_city_id": "macon-loche-tgv-ch-a1b387bc",
+    "duration_min": 84,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-621-B-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
     "to_city_id": "massy-fr-91377",
     "duration_min": 28,
     "service_kind": "rail",
@@ -270483,8 +269846,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F74CC5B5-2F44-4A9F-8336-69F30A4DEC89:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-61C-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F74CC5B5-2F44-4A9F-8336-69F30A4DEC89:"
     ]
   },
   {
@@ -270501,139 +269865,7 @@
     ]
   },
   {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "aeroport-charles-de-gaulle-tgv-ch-1a02ffe0",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-61A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "bourg-en-bresse-fr-01053",
-    "duration_min": 103,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-622-E-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "chambery-challes-les-eaux-fr-73065",
-    "duration_min": 170,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-1G-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "champagne-ardenne-tgv-fr-51058",
-    "duration_min": 29,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-61C-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "dijon-fr-21231",
-    "duration_min": 82,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-611-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
-    "duration_min": 71,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-601-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "le-mans-fr-72181",
-    "duration_min": 170,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-61A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "lyon-fr-69123",
-    "duration_min": 104,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-1B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "lyon-saint-ch-766bd2e4",
-    "duration_min": 104,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-621-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "macon-loche-tgv-ch-a1b387bc",
-    "duration_min": 84,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-621-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "to_city_id": "massy-fr-91377",
-    "duration_min": 28,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-61C-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
     "to_city_id": "st-pierre-des-corps-ch-36bc8ebd",
     "duration_min": 122,
     "service_kind": "rail",
@@ -270645,7 +269877,7 @@
     ]
   },
   {
-    "from_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "from_city_id": "marne-la-vallee-chessy-fr-77111",
     "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 126,
     "service_kind": "rail",
@@ -271122,20 +270354,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::BAF1DE9A-72EC-4064-8BE9-C4EFF292CB6A:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "marseille-fr-13055",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-41F-j26-1"
+      "ch-gtfs:91-41F-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::BAF1DE9A-72EC-4064-8BE9-C4EFF292CB6A:"
     ]
   },
   {
@@ -271338,18 +270559,6 @@
   },
   {
     "from_city_id": "marseille-fr-13055",
-    "to_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "duration_min": 14,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "marseille-fr-13055",
     "to_city_id": "vitrolles-aeroport-marseille-p-fr-13117",
     "duration_min": 13,
     "service_kind": "rail",
@@ -271357,8 +270566,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::7B48FDEF-35FE-45ED-BA4D-A638BCE7E21A:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K14-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::7B48FDEF-35FE-45ED-BA4D-A638BCE7E21A:"
     ]
   },
   {
@@ -271370,19 +270580,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:162327_101",
       "es-renfe-mainline-gtfs:8708960000AV016"
-    ]
-  },
-  {
-    "from_city_id": "marseille-st-charles-de-f43cde94",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 11,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162327_101"
     ]
   },
   {
@@ -272706,20 +271905,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F74CC5B5-2F44-4A9F-8336-69F30A4DEC89:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "massy-fr-91377",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
-    "duration_min": 28,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-61B-j26-1"
+      "ch-gtfs:91-61B-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F74CC5B5-2F44-4A9F-8336-69F30A4DEC89:"
     ]
   },
   {
@@ -282580,18 +281768,6 @@
   },
   {
     "from_city_id": "miramas-fr-13063",
-    "to_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "duration_min": 15,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "miramas-fr-13063",
     "to_city_id": "vitrolles-aeroport-marseille-p-fr-13117",
     "duration_min": 15,
     "service_kind": "rail",
@@ -282599,8 +281775,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C333995A-51A2-4A1C-ABC7-55A7460AB17B:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K14-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::C333995A-51A2-4A1C-ABC7-55A7460AB17B:"
     ]
   },
   {
@@ -286447,7 +285624,7 @@
   },
   {
     "from_city_id": "montbard-fr-21425",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 52,
     "service_kind": "rail",
     "service_class": "regional",
@@ -287179,6 +286356,19 @@
   },
   {
     "from_city_id": "montelimar-fr-26198",
+    "to_city_id": "le-teil-ch-7c1327e4",
+    "duration_min": 10,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::5CE372B6-CE7D-4780-B4F8-F5979FED5405:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "montelimar-fr-26198",
     "to_city_id": "loriol-fr-26166",
     "duration_min": 11,
     "service_kind": "rail",
@@ -287216,6 +286406,7 @@
     "provenance": [
       "ch-gtfs:91-K4-A-j26-1",
       "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::C333995A-51A2-4A1C-ABC7-55A7460AB17B:",
       "sncf-fr-gtfs:FR:Line::F28D551A-A369-44D2-A99B-0E546CDBEC87:"
     ]
   },
@@ -287246,7 +286437,7 @@
   },
   {
     "from_city_id": "montelimar-fr-26198",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 20,
     "service_kind": "rail",
     "service_class": "regional",
@@ -287266,32 +286457,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::5CE372B6-CE7D-4780-B4F8-F5979FED5405:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "montelimar-gare-routiere-zz-4860fea9",
-    "to_city_id": "le-teil-ch-7c1327e4",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::5CE372B6-CE7D-4780-B4F8-F5979FED5405:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "montelimar-gare-routiere-zz-4860fea9",
-    "to_city_id": "pierrelatte-fr-26235",
-    "duration_min": 30,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::C333995A-51A2-4A1C-ABC7-55A7460AB17B:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -288056,7 +287221,7 @@
   },
   {
     "from_city_id": "montluel-fr-01262",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 36,
     "service_kind": "rail",
     "service_class": "regional",
@@ -288423,7 +287588,7 @@
   },
   {
     "from_city_id": "montpellier-fr-34172",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 91,
     "service_kind": "rail",
     "service_class": "regional",
@@ -293070,7 +292235,7 @@
   },
   {
     "from_city_id": "muhlen-de-97eeca50",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -293793,7 +292958,7 @@
   },
   {
     "from_city_id": "mulheim-karlich-bf-de-946fbd5a",
-    "to_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
+    "to_city_id": "koblenz-de-758fbef3",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -295587,18 +294752,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-55-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "munderkingen-de-5bc1fa18",
-    "to_city_id": "riedlingen-zob-de-d20353a0",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
+      "ch-gtfs:91-55-B-j26-1",
       "de-delfi-gtfs:2230768_106"
     ]
   },
@@ -297436,18 +296590,6 @@
   },
   {
     "from_city_id": "murzzuschlag-at-b23fb3ef",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
-    "duration_min": 27,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-A12-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "murzzuschlag-at-b23fb3ef",
     "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 25,
     "service_kind": "rail",
@@ -297455,6 +296597,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:12-A12-j26-1",
       "de-delfi-gtfs:6627546_102"
     ]
   },
@@ -305313,7 +304456,7 @@
   },
   {
     "from_city_id": "neunkirchen-am-sand-de-537dc9bc",
-    "to_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
+    "to_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -307072,26 +306215,15 @@
   },
   {
     "from_city_id": "neuwied-bf-de-ff8228cf",
-    "to_city_id": "koblenz-bahnhof-stadtmitte-lohr-center-de-73ff8b0e",
+    "to_city_id": "koblenz-de-758fbef3",
     "duration_min": 12,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:1464188_106",
       "de-delfi-gtfs:7133525_2"
-    ]
-  },
-  {
-    "from_city_id": "neuwied-bf-de-ff8228cf",
-    "to_city_id": "koblenz-de-758fbef3",
-    "duration_min": 21,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1464188_106"
     ]
   },
   {
@@ -310091,7 +309223,7 @@
   },
   {
     "from_city_id": "niklasdorf-bahnhof-2-at-f7284466",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -310248,7 +309380,7 @@
   },
   {
     "from_city_id": "nimes-ch-aa8440b6",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 42,
     "service_kind": "rail",
     "service_class": "regional",
@@ -310257,18 +309389,6 @@
     "provenance": [
       "ch-gtfs:91-71B-j26-1",
       "es-renfe-mainline-gtfs:7180187303AV016"
-    ]
-  },
-  {
-    "from_city_id": "nimes-ch-aa8440b6",
-    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
-    "duration_min": 42,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-71B-j26-1"
     ]
   },
   {
@@ -310353,18 +309473,6 @@
   },
   {
     "from_city_id": "nimes-pont-du-gard-fr-30155",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 56,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-81B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "nimes-pont-du-gard-fr-30155",
     "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 36,
     "service_kind": "rail",
@@ -310373,6 +309481,7 @@
     "source_confidence": 100,
     "provenance": [
       "ch-gtfs:91-631-C-j26-1",
+      "ch-gtfs:91-81B-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::8EDA0FF6-311A-4C83-8C18-63D890856B43:"
     ]
@@ -313775,7 +312884,7 @@
   },
   {
     "from_city_id": "nurnberg-de-3a136409",
-    "to_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
+    "to_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "duration_min": 8,
     "service_kind": "rail",
     "service_class": "regional",
@@ -314208,7 +313317,7 @@
   },
   {
     "from_city_id": "nussdorf-de-721b9d4e",
-    "to_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
+    "to_city_id": "uberlingen-ch-ddfd0b4b",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -323141,21 +322250,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "orleans-fr-45234",
-    "to_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
-    "duration_min": 15,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::89BD9468-3499-4B6B-B3CB-50073CDD3F95:"
     ]
   },
   {
@@ -329140,7 +328237,7 @@
   },
   {
     "from_city_id": "paris-austerlitz-routiere-zz-6b835d00",
-    "to_city_id": "les-aubrais-gare-routiere-zz-70d563ce",
+    "to_city_id": "les-aubrais-fr-45147",
     "duration_min": 120,
     "service_kind": "rail",
     "service_class": "regional",
@@ -329845,19 +328942,7 @@
   },
   {
     "from_city_id": "paris-fr-75056",
-    "to_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
-    "duration_min": 76,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-601-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "paris-fr-75056",
-    "to_city_id": "le-creusot-tgv-fr-71187",
+    "to_city_id": "le-creusot-fr-71153",
     "duration_min": 76,
     "service_kind": "rail",
     "service_class": "regional",
@@ -329866,6 +328951,18 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::5B76AFB9-244D-4AC6-9720-8142DC7F6A91:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "paris-fr-75056",
+    "to_city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
+    "duration_min": 76,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-601-A-j26-1"
     ]
   },
   {
@@ -330542,18 +329639,6 @@
   },
   {
     "from_city_id": "paris-fr-75056",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 143,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-D-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "paris-fr-75056",
     "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 129,
     "service_kind": "rail",
@@ -330562,6 +329647,7 @@
     "source_confidence": 100,
     "provenance": [
       "ch-gtfs:91-631-C-j26-1",
+      "ch-gtfs:91-631-D-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::8EDA0FF6-311A-4C83-8C18-63D890856B43:"
     ]
@@ -330673,7 +329759,7 @@
   },
   {
     "from_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
-    "to_city_id": "chartres-gare-rue-nicole-zz-9bdd0564",
+    "to_city_id": "chartres-fr-28085",
     "duration_min": 100,
     "service_kind": "rail",
     "service_class": "regional",
@@ -330686,7 +329772,7 @@
   },
   {
     "from_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
-    "to_city_id": "epernon-gare-routiere-zz-513cb050",
+    "to_city_id": "epernon-fr-28140",
     "duration_min": 76,
     "service_kind": "rail",
     "service_class": "regional",
@@ -331071,18 +330157,6 @@
   },
   {
     "from_city_id": "pas-des-lanciers-fr-13054",
-    "to_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K34-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "pas-des-lanciers-fr-13054",
     "to_city_id": "vitrolles-aeroport-marseille-p-fr-13117",
     "duration_min": 3,
     "service_kind": "rail",
@@ -331090,8 +330164,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K34-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:"
     ]
   },
   {
@@ -331709,18 +330784,6 @@
   },
   {
     "from_city_id": "passau-de-36988e83",
-    "to_city_id": "scharding-bahnhof-1-at-c0dde88d",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:14-A98-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "passau-de-36988e83",
     "to_city_id": "scharding-de-597ee297",
     "duration_min": 10,
     "service_kind": "rail",
@@ -331728,6 +330791,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:14-A98-j26-1",
       "de-delfi-gtfs:162271_101"
     ]
   },
@@ -333689,6 +332753,19 @@
   },
   {
     "from_city_id": "perl-de-7a1d5271",
+    "to_city_id": "apach-eglise-zz-eedeb47a",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::596F07F3-98CE-401C-B7B8-7F9D83F663CD:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "perl-de-7a1d5271",
     "to_city_id": "apach-fr-57026",
     "duration_min": 2,
     "service_kind": "rail",
@@ -333738,19 +332815,6 @@
     ]
   },
   {
-    "from_city_id": "perl-gare-routiere-zz-73fa94ef",
-    "to_city_id": "apach-eglise-zz-eedeb47a",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::596F07F3-98CE-401C-B7B8-7F9D83F663CD:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "perlach-de-367742ad",
     "to_city_id": "giesing-de-a7d9339c",
     "duration_min": 3,
@@ -333772,18 +332836,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:6986950_109"
-    ]
-  },
-  {
-    "from_city_id": "perleberg-bahnhof-zob-de-ec18d92e",
-    "to_city_id": "perleberg-de-aff8e1d1",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:12070008|Bus|950:_106"
     ]
   },
   {
@@ -333820,18 +332872,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:de:VBB:12070424|R-Bahn|RE6:_106"
-    ]
-  },
-  {
-    "from_city_id": "perleberg-de-aff8e1d1",
-    "to_city_id": "perleberg-bahnhof-zob-de-ec18d92e",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:12070008|Bus|950:_106"
     ]
   },
   {
@@ -333932,7 +332972,7 @@
   },
   {
     "from_city_id": "pernegg-bahnhof-2-at-2f62ccbb",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -336225,20 +335265,8 @@
     "provenance": [
       "ch-gtfs:91-K14-j26-1",
       "geometry:sncf-fr-rfn-lines",
-      "sncf-fr-gtfs:FR:Line::C333995A-51A2-4A1C-ABC7-55A7460AB17B:"
-    ]
-  },
-  {
-    "from_city_id": "pierrelatte-fr-26235",
-    "to_city_id": "montelimar-gare-routiere-zz-4860fea9",
-    "duration_min": 30,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
       "sncf-fr-gtfs:FR:Line::5CE372B6-CE7D-4780-B4F8-F5979FED5405:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::C333995A-51A2-4A1C-ABC7-55A7460AB17B:"
     ]
   },
   {
@@ -338741,7 +337769,7 @@
   },
   {
     "from_city_id": "plochingen-de-685fcfb5",
-    "to_city_id": "reutlingen-hbf-d-ch-e58919f9",
+    "to_city_id": "reutlingen-de-9fae8136",
     "duration_min": 19,
     "service_kind": "rail",
     "service_class": "regional",
@@ -345399,7 +344427,7 @@
   },
   {
     "from_city_id": "pringy-fr-74010",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 112,
     "service_kind": "rail",
     "service_class": "regional",
@@ -349215,18 +348243,6 @@
   },
   {
     "from_city_id": "radolfzell-de-f368e8cf",
-    "to_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "duration_min": 22,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2282288_106"
-    ]
-  },
-  {
-    "from_city_id": "radolfzell-de-f368e8cf",
     "to_city_id": "uberlingen-ch-ddfd0b4b",
     "duration_min": 22,
     "service_kind": "rail",
@@ -349234,7 +348250,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-3-N-j26-1"
+      "ch-gtfs:91-3-N-j26-1",
+      "de-delfi-gtfs:2282288_106"
     ]
   },
   {
@@ -351566,7 +350583,7 @@
   },
   {
     "from_city_id": "ravensburg-de-b37f51b2",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
+    "to_city_id": "biberach-de-b8717557",
     "duration_min": 30,
     "service_kind": "rail",
     "service_class": "regional",
@@ -352049,18 +351066,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-55-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "rechtenstein-de-8fb4b440",
-    "to_city_id": "riedlingen-zob-de-d20353a0",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
+      "ch-gtfs:91-55-A-j26-1",
       "de-delfi-gtfs:7137825_106"
     ]
   },
@@ -356734,6 +355740,18 @@
   },
   {
     "from_city_id": "reutlingen-de-9fae8136",
+    "to_city_id": "esslingen-neckar-ch-08cd34f8",
+    "duration_min": 25,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-6-N-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "reutlingen-de-9fae8136",
     "to_city_id": "hauptbahnhof-de-f7f162ea",
     "duration_min": 40,
     "service_kind": "rail",
@@ -356770,6 +355788,18 @@
   },
   {
     "from_city_id": "reutlingen-de-9fae8136",
+    "to_city_id": "plochingen-de-685fcfb5",
+    "duration_min": 19,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-6-N-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "reutlingen-de-9fae8136",
     "to_city_id": "sondelfingen-de-07fb5550",
     "duration_min": 4,
     "service_kind": "rail",
@@ -356782,6 +355812,18 @@
   },
   {
     "from_city_id": "reutlingen-de-9fae8136",
+    "to_city_id": "stuttgart-at-2886ec31",
+    "duration_min": 40,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-6-N-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "reutlingen-de-9fae8136",
     "to_city_id": "tubingen-de-1b03e128",
     "duration_min": 8,
     "service_kind": "rail",
@@ -356789,6 +355831,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "ch-gtfs:91-6-N-j26-1",
       "de-delfi-gtfs:4809396_106"
     ]
   },
@@ -356802,54 +355845,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7137755_106"
-    ]
-  },
-  {
-    "from_city_id": "reutlingen-hbf-d-ch-e58919f9",
-    "to_city_id": "esslingen-neckar-ch-08cd34f8",
-    "duration_min": 25,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-6-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "reutlingen-hbf-d-ch-e58919f9",
-    "to_city_id": "plochingen-de-685fcfb5",
-    "duration_min": 19,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-6-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "reutlingen-hbf-d-ch-e58919f9",
-    "to_city_id": "stuttgart-at-2886ec31",
-    "duration_min": 40,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-6-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "reutlingen-hbf-d-ch-e58919f9",
-    "to_city_id": "tubingen-de-1b03e128",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-6-N-j26-1"
     ]
   },
   {
@@ -358633,65 +357628,18 @@
   {
     "from_city_id": "riedlingen-de-6a7f7344",
     "to_city_id": "herbertingen-de-7b25baa2",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-55-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "riedlingen-de-6a7f7344",
-    "to_city_id": "munderkingen-de-5bc1fa18",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-55-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "riedlingen-de-6a7f7344",
-    "to_city_id": "rechtenstein-de-8fb4b440",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-55-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "riedlingen-de-6a7f7344",
-    "to_city_id": "riedlingen-zob-de-d20353a0",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:ding.eu:20391_:_106"
-    ]
-  },
-  {
-    "from_city_id": "riedlingen-zob-de-d20353a0",
-    "to_city_id": "herbertingen-de-7b25baa2",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "ch-gtfs:91-55-B-j26-1",
       "de-delfi-gtfs:7137825_106"
     ]
   },
   {
-    "from_city_id": "riedlingen-zob-de-d20353a0",
+    "from_city_id": "riedlingen-de-6a7f7344",
     "to_city_id": "munderkingen-de-5bc1fa18",
     "duration_min": 12,
     "service_kind": "rail",
@@ -358699,11 +357647,12 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "ch-gtfs:91-55-B-j26-1",
       "de-delfi-gtfs:2230768_106"
     ]
   },
   {
-    "from_city_id": "riedlingen-zob-de-d20353a0",
+    "from_city_id": "riedlingen-de-6a7f7344",
     "to_city_id": "rechtenstein-de-8fb4b440",
     "duration_min": 7,
     "service_kind": "rail",
@@ -358711,19 +357660,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "ch-gtfs:91-55-A-j26-1",
       "de-delfi-gtfs:7137825_106"
-    ]
-  },
-  {
-    "from_city_id": "riedlingen-zob-de-d20353a0",
-    "to_city_id": "riedlingen-de-6a7f7344",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:ding.eu:20391_:_106"
     ]
   },
   {
@@ -361040,19 +359978,6 @@
     ]
   },
   {
-    "from_city_id": "roanne-gare-routiere-zz-89d4f1fc",
-    "to_city_id": "le-coteau-fr-42071",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::45E281C7-AC50-4A23-9B9F-F73234118E78:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "robledo-de-chavela-es-3f3507cd",
     "to_city_id": "santa-maria-de-la-alameda-peguerinos-es-c478defa",
     "duration_min": 5,
@@ -362262,18 +361187,6 @@
   },
   {
     "from_city_id": "rognac-fr-13081",
-    "to_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K34-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "rognac-fr-13081",
     "to_city_id": "vitrolles-aeroport-marseille-p-fr-13117",
     "duration_min": 3,
     "service_kind": "rail",
@@ -362281,8 +361194,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K34-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:"
     ]
   },
   {
@@ -362938,7 +361852,7 @@
   },
   {
     "from_city_id": "roma-stazione-di-roma-tiburtina-at-cbac6263",
-    "to_city_id": "bologna-stazione-di-bologna-centrale-at-b9bf2160",
+    "to_city_id": "bologna-centrale-ch-506dd8ee",
     "duration_min": 280,
     "service_kind": "rail",
     "service_class": "regional",
@@ -366886,7 +365800,7 @@
   },
   {
     "from_city_id": "rottweil-de-2248175e",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 27,
     "service_kind": "rail",
     "service_class": "regional",
@@ -367816,7 +366730,7 @@
   },
   {
     "from_city_id": "ruckersdorf-mittelfr-de-b3c4159c",
-    "to_city_id": "lauf-a-d-pegnitz-bahnhof-rechts-der-pegnitz-de-988dad7f",
+    "to_city_id": "lauf-a-d-pegnitz-bahnhof-links-der-pegnitz-de-7c4afe85",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -369781,30 +368695,6 @@
     ]
   },
   {
-    "from_city_id": "s-bahn-unten-at-3bca6a1e",
-    "to_city_id": "berlin-de-5b922f02",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-CZ3-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-bahn-unten-at-3bca6a1e",
-    "to_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
-    "duration_min": 148,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-CZ3-j26-1"
-    ]
-  },
-  {
     "from_city_id": "s-bernau-de-36398f5d",
     "to_city_id": "biesenthal-de-c5aec60b",
     "duration_min": 7,
@@ -370072,6 +368962,18 @@
   },
   {
     "from_city_id": "s-de-2feb1983",
+    "to_city_id": "berlin-de-5b922f02",
+    "duration_min": 5,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:12-CZ3-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "s-de-2feb1983",
     "to_city_id": "brandenburg-de-bf4d83b8",
     "duration_min": 17,
     "service_kind": "rail",
@@ -370116,6 +369018,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:de:VBB:11000000|R-Bahn|RE2:_106"
+    ]
+  },
+  {
+    "from_city_id": "s-de-2feb1983",
+    "to_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
+    "duration_min": 148,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:12-CZ3-j26-1"
     ]
   },
   {
@@ -374143,7 +373057,7 @@
   },
   {
     "from_city_id": "saint-andre-de-corcy-fr-01333",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 27,
     "service_kind": "rail",
     "service_class": "regional",
@@ -375665,20 +374579,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-K4-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "saint-clair-les-roches-fr-38378",
-    "to_city_id": "vienne-gare-routiere-zz-e2ec54b5",
-    "duration_min": 25,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::fa2002df-4eab-4035-87a0-4c030f916558:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K4-A-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::fa2002df-4eab-4035-87a0-4c030f916558:"
     ]
   },
   {
@@ -380018,7 +378921,7 @@
   },
   {
     "from_city_id": "saint-paul-de-varax-fr-01383",
-    "to_city_id": "bourg-en-bresse-gare-routiere-zz-8a84e631",
+    "to_city_id": "bourg-en-bresse-fr-01053",
     "duration_min": 18,
     "service_kind": "rail",
     "service_class": "regional",
@@ -380178,8 +379081,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -380191,34 +379094,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "saint-piat-gare-routiere-zz-a8325a6e",
-    "to_city_id": "jouy-gare-routiere-zz-81dc6fbc",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "saint-piat-gare-routiere-zz-a8325a6e",
-    "to_city_id": "maintenon-gare-routiere-zz-15a7f9e7",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -380997,7 +379874,7 @@
   },
   {
     "from_city_id": "saint-quentin-fallavier-fr-38449",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 45,
     "service_kind": "rail",
     "service_class": "regional",
@@ -383449,18 +382326,6 @@
   },
   {
     "from_city_id": "salem-de-be3682f7",
-    "to_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:5587130_106"
-    ]
-  },
-  {
-    "from_city_id": "salem-de-be3682f7",
     "to_city_id": "uberlingen-ch-ddfd0b4b",
     "duration_min": 10,
     "service_kind": "rail",
@@ -383468,7 +382333,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-3-N-j26-1"
+      "ch-gtfs:91-3-N-j26-1",
+      "de-delfi-gtfs:5587130_106"
     ]
   },
   {
@@ -391571,7 +390437,7 @@
     ]
   },
   {
-    "from_city_id": "scharding-bahnhof-1-at-c0dde88d",
+    "from_city_id": "scharding-de-597ee297",
     "to_city_id": "gopperding-at-abf8e15b",
     "duration_min": 4,
     "service_kind": "rail",
@@ -391583,54 +390449,6 @@
     ]
   },
   {
-    "from_city_id": "scharding-bahnhof-1-at-c0dde88d",
-    "to_city_id": "passau-de-36988e83",
-    "duration_min": 11,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:14-A98-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "scharding-bahnhof-1-at-c0dde88d",
-    "to_city_id": "taufkirchen-pram-at-31c2085b",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:3-R50-O-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "scharding-bahnhof-1-at-c0dde88d",
-    "to_city_id": "wels-at-d024281f",
-    "duration_min": 34,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:14-A98-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "scharding-bahnhof-1-at-c0dde88d",
-    "to_city_id": "wernstein-inn-at-0907fefa",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:3-R50-O-j26-1"
-    ]
-  },
-  {
     "from_city_id": "scharding-de-597ee297",
     "to_city_id": "passau-de-36988e83",
     "duration_min": 11,
@@ -391639,6 +390457,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:14-A98-j26-1",
       "de-delfi-gtfs:162271_101"
     ]
   },
@@ -391656,6 +390475,18 @@
   },
   {
     "from_city_id": "scharding-de-597ee297",
+    "to_city_id": "taufkirchen-pram-at-31c2085b",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:3-R50-O-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "scharding-de-597ee297",
     "to_city_id": "wels-at-d024281f",
     "duration_min": 34,
     "service_kind": "rail",
@@ -391663,6 +390494,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:14-A98-j26-1",
       "de-delfi-gtfs:162271_101"
     ]
   },
@@ -391676,6 +390508,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7058719_106"
+    ]
+  },
+  {
+    "from_city_id": "scharding-de-597ee297",
+    "to_city_id": "wernstein-inn-at-0907fefa",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:3-R50-O-j26-1"
     ]
   },
   {
@@ -392186,6 +391030,18 @@
   },
   {
     "from_city_id": "schemmerberg-de-fc4d4a92",
+    "to_city_id": "biberach-de-b8717557",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:2230753_106"
+    ]
+  },
+  {
+    "from_city_id": "schemmerberg-de-fc4d4a92",
     "to_city_id": "biberach-riss-ch-84744946",
     "duration_min": 7,
     "service_kind": "rail",
@@ -392194,18 +391050,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-3-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "schemmerberg-de-fc4d4a92",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230753_106"
     ]
   },
   {
@@ -397791,7 +396635,7 @@
   },
   {
     "from_city_id": "schwarzach-st-veit-at-194c6f62",
-    "to_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
+    "to_city_id": "bruck-fusch-de-bc74f662",
     "duration_min": 25,
     "service_kind": "rail",
     "service_class": "regional",
@@ -400427,30 +399271,6 @@
     ]
   },
   {
-    "from_city_id": "seegefeld-bahnhof-nord-de-0f9258cb",
-    "to_city_id": "falkensee-essener-str-de-9ac1273a",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:12063080|Bus|652:_106"
-    ]
-  },
-  {
-    "from_city_id": "seegefeld-bahnhof-nord-de-0f9258cb",
-    "to_city_id": "falkensee-nedlitzer-str-de-4ea38eb1",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:12063080|Bus|652:_106"
-    ]
-  },
-  {
     "from_city_id": "seegefeld-de-143c6b4a",
     "to_city_id": "berlin-de-5b922f02",
     "duration_min": 1,
@@ -400472,6 +399292,30 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7137771_106"
+    ]
+  },
+  {
+    "from_city_id": "seegefeld-de-143c6b4a",
+    "to_city_id": "falkensee-essener-str-de-9ac1273a",
+    "duration_min": 1,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:de:VBB:12063080|Bus|652:_106"
+    ]
+  },
+  {
+    "from_city_id": "seegefeld-de-143c6b4a",
+    "to_city_id": "falkensee-nedlitzer-str-de-4ea38eb1",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:de:VBB:12063080|Bus|652:_106"
     ]
   },
   {
@@ -401985,25 +400829,14 @@
   },
   {
     "from_city_id": "selzthal-at-1081882e",
-    "to_city_id": "liezen-bahnhof-1-at-d34d717d",
+    "to_city_id": "liezen-de-77cec8ec",
     "duration_min": 5,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "at-oebb-gtfs:2-R70-O-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "selzthal-at-1081882e",
-    "to_city_id": "liezen-de-77cec8ec",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
+      "at-oebb-gtfs:2-R70-O-j26-1",
       "de-delfi-gtfs:162263_102"
     ]
   },
@@ -403727,7 +402560,7 @@
   },
   {
     "from_city_id": "sev-at-2fb0f977",
-    "to_city_id": "bologna-stazione-di-bologna-centrale-at-b9bf2160",
+    "to_city_id": "bologna-centrale-ch-506dd8ee",
     "duration_min": 229,
     "service_kind": "rail",
     "service_class": "regional",
@@ -403751,7 +402584,7 @@
   },
   {
     "from_city_id": "sev-at-2fb0f977",
-    "to_city_id": "udine-stazione-at-87e3bc01",
+    "to_city_id": "udine-de-cc8958a1",
     "duration_min": 53,
     "service_kind": "rail",
     "service_class": "regional",
@@ -412047,7 +410880,7 @@
   },
   {
     "from_city_id": "springe-bahnhof-zob-de-375be012",
-    "to_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
+    "to_city_id": "hannover-de-500deaa5",
     "duration_min": 18,
     "service_kind": "rail",
     "service_class": "regional",
@@ -414919,7 +413752,7 @@
   },
   {
     "from_city_id": "st-pierre-des-corps-ch-36bc8ebd",
-    "to_city_id": "marne-la-vallee-chessy-tgv-ch-d83d2dc1",
+    "to_city_id": "marne-la-vallee-chessy-fr-77111",
     "duration_min": 126,
     "service_kind": "rail",
     "service_class": "regional",
@@ -416484,18 +415317,6 @@
   },
   {
     "from_city_id": "stainach-irdning-at-0b1f78e9",
-    "to_city_id": "liezen-bahnhof-1-at-d34d717d",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:13-A8-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "stainach-irdning-at-0b1f78e9",
     "to_city_id": "liezen-de-77cec8ec",
     "duration_min": 9,
     "service_kind": "rail",
@@ -416503,6 +415324,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:13-A8-j26-1",
       "de-delfi-gtfs:162263_102"
     ]
   },
@@ -422349,7 +421171,7 @@
   },
   {
     "from_city_id": "stuttgart-at-2886ec31",
-    "to_city_id": "reutlingen-hbf-d-ch-e58919f9",
+    "to_city_id": "reutlingen-de-9fae8136",
     "duration_min": 42,
     "service_kind": "rail",
     "service_class": "regional",
@@ -423072,7 +421894,7 @@
   },
   {
     "from_city_id": "sulz-neckar-de-d61a5f8c",
-    "to_city_id": "horb-bahnhof-zob-de-4c2bc70f",
+    "to_city_id": "horb-ch-8534d024",
     "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
@@ -424952,7 +423774,7 @@
   },
   {
     "from_city_id": "tain-l-hermitage-tournon-fr-26347",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
@@ -426676,7 +425498,7 @@
   },
   {
     "from_city_id": "taufkirchen-pram-at-31c2085b",
-    "to_city_id": "scharding-bahnhof-1-at-c0dde88d",
+    "to_city_id": "scharding-de-597ee297",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -426856,7 +425678,7 @@
   },
   {
     "from_city_id": "taxenbach-rauris-at-b7c6b6ea",
-    "to_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
+    "to_city_id": "bruck-fusch-de-bc74f662",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -429874,20 +428696,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6c285671-9f9c-44db-80ac-068653b4e95a:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "thionville-fr-57672",
-    "to_city_id": "hettange-grande-gare-sncf-lu-961fbe85",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "lu-atp-gtfs:301"
+      "geometry:sncf-fr-rfn-lines",
+      "lu-atp-gtfs:301",
+      "sncf-fr-gtfs:FR:Line::6c285671-9f9c-44db-80ac-068653b4e95a:"
     ]
   },
   {
@@ -433031,6 +431842,19 @@
   },
   {
     "from_city_id": "toul-fr-54528",
+    "to_city_id": "blenod-les-toul-les-naux-zz-d9a93961",
+    "duration_min": 12,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::9CA52441-6491-437C-8C8E-6342E00CAB42:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "toul-fr-54528",
     "to_city_id": "colombey-les-belles-mairie-zz-4a02c2dc",
     "duration_min": 16,
     "service_kind": "rail",
@@ -433127,45 +431951,6 @@
     ]
   },
   {
-    "from_city_id": "toul-fr-54528",
-    "to_city_id": "toul-gare-routiere-zz-f41723ac",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::9CA52441-6491-437C-8C8E-6342E00CAB42:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "toul-gare-routiere-zz-f41723ac",
-    "to_city_id": "blenod-les-toul-les-naux-zz-d9a93961",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::9CA52441-6491-437C-8C8E-6342E00CAB42:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "toul-gare-routiere-zz-f41723ac",
-    "to_city_id": "toul-fr-54528",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::9CA52441-6491-437C-8C8E-6342E00CAB42:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "toulon-fr-83137",
     "to_city_id": "aix-en-provence-fr-13001",
     "duration_min": 46,
@@ -433174,20 +431959,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::BAF1DE9A-72EC-4064-8BE9-C4EFF292CB6A:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "toulon-fr-83137",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 53,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-71A-j26-1"
+      "ch-gtfs:91-71A-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::BAF1DE9A-72EC-4064-8BE9-C4EFF292CB6A:"
     ]
   },
   {
@@ -436003,7 +434777,7 @@
   },
   {
     "from_city_id": "trieste-centrale-1-at-62611876",
-    "to_city_id": "udine-stazione-at-87e3bc01",
+    "to_city_id": "udine-de-cc8958a1",
     "duration_min": 62,
     "service_kind": "rail",
     "service_class": "regional",
@@ -437012,19 +435786,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "ch-gtfs:91-4L-Y-j26-1",
       "de-delfi-gtfs:4809396_106"
-    ]
-  },
-  {
-    "from_city_id": "tubingen-de-1b03e128",
-    "to_city_id": "reutlingen-hbf-d-ch-e58919f9",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-4L-Y-j26-1"
     ]
   },
   {
@@ -438671,7 +437434,7 @@
   },
   {
     "from_city_id": "uberl-bhf-therme-de-bab23cb9",
-    "to_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
+    "to_city_id": "uberlingen-ch-ddfd0b4b",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -438694,66 +437457,6 @@
     ]
   },
   {
-    "from_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "to_city_id": "nussdorf-de-721b9d4e",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:5587130_106"
-    ]
-  },
-  {
-    "from_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "to_city_id": "radolfzell-de-f368e8cf",
-    "duration_min": 20,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2282288_106"
-    ]
-  },
-  {
-    "from_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "to_city_id": "salem-de-be3682f7",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:5690016_106"
-    ]
-  },
-  {
-    "from_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "to_city_id": "uberl-bhf-therme-de-bab23cb9",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:6986853_106"
-    ]
-  },
-  {
-    "from_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "to_city_id": "uhldingen-muhlhofen-de-4df5d955",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2282288_106"
-    ]
-  },
-  {
     "from_city_id": "uberlingen-ch-ddfd0b4b",
     "to_city_id": "ludwigshafen-bodensee-de-0b4c3122",
     "duration_min": 8,
@@ -438767,6 +437470,18 @@
   },
   {
     "from_city_id": "uberlingen-ch-ddfd0b4b",
+    "to_city_id": "nussdorf-de-721b9d4e",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:5587130_106"
+    ]
+  },
+  {
+    "from_city_id": "uberlingen-ch-ddfd0b4b",
     "to_city_id": "radolfzell-de-f368e8cf",
     "duration_min": 20,
     "service_kind": "rail",
@@ -438774,7 +437489,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-3-N-j26-1"
+      "ch-gtfs:91-3-N-j26-1",
+      "de-delfi-gtfs:2282288_106"
     ]
   },
   {
@@ -438786,7 +437502,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-3-N-j26-1"
+      "ch-gtfs:91-3-N-j26-1",
+      "de-delfi-gtfs:5690016_106"
     ]
   },
   {
@@ -438803,6 +437520,18 @@
   },
   {
     "from_city_id": "uberlingen-ch-ddfd0b4b",
+    "to_city_id": "uberl-bhf-therme-de-bab23cb9",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:6986853_106"
+    ]
+  },
+  {
+    "from_city_id": "uberlingen-ch-ddfd0b4b",
     "to_city_id": "uhldingen-muhlhofen-de-4df5d955",
     "duration_min": 4,
     "service_kind": "rail",
@@ -438810,7 +437539,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-31-B-j26-1"
+      "ch-gtfs:91-31-B-j26-1",
+      "de-delfi-gtfs:2282288_106"
     ]
   },
   {
@@ -439123,18 +437853,6 @@
   },
   {
     "from_city_id": "udine-de-cc8958a1",
-    "to_city_id": "tarvisio-boscoverde-de-ce3c6dd9",
-    "duration_min": 63,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:232602_102"
-    ]
-  },
-  {
-    "from_city_id": "udine-stazione-at-87e3bc01",
     "to_city_id": "sev-at-2fb0f977",
     "duration_min": 57,
     "service_kind": "rail",
@@ -439146,7 +437864,19 @@
     ]
   },
   {
-    "from_city_id": "udine-stazione-at-87e3bc01",
+    "from_city_id": "udine-de-cc8958a1",
+    "to_city_id": "tarvisio-boscoverde-de-ce3c6dd9",
+    "duration_min": 63,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:232602_102"
+    ]
+  },
+  {
+    "from_city_id": "udine-de-cc8958a1",
     "to_city_id": "trieste-centrale-1-at-62611876",
     "duration_min": 62,
     "service_kind": "rail",
@@ -439158,7 +437888,7 @@
     ]
   },
   {
-    "from_city_id": "udine-stazione-at-87e3bc01",
+    "from_city_id": "udine-de-cc8958a1",
     "to_city_id": "venezia-at-92b8bce5",
     "duration_min": 118,
     "service_kind": "rail",
@@ -439652,18 +438382,6 @@
   },
   {
     "from_city_id": "uhldingen-muhlhofen-de-4df5d955",
-    "to_city_id": "uberlingen-busbahnhof-de-bf8aa7cf",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:6986853_106"
-    ]
-  },
-  {
-    "from_city_id": "uhldingen-muhlhofen-de-4df5d955",
     "to_city_id": "uberlingen-ch-ddfd0b4b",
     "duration_min": 4,
     "service_kind": "rail",
@@ -439671,7 +438389,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-31-B-j26-1"
+      "ch-gtfs:91-31-B-j26-1",
+      "de-delfi-gtfs:6986853_106"
     ]
   },
   {
@@ -440049,6 +438768,18 @@
   },
   {
     "from_city_id": "ulm-de-c2b2c311",
+    "to_city_id": "biberach-de-b8717557",
+    "duration_min": 19,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162319_101"
+    ]
+  },
+  {
+    "from_city_id": "ulm-de-c2b2c311",
     "to_city_id": "biberach-riss-ch-84744946",
     "duration_min": 20,
     "service_kind": "rail",
@@ -440057,18 +438788,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-3-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "ulm-de-c2b2c311",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
-    "duration_min": 19,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162319_101"
     ]
   },
   {
@@ -445629,199 +444348,6 @@
     ]
   },
   {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "aix-en-provence-tgv-ch-d352a627",
-    "duration_min": 83,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-E-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "avignon-fr-84007",
-    "duration_min": 50,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "le-peage-de-roussillon-fr-38298",
-    "duration_min": 26,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K4-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "le-teil-ch-7c1327e4",
-    "duration_min": 35,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "livron-fr-26165",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K34-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "lyon-fr-69123",
-    "duration_min": 55,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "lyon-part-dieu-de-cfdacf42",
-    "duration_min": 34,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:7180187303AV016"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "lyon-saint-ch-766bd2e4",
-    "duration_min": 29,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-D-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "marseille-fr-13055",
-    "duration_min": 110,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-E-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "montelimar-fr-26198",
-    "duration_min": 20,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K4-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "nimes-ch-aa8440b6",
-    "duration_min": 44,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-41G-j26-1",
-      "es-renfe-mainline-gtfs:8730371801AV016"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "nimes-pont-du-gard-fr-30155",
-    "duration_min": 54,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-C-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "paris-fr-75056",
-    "duration_min": 140,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-631-D-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "tain-l-hermitage-tournon-fr-26347",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K24-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-C11-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-ch-97c47f1e",
-    "to_city_id": "veynes-devoluy-fr-05179",
-    "duration_min": 122,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-P4-j26-1"
-    ]
-  },
-  {
     "from_city_id": "valence-d-agen-fr-82186",
     "to_city_id": "lamagistere-fr-82089",
     "duration_min": 3,
@@ -445848,29 +444374,15 @@
     ]
   },
   {
-    "from_city_id": "valence-gare-routiere-zz-90ef28a4",
-    "to_city_id": "montelimar-gare-routiere-zz-4860fea9",
-    "duration_min": 50,
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "aix-en-provence-fr-13001",
+    "duration_min": 83,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
-    "source_confidence": 50,
+    "source_confidence": 60,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::5CE372B6-CE7D-4780-B4F8-F5979FED5405:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "valence-gare-routiere-zz-90ef28a4",
-    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
-    "duration_min": 24,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F28D551A-A369-44D2-A99B-0E546CDBEC87:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-631-E-j26-1"
     ]
   },
   {
@@ -445883,6 +444395,7 @@
     "source_confidence": 100,
     "provenance": [
       "ch-gtfs:91-1B-j26-1",
+      "ch-gtfs:91-631-B-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::A6C76228-9224-4C48-8B92-80FC80F093E2:"
     ]
@@ -445915,6 +444428,42 @@
   },
   {
     "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "le-peage-de-roussillon-fr-38298",
+    "duration_min": 26,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-K4-A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "le-teil-ch-7c1327e4",
+    "duration_min": 35,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-K14-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "livron-fr-26165",
+    "duration_min": 9,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-K34-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "to_city_id": "lyon-fr-69123",
     "duration_min": 34,
     "service_kind": "rail",
@@ -445922,9 +444471,34 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "ch-gtfs:91-631-B-j26-1",
       "ch-gtfs:91-81C-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::121B7403-1F4D-4CC9-A54F-0B060AF03D49:"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
+    "duration_min": 34,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-mainline-gtfs:7180187303AV016"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "lyon-saint-ch-766bd2e4",
+    "duration_min": 29,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-631-D-j26-1"
     ]
   },
   {
@@ -445942,6 +444516,32 @@
   },
   {
     "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "marseille-fr-13055",
+    "duration_min": 110,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-631-E-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "montelimar-fr-26198",
+    "duration_min": 20,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-K4-A-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::5CE372B6-CE7D-4780-B4F8-F5979FED5405:"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "to_city_id": "nimes-ch-aa8440b6",
     "duration_min": 42,
     "service_kind": "rail",
@@ -445949,7 +444549,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-41G-j26-1"
+      "ch-gtfs:91-41G-j26-1",
+      "es-renfe-mainline-gtfs:8730371801AV016"
     ]
   },
   {
@@ -445990,6 +444591,7 @@
     "source_confidence": 100,
     "provenance": [
       "ch-gtfs:91-631-C-j26-1",
+      "ch-gtfs:91-631-D-j26-1",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::8EDA0FF6-311A-4C83-8C18-63D890856B43:"
     ]
@@ -446023,6 +444625,18 @@
   },
   {
     "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "tain-l-hermitage-tournon-fr-26347",
+    "duration_min": 10,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-K24-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "to_city_id": "toulon-fr-83137",
     "duration_min": 102,
     "service_kind": "rail",
@@ -446031,31 +444645,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::D1E5AD07-58C1-456A-B4E2-928E91061B0B:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
-    "to_city_id": "valence-ch-97c47f1e",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K21-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
-    "to_city_id": "valence-gare-routiere-zz-90ef28a4",
-    "duration_min": 20,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F28D551A-A369-44D2-A99B-0E546CDBEC87:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -446070,6 +444659,18 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::E787EB35-6D67-48A0-A641-FEC921895C71:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
+    "to_city_id": "veynes-devoluy-fr-05179",
+    "duration_min": 122,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-P4-j26-1"
     ]
   },
   {
@@ -450147,7 +448748,7 @@
   },
   {
     "from_city_id": "venezia-at-92b8bce5",
-    "to_city_id": "udine-stazione-at-87e3bc01",
+    "to_city_id": "udine-de-cc8958a1",
     "duration_min": 88,
     "service_kind": "rail",
     "service_class": "regional",
@@ -452321,7 +450922,7 @@
   },
   {
     "from_city_id": "veynes-devoluy-fr-05179",
-    "to_city_id": "valence-ch-97c47f1e",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 129,
     "service_kind": "rail",
     "service_class": "regional",
@@ -453128,6 +451729,19 @@
   },
   {
     "from_city_id": "vienne-ch-66fb81d1",
+    "to_city_id": "chasse-sur-rhone-fr-38087",
+    "duration_min": 14,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::84762773-6B8B-4442-9CC3-2B637DB175D6:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "vienne-ch-66fb81d1",
     "to_city_id": "estressin-fr-38544",
     "duration_min": 3,
     "service_kind": "rail",
@@ -453164,6 +451778,19 @@
   },
   {
     "from_city_id": "vienne-ch-66fb81d1",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
+    "duration_min": 50,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::fa2002df-4eab-4035-87a0-4c030f916558:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "vienne-ch-66fb81d1",
     "to_city_id": "oullins-fr-69149",
     "duration_min": 19,
     "service_kind": "rail",
@@ -453183,51 +451810,14 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-K4-A-j26-1"
+      "ch-gtfs:91-K4-A-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::fa2002df-4eab-4035-87a0-4c030f916558:"
     ]
   },
   {
-    "from_city_id": "vienne-gare-routiere-zz-e2ec54b5",
-    "to_city_id": "chasse-sur-rhone-fr-38087",
-    "duration_min": 14,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::84762773-6B8B-4442-9CC3-2B637DB175D6:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "vienne-gare-routiere-zz-e2ec54b5",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
-    "duration_min": 50,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::fa2002df-4eab-4035-87a0-4c030f916558:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "vienne-gare-routiere-zz-e2ec54b5",
-    "to_city_id": "saint-clair-les-roches-fr-38378",
-    "duration_min": 15,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::fa2002df-4eab-4035-87a0-4c030f916558:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "vienne-gare-routiere-zz-e2ec54b5",
-    "to_city_id": "valence-gare-routiere-zz-90ef28a4",
+    "from_city_id": "vienne-ch-66fb81d1",
+    "to_city_id": "valence-tgv-rhone-alpes-sud-fr-26004",
     "duration_min": 40,
     "service_kind": "rail",
     "service_class": "regional",
@@ -456633,7 +455223,7 @@
   },
   {
     "from_city_id": "villefranche-sur-saone-fr-69264",
-    "to_city_id": "lyon-part-dieu-gare-routiere-zz-1f21be10",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 40,
     "service_kind": "rail",
     "service_class": "regional",
@@ -458983,54 +457573,6 @@
     ]
   },
   {
-    "from_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "to_city_id": "marseille-fr-13055",
-    "duration_min": 15,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K34-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "to_city_id": "miramas-fr-13063",
-    "duration_min": 15,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "to_city_id": "pas-des-lanciers-fr-13054",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K34-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "vitrolles-aeroport-marseille-ch-71fe2f98",
-    "to_city_id": "rognac-fr-13081",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-K34-j26-1"
-    ]
-  },
-  {
     "from_city_id": "vitrolles-aeroport-marseille-p-fr-13117",
     "to_city_id": "marseille-fr-13055",
     "duration_min": 14,
@@ -459039,8 +457581,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::A997C5D1-9FC9-42ED-B213-C74411746662:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K34-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::A997C5D1-9FC9-42ED-B213-C74411746662:"
     ]
   },
   {
@@ -459052,8 +457595,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::A3ED2329-4705-47A8-88B3-047AB7EDDDF4:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K14-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::A3ED2329-4705-47A8-88B3-047AB7EDDDF4:"
     ]
   },
   {
@@ -459065,8 +457609,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K34-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:"
     ]
   },
   {
@@ -459078,8 +457623,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-K34-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::C83D5707-3453-4FB6-9CAA-062BA2BE94A9:"
     ]
   },
   {
@@ -464927,6 +463473,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:2282288_106",
       "de-delfi-gtfs:de:ding.eu:72252_:_106"
     ]
   },
@@ -464940,18 +463487,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-3-N-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "warthausen-de-bc438750",
-    "to_city_id": "biberach-zob-de-c08f3b5e",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2282288_106"
     ]
   },
   {
@@ -465798,7 +464333,7 @@
   },
   {
     "from_city_id": "weetzen-de-2199db96",
-    "to_city_id": "hannover-bahnhof-linden-fischerhof-de-eb98d49d",
+    "to_city_id": "hannover-de-500deaa5",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -468921,18 +467456,6 @@
   },
   {
     "from_city_id": "wels-at-d024281f",
-    "to_city_id": "scharding-bahnhof-1-at-c0dde88d",
-    "duration_min": 34,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:14-A98-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "wels-at-d024281f",
     "to_city_id": "scharding-de-597ee297",
     "duration_min": 34,
     "service_kind": "rail",
@@ -468940,6 +467463,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:14-A98-j26-1",
       "de-delfi-gtfs:162271_101"
     ]
   },
@@ -469900,6 +468424,30 @@
   },
   {
     "from_city_id": "wernigerode-de-7c3779e9",
+    "to_city_id": "halberstadt-de-d3f1ec02",
+    "duration_min": 13,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7127438_106"
+    ]
+  },
+  {
+    "from_city_id": "wernigerode-de-7c3779e9",
+    "to_city_id": "heudeber-danstedt-de-f1fc011b",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7127438_106"
+    ]
+  },
+  {
+    "from_city_id": "wernigerode-de-7c3779e9",
     "to_city_id": "ilsenburg-de-e453f489",
     "duration_min": 7,
     "service_kind": "rail",
@@ -469924,18 +468472,6 @@
   },
   {
     "from_city_id": "wernigerode-de-7c3779e9",
-    "to_city_id": "wernigerode-hbf-hsb-de-8cf55027",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7127438_106"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-de-7c3779e9",
     "to_city_id": "wernigerode-hochschule-harz-de-8932b758",
     "duration_min": 4,
     "service_kind": "rail",
@@ -469949,7 +468485,7 @@
   {
     "from_city_id": "wernigerode-de-7c3779e9",
     "to_city_id": "wernigerode-wd-wdt-de-5c983f85",
-    "duration_min": 2,
+    "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -469961,66 +468497,6 @@
   {
     "from_city_id": "wernigerode-de-7c3779e9",
     "to_city_id": "wernigerode-wdk-wdh-de-43c7a893",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:nasa:15|RZug|HSB:HSB/KBS325-326_2"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-hbf-hsb-de-8cf55027",
-    "to_city_id": "halberstadt-de-d3f1ec02",
-    "duration_min": 13,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7127438_106"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-hbf-hsb-de-8cf55027",
-    "to_city_id": "heudeber-danstedt-de-f1fc011b",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7127438_106"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-hbf-hsb-de-8cf55027",
-    "to_city_id": "ilsenburg-de-e453f489",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7127434_106"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-hbf-hsb-de-8cf55027",
-    "to_city_id": "wernigerode-de-7c3779e9",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7127434_106"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-hbf-hsb-de-8cf55027",
-    "to_city_id": "wernigerode-wd-wdt-de-5c983f85",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -470057,18 +468533,6 @@
   {
     "from_city_id": "wernigerode-wd-wdt-de-5c983f85",
     "to_city_id": "wernigerode-de-7c3779e9",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:nasa:15|RZug|HSB:HSB/KBS325-326_2"
-    ]
-  },
-  {
-    "from_city_id": "wernigerode-wd-wdt-de-5c983f85",
-    "to_city_id": "wernigerode-hbf-hsb-de-8cf55027",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -470188,7 +468652,7 @@
   },
   {
     "from_city_id": "wernstein-inn-at-0907fefa",
-    "to_city_id": "scharding-bahnhof-1-at-c0dde88d",
+    "to_city_id": "scharding-de-597ee297",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -472106,18 +470570,6 @@
   },
   {
     "from_city_id": "wien-at-f42b6f0e",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
-    "duration_min": 101,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:10-A12-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "wien-at-f42b6f0e",
     "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 101,
     "service_kind": "rail",
@@ -472125,6 +470577,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:10-A12-j26-1",
       "de-delfi-gtfs:506759_102"
     ]
   },
@@ -472613,7 +471066,7 @@
   },
   {
     "from_city_id": "wiener-neustadt-at-2715c848",
-    "to_city_id": "bruck-mur-bahnhof-1-at-386b19e4",
+    "to_city_id": "bruck-mur-de-eaa3948e",
     "duration_min": 81,
     "service_kind": "rail",
     "service_class": "regional",
@@ -479730,7 +478183,7 @@
   },
   {
     "from_city_id": "worschach-schwefelbad-at-9f31a1e1",
-    "to_city_id": "liezen-bahnhof-1-at-d34d717d",
+    "to_city_id": "liezen-de-77cec8ec",
     "duration_min": 7,
     "service_kind": "rail",
     "service_class": "regional",
@@ -484578,18 +483031,6 @@
   },
   {
     "from_city_id": "zell-am-see-at-3b4713b0",
-    "to_city_id": "bruck-fusch-bahnhof-b-at-25d53c39",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:10-A14-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "zell-am-see-at-3b4713b0",
     "to_city_id": "bruck-fusch-de-bc74f662",
     "duration_min": 5,
     "service_kind": "rail",
@@ -484597,6 +483038,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "at-oebb-gtfs:10-A14-j26-1",
       "de-delfi-gtfs:162260_109"
     ]
   },
