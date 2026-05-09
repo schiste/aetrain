@@ -38,6 +38,7 @@ out/
 target/
 apps/web/dist/
 apps/web/.vite/
+packages/rust/aetrain-routing-wasm/pkg/
 apps/web/test-results/
 apps/web/playwright-report/
 apps/web/blob-report/

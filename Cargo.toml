@@ -4,7 +4,9 @@ members = [
   "packages/rust/aetrain-domain",
   "packages/rust/aetrain-normalize",
   "packages/rust/aetrain-pipeline",
+  "packages/rust/aetrain-registry",
   "packages/rust/aetrain-routing",
+  "packages/rust/aetrain-routing-wasm",
   "packages/rust/aetrain-urlstate",
   "packages/rust/aetrain-wikidata",
 ]
