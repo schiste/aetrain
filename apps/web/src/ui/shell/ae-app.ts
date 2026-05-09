@@ -29,6 +29,7 @@ import { bindPlannerUrlState } from "../../state/planner-url-state.ts";
 import type { PlannerDataset } from "../../types/planner-dataset.ts";
 
 import "../components/ae-sidebar.ts";
+import "../components/ae-debug-toggles.ts";
 import { setAppContext, type AppContext } from "../runtime/context.ts";
 import { signal } from "../runtime/signal.ts";
 import {
@@ -84,6 +85,7 @@ function ensureShellMarkup(host: HTMLElement): void {
     html`
       <ae-sidebar></ae-sidebar>
       <div id="map"></div>
+      <ae-debug-toggles></ae-debug-toggles>
       <div id="citycount">
         Showing <b id="cc-n">0</b> / <b id="cc-t">0</b> cities
       </div>

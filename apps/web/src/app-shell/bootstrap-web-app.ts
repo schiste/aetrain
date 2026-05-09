@@ -4,9 +4,6 @@ import { mountAetrainShell } from "../ui/shell/ae-app.ts";
 
 const diagnostics = createDiagnostics("web/bootstrap");
 
-const PERF_HUD_QUERY_PARAM = "perf";
-const PERF_HUD_STORAGE_KEY = "aetrain-perf-hud";
-
 export async function bootstrapWebApp(): Promise<void> {
   return diagnostics.timeAsync("bootstrap-web-app", async () => {
     const root = document.querySelector("#app");
@@ -23,14 +20,9 @@ export async function bootstrapWebApp(): Promise<void> {
     // unregisters leftover registrations in dev so HMR isn't poisoned.
     void ensureServiceWorker();
 
-    if (shouldLoadPerfHud()) {
-      // Lazy-loaded so the HUD module is not included in the production
-      // bundle for users who never enable ?perf=1.
-      void import("./perf-hud.ts").then((mod) => {
-        mod.mountPerfHud(document.body);
-      });
-    }
-
+    // The perf HUD overlay is owned by ae-debug-toggles inside the shell —
+    // it reads the same ?perf=1 / localStorage flag and lazy-loads the HUD
+    // module on demand. Bootstrap only has to mount the shell.
     await mountAetrainShell(root);
     diagnostics.info("web app mounted");
   }).catch((error: unknown) => {
@@ -39,24 +31,4 @@ export async function bootstrapWebApp(): Promise<void> {
     });
     throw error;
   });
-}
-
-function shouldLoadPerfHud(): boolean {
-  try {
-    const url = new URL(globalThis.location?.href ?? "http://localhost/");
-    const queryValue = url.searchParams.get(PERF_HUD_QUERY_PARAM);
-    if (queryValue === "1") {
-      return true;
-    }
-    if (queryValue === "0") {
-      return false;
-    }
-  } catch {
-    // ignore — non-browser
-  }
-  try {
-    return globalThis.localStorage?.getItem(PERF_HUD_STORAGE_KEY) === "1";
-  } catch {
-    return false;
-  }
 }

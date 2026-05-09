@@ -223,7 +223,7 @@ function createContainer(): HTMLDivElement {
   root.setAttribute("aria-label", "Aetrain performance HUD");
   root.style.cssText = `
     position: fixed;
-    top: 12px;
+    top: 64px;
     right: 12px;
     z-index: 99999;
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
