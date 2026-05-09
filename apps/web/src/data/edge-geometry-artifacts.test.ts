@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { combineChunkedEdgeGeometryArtifact } from "./edge-geometry-artifacts.js";
+import { combineChunkedEdgeGeometryArtifact } from "./edge-geometry-artifacts.ts";
 
 test("combineChunkedEdgeGeometryArtifact merges chunk arrays into one artifact", () => {
   const artifact = combineChunkedEdgeGeometryArtifact(

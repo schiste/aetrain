@@ -9,7 +9,7 @@ import {
   panCameraByPixels,
   projectWorldToScreen,
   zoomCameraAroundPoint
-} from "./camera-model.js";
+} from "./camera-model.ts";
 
 test("mercator projection roundtrips representative coordinates", () => {
   const paris = { lat: 48.8566, lon: 2.3522 };

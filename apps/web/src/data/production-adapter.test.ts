@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildProductionPlannerData } from "./production-adapter.js";
+import { buildProductionPlannerData } from "./production-adapter.ts";
 
 test("buildProductionPlannerData carries decoded route geometry into planner artifacts", () => {
   const dataset = buildProductionPlannerData({

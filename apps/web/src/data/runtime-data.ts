@@ -1,11 +1,11 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
-import { cities as pocCities, routeData as pocRouteData } from "../legacy/data.js";
-import { fetchEdgeGeometryArtifact } from "./edge-geometry-artifacts.js";
+import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import { cities as pocCities, routeData as pocRouteData } from "../legacy/data.ts";
+import { fetchEdgeGeometryArtifact } from "./edge-geometry-artifacts.ts";
 import {
   assertPlannerDataset,
   isKnownPlannerDataSourceId
-} from "./planner-dataset-contracts.js";
-import { buildProductionPlannerData } from "./production-adapter.js";
+} from "./planner-dataset-contracts.ts";
+import { buildProductionPlannerData } from "./production-adapter.ts";
 
 const DATA_SOURCE_STORAGE_KEY = "aetrain-data-source";
 const DATA_SOURCE_QUERY_PARAM = "source";
@@ -135,7 +135,7 @@ async function loadProductionDataSourceFromWorker() {
   }
 
   return diagnostics.timeAsync("load-production-from-worker", async () => {
-    const worker = new Worker(new URL("../workers/runtime-data.worker.js", import.meta.url), {
+    const worker = new Worker(new URL("../workers/runtime-data.worker.ts", import.meta.url), {
       type: "module"
     });
     diagnostics.debug("spawned runtime data worker");

@@ -1,4 +1,4 @@
-import { createDiagnostics } from "../app-shell/diagnostics.js";
+import { createDiagnostics } from "../app-shell/diagnostics.ts";
 import {
   boundsCenter,
   fitBoundsZoom,
@@ -8,8 +8,8 @@ import {
   projectWorldToScreen,
   scaleForZoom,
   zoomCameraAroundPoint
-} from "./camera-model.js";
-import { buildLandmassPolygons } from "./landmass-model.js";
+} from "./camera-model.ts";
+import { buildLandmassPolygons } from "./landmass-model.ts";
 import {
   buildLodProfile,
   createSpatialGrid,
@@ -17,7 +17,7 @@ import {
   lineIntersectsViewport,
   pointInViewport,
   selectLabelCandidates
-} from "./render-model.js";
+} from "./render-model.ts";
 
 const DEFAULT_VIEW = {
   ...boundsCenter({

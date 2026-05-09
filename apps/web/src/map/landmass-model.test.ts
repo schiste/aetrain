@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { borderData } from "../legacy/landmass.js";
-import { buildLandmassPolygons } from "./landmass-model.js";
+import { borderData } from "../legacy/landmass.ts";
+import { buildLandmassPolygons } from "./landmass-model.ts";
 
 test("buildLandmassPolygons normalizes polygon and multipolygon inputs", () => {
   const polygons = buildLandmassPolygons([

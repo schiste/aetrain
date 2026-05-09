@@ -1,4 +1,4 @@
-import { createDiagnostics } from "../app-shell/diagnostics.js";
+import { createDiagnostics } from "../app-shell/diagnostics.ts";
 
 const URL_STATE_VERSION = "v1";
 const STORE_COMMIT_DELAY_MS = 50;

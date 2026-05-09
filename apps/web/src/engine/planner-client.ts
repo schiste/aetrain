@@ -1,11 +1,11 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
+import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import {
   createPlannerModel
-} from "../legacy/core.js";
+} from "../legacy/core.ts";
 import {
   deserializePlannerError,
   PLANNER_WORKER_MESSAGE_TYPES
-} from "./planner-protocol.js";
+} from "./planner-protocol.ts";
 
 const diagnostics = createDiagnostics("web/engine/planner-client");
 
@@ -16,7 +16,7 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
       return createInlinePlannerClient(cities, routeData, plannerArtifacts);
     }
 
-    const worker = new Worker(new URL("../workers/planner.worker.js", import.meta.url), {
+    const worker = new Worker(new URL("../workers/planner.worker.ts", import.meta.url), {
       type: "module"
     });
     diagnostics.debug("spawned planner worker");

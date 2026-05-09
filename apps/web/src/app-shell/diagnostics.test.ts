@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createDiagnostics } from "./diagnostics.js";
+import { createDiagnostics } from "./diagnostics.ts";
 
 test("diagnostics buffer keeps debug events even when console output is filtered", () => {
   const restore = installConsoleSpies();

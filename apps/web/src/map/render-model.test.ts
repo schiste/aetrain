@@ -8,7 +8,7 @@ import {
   lineIntersectsViewport,
   pointInViewport,
   selectLabelCandidates
-} from "./render-model.js";
+} from "./render-model.ts";
 
 test("buildLodProfile tightens budgets at low zoom", () => {
   const low = buildLodProfile(4, () => ({ interest: 10, pop: 2_000_000 }));

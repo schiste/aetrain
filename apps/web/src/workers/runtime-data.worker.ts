@@ -1,6 +1,6 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
-import { fetchEdgeGeometryArtifact } from "../data/edge-geometry-artifacts.js";
-import { buildProductionPlannerData } from "../data/production-adapter.js";
+import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import { fetchEdgeGeometryArtifact } from "../data/edge-geometry-artifacts.ts";
+import { buildProductionPlannerData } from "../data/production-adapter.ts";
 
 const diagnostics = createDiagnostics("web/worker/runtime-data");
 

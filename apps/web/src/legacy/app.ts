@@ -1,21 +1,21 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
-import { createPlannerClient } from "../engine/planner-client.js";
+import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import { createPlannerClient } from "../engine/planner-client.ts";
 import {
   getRequestedDataSourceId,
   loadPlannerDataSource,
   navigateToDataSource
-} from "../data/runtime-data.js";
-import { createPlannerStore } from "../state/planner-store.js";
-import { bindPlannerUrlState } from "../state/planner-url-state.js";
-import { createLeafletMapSurface } from "../map/leaflet-map-surface.js";
+} from "../data/runtime-data.ts";
+import { createPlannerStore } from "../state/planner-store.ts";
+import { bindPlannerUrlState } from "../state/planner-url-state.ts";
+import { createLeafletMapSurface } from "../map/leaflet-map-surface.ts";
 import {
   escapeHtml,
   formatMinutes,
   formatPopulation,
   haversine
-} from "./core.js";
-import { borderData } from "./landmass.js";
-import { EMPTY_TRIP_MARKUP, renderShell } from "./shell.js";
+} from "./core.ts";
+import { borderData } from "./landmass.ts";
+import { EMPTY_TRIP_MARKUP, renderShell } from "./shell.ts";
 
 const diagnostics = createDiagnostics("web/ui/legacy-app");
 

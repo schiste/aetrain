@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { parsePlannerUrlHash, writePlannerUrlHash } from "./planner-url-state.js";
+import { parsePlannerUrlHash, writePlannerUrlHash } from "./planner-url-state.ts";
 
 test("parsePlannerUrlHash restores planner trip, filters, and map state", () => {
   const parsed = parsePlannerUrlHash(

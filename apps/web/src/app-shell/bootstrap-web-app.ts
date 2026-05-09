@@ -1,5 +1,5 @@
-import { createDiagnostics, summarizeError } from "./diagnostics.js";
-import { mountLegacyApp } from "../legacy/app.js";
+import { createDiagnostics, summarizeError } from "./diagnostics.ts";
+import { mountLegacyApp } from "../legacy/app.ts";
 
 const diagnostics = createDiagnostics("web/bootstrap");
 

@@ -1,9 +1,9 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.js";
-import { createPlannerModel } from "../legacy/core.js";
+import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import { createPlannerModel } from "../legacy/core.ts";
 import {
   PLANNER_WORKER_MESSAGE_TYPES,
   serializePlannerError
-} from "../engine/planner-protocol.js";
+} from "../engine/planner-protocol.ts";
 
 const diagnostics = createDiagnostics("web/worker/planner");
 let model = null;

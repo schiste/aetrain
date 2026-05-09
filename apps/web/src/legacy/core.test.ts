@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createPlannerModel, searchCities } from "./core.js";
+import { createPlannerModel, searchCities } from "./core.ts";
 
 const cities = [
   { name: "Paris", country: "France", interest: 9, lat: 48.8566, lon: 2.3522, pop: 2_100_000 },

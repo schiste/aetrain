@@ -1,4 +1,4 @@
-import { createDiagnostics } from "../app-shell/diagnostics.js";
+import { createDiagnostics } from "../app-shell/diagnostics.ts";
 
 const DEFAULT_MAX_LEG_MINUTES = 1440;
 const diagnostics = createDiagnostics("web/state/planner-store");

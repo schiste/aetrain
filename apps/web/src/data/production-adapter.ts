@@ -1,8 +1,8 @@
-import { createDiagnostics } from "../app-shell/diagnostics.js";
+import { createDiagnostics } from "../app-shell/diagnostics.ts";
 import {
   assertPlannerDataset,
   assertProductionArtifactBundle
-} from "./planner-dataset-contracts.js";
+} from "./planner-dataset-contracts.ts";
 
 const FALLBACK_COUNTRY_LABELS = {
   AT: "Austria",
