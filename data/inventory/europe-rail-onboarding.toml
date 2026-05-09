@@ -1,7 +1,7 @@
 schema_version = 1
 description = "Europe-wide rail source inventory and onboarding status for the Aetrain Stage 1 pipeline."
 generated_by = "codex"
-generated_on = "2026-05-08"
+generated_on = "2026-05-09"
 
 [[country]]
 code = "AD"
@@ -38,8 +38,8 @@ official_portal_url = "https://www.mobilitydata.gv.at/en/daten/soll-fahrplandate
 schedule_source_status = "official_gtfs_dynamic_catalog"
 schedule_source_url = "https://www.mobilitydata.gv.at/en/daten/gtfs-fahrplan"
 geometry_source_status = "official_station_or_stop_registry_verified"
-pipeline_readiness = "ready_after_catalog_resolver"
-notes = "Mobilitydata Austria publishes official GTFS and nationwide stops/line-network datasets, but the current pipeline needs a resolver step for changing resource URLs."
+pipeline_readiness = "onboarded_manifest_ready"
+notes = "ÖBB's official GTFS static export built successfully on 2026-05-09 after adding generic support for nested GTFS archive roots."
 
 [[country]]
 code = "AZ"
@@ -97,8 +97,8 @@ official_portal_url = "https://data.opentransportdata.swiss/dataset/timetable-20
 schedule_source_status = "official_gtfs_dynamic_catalog"
 schedule_source_url = "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/"
 geometry_source_status = "official_station_or_stop_registry_verified"
-pipeline_readiness = "ready_after_catalog_resolver"
-notes = "Official national GTFS is published through opentransportdata.swiss with frequent rotating resources. The pipeline needs a CKAN-style latest-resource resolver."
+pipeline_readiness = "onboarded_manifest_ready"
+notes = "Official national GTFS built successfully on 2026-05-09. The public dataset page resolves to a short-lived signed download URL, so fully unattended fetches need a redirect-aware download path."
 
 [[country]]
 code = "CY"
@@ -126,8 +126,8 @@ official_portal_url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten
 schedule_source_status = "official_gtfs_dynamic_catalog"
 schedule_source_url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/"
 geometry_source_status = "fallback_osm_needed"
-pipeline_readiness = "ready_after_catalog_resolver"
-notes = "DELFI publishes official nationwide GTFS and NeTEx archives. The pipeline needs a directory-listing resolver to select the latest weekly file."
+pipeline_readiness = "onboarded_manifest_ready"
+notes = "DELFI's official nationwide GTFS archive built successfully on 2026-05-09 through the directory-listing resolver."
 
 [[country]]
 code = "DK"
@@ -154,23 +154,23 @@ code = "ES"
 name = "Spain"
 rail_system_status = "national_rail"
 official_portal_url = "https://data.renfe.com/"
-schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_status = "official_gtfs_direct"
 schedule_source_url = "https://data.renfe.com/dataset?res_format=GTFS"
 geometry_source_status = "official_infrastructure_portal_only"
 infrastructure_source_url = "https://www.adif.es/en/web/adif/sobre-adif/red-ferroviaria"
-pipeline_readiness = "ready_after_catalog_resolver"
-notes = "Renfe publishes official GTFS schedule datasets and Adif publishes the infrastructure/network context. The pipeline needs a stable resource resolver and likely separate target partitioning by Renfe product family."
+pipeline_readiness = "onboarded_manifest_ready"
+notes = "Renfe's official mainline GTFS and Cercanías GTFS both built successfully on 2026-05-09 as separate targets. The Cercanías export required tolerant CSV trimming because the official files pad headers and values."
 
 [[country]]
 code = "FI"
 name = "Finland"
 rail_system_status = "national_rail"
 official_portal_url = "https://www.fintraffic.fi/en/transport/transport-system/digital-data-services-transport-system"
-schedule_source_status = "official_gtfs_dynamic_catalog"
-schedule_source_url = "https://developer.matka.fi/"
+schedule_source_status = "official_api_only_no_schedule_package_verified"
+schedule_source_url = "https://finap.fi/ote/service-search?sub_types=schedule&response_format=json"
 geometry_source_status = "official_station_or_stop_registry_verified"
-pipeline_readiness = "ready_after_catalog_resolver"
-notes = "Fintraffic's public transport information pool aggregates national GTFS, including rail and ferry, but the current pipeline still needs a robust way to resolve the right downloadable national feed."
+pipeline_readiness = "ready_after_new_adapter"
+notes = "Live validation on 2026-05-09 found official FINAP and Digitraffic rail APIs, but did not verify a downloadable national GTFS or NeTEx rail package. The clearest official rail surface today is API-first, not static-feed-first."
 
 [[country]]
 code = "FR"
@@ -364,11 +364,11 @@ code = "NO"
 name = "Norway"
 rail_system_status = "national_rail"
 official_portal_url = "https://developer.entur.org/stops-and-timetable-data"
-schedule_source_status = "official_gtfs_dynamic_catalog"
-schedule_source_url = "https://developer.entur.org/stops-and-timetable-data"
+schedule_source_status = "official_gtfs_url_not_timetable"
+schedule_source_url = "https://storage.googleapis.com/marduk-production/tiamat/Current_latest-gtfs.zip"
 geometry_source_status = "official_station_or_stop_registry_verified"
-pipeline_readiness = "ready_after_catalog_resolver"
-notes = "Entur documents permanent national GTFS and NeTEx dumps and a national stop registry, but the exact download URLs were not captured into the current pipeline yet."
+pipeline_readiness = "needs_official_source_verification"
+notes = "Live validation on 2026-05-09 showed that the documented Current_latest-gtfs.zip URL is an official GTFS stop dump with feed_info.txt and stops.txt only, not a national timetable feed. Norway remains blocked until the real timetable publication path is verified or a NeTEx ingest path is adopted."
 
 [[country]]
 code = "PL"

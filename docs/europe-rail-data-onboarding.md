@@ -14,9 +14,18 @@ groups.
   geometry
 - Luxembourg: official GTFS resolved through the data.public.lu dataset API and
   successfully built with the current `gtfs_basic` path
+- Austria: official ÖBB GTFS built successfully after adding support for nested
+  GTFS archive roots
+- Germany: official nationwide DELFI GTFS built successfully through the
+  directory-listing resolver
+- Switzerland: official national GTFS built successfully from the public
+  dataset page, with a signed-download redirect workaround
+- Spain:
+  - mainline / AVE / long-distance GTFS built successfully
+  - Cercanías / Rodalies GTFS built successfully after tolerant CSV trimming
 
-France and Luxembourg are now both source-verified and rail-validated in the
-current pipeline.
+France, Luxembourg, Austria, Germany, Switzerland, and the two Spain targets
+are now source-verified and rail-validated in the current pipeline.
 
 ### 2. Direct-feed candidates validated in this pass, but not rail-ready yet
 
@@ -29,27 +38,24 @@ current pipeline.
 These sources remain inventoried, but they are intentionally inactive in the
 seed manifest until the endpoint or feed scope issue is resolved.
 
-### 3. Official and promising, but needs a catalog resolver
+### 3. Official, but still blocked after live validation
 
-- Austria
-- Switzerland
-- Germany
-- Finland
-- Norway
-- Spain
-
-Common issue:
-
-- the source is official, but the file URL rotates by date, resource id, or
-  archive listing
+- Norway: the documented `Current_latest-gtfs.zip` URL is an official GTFS stop
+  dump with `stops.txt` and `feed_info.txt`, not a usable national timetable
+  feed
+- Finland: official FINAP and Digitraffic rail APIs were verified, but this
+  pass did not validate a downloadable national GTFS or NeTEx rail package
 
 Required engineering:
 
-- add source-resolution support for CKAN/Udata/directory-listing style feeds
-- preserve the resolved URL in fetch audit state
-- avoid hardcoding dated URLs into manifests
+- Norway:
+  - verify the real timetable publication path in Entur's ecosystem
+  - or switch the country to a NeTEx-first ingest path
+- Finland:
+  - either onboard a public national package if one exists
+  - or build a new adapter against the official API surfaces
 
-### 4. Official, but needs API-key support
+### 4. Official, but still needs API-key support
 
 - Ireland
 - Sweden
@@ -60,7 +66,7 @@ Required engineering:
 - explicit secret-free manifest templates
 - per-source auth metadata and fetch diagnostics
 
-### 5. Official, but gated by contract, registration, or licence workflow
+### 5. Official, but still gated by contract, registration, or licence workflow
 
 - Belgium
 - Netherlands
@@ -71,7 +77,7 @@ Required engineering:
 - operator runbook for manual approval / contract completion
 - ability to keep sources inventoried before activation
 
-### 6. Official, but needs a new adapter family
+### 6. Official, but still needs a new adapter family
 
 - Slovenia: NeTEx-first national access point
 - United Kingdom: official rail timetable/open-data ecosystem, but not a

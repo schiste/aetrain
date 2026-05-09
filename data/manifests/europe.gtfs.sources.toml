@@ -30,13 +30,58 @@ web_debug_export = false
 notes = "Luxembourg national GTFS resolved through the official data.public.lu dataset API."
 
 [[target]]
+id = "at-national"
+adapter = "gtfs_basic"
+source_ids = ["at-oebb-gtfs"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Austria national heavy-rail GTFS published by ÖBB as an official static ZIP. Validated on 2026-05-09 after adding support for nested GTFS archive roots."
+
+[[target]]
 id = "de-national"
 adapter = "gtfs_basic"
 source_ids = ["de-delfi-gtfs"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Official Germany-wide DELFI GTFS resolved from the archive directory listing and validated on 2026-05-09."
+
+[[target]]
+id = "ch-national"
+adapter = "gtfs_basic"
+source_ids = ["ch-gtfs"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Switzerland GTFS resolved from the public opentransportdata dataset page and validated on 2026-05-09. The host issues short-lived signed download redirects, so unattended fetches need a redirect-aware download path."
+
+[[target]]
+id = "no-national"
+adapter = "gtfs_basic"
+source_ids = ["no-entur-gtfs"]
 active = false
 canonical_export = true
 web_debug_export = false
-notes = "Inactive by default: official Germany-wide DELFI GTFS resolved from the archive directory listing. Large feed; enable intentionally."
+notes = "Inactive after live validation on 2026-05-09: the documented Current_latest-gtfs.zip URL is an official GTFS stop dump, not a national timetable feed."
+
+[[target]]
+id = "es-renfe-mainline"
+adapter = "gtfs_basic"
+source_ids = ["es-renfe-mainline-gtfs"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Spain official Renfe GTFS for high-speed, long-distance, and medium-distance services. Validated on 2026-05-09."
+
+[[target]]
+id = "es-renfe-cercanias"
+adapter = "gtfs_basic"
+source_ids = ["es-renfe-cercanias-gtfs"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Spain official Renfe GTFS for Cercanías and Rodalies services. Validated on 2026-05-09 after adding CSV trimming for padded official headers/values."
 
 [[source]]
 id = "ee-peatus-gtfs"
@@ -76,14 +121,75 @@ include_service_classes = ["intercity", "regional", "ferry"]
 notes = "Official Luxembourg GTFS feed resolved through the data.public.lu dataset API."
 
 [[source]]
+id = "at-oebb-gtfs"
+kind = "gtfs"
+country_code = "AT"
+adapter = "gtfs_basic"
+url = "https://static.web.oebb.at/open-data/soll-fahrplan-gtfs/GTFS_Fahrplan_2026.zip"
+file_name = "at-oebb-gtfs.zip"
+active = true
+role = "schedule"
+include_service_classes = ["intercity", "regional"]
+notes = "Official ÖBB GTFS static export for the 2025/2026 timetable period. The archive is rooted under a top-level folder and is now handled generically."
+
+[[source]]
 id = "de-delfi-gtfs"
 kind = "gtfs"
 country_code = "DE"
 adapter = "gtfs_basic"
 url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/"
 file_name = "de-delfi-gtfs.zip"
-active = false
+active = true
 role = "schedule"
 resolver = { kind = "directory_listing_cascade", index_url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/", steps = [{ href_pattern = '^20\d{2}/$' }, { href_pattern = '.*\.zip$' }] }
 include_service_classes = ["intercity", "regional", "ferry"]
 notes = "Official Germany-wide GTFS archive resolved from the DELFI directory listing."
+
+[[source]]
+id = "ch-gtfs"
+kind = "gtfs"
+country_code = "CH"
+adapter = "gtfs_basic"
+url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020"
+file_name = "ch-gtfs.zip"
+active = true
+role = "schedule"
+resolver = { kind = "html_latest_match", page_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020", href_pattern = '^https://data\\.opentransportdata\\.swiss/dataset/[0-9a-f-]+/resource/[0-9a-f-]+/download/gtfs_fp2026_\\d{8}\\.zip$' }
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "Official Swiss GTFS static feed resolved from the public dataset page. The public dataset redirects to a short-lived signed download URL."
+
+[[source]]
+id = "no-entur-gtfs"
+kind = "gtfs"
+country_code = "NO"
+adapter = "gtfs_basic"
+url = "https://storage.googleapis.com/marduk-production/tiamat/Current_latest-gtfs.zip"
+file_name = "no-entur-gtfs.zip"
+active = false
+role = "schedule"
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "Inactive after live validation on 2026-05-09: this official Entur URL contains stop data only and does not include timetable tables such as routes.txt or stop_times.txt."
+
+[[source]]
+id = "es-renfe-mainline-gtfs"
+kind = "gtfs"
+country_code = "ES"
+adapter = "gtfs_basic"
+url = "https://ssl.renfe.com/gtransit/Fichero_AV_LD/google_transit.zip"
+file_name = "es-renfe-mainline-gtfs.zip"
+active = true
+role = "schedule"
+include_service_classes = ["intercity", "regional"]
+notes = "Official Renfe GTFS feed for AVE, long-distance, and medium-distance services."
+
+[[source]]
+id = "es-renfe-cercanias-gtfs"
+kind = "gtfs"
+country_code = "ES"
+adapter = "gtfs_basic"
+url = "https://ssl.renfe.com/ftransit/Fichero_CER_FOMENTO/fomento_transit.zip"
+file_name = "es-renfe-cercanias-gtfs.zip"
+active = true
+role = "schedule"
+include_service_classes = ["regional"]
+notes = "Official Renfe GTFS feed for Cercanías and Rodalies services."
