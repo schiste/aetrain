@@ -34,6 +34,7 @@ const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
 const BUTTON_ZOOM_DELTA = 0.35;
+const BACKGROUND_NETWORK_SIMPLIFIED_ZOOM = 6.5;
 
 const diagnostics = createDiagnostics("web/map/canvas-surface");
 
@@ -104,14 +105,17 @@ export function createLeafletMapSurface({
   const routeContext = routeCanvas.getContext("2d");
 
   const cityWorldByName = new Map();
-  const preparedCities = cities.map((city) => {
-    const world = mercatorProject(city.lon, city.lat);
-    cityWorldByName.set(city.name, world);
-    return {
-      city,
-      world
-    };
-  });
+  const preparedCities = cities
+    .map((city) => {
+      const world = mercatorProject(city.lon, city.lat);
+      cityWorldByName.set(city.name, world);
+      return {
+        city,
+        renderPriority: cityRenderPriority(city),
+        world
+      };
+    })
+    .sort((left, right) => right.renderPriority - left.renderPriority);
   const landmassPolygons = buildLandmassPolygons(borderData).map((polygon) =>
     polygon.map((ring) =>
       ring.map((point) => mercatorProject(point.lon, point.lat))
@@ -134,11 +138,13 @@ export function createLeafletMapSurface({
         geometryWorld: Array.isArray(edge.geometry)
           ? edge.geometry.map((point) => mercatorProject(point.lon, point.lat))
           : null,
+        renderPriority: edgeRenderPriority(fromCity, toCity),
         toCity,
         toWorld
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((left, right) => right.renderPriority - left.renderPriority);
 
   diagnostics.info("prepared map scene data", {
     edge_count: edgeRefs.length,
@@ -183,7 +189,11 @@ export function createLeafletMapSurface({
   const resizeObserver =
     typeof ResizeObserver !== "undefined"
       ? new ResizeObserver(() => {
-          currentSize = readSize(mapRoot);
+          const nextSize = readSize(mapRoot);
+          if (nextSize.x === currentSize.x && nextSize.y === currentSize.y) {
+            return;
+          }
+          currentSize = nextSize;
           invalidateView("canvas-resize", {
             notifyViewChange: true
           });
@@ -714,7 +724,11 @@ export function createLeafletMapSurface({
     networkContext.lineWidth = 0.6;
 
     let drawnEdges = 0;
+    const shouldSimplifyGeometry = frame.zoom < BACKGROUND_NETWORK_SIMPLIFIED_ZOOM;
     for (const edge of edgeRefs) {
+      if (drawnEdges >= frame.lod.networkEdgeBudget) {
+        break;
+      }
       if (
         edge.fromCity.interest < frame.lod.networkMinInterest &&
         edge.toCity.interest < frame.lod.networkMinInterest
@@ -722,7 +736,9 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const worldPoints = edge.geometryWorld || [edge.fromWorld, edge.toWorld];
+      const worldPoints = shouldSimplifyGeometry
+        ? [edge.fromWorld, edge.toWorld]
+        : edge.geometryWorld || [edge.fromWorld, edge.toWorld];
       const points = worldPoints.map((worldPoint) => frame.projectWorld(worldPoint));
       if (!polylineIntersectsViewport(points, frame.size, frame.lod.networkPadding)) {
         continue;
@@ -822,6 +838,7 @@ export function createLeafletMapSurface({
       (plannerState.legMin > 0 || plannerState.legMax < plannerState.legDynMax);
 
     let shown = 0;
+    let nonTripBudgetedCount = 0;
     let reachable = 0;
     let culledByViewport = 0;
     let culledByLod = 0;
@@ -868,7 +885,15 @@ export function createLeafletMapSurface({
         continue;
       }
 
+      if (!inTrip && nonTripBudgetedCount >= frame.lod.cityBudget) {
+        culledByLod += 1;
+        continue;
+      }
+
       shown += 1;
+      if (!inTrip) {
+        nonTripBudgetedCount += 1;
+      }
       const style = markerStyle(city, frame.zoom, inTrip);
       const visibleCity = {
         city,
@@ -1042,6 +1067,14 @@ function buildLabelCandidate(visibleCity, plannerState, formatMinutes) {
     x: visibleCity.x + visibleCity.radius + 3,
     y: visibleCity.y - 7
   };
+}
+
+function cityRenderPriority(city) {
+  return city.interest * 1_000_000 + city.pop;
+}
+
+function edgeRenderPriority(fromCity, toCity) {
+  return cityRenderPriority(fromCity) + cityRenderPriority(toCity);
 }
 
 function labelPriority(visibleCity, plannerState) {
