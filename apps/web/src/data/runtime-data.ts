@@ -3,11 +3,7 @@ import { cities as pocCities, routeData as pocRouteData } from "../legacy/data.t
 import type {
   PlannerDataSourceId,
   PlannerDataset,
-  ProductionArtifactBundle,
-  RawCity,
-  RawEdge,
-  RawEdgeGeometries,
-  RuntimeArtifactMeta
+  ProductionArtifactBundle
 } from "../types/planner-dataset.ts";
 import {
   fetchEdgeGeometryArtifact,
@@ -137,10 +133,14 @@ async function loadProductionDataSource(): Promise<PlannerDataset> {
 
 async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
   return diagnostics.timeAsync("load-production-inline", async () => {
+    // Treat raw fetch results as `unknown` and let
+    // assertProductionArtifactBundle (called inside buildProductionPlannerData)
+    // do the type narrowing. Casting at the fetch site looks safe but hides
+    // the fact that the bytes have not yet been validated.
     const [meta, rawCities, rawEdges, rawEdgeGeometries] = await Promise.all([
-      fetchJsonWithFallback("meta.json") as Promise<RuntimeArtifactMeta>,
-      fetchJsonWithFallback("cities.json") as Promise<RawCity[]>,
-      fetchJsonWithFallback("edges.json") as Promise<RawEdge[]>,
+      fetchJsonWithFallback("meta.json"),
+      fetchJsonWithFallback("cities.json"),
+      fetchJsonWithFallback("edges.json"),
       fetchEdgeGeometryArtifact({
         basePaths: PRODUCTION_BASE_PATHS,
         fetchJsonWithFallback,
@@ -150,13 +150,12 @@ async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
       })
     ]);
 
-    const bundle: ProductionArtifactBundle = {
+    const dataset = buildProductionPlannerData({
       meta,
       rawCities,
       rawEdges,
       rawEdgeGeometries
-    };
-    const dataset = buildProductionPlannerData(bundle);
+    } as unknown as ProductionArtifactBundle);
     diagnostics.info("built production dataset inline", {
       dataset_version: dataset.meta?.dataset_version || null,
       city_count: dataset.cities.length,
