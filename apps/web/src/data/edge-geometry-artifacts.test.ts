@@ -23,7 +23,7 @@ test("combineChunkedEdgeGeometryArtifact merges chunk arrays into one artifact",
   );
 
   assert.equal(artifact.geometries.length, 3);
-  assert.equal(artifact.geometries[2].to_city_id, "lille-fr");
+  assert.equal(artifact.geometries[2]!.to_city_id, "lille-fr");
 });
 
 test("combineChunkedEdgeGeometryArtifact rejects mismatched geometry totals", () => {

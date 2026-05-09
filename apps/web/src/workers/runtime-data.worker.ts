@@ -1,16 +1,43 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
-import { fetchEdgeGeometryArtifact } from "../data/edge-geometry-artifacts.ts";
+import {
+  fetchEdgeGeometryArtifact,
+  type EdgeGeometryManifest
+} from "../data/edge-geometry-artifacts.ts";
 import { buildProductionPlannerData } from "../data/production-adapter.ts";
+import type {
+  ProductionArtifactBundle,
+  RawCity,
+  RawEdge,
+  RawEdgeGeometries,
+  RuntimeArtifactMeta
+} from "../types/planner-dataset.ts";
+
+interface IncomingMessage {
+  type?: string;
+  basePaths?: string[];
+  requestId?: string;
+}
+
+interface FetchAssetError extends Error {
+  artifactStatus?: number;
+}
+
+interface SerializedError {
+  name: string;
+  message: string;
+  stack: string | null;
+}
 
 const diagnostics = createDiagnostics("web/worker/runtime-data");
 
-self.addEventListener("message", async (event) => {
-  const message = event.data || {};
+self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
+  const message: IncomingMessage = event.data || {};
   if (message.type !== "load-production-dataset") {
     return;
   }
 
-  const { basePaths = [], requestId } = message;
+  const basePaths: string[] = message.basePaths ?? [];
+  const requestId = message.requestId;
   diagnostics.info("received runtime data worker request", {
     request_id: requestId,
     base_path_count: basePaths.length
@@ -19,20 +46,27 @@ self.addEventListener("message", async (event) => {
   try {
     const dataset = await diagnostics.timeAsync("load-production-dataset", async () => {
       const [meta, rawCities, rawEdges, rawEdgeGeometries] = await Promise.all([
-        fetchJsonWithFallback(basePaths, "meta.json"),
-        fetchJsonWithFallback(basePaths, "cities.json"),
-        fetchJsonWithFallback(basePaths, "edges.json"),
+        fetchJsonWithFallback(basePaths, "meta.json") as Promise<RuntimeArtifactMeta>,
+        fetchJsonWithFallback(basePaths, "cities.json") as Promise<RawCity[]>,
+        fetchJsonWithFallback(basePaths, "edges.json") as Promise<RawEdge[]>,
         fetchEdgeGeometryArtifact({
           basePaths,
-          fetchJsonWithFallback: (fileName) => fetchJsonWithFallback(basePaths, fileName),
-          fetchOptionalJsonWithFallback: (fileName) =>
+          fetchJsonWithFallback: (fileName: string) =>
+            fetchJsonWithFallback(basePaths, fileName),
+          fetchOptionalJsonWithFallback: (fileName: string) =>
             fetchOptionalJsonWithFallback(basePaths, fileName),
           fetchJsonFromBasePath,
           diagnostics
         })
       ]);
 
-      return buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries });
+      const bundle: ProductionArtifactBundle = {
+        meta,
+        rawCities,
+        rawEdges,
+        rawEdgeGeometries
+      };
+      return buildProductionPlannerData(bundle);
     }, {
       request_id: requestId
     });
@@ -57,20 +91,27 @@ self.addEventListener("message", async (event) => {
   }
 });
 
-async function fetchJsonWithFallback(basePaths, fileName) {
+async function fetchJsonWithFallback(
+  basePaths: string[],
+  fileName: string
+): Promise<unknown> {
   const result = await fetchJsonAssetWithFallback(basePaths, fileName);
   return result.json;
 }
 
-async function fetchOptionalJsonWithFallback(basePaths, fileName) {
-  let lastError = null;
+async function fetchOptionalJsonWithFallback(
+  basePaths: string[],
+  fileName: string
+): Promise<{ basePath: string; json: EdgeGeometryManifest } | null> {
+  let lastError: unknown = null;
   let sawNonNotFoundError = false;
   for (const basePath of basePaths) {
     try {
-      const json = await fetchJsonFromBasePath(basePath, fileName);
+      const json = (await fetchJsonFromBasePath(basePath, fileName)) as EdgeGeometryManifest;
       return { basePath, json };
     } catch (error) {
-      if (error?.artifactStatus !== 404) {
+      const status = (error as FetchAssetError | null)?.artifactStatus;
+      if (status !== 404) {
         sawNonNotFoundError = true;
         lastError = error;
       }
@@ -83,8 +124,11 @@ async function fetchOptionalJsonWithFallback(basePaths, fileName) {
   return null;
 }
 
-async function fetchJsonAssetWithFallback(basePaths, fileName) {
-  let lastError = null;
+async function fetchJsonAssetWithFallback(
+  basePaths: string[],
+  fileName: string
+): Promise<{ basePath: string; json: unknown }> {
+  let lastError: unknown = null;
   for (const basePath of basePaths) {
     try {
       const json = await fetchJsonFromBasePath(basePath, fileName);
@@ -102,14 +146,17 @@ async function fetchJsonAssetWithFallback(basePaths, fileName) {
   throw lastError || new Error(`Failed to load ${fileName}`);
 }
 
-async function fetchJsonFromBasePath(basePath, fileName) {
+async function fetchJsonFromBasePath(
+  basePath: string,
+  fileName: string
+): Promise<unknown> {
   diagnostics.debug("worker fetching artifact", {
     file_name: fileName,
     base_path: basePath
   });
   const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
   if (!response.ok) {
-    const error = new Error(`HTTP ${response.status}`);
+    const error: FetchAssetError = new Error(`HTTP ${response.status}`);
     error.artifactStatus = response.status;
     throw error;
   }
@@ -121,10 +168,11 @@ async function fetchJsonFromBasePath(basePath, fileName) {
   return json;
 }
 
-function serializeError(error) {
+function serializeError(error: unknown): SerializedError {
+  const candidate = error as { name?: unknown; message?: unknown; stack?: unknown } | null;
   return {
-    name: error?.name || "Error",
-    message: error?.message || String(error),
-    stack: error?.stack || null
+    name: typeof candidate?.name === "string" ? candidate.name : "Error",
+    message: typeof candidate?.message === "string" ? candidate.message : String(error),
+    stack: typeof candidate?.stack === "string" ? candidate.stack : null
   };
 }

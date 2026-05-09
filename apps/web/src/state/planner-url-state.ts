@@ -1,11 +1,48 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
+import type { PlannerStore, PlannerStoreSnapshot } from "./planner-store.ts";
 
 const URL_STATE_VERSION = "v1";
 const STORE_COMMIT_DELAY_MS = 50;
 const VIEW_COMMIT_DELAY_MS = 180;
 const diagnostics = createDiagnostics("web/state/planner-url-state");
 
-export function parsePlannerUrlHash(hash) {
+export interface PlannerUrlMapView {
+  zoom: number;
+  lat: number;
+  lon: number;
+}
+
+export interface ParsedPlannerUrlState {
+  trip: string[];
+  filterInterest: number;
+  filterPop: number;
+  legMin: number;
+  legMax: number;
+  searchQuery: string;
+  mapView: PlannerUrlMapView | null;
+}
+
+export interface PlannerUrlMapSurface {
+  getViewState(): PlannerUrlMapView | null;
+  setViewState(view: PlannerUrlMapView): void;
+  subscribeViewChange(listener: () => void): () => void;
+}
+
+export interface WritePlannerUrlHashArgs {
+  plannerState: {
+    trip: string[];
+    filterInterest: number;
+    filterPop: number;
+    legMin: number;
+    legMax: number;
+    searchQuery: string;
+  };
+  mapView?: PlannerUrlMapView | null;
+}
+
+export function parsePlannerUrlHash(
+  hash: string | null | undefined
+): ParsedPlannerUrlState | null {
   const raw = String(hash || "").replace(/^#/, "");
   if (!raw) {
     diagnostics.debug("url hash empty, nothing to hydrate");
@@ -21,7 +58,7 @@ export function parsePlannerUrlHash(hash) {
     return null;
   }
 
-  const state = {
+  const state: ParsedPlannerUrlState = {
     trip: [],
     filterInterest: 5,
     filterPop: 100,
@@ -40,7 +77,7 @@ export function parsePlannerUrlHash(hash) {
     switch (key) {
       case "t":
         state.trip = value
-          ? value.split(",").map((token) => decodeComponent(token)).filter(Boolean)
+          ? value.split(",").map((token) => decodeComponent(token)).filter((token) => Boolean(token))
           : [];
         break;
       case "fi":
@@ -66,11 +103,14 @@ export function parsePlannerUrlHash(hash) {
     }
   }
 
-  diagnostics.info("parsed planner url hash", state);
+  diagnostics.info("parsed planner url hash", { ...state });
   return state;
 }
 
-export function writePlannerUrlHash({ plannerState, mapView }) {
+export function writePlannerUrlHash({
+  plannerState,
+  mapView
+}: WritePlannerUrlHashArgs): string {
   const segments = [URL_STATE_VERSION];
   segments.push(
     `t=${plannerState.trip.map((name) => encodeComponent(name)).join(",")}`
@@ -94,12 +134,23 @@ export function writePlannerUrlHash({ plannerState, mapView }) {
   return `#${segments.join(";")}`;
 }
 
-export function bindPlannerUrlState({ plannerStore, mapSurface }) {
+export interface PlannerUrlBinding {
+  hydrate(): Promise<void>;
+  start(): () => void;
+}
+
+export function bindPlannerUrlState({
+  plannerStore,
+  mapSurface
+}: {
+  plannerStore: PlannerStore;
+  mapSurface: PlannerUrlMapSurface;
+}): PlannerUrlBinding {
   let muted = false;
   let scheduledCommitTimer = 0;
   diagnostics.info("bound planner url state");
 
-  function commit(reason) {
+  function commit(reason: string): void {
     if (muted) {
       diagnostics.debug("skipped url commit while muted");
       return;
@@ -125,7 +176,7 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
     window.history.replaceState(null, "", url.toString());
   }
 
-  function scheduleCommit(reason, delayMs) {
+  function scheduleCommit(reason: string, delayMs: number): void {
     if (muted) {
       diagnostics.debug("skipped scheduling url commit while muted", {
         reason
@@ -145,7 +196,7 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
   }
 
   return {
-    async hydrate() {
+    async hydrate(): Promise<void> {
       const parsed = parsePlannerUrlHash(window.location.hash);
       if (!parsed) {
         diagnostics.debug("planner url hydrate skipped");
@@ -154,8 +205,17 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
 
       muted = true;
       try {
-        diagnostics.info("hydrating planner state from url", parsed);
-        await plannerStore.restoreState(parsed);
+        diagnostics.info("hydrating planner state from url", { ...parsed });
+        const snapshot: PlannerStoreSnapshot = {
+          trip: parsed.trip,
+          filterInterest: parsed.filterInterest,
+          filterPop: parsed.filterPop,
+          legMin: parsed.legMin,
+          legMax: parsed.legMax,
+          searchQuery: parsed.searchQuery,
+          mapView: parsed.mapView
+        };
+        await plannerStore.restoreState(snapshot);
         if (parsed.mapView) {
           mapSurface.setViewState(parsed.mapView);
         }
@@ -165,7 +225,7 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
 
       commit("hydrate");
     },
-    start() {
+    start(): () => void {
       diagnostics.info("starting planner url synchronization");
       const unsubscribeStore = plannerStore.subscribe(() => {
         scheduleCommit("planner-store", STORE_COMMIT_DELAY_MS);
@@ -184,7 +244,7 @@ export function bindPlannerUrlState({ plannerStore, mapSurface }) {
   };
 }
 
-function parseMapView(value) {
+function parseMapView(value: string): PlannerUrlMapView | null {
   const decoded = decodeComponent(value);
   const [zoomRaw = "", latRaw = "", lonRaw = ""] = decoded.split("/");
   const zoom = Number.parseFloat(zoomRaw);
@@ -197,18 +257,18 @@ function parseMapView(value) {
   return { zoom, lat, lon };
 }
 
-function parseInteger(value, fallback) {
+function parseInteger(value: string, fallback: number): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) ? fallback : parsed;
 }
 
-function encodeComponent(value) {
+function encodeComponent(value: unknown): string {
   return encodeURIComponent(String(value || ""))
     .replaceAll("%3A", ":")
     .replaceAll("%7E", "~");
 }
 
-function decodeComponent(value) {
+function decodeComponent(value: string): string {
   try {
     return decodeURIComponent(value);
   } catch {

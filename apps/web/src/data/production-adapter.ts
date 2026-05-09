@@ -1,10 +1,21 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
+import type {
+  GeoPoint,
+  PlannerCity,
+  PlannerDataset,
+  PlannerRouteData,
+  ProductionArtifactBundle,
+  RawCityLocation,
+  RawEdgeGeometryPoint,
+  RoutePair,
+  SearchIndexEntry
+} from "../types/planner-dataset.ts";
 import {
   assertPlannerDataset,
   assertProductionArtifactBundle
 } from "./planner-dataset-contracts.ts";
 
-const FALLBACK_COUNTRY_LABELS = {
+const FALLBACK_COUNTRY_LABELS: Record<string, string> = {
   AT: "Austria",
   CH: "Switzerland",
   DE: "Germany",
@@ -13,12 +24,18 @@ const FALLBACK_COUNTRY_LABELS = {
   LU: "Luxembourg",
   ZZ: "Imported"
 };
-const countryDisplayNames = typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function"
-  ? new Intl.DisplayNames(["en"], { type: "region" })
-  : null;
+const countryDisplayNames: Intl.DisplayNames | null =
+  typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function"
+    ? new Intl.DisplayNames(["en"], { type: "region" })
+    : null;
 const diagnostics = createDiagnostics("web/data/production-adapter");
 
-export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries }) {
+export function buildProductionPlannerData({
+  meta,
+  rawCities,
+  rawEdges,
+  rawEdgeGeometries
+}: ProductionArtifactBundle): PlannerDataset {
   assertProductionArtifactBundle(
     { meta, rawCities, rawEdges, rawEdgeGeometries },
     "Production runtime artifact bundle"
@@ -30,25 +47,29 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
     raw_geometry_count: rawEdgeGeometries.geometries.length
   });
 
-  const neighborMap = new Map();
+  const neighborMap = new Map<string, Set<string>>();
   for (const edge of rawEdges) {
-    if (!neighborMap.has(edge.from_city_id)) {
-      neighborMap.set(edge.from_city_id, new Set());
+    let fromSet = neighborMap.get(edge.from_city_id);
+    if (!fromSet) {
+      fromSet = new Set<string>();
+      neighborMap.set(edge.from_city_id, fromSet);
     }
-    if (!neighborMap.has(edge.to_city_id)) {
-      neighborMap.set(edge.to_city_id, new Set());
+    let toSet = neighborMap.get(edge.to_city_id);
+    if (!toSet) {
+      toSet = new Set<string>();
+      neighborMap.set(edge.to_city_id, toSet);
     }
-    neighborMap.get(edge.from_city_id).add(edge.to_city_id);
-    neighborMap.get(edge.to_city_id).add(edge.from_city_id);
+    fromSet.add(edge.to_city_id);
+    toSet.add(edge.from_city_id);
   }
 
-  const nameCount = new Map();
+  const nameCount = new Map<string, number>();
   for (const city of rawCities) {
     nameCount.set(city.display_name, (nameCount.get(city.display_name) || 0) + 1);
   }
 
-  const usedNames = new Set();
-  const nameByCityId = new Map();
+  const usedNames = new Set<string>();
+  const nameByCityId = new Map<string, string>();
   for (const city of rawCities) {
     let name = city.display_name;
     if ((nameCount.get(city.display_name) || 0) > 1) {
@@ -61,13 +82,13 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
     nameByCityId.set(city.city_id, name);
   }
 
-  const cities = rawCities.map((city) => {
+  const cities: PlannerCity[] = rawCities.map((city): PlannerCity => {
     const degree = neighborMap.get(city.city_id)?.size || 0;
     const population = city.population ?? derivePopulation(degree, city.station_ids?.length || 1);
     const interest = city.interest_score ?? deriveInterest(degree);
 
     return {
-      name: nameByCityId.get(city.city_id),
+      name: nameByCityId.get(city.city_id) ?? city.display_name,
       lat: city.location.lat,
       lon: city.location.lon,
       country: countryLabel(city.country_code),
@@ -76,10 +97,10 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
     };
   });
 
-  const fallbackLocationByCityId = new Map(
+  const fallbackLocationByCityId = new Map<string, RawCityLocation>(
     rawCities.map((city) => [city.city_id, city.location])
   );
-  const geometryByDirectedKey = new Map();
+  const geometryByDirectedKey = new Map<string, GeoPoint[]>();
   for (const geometry of rawEdgeGeometries.geometries) {
     geometryByDirectedKey.set(
       `${geometry.from_city_id}->${geometry.to_city_id}`,
@@ -87,8 +108,8 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
     );
   }
 
-  const routeData = {};
-  const routePairs = [];
+  const routeData: PlannerRouteData = {};
+  const routePairs: RoutePair[] = [];
   for (const edge of rawEdges) {
     const from = nameByCityId.get(edge.from_city_id);
     const to = nameByCityId.get(edge.to_city_id);
@@ -96,34 +117,47 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
       continue;
     }
 
+    const directGeometry = geometryByDirectedKey.get(
+      `${edge.from_city_id}->${edge.to_city_id}`
+    );
+    let geometry: GeoPoint[];
+    if (directGeometry) {
+      geometry = directGeometry;
+    } else {
+      const fromLocation = fallbackLocationByCityId.get(edge.from_city_id);
+      const toLocation = fallbackLocationByCityId.get(edge.to_city_id);
+      const fallbackGeometry: GeoPoint[] = [];
+      if (fromLocation) fallbackGeometry.push(fromLocation);
+      if (toLocation) fallbackGeometry.push(toLocation);
+      geometry = fallbackGeometry;
+    }
+
     routePairs.push({
       from,
       minutes: edge.duration_min,
       to,
-      geometry:
-        geometryByDirectedKey.get(`${edge.from_city_id}->${edge.to_city_id}`) ||
-        [
-          fallbackLocationByCityId.get(edge.from_city_id),
-          fallbackLocationByCityId.get(edge.to_city_id)
-        ].filter(Boolean)
+      geometry
     });
     const routeKey = from.localeCompare(to) <= 0 ? `${from}-${to}` : `${to}-${from}`;
     routeData[routeKey] = Math.min(routeData[routeKey] ?? Infinity, edge.duration_min);
   }
 
-  const searchIndex = cities.map((city, cityIndex) => {
-    const cityNameNormalized = normalizeSearchValue(city.name);
-    const countryNormalized = normalizeSearchValue(city.country);
-    const aliasNormalized = (rawCities[cityIndex].aliases || [])
-      .map((alias) => normalizeSearchValue(alias))
-      .filter(Boolean);
-    return {
-      cityIndex,
-      cityNameNormalized,
-      countryNormalized,
-      searchText: `${cityNameNormalized} ${countryNormalized} ${aliasNormalized.join(" ")}`
-    };
-  });
+  const searchIndex: SearchIndexEntry[] = cities.map(
+    (city, cityIndex): SearchIndexEntry => {
+      const cityNameNormalized = normalizeSearchValue(city.name);
+      const countryNormalized = normalizeSearchValue(city.country);
+      const rawCity = rawCities[cityIndex];
+      const aliasNormalized = (rawCity?.aliases || [])
+        .map((alias) => normalizeSearchValue(alias))
+        .filter((alias): alias is string => Boolean(alias));
+      return {
+        cityIndex,
+        cityNameNormalized,
+        countryNormalized,
+        searchText: `${cityNameNormalized} ${countryNormalized} ${aliasNormalized.join(" ")}`
+      };
+    }
+  );
 
   const uniqueCountryCount = new Set(rawCities.map((city) => city.country_code)).size;
 
@@ -147,14 +181,14 @@ export function buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeG
   return dataset;
 }
 
-function decodeGeometryPoints(points) {
+function decodeGeometryPoints(points: RawEdgeGeometryPoint[]): GeoPoint[] {
   return points.map((point) => ({
     lat: point.lat_e5 / 100_000,
     lon: point.lon_e5 / 100_000
   }));
 }
 
-function countryLabel(countryCode) {
+function countryLabel(countryCode: string | null | undefined): string {
   const normalizedCode = String(countryCode || "").trim().toUpperCase();
   if (!normalizedCode) {
     return "Unknown";
@@ -166,7 +200,7 @@ function countryLabel(countryCode) {
   );
 }
 
-function deriveInterest(degree) {
+function deriveInterest(degree: number): number {
   if (degree >= 14) return 9;
   if (degree >= 9) return 8;
   if (degree >= 6) return 7;
@@ -176,7 +210,7 @@ function deriveInterest(degree) {
   return 3;
 }
 
-function derivePopulation(degree, stationCount) {
+function derivePopulation(degree: number, stationCount: number): number {
   if (degree >= 14) return 600_000;
   if (degree >= 9) return 350_000;
   if (degree >= 6) return 220_000;
@@ -185,7 +219,7 @@ function derivePopulation(degree, stationCount) {
   return Math.max(50_000, stationCount * 25_000);
 }
 
-function normalizeSearchValue(value) {
+function normalizeSearchValue(value: unknown): string {
   return String(value || "")
     .normalize("NFKD")
     .replaceAll(/\p{Diacritic}/gu, "")

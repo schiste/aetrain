@@ -1,4 +1,9 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
+import type { PlannerCity } from "../types/planner-dataset.ts";
+import type {
+  PlannerModelMetadata,
+  PlannerSegment
+} from "../types/planner-engine.ts";
 import {
   boundsCenter,
   fitBoundsZoom,
@@ -6,20 +11,177 @@ import {
   mercatorUnproject,
   panCameraByPixels,
   projectWorldToScreen,
-  scaleForZoom,
-  zoomCameraAroundPoint
+  zoomCameraAroundPoint,
+  type MapPoint,
+  type MapSize,
+  type MapView,
+  type WorldPoint
 } from "./camera-model.ts";
-import { buildLandmassPolygons } from "./landmass-model.ts";
+import {
+  buildLandmassPolygons,
+  type RawBorderRecord
+} from "./landmass-model.ts";
 import {
   buildLodProfile,
   createSpatialGrid,
   hitTestSpatialGrid,
   lineIntersectsViewport,
   pointInViewport,
-  selectLabelCandidates
+  selectLabelCandidates,
+  type LabelCandidate,
+  type LabelThresholdFn,
+  type LodProfile,
+  type SpatialGrid
 } from "./render-model.ts";
 
-const DEFAULT_VIEW = {
+interface MapPlannerState {
+  distFromLast: Record<string, number>;
+  filterInterest: number;
+  filterPop: number;
+  legDynMax: number;
+  legMax: number;
+  legMin: number;
+  searchQuery: string;
+  segments: (PlannerSegment | null)[];
+  trip: string[];
+}
+
+type PlannerStateInput = Partial<MapPlannerState>;
+
+interface RenderStats {
+  culledByLod: number;
+  culledByViewport: number;
+  labelCount: number;
+  reachable: number;
+  rendered: number;
+  shown: number;
+  total: number;
+}
+
+interface MarkerStyle {
+  color: string;
+  fillColor: string;
+  fillOpacity: number;
+  opacity: number;
+  radius: number;
+  weight: number;
+}
+
+interface VisibleCity extends MapPoint {
+  city: PlannerCity;
+  inTrip: boolean;
+  radius: number;
+  style: MarkerStyle;
+  travelTime: number | undefined;
+}
+
+interface InternalLabelCandidate extends LabelCandidate {
+  priority: number;
+}
+
+interface PlannerStateSignature {
+  distRef: unknown;
+  filterKey: string;
+  legKey: string;
+  segmentsRef: unknown;
+  tripKey: string;
+}
+
+interface DirtyFlags {
+  cities: boolean;
+  frame: boolean;
+  labels: boolean;
+  network: boolean;
+  routes: boolean;
+}
+
+interface MapFrame {
+  camera: MapView;
+  cameraWorld: WorldPoint;
+  key: string;
+  lod: LodProfile;
+  pixelRatio: number;
+  projectCity(city: PlannerCity): MapPoint;
+  projectWorld(worldPoint: WorldPoint): MapPoint;
+  size: MapSize;
+  zoom: number;
+}
+
+interface RenderPlan {
+  hitGrid: SpatialGrid<VisibleCity>;
+  labels: InternalLabelCandidate[];
+  stats: RenderStats;
+  visibleCities: VisibleCity[];
+}
+
+interface RenderPlanCache {
+  distRef: unknown;
+  filterKey: string;
+  frameKey: string;
+  includeLabels: boolean;
+  legKey: string;
+  plan: RenderPlan;
+  tripKey: string;
+}
+
+interface PointerState {
+  dragDistance: number;
+  id: number;
+  lastPoint: MapPoint;
+  moved: boolean;
+}
+
+interface PreparedCity {
+  city: PlannerCity;
+  renderPriority: number;
+  world: WorldPoint;
+}
+
+interface PreparedEdge {
+  from: string;
+  to: string;
+  fromIndex: number;
+  toIndex: number;
+  minutes: number;
+  key: string;
+  fromCity: PlannerCity;
+  toCity: PlannerCity;
+  fromWorld: WorldPoint;
+  toWorld: WorldPoint;
+  geometryWorld: WorldPoint[] | null;
+  renderPriority: number;
+}
+
+interface ZoomControls {
+  root: HTMLDivElement;
+  zoomIn: HTMLButtonElement;
+  zoomOut: HTMLButtonElement;
+}
+
+type ViewChangeListener = (view: MapView) => void;
+
+export interface CreateLeafletMapSurfaceOptions {
+  borderData: RawBorderRecord[] | null | undefined;
+  cities: PlannerCity[];
+  elementId: string;
+  escapeHtml: (value: unknown) => string;
+  formatMinutes: (minutes: number | null | undefined) => string;
+  formatPopulation: (population: number) => string;
+  graph: PlannerModelMetadata;
+  labelThreshold: LabelThresholdFn;
+  onCitySelect?: (name: string) => void;
+  onRenderStatsChange?: (stats: RenderStats) => void;
+}
+
+export interface LeafletMapSurface {
+  flyToCity(name: string): void;
+  getViewState(): MapView;
+  render(nextState: PlannerStateInput): RenderStats;
+  setViewState(viewState: MapView | null | undefined): void;
+  subscribeViewChange(listener: ViewChangeListener): () => void;
+}
+
+const DEFAULT_VIEW: MapView = {
   ...boundsCenter({
     west: -11,
     east: 35,
@@ -62,16 +224,17 @@ export function createLeafletMapSurface({
   labelThreshold,
   onCitySelect,
   onRenderStatsChange
-}) {
+}: CreateLeafletMapSurfaceOptions): LeafletMapSurface {
   diagnostics.info("creating canvas map surface", {
     city_count: cities.length,
     edge_count: graph.edges.length
   });
 
-  const mapRoot = document.getElementById(elementId);
-  if (!mapRoot) {
+  const mapRootCandidate = document.getElementById(elementId);
+  if (!mapRootCandidate) {
     throw new Error(`Missing map root #${elementId}`);
   }
+  const mapRoot: HTMLElement = mapRootCandidate;
 
   mapRoot.replaceChildren();
   mapRoot.style.position = "relative";
@@ -112,14 +275,21 @@ export function createLeafletMapSurface({
 
   const zoomControls = createZoomControls(surfaceRoot);
 
-  const backgroundContext = backgroundCanvas.getContext("2d");
-  const networkContext = networkCanvas.getContext("2d");
-  const cityContext = cityCanvas.getContext("2d");
-  const routeContext = routeCanvas.getContext("2d");
+  const backgroundContextOrNull = backgroundCanvas.getContext("2d");
+  const networkContextOrNull = networkCanvas.getContext("2d");
+  const cityContextOrNull = cityCanvas.getContext("2d");
+  const routeContextOrNull = routeCanvas.getContext("2d");
+  if (!backgroundContextOrNull || !networkContextOrNull || !cityContextOrNull || !routeContextOrNull) {
+    throw new Error("Failed to acquire 2d canvas contexts");
+  }
+  const backgroundContext: CanvasRenderingContext2D = backgroundContextOrNull;
+  const networkContext: CanvasRenderingContext2D = networkContextOrNull;
+  const cityContext: CanvasRenderingContext2D = cityContextOrNull;
+  const routeContext: CanvasRenderingContext2D = routeContextOrNull;
 
-  const cityWorldByName = new Map();
-  const preparedCities = cities
-    .map((city) => {
+  const cityWorldByName = new Map<string, WorldPoint>();
+  const preparedCities: PreparedCity[] = cities
+    .map((city): PreparedCity => {
       const world = mercatorProject(city.lon, city.lat);
       cityWorldByName.set(city.name, world);
       return {
@@ -129,13 +299,13 @@ export function createLeafletMapSurface({
       };
     })
     .sort((left, right) => right.renderPriority - left.renderPriority);
-  const landmassPolygons = buildLandmassPolygons(borderData).map((polygon) =>
+  const landmassPolygons: WorldPoint[][][] = buildLandmassPolygons(borderData).map((polygon) =>
     polygon.map((ring) =>
       ring.map((point) => mercatorProject(point.lon, point.lat))
     )
   );
-  const edgeRefs = graph.edges
-    .map((edge) => {
+  const edgeRefs: PreparedEdge[] = graph.edges
+    .map((edge): PreparedEdge | null => {
       const fromCity = graph.cityMap[edge.from];
       const toCity = graph.cityMap[edge.to];
       const fromWorld = cityWorldByName.get(edge.from);
@@ -145,7 +315,12 @@ export function createLeafletMapSurface({
       }
 
       return {
-        ...edge,
+        from: edge.from,
+        to: edge.to,
+        fromIndex: edge.fromIndex,
+        toIndex: edge.toIndex,
+        minutes: edge.minutes,
+        key: edge.key,
         fromCity,
         fromWorld,
         geometryWorld: Array.isArray(edge.geometry)
@@ -156,7 +331,7 @@ export function createLeafletMapSurface({
         toWorld
       };
     })
-    .filter(Boolean)
+    .filter((edge): edge is PreparedEdge => edge !== null)
     .sort((left, right) => right.renderPriority - left.renderPriority);
 
   diagnostics.info("prepared map scene data", {
@@ -164,14 +339,14 @@ export function createLeafletMapSurface({
     landmass_polygon_count: landmassPolygons.length
   });
 
-  let camera = { ...DEFAULT_VIEW };
+  let camera: MapView = { ...DEFAULT_VIEW };
   let semanticZoom = camera.zoom;
   let currentSize = readSize(mapRoot);
-  let currentState = createEmptyPlannerState();
+  let currentState: MapPlannerState = createEmptyPlannerState();
   let currentSignature = summarizePlannerRenderState(currentState);
-  let currentFrame = null;
-  let renderPlanCache = null;
-  let lastRenderStats = {
+  let currentFrame: MapFrame | null = null;
+  let renderPlanCache: RenderPlanCache | null = null;
+  let lastRenderStats: RenderStats = {
     culledByLod: 0,
     culledByViewport: 0,
     labelCount: 0,
@@ -180,12 +355,12 @@ export function createLeafletMapSurface({
     shown: 0,
     total: cities.length
   };
-  let hitGrid = createSpatialGrid([]);
-  let viewChangeListeners = new Set();
-  let labelPool = [];
+  let hitGrid: SpatialGrid<VisibleCity> = createSpatialGrid<VisibleCity>([]);
+  const viewChangeListeners = new Set<ViewChangeListener>();
+  const labelPool: HTMLDivElement[] = [];
   let scheduledFrameId = 0;
-  let pendingReason = null;
-  let pendingDirty = createDirtyFlags({
+  let pendingReason: string | null = null;
+  let pendingDirty: DirtyFlags = createDirtyFlags({
     cities: true,
     frame: true,
     labels: true,
@@ -197,7 +372,7 @@ export function createLeafletMapSurface({
   let flyAnimationId = 0;
   let lastHotRenderInfoAt = 0;
   let isZooming = false;
-  let pointerState = null;
+  let pointerState: PointerState | null = null;
 
   const resizeObserver =
     typeof ResizeObserver !== "undefined"
@@ -239,7 +414,7 @@ export function createLeafletMapSurface({
   scheduleRender("surface-init", pendingDirty);
 
   return {
-    flyToCity(name) {
+    flyToCity(name: string): void {
       const city = graph.cityMap[name];
       if (!city) {
         diagnostics.warn("cannot fly to unknown city", {
@@ -260,7 +435,7 @@ export function createLeafletMapSurface({
       });
     },
     getViewState,
-    render(nextState) {
+    render(nextState: PlannerStateInput): RenderStats {
       const normalizedState = normalizePlannerState(nextState);
       const nextSignature = summarizePlannerRenderState(normalizedState);
       const dirty = diffPlannerState(currentSignature, nextSignature);
@@ -277,19 +452,19 @@ export function createLeafletMapSurface({
       scheduleRender("planner-state", dirty);
       return lastRenderStats;
     },
-    setViewState(viewState) {
+    setViewState(viewState: MapView | null | undefined): void {
       if (!viewState) {
         return;
       }
 
-      diagnostics.info("setting map view state", viewState);
+      diagnostics.info("setting map view state", { ...viewState });
       stopFlyAnimation();
       clearZoomInteraction();
       camera = clampCamera(viewState, currentSize);
       semanticZoom = camera.zoom;
       invalidateView("set-view-state");
     },
-    subscribeViewChange(listener) {
+    subscribeViewChange(listener: ViewChangeListener): () => void {
       diagnostics.debug("subscribed map view change listener", {
         listener_count_before: viewChangeListeners.size
       });
@@ -303,7 +478,7 @@ export function createLeafletMapSurface({
     }
   };
 
-  function handleWindowResize() {
+  function handleWindowResize(): void {
     currentSize = readSize(mapRoot);
     camera = clampCamera(camera, currentSize);
     semanticZoom = clampZoom(semanticZoom, currentSize);
@@ -312,7 +487,7 @@ export function createLeafletMapSurface({
     });
   }
 
-  function onWheel(event) {
+  function onWheel(event: WheelEvent): void {
     event.preventDefault();
     stopFlyAnimation();
     const point = getLocalPoint(event, mapRoot);
@@ -339,7 +514,7 @@ export function createLeafletMapSurface({
     scheduleZoomSettle();
   }
 
-  function onPointerDown(event) {
+  function onPointerDown(event: PointerEvent): void {
     if (event.button !== 0) {
       return;
     }
@@ -356,7 +531,7 @@ export function createLeafletMapSurface({
     surfaceRoot.style.cursor = "grabbing";
   }
 
-  function onPointerMove(event) {
+  function onPointerMove(event: PointerEvent): void {
     const point = getLocalPoint(event, mapRoot);
 
     if (!pointerState || pointerState.id !== event.pointerId) {
@@ -380,7 +555,7 @@ export function createLeafletMapSurface({
     invalidateView("pointer-pan");
   }
 
-  function onPointerUp(event) {
+  function onPointerUp(event: PointerEvent): void {
     if (!pointerState || pointerState.id !== event.pointerId) {
       return;
     }
@@ -409,11 +584,11 @@ export function createLeafletMapSurface({
     onCitySelect?.(hit.city.name);
   }
 
-  function onPointerCancel(event) {
+  function onPointerCancel(event: PointerEvent): void {
     finishPointerInteraction(event.pointerId);
   }
 
-  function onPointerLeave() {
+  function onPointerLeave(): void {
     if (pointerState) {
       return;
     }
@@ -422,7 +597,7 @@ export function createLeafletMapSurface({
     hideTooltip();
   }
 
-  function finishPointerInteraction(pointerId) {
+  function finishPointerInteraction(pointerId: number): void {
     if (!pointerState || pointerState.id !== pointerId) {
       return;
     }
@@ -434,9 +609,9 @@ export function createLeafletMapSurface({
     surfaceRoot.style.cursor = "grab";
   }
 
-  function zoomByDelta(delta) {
+  function zoomByDelta(delta: number): void {
     stopFlyAnimation();
-    const anchorPoint = {
+    const anchorPoint: MapPoint = {
       x: currentSize.x / 2,
       y: currentSize.y / 2
     };
@@ -459,7 +634,7 @@ export function createLeafletMapSurface({
     scheduleZoomSettle();
   }
 
-  function beginZoomInteraction() {
+  function beginZoomInteraction(): void {
     if (isZooming) {
       return;
     }
@@ -472,14 +647,14 @@ export function createLeafletMapSurface({
     });
   }
 
-  function scheduleZoomSettle() {
+  function scheduleZoomSettle(): void {
     window.clearTimeout(zoomSettleTimeoutId);
     zoomSettleTimeoutId = window.setTimeout(() => {
       clearZoomInteraction(true);
     }, ZOOM_SETTLE_DELAY_MS);
   }
 
-  function clearZoomInteraction(notifyViewChange = false) {
+  function clearZoomInteraction(notifyViewChange = false): void {
     if (!isZooming && !zoomSettleTimeoutId) {
       return;
     }
@@ -494,17 +669,17 @@ export function createLeafletMapSurface({
     });
   }
 
-  function animateCameraTo(target) {
+  function animateCameraTo(target: MapView): void {
     stopFlyAnimation();
 
-    const startCamera = { ...camera };
+    const startCamera: MapView = { ...camera };
     const startWorld = mercatorProject(startCamera.lon, startCamera.lat);
     const endCamera = clampCamera(target, currentSize);
     const endWorld = mercatorProject(endCamera.lon, endCamera.lat);
     const startedAt = now();
     const durationMs = 560;
 
-    const tick = () => {
+    const tick = (): void => {
       const progress = Math.min(1, (now() - startedAt) / durationMs);
       const eased = easeInOutCubic(progress);
       const centerWorld = {
@@ -532,7 +707,7 @@ export function createLeafletMapSurface({
     flyAnimationId = window.requestAnimationFrame(tick);
   }
 
-  function stopFlyAnimation() {
+  function stopFlyAnimation(): void {
     if (!flyAnimationId) {
       return;
     }
@@ -541,7 +716,7 @@ export function createLeafletMapSurface({
     flyAnimationId = 0;
   }
 
-  function getViewState() {
+  function getViewState(): MapView {
     return {
       lat: camera.lat,
       lon: camera.lon,
@@ -549,7 +724,7 @@ export function createLeafletMapSurface({
     };
   }
 
-  function invalidateView(reason, options = {}) {
+  function invalidateView(reason: string, options: { notifyViewChange?: boolean } = {}): void {
     currentFrame = null;
     renderPlanCache = null;
     scheduleRender(reason, createDirtyFlags({
@@ -564,7 +739,7 @@ export function createLeafletMapSurface({
     }
   }
 
-  function scheduleViewChangeNotification() {
+  function scheduleViewChangeNotification(): void {
     window.clearTimeout(viewChangeTimeoutId);
     viewChangeTimeoutId = window.setTimeout(() => {
       const viewState = getViewState();
@@ -574,7 +749,7 @@ export function createLeafletMapSurface({
     }, VIEW_CHANGE_COMMIT_DELAY_MS);
   }
 
-  function scheduleRender(reason, dirty) {
+  function scheduleRender(reason: string, dirty: DirtyFlags): void {
     mergeDirtyFlags(pendingDirty, dirty);
     pendingReason = pendingReason || reason;
 
@@ -588,7 +763,7 @@ export function createLeafletMapSurface({
     });
   }
 
-  function flushRender() {
+  function flushRender(): void {
     const dirty = pendingDirty;
     const reason = pendingReason || "render";
     pendingDirty = createDirtyFlags();
@@ -627,7 +802,7 @@ export function createLeafletMapSurface({
     emitRenderDiagnostics(reason, dirty, now() - startedAt, frame, lastRenderStats);
   }
 
-  function getFrame() {
+  function getFrame(): MapFrame {
     if (currentFrame) {
       return currentFrame;
     }
@@ -647,8 +822,8 @@ export function createLeafletMapSurface({
     ].join(":");
     const cameraWorld = mercatorProject(camera.lon, camera.lat);
     const lod = buildLodProfile(semanticZoom, labelThreshold);
-    const projectCache = new Map();
-    const worldProjectCache = new Map();
+    const projectCache = new Map<string, MapPoint>();
+    const worldProjectCache = new Map<string, MapPoint>();
 
     syncSurfaceFrame({ pixelRatio, size });
 
@@ -658,18 +833,23 @@ export function createLeafletMapSurface({
       key,
       lod,
       pixelRatio,
-      projectCity(city) {
+      projectCity(city: PlannerCity): MapPoint {
         const cached = projectCache.get(city.name);
         if (cached) {
           return cached;
         }
 
         const worldPoint = cityWorldByName.get(city.name);
+        if (!worldPoint) {
+          const fallback = projectWorldToScreen(mercatorProject(city.lon, city.lat), camera, size);
+          projectCache.set(city.name, fallback);
+          return fallback;
+        }
         const projected = this.projectWorld(worldPoint);
         projectCache.set(city.name, projected);
         return projected;
       },
-      projectWorld(worldPoint) {
+      projectWorld(worldPoint: WorldPoint): MapPoint {
         const cacheKey = `${worldPoint.x}:${worldPoint.y}`;
         const cached = worldProjectCache.get(cacheKey);
         if (cached) {
@@ -687,7 +867,7 @@ export function createLeafletMapSurface({
     return currentFrame;
   }
 
-  function syncSurfaceFrame(frame) {
+  function syncSurfaceFrame(frame: { pixelRatio: number; size: MapSize }): void {
     surfaceRoot.style.width = `${frame.size.x}px`;
     surfaceRoot.style.height = `${frame.size.y}px`;
 
@@ -700,7 +880,12 @@ export function createLeafletMapSurface({
     labelsLayer.style.height = `${frame.size.y}px`;
   }
 
-  function getRenderPlan(frame, plannerState, signature, options = {}) {
+  function getRenderPlan(
+    frame: MapFrame,
+    plannerState: MapPlannerState,
+    signature: PlannerStateSignature,
+    options: { includeLabels?: boolean } = {}
+  ): RenderPlan {
     const includeLabels = options.includeLabels !== false;
     if (
       renderPlanCache &&
@@ -727,7 +912,7 @@ export function createLeafletMapSurface({
     return plan;
   }
 
-  function drawLandmass(frame) {
+  function drawLandmass(frame: MapFrame): void {
     clearCanvas(backgroundContext, backgroundCanvas);
     backgroundContext.save();
     backgroundContext.fillStyle = OCEAN_FILL_COLOR;
@@ -749,7 +934,7 @@ export function createLeafletMapSurface({
     });
   }
 
-  function drawBackgroundNetwork(frame) {
+  function drawBackgroundNetwork(frame: MapFrame): void {
     clearCanvas(networkContext, networkCanvas);
     networkContext.save();
     networkContext.strokeStyle = "rgba(30,41,59,0.5)";
@@ -768,7 +953,7 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const worldPoints = shouldSimplifyGeometry
+      const worldPoints: WorldPoint[] = shouldSimplifyGeometry
         ? [edge.fromWorld, edge.toWorld]
         : edge.geometryWorld || [edge.fromWorld, edge.toWorld];
       const points = worldPoints.map((worldPoint) => frame.projectWorld(worldPoint));
@@ -788,22 +973,26 @@ export function createLeafletMapSurface({
     });
   }
 
-  function drawRoutes(frame, segments) {
+  function drawRoutes(
+    frame: MapFrame,
+    segments: (PlannerSegment | null)[] | undefined
+  ): void {
     clearCanvas(routeContext, routeCanvas);
     let drawnSegments = 0;
 
     for (const segment of segments || []) {
-      if ((!segment?.path || segment.path.length < 2) && (!segment?.geometry || segment.geometry.length < 2)) {
+      if (!segment) continue;
+      if ((!segment.path || segment.path.length < 2) && (!segment.geometry || segment.geometry.length < 2)) {
         continue;
       }
 
-      const points = Array.isArray(segment.geometry) && segment.geometry.length >= 2
+      const points: MapPoint[] = Array.isArray(segment.geometry) && segment.geometry.length >= 2
         ? segment.geometry
             .map((point) => mercatorProject(point.lon, point.lat))
             .map((worldPoint) => frame.projectWorld(worldPoint))
         : segment.path
             .map((name) => cityWorldByName.get(name))
-            .filter(Boolean)
+            .filter((worldPoint): worldPoint is WorldPoint => Boolean(worldPoint))
             .map((worldPoint) => frame.projectWorld(worldPoint));
       if (points.length < 2) {
         continue;
@@ -841,7 +1030,7 @@ export function createLeafletMapSurface({
     });
   }
 
-  function drawCities(frame, visibleCities) {
+  function drawCities(_frame: MapFrame, visibleCities: VisibleCity[]): void {
     clearCanvas(cityContext, cityCanvas);
 
     for (const visibleCity of visibleCities) {
@@ -849,7 +1038,7 @@ export function createLeafletMapSurface({
     }
   }
 
-  function drawMarker(visibleCity, style) {
+  function drawMarker(visibleCity: VisibleCity, style: MarkerStyle): void {
     cityContext.save();
     cityContext.beginPath();
     cityContext.arc(visibleCity.x, visibleCity.y, style.radius, 0, Math.PI * 2);
@@ -861,7 +1050,11 @@ export function createLeafletMapSurface({
     cityContext.restore();
   }
 
-  function buildRenderPlan(frame, plannerState, options = {}) {
+  function buildRenderPlan(
+    frame: MapFrame,
+    plannerState: MapPlannerState,
+    options: { includeLabels?: boolean } = {}
+  ): RenderPlan {
     const includeLabels = options.includeLabels !== false;
     const tripSet = new Set(plannerState.trip);
     const hasLegFilter = plannerState.trip.length >= 1;
@@ -874,8 +1067,8 @@ export function createLeafletMapSurface({
     let reachable = 0;
     let culledByViewport = 0;
     let culledByLod = 0;
-    const visibleCities = [];
-    const labelCandidates = [];
+    const visibleCities: VisibleCity[] = [];
+    const labelCandidates: InternalLabelCandidate[] = [];
 
     for (const entry of preparedCities) {
       const city = entry.city;
@@ -927,7 +1120,7 @@ export function createLeafletMapSurface({
         nonTripBudgetedCount += 1;
       }
       const style = markerStyle(city, frame.zoom, inTrip);
-      const visibleCity = {
+      const visibleCity: VisibleCity = {
         city,
         inTrip,
         radius: style.radius,
@@ -953,15 +1146,15 @@ export function createLeafletMapSurface({
       labelCandidates.push(buildLabelCandidate(visibleCity, plannerState, formatMinutes));
     }
 
-    const labels = includeLabels
-      ? selectLabelCandidates(
+    const labels: InternalLabelCandidate[] = includeLabels
+      ? selectLabelCandidates<InternalLabelCandidate>(
           labelCandidates.sort((left, right) => right.priority - left.priority),
           frame.lod.labelBudget
         )
       : [];
 
     return {
-      hitGrid: createSpatialGrid(visibleCities),
+      hitGrid: createSpatialGrid<VisibleCity>(visibleCities),
       labels,
       stats: {
         culledByLod,
@@ -976,12 +1169,13 @@ export function createLeafletMapSurface({
     };
   }
 
-  function applyLabels(labels) {
+  function applyLabels(labels: InternalLabelCandidate[]): void {
     ensureLabelPool(labels.length);
 
     for (let index = 0; index < labels.length; index += 1) {
       const label = labels[index];
       const node = labelPool[index];
+      if (!label || !node) continue;
       if (node.className !== label.className) {
         node.className = label.className;
       }
@@ -993,11 +1187,13 @@ export function createLeafletMapSurface({
     }
 
     for (let index = labels.length; index < labelPool.length; index += 1) {
-      labelPool[index].style.display = "none";
+      const node = labelPool[index];
+      if (!node) continue;
+      node.style.display = "none";
     }
   }
 
-  function ensureLabelPool(count) {
+  function ensureLabelPool(count: number): void {
     while (labelPool.length < count) {
       const node = document.createElement("div");
       node.style.position = "absolute";
@@ -1010,7 +1206,7 @@ export function createLeafletMapSurface({
     }
   }
 
-  function updateHover(point) {
+  function updateHover(point: MapPoint): void {
     const hit = hitTestSpatialGrid(hitGrid, point);
     surfaceRoot.style.cursor = pointerState?.moved
       ? "grabbing"
@@ -1023,28 +1219,38 @@ export function createLeafletMapSurface({
       return;
     }
 
-    tooltip.innerHTML = buildTooltipHtml(
+    setTooltipHtml(tooltip, buildTooltipHtml(
       hit,
       currentState,
       escapeHtml,
       formatMinutes,
       formatPopulation
-    );
+    ));
     tooltip.style.display = "block";
     tooltip.style.left = `${Math.round(point.x)}px`;
     tooltip.style.top = `${Math.round(point.y - 12)}px`;
     tooltip.style.transform = "translate(-50%, -100%)";
   }
 
-  function hideTooltip() {
+  function hideTooltip(): void {
     tooltip.style.display = "none";
   }
 
-  function emitRenderDiagnostics(reason, dirty, durationMs, frame, stats) {
+  function setTooltipHtml(target: HTMLElement, html: string): void {
+    target.innerHTML = html;
+  }
+
+  function emitRenderDiagnostics(
+    reason: string,
+    dirty: DirtyFlags,
+    durationMs: number,
+    frame: MapFrame,
+    stats: RenderStats
+  ): void {
     diagnostics.metric("map-render", stats.rendered, {
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
-      dirty,
+      dirty: { ...dirty },
       duration_ms: roundMs(durationMs),
       label_count: stats.labelCount,
       reachable: stats.reachable,
@@ -1073,7 +1279,11 @@ export function createLeafletMapSurface({
   }
 }
 
-function buildLabelCandidate(visibleCity, plannerState, formatMinutes) {
+function buildLabelCandidate(
+  visibleCity: VisibleCity,
+  plannerState: MapPlannerState,
+  formatMinutes: (minutes: number | null | undefined) => string
+): InternalLabelCandidate {
   let className = "city-lbl";
   let text = visibleCity.city.name;
   if (visibleCity.inTrip) {
@@ -1101,15 +1311,15 @@ function buildLabelCandidate(visibleCity, plannerState, formatMinutes) {
   };
 }
 
-function cityRenderPriority(city) {
+function cityRenderPriority(city: PlannerCity): number {
   return city.interest * 1_000_000 + city.pop;
 }
 
-function edgeRenderPriority(fromCity, toCity) {
+function edgeRenderPriority(fromCity: PlannerCity, toCity: PlannerCity): number {
   return cityRenderPriority(fromCity) + cityRenderPriority(toCity);
 }
 
-function labelPriority(visibleCity, plannerState) {
+function labelPriority(visibleCity: VisibleCity, plannerState: MapPlannerState): number {
   if (visibleCity.inTrip) {
     return 100_000 - plannerState.trip.indexOf(visibleCity.city.name);
   }
@@ -1117,7 +1327,13 @@ function labelPriority(visibleCity, plannerState) {
   return visibleCity.city.interest * 10_000 + visibleCity.city.pop / 1000;
 }
 
-function buildTooltipHtml(hit, plannerState, escapeHtml, formatMinutes, formatPopulation) {
+function buildTooltipHtml(
+  hit: VisibleCity,
+  plannerState: MapPlannerState,
+  escapeHtml: (value: unknown) => string,
+  formatMinutes: (minutes: number | null | undefined) => string,
+  formatPopulation: (population: number) => string
+): string {
   const stars = "★".repeat(Math.min(hit.city.interest, 10));
   let tooltip = `<b>${escapeHtml(hit.city.name)}</b><br><span style="color:#94a3b8;font-size:10px">${escapeHtml(hit.city.country)} · ${escapeHtml(formatPopulation(hit.city.pop))}</span><br><span style="color:#f59e0b;font-size:10px">${escapeHtml(stars)} ${hit.city.interest}/10</span>`;
 
@@ -1127,13 +1343,16 @@ function buildTooltipHtml(hit, plannerState, escapeHtml, formatMinutes, formatPo
     hit.travelTime < Infinity &&
     !plannerState.trip.includes(hit.city.name)
   ) {
-    tooltip += `<br><span style="color:#10b981;font-size:10px">🚂 ${escapeHtml(formatMinutes(hit.travelTime))} from ${escapeHtml(plannerState.trip[plannerState.trip.length - 1])}</span>`;
+    const last = plannerState.trip[plannerState.trip.length - 1];
+    if (last !== undefined) {
+      tooltip += `<br><span style="color:#10b981;font-size:10px">🚂 ${escapeHtml(formatMinutes(hit.travelTime))} from ${escapeHtml(last)}</span>`;
+    }
   }
 
   return tooltip;
 }
 
-function createEmptyPlannerState() {
+function createEmptyPlannerState(): MapPlannerState {
   return {
     distFromLast: {},
     filterInterest: 5,
@@ -1147,14 +1366,14 @@ function createEmptyPlannerState() {
   };
 }
 
-function normalizePlannerState(state) {
+function normalizePlannerState(state: PlannerStateInput): MapPlannerState {
   return {
     ...createEmptyPlannerState(),
     ...state
   };
 }
 
-function summarizePlannerRenderState(state) {
+function summarizePlannerRenderState(state: MapPlannerState): PlannerStateSignature {
   return {
     distRef: state.distFromLast,
     filterKey: `${state.filterInterest}:${state.filterPop}`,
@@ -1164,7 +1383,10 @@ function summarizePlannerRenderState(state) {
   };
 }
 
-function diffPlannerState(previous, next) {
+function diffPlannerState(
+  previous: PlannerStateSignature,
+  next: PlannerStateSignature
+): DirtyFlags {
   const dirty = createDirtyFlags();
 
   if (previous.tripKey !== next.tripKey || previous.segmentsRef !== next.segmentsRef) {
@@ -1184,7 +1406,7 @@ function diffPlannerState(previous, next) {
   return dirty;
 }
 
-function createDirtyFlags(flags = {}) {
+function createDirtyFlags(flags: Partial<DirtyFlags> = {}): DirtyFlags {
   return {
     cities: Boolean(flags.cities),
     frame: Boolean(flags.frame),
@@ -1194,7 +1416,7 @@ function createDirtyFlags(flags = {}) {
   };
 }
 
-function mergeDirtyFlags(target, next) {
+function mergeDirtyFlags(target: DirtyFlags, next: DirtyFlags): void {
   target.cities ||= next.cities;
   target.frame ||= next.frame;
   target.labels ||= next.labels;
@@ -1202,11 +1424,11 @@ function mergeDirtyFlags(target, next) {
   target.routes ||= next.routes;
 }
 
-function hasDirtyFlags(flags) {
+function hasDirtyFlags(flags: DirtyFlags): boolean {
   return flags.cities || flags.frame || flags.labels || flags.network || flags.routes;
 }
 
-function createCanvas(className, parent) {
+function createCanvas(className: string, parent: HTMLElement): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.className = className;
   canvas.style.position = "absolute";
@@ -1218,7 +1440,12 @@ function createCanvas(className, parent) {
   return canvas;
 }
 
-function syncCanvasSize(canvas, context, size, pixelRatio) {
+function syncCanvasSize(
+  canvas: HTMLCanvasElement,
+  context: CanvasRenderingContext2D,
+  size: MapSize,
+  pixelRatio: number
+): void {
   const width = Math.max(1, Math.round(size.x * pixelRatio));
   const height = Math.max(1, Math.round(size.y * pixelRatio));
   if (canvas.width !== width || canvas.height !== height) {
@@ -1231,27 +1458,38 @@ function syncCanvasSize(canvas, context, size, pixelRatio) {
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 }
 
-function clearCanvas(context, canvas) {
+function clearCanvas(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
   context.save();
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.restore();
 }
 
-function tracePoints(context, points) {
-  context.moveTo(points[0].x, points[0].y);
+function tracePoints(context: CanvasRenderingContext2D, points: MapPoint[]): void {
+  const first = points[0];
+  if (!first) return;
+  context.moveTo(first.x, first.y);
   for (let index = 1; index < points.length; index += 1) {
-    context.lineTo(points[index].x, points[index].y);
+    const point = points[index];
+    if (!point) continue;
+    context.lineTo(point.x, point.y);
   }
 }
 
-function polylineIntersectsViewport(points, size, padding) {
+function polylineIntersectsViewport(
+  points: MapPoint[],
+  size: MapSize,
+  padding: number
+): boolean {
   if (points.some((point) => pointInViewport(point, size, padding))) {
     return true;
   }
 
   for (let index = 1; index < points.length; index += 1) {
-    if (lineIntersectsViewport(points[index - 1], points[index], size, padding)) {
+    const previous = points[index - 1];
+    const current = points[index];
+    if (!previous || !current) continue;
+    if (lineIntersectsViewport(previous, current, size, padding)) {
       return true;
     }
   }
@@ -1259,34 +1497,42 @@ function polylineIntersectsViewport(points, size, padding) {
   return false;
 }
 
-function traceWorldRing(context, ring, frame) {
+function traceWorldRing(
+  context: CanvasRenderingContext2D,
+  ring: WorldPoint[],
+  frame: MapFrame
+): void {
   if (!ring || ring.length < 3) {
     return;
   }
 
-  const first = frame.projectWorld(ring[0]);
+  const firstWorld = ring[0];
+  if (!firstWorld) return;
+  const first = frame.projectWorld(firstWorld);
   context.moveTo(first.x, first.y);
   for (let index = 1; index < ring.length; index += 1) {
-    const point = frame.projectWorld(ring[index]);
+    const ringPoint = ring[index];
+    if (!ringPoint) continue;
+    const point = frame.projectWorld(ringPoint);
     context.lineTo(point.x, point.y);
   }
   context.closePath();
 }
 
-function markerRadius(interest, zoom) {
+function markerRadius(interest: number, zoom: number): number {
   const base = interest >= 9 ? 6 : interest >= 7 ? 4.5 : interest >= 5 ? 3.5 : 2.5;
   const zoomFactor = zoom <= 4 ? 0.8 : zoom <= 6 ? 1 : zoom <= 8 ? 1.3 : 1.6;
   return Math.max(2, Math.round(base * zoomFactor));
 }
 
-function markerColor(interest) {
+function markerColor(interest: number): string {
   if (interest >= 9) return "#f59e0b";
   if (interest >= 7) return "#38bdf8";
   if (interest >= 5) return "#94a3b8";
   return "#475569";
 }
 
-function markerStyle(city, zoom, inTrip) {
+function markerStyle(city: PlannerCity, zoom: number, inTrip: boolean): MarkerStyle {
   const color = inTrip ? "#f59e0b" : markerColor(city.interest);
   const radius = inTrip
     ? Math.max(8, markerRadius(city.interest, zoom) + 3)
@@ -1301,7 +1547,7 @@ function markerStyle(city, zoom, inTrip) {
   };
 }
 
-function toCanvasColor(hexColor, alpha) {
+function toCanvasColor(hexColor: string, alpha: number): string {
   const normalized = String(hexColor || "#000000").replace("#", "");
   const expanded =
     normalized.length === 3
@@ -1316,7 +1562,7 @@ function toCanvasColor(hexColor, alpha) {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
-function createZoomControls(parent) {
+function createZoomControls(parent: HTMLElement): ZoomControls {
   const root = document.createElement("div");
   root.style.position = "absolute";
   root.style.right = "12px";
@@ -1350,7 +1596,7 @@ function createZoomControls(parent) {
   };
 }
 
-function styleZoomButton(button, isTop) {
+function styleZoomButton(button: HTMLButtonElement, isTop: boolean): void {
   button.style.width = "30px";
   button.style.height = "30px";
   button.style.border = "none";
@@ -1373,7 +1619,7 @@ function styleZoomButton(button, isTop) {
   });
 }
 
-function readSize(element) {
+function readSize(element: HTMLElement): MapSize {
   const rect = element.getBoundingClientRect();
   return {
     x: Math.max(1, Math.round(rect.width)),
@@ -1381,7 +1627,7 @@ function readSize(element) {
   };
 }
 
-function getLocalPoint(event, element) {
+function getLocalPoint(event: MouseEvent | PointerEvent, element: HTMLElement): MapPoint {
   const rect = element.getBoundingClientRect();
   return {
     x: event.clientX - rect.left,
@@ -1389,7 +1635,7 @@ function getLocalPoint(event, element) {
   };
 }
 
-function normalizeWheelDelta(event) {
+function normalizeWheelDelta(event: WheelEvent): number {
   let deltaY = event.deltaY;
   if (event.deltaMode === 1) {
     deltaY *= 16;
@@ -1399,7 +1645,7 @@ function normalizeWheelDelta(event) {
   return deltaY;
 }
 
-function clampCamera(camera, size) {
+function clampCamera(camera: MapView, size: MapSize): MapView {
   const centerWorld = mercatorProject(camera.lon, camera.lat);
   const clampedCenter = mercatorUnproject(centerWorld.x, centerWorld.y);
   const minZoom = effectiveMinZoom(size);
@@ -1413,39 +1659,39 @@ function clampCamera(camera, size) {
   };
 }
 
-function clampZoom(zoom, size) {
+function clampZoom(zoom: number, size: MapSize): number {
   return Math.min(MAX_ZOOM, Math.max(effectiveMinZoom(size), zoom));
 }
 
-function effectiveMinZoom(size) {
+function effectiveMinZoom(size: MapSize): number {
   return Math.max(
     MIN_ZOOM,
     fitBoundsZoom(EUROPE_BOUNDS, size, EUROPE_VIEW_PADDING_PX)
   );
 }
 
-function easeInOutCubic(value) {
+function easeInOutCubic(value: number): number {
   return value < 0.5
     ? 4 * value * value * value
     : 1 - ((-2 * value + 2) ** 3) / 2;
 }
 
-function lerp(from, to, progress) {
+function lerp(from: number, to: number, progress: number): number {
   return from + (to - from) * progress;
 }
 
-function roundCoordinate(value, digits) {
+function roundCoordinate(value: number, digits: number): number {
   const power = 10 ** digits;
   return Math.round(value * power) / power;
 }
 
-function now() {
+function now(): number {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
     return performance.now();
   }
   return Date.now();
 }
 
-function roundMs(value) {
+function roundMs(value: number): number {
   return Math.round(value * 1000) / 1000;
 }

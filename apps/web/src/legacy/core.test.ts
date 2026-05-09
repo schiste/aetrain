@@ -23,9 +23,9 @@ test("createPlannerModel builds fastest path with indexed routing", () => {
   const model = createPlannerModel(cities, routeData);
   const route = model.dijkstra("Paris", "Marseille");
 
-  assert.deepEqual(route.path, ["Paris", "Lyon", "Marseille"]);
-  assert.equal(route.time, 225);
-  assert.deepEqual(route.geometry, [
+  assert.deepEqual(route!.path, ["Paris", "Lyon", "Marseille"]);
+  assert.equal(route!.time, 225);
+  assert.deepEqual(route!.geometry, [
     { lat: 48.8566, lon: 2.3522 },
     { lat: 45.764, lon: 4.8357 },
     { lat: 43.2965, lon: 5.3698 }
@@ -50,7 +50,7 @@ test("searchCities normalizes diacritics and ranking", () => {
   });
 
   assert.equal(results.length, 1);
-  assert.equal(results[0].name, "Aix-en-Provence");
+  assert.equal(results[0]!.name, "Aix-en-Provence");
 });
 
 test("model searchCities reuses prepared search index", () => {

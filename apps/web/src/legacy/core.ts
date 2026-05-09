@@ -1,4 +1,58 @@
-export function escapeHtml(value) {
+import type {
+  GeoPoint,
+  PlannerArtifacts,
+  PlannerCity,
+  PlannerRouteData,
+  SearchIndexEntry
+} from "../types/planner-dataset.ts";
+import type {
+  PlannerAdjacencyEntry,
+  PlannerEdge,
+  PlannerModel,
+  PlannerReachableDistances,
+  PlannerRouteResult,
+  PlannerSearchIndexEntry,
+  PlannerSegment,
+  PlannerSuggestion,
+  PlannerTripPlan
+} from "../types/planner-engine.ts";
+
+interface PlannerGraph {
+  adjacency: PlannerAdjacencyEntry[][];
+  cities: PlannerCity[];
+  cityIndexByName: Map<string, number>;
+  cityMap: Record<string, PlannerCity>;
+  edges: PlannerEdge[];
+  invalidRouteKeys: string[];
+  searchIndex: PlannerSearchIndexEntry[];
+}
+
+interface DijkstraIndexedResult {
+  distance: number;
+  pathIndexes: number[];
+}
+
+interface MinHeapItem {
+  distance: number;
+  node: number;
+}
+
+interface MinHeap {
+  isEmpty(): boolean;
+  pop(): MinHeapItem | null;
+  push(node: number, distance: number): void;
+}
+
+interface DeriveTripContext {
+  dijkstra(startName: string, endName: string): PlannerRouteResult | null;
+  dijkstraAll(startName: string): PlannerReachableDistances;
+  findInterestingStops(
+    segments: (PlannerSegment | null)[],
+    tripNames: string[]
+  ): PlannerSuggestion[];
+}
+
+export function escapeHtml(value: unknown): string {
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -7,7 +61,7 @@ export function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-export function formatMinutes(minutes) {
+export function formatMinutes(minutes: number | null | undefined): string {
   if (minutes !== 0 && !minutes) {
     return "—";
   }
@@ -22,7 +76,7 @@ export function formatMinutes(minutes) {
   return `${remainder}min`;
 }
 
-export function formatPopulation(population) {
+export function formatPopulation(population: number): string {
   if (population >= 1_000_000) {
     return `${(population / 1_000_000).toFixed(1)}M`;
   }
@@ -30,7 +84,7 @@ export function formatPopulation(population) {
   return `${Math.round(population / 1_000)}k`;
 }
 
-export function haversine(a, b) {
+export function haversine(a: GeoPoint, b: GeoPoint): number {
   const radiusKm = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
   const dLon = ((b.lon - a.lon) * Math.PI) / 180;
@@ -44,12 +98,23 @@ export function haversine(a, b) {
   return radiusKm * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-export function buildPlannerGraph(cities, routeData, options = {}) {
-  const cityMap = Object.fromEntries(cities.map((city) => [city.name, city]));
-  const cityIndexByName = new Map(cities.map((city, index) => [city.name, index]));
-  const adjacency = Array.from({ length: cities.length }, () => []);
-  const edges = [];
-  const invalidRouteKeys = [];
+export function buildPlannerGraph(
+  cities: PlannerCity[],
+  routeData: PlannerRouteData,
+  options: PlannerArtifacts = {}
+): PlannerGraph {
+  const cityMap: Record<string, PlannerCity> = Object.fromEntries(
+    cities.map((city) => [city.name, city])
+  );
+  const cityIndexByName = new Map<string, number>(
+    cities.map((city, index) => [city.name, index])
+  );
+  const adjacency: PlannerAdjacencyEntry[][] = Array.from(
+    { length: cities.length },
+    () => []
+  );
+  const edges: PlannerEdge[] = [];
+  const invalidRouteKeys: string[] = [];
   const parseRouteKey = parseRouteKeyFactory(cityMap);
 
   if (Array.isArray(options.routePairs) && options.routePairs.length > 0) {
@@ -86,7 +151,13 @@ export function buildPlannerGraph(cities, routeData, options = {}) {
     searchIndex
   };
 
-  function addRoute(fromName, toName, travelMinutes, routeKey, geometry) {
+  function addRoute(
+    fromName: string,
+    toName: string,
+    travelMinutes: number,
+    routeKey: string,
+    geometry?: GeoPoint[]
+  ): void {
     const fromIndex = cityIndexByName.get(fromName);
     const toIndex = cityIndexByName.get(toName);
     if (fromIndex === undefined || toIndex === undefined || fromIndex === toIndex) {
@@ -94,8 +165,14 @@ export function buildPlannerGraph(cities, routeData, options = {}) {
       return;
     }
 
-    adjacency[fromIndex].push({ geometry, t: travelMinutes, toIndex });
-    adjacency[toIndex].push({
+    const fromAdj = adjacency[fromIndex];
+    const toAdj = adjacency[toIndex];
+    if (!fromAdj || !toAdj) {
+      return;
+    }
+
+    fromAdj.push({ geometry, t: travelMinutes, toIndex });
+    toAdj.push({
       geometry: reverseGeometry(geometry),
       t: travelMinutes,
       toIndex: fromIndex
@@ -112,14 +189,23 @@ export function buildPlannerGraph(cities, routeData, options = {}) {
   }
 }
 
-export function deriveTripPlan(model, trip) {
-  const segments = [];
+export function deriveTripPlan(
+  model: DeriveTripContext,
+  trip: string[]
+): PlannerTripPlan {
+  const segments: (PlannerSegment | null)[] = [];
   for (let index = 0; index < trip.length - 1; index += 1) {
-    segments.push(model.dijkstra(trip[index], trip[index + 1]));
+    const from = trip[index];
+    const to = trip[index + 1];
+    if (from === undefined || to === undefined) {
+      segments.push(null);
+      continue;
+    }
+    segments.push(model.dijkstra(from, to));
   }
 
-  const distFromLast =
-    trip.length >= 1 ? model.dijkstraAll(trip[trip.length - 1]) : {};
+  const distFromLast: PlannerReachableDistances =
+    trip.length >= 1 ? model.dijkstraAll(trip[trip.length - 1] as string) : {};
 
   return {
     distFromLast,
@@ -128,7 +214,15 @@ export function deriveTripPlan(model, trip) {
   };
 }
 
-export function searchCities(citiesOrModel, { query, limit = 14 }) {
+interface SearchCitiesArgs {
+  query: string;
+  limit?: number;
+}
+
+export function searchCities(
+  citiesOrModel: PlannerCity[] | { searchIndex?: PlannerSearchIndexEntry[]; cities?: PlannerCity[] },
+  { query, limit = 14 }: SearchCitiesArgs
+): PlannerCity[] {
   const normalizedQuery = normalizeSearchQuery(query);
   if (!normalizedQuery) {
     return [];
@@ -150,7 +244,11 @@ export function searchCities(citiesOrModel, { query, limit = 14 }) {
     .map((entry) => entry.city);
 }
 
-export function createPlannerModel(cities, routeData, options = {}) {
+export function createPlannerModel(
+  cities: PlannerCity[],
+  routeData: PlannerRouteData,
+  options: PlannerArtifacts = {}
+): PlannerModel {
   const {
     adjacency,
     cityIndexByName,
@@ -160,7 +258,7 @@ export function createPlannerModel(cities, routeData, options = {}) {
     searchIndex
   } = buildPlannerGraph(cities, routeData, options);
 
-  function dijkstra(startName, endName) {
+  function dijkstra(startName: string, endName: string): PlannerRouteResult | null {
     if (startName === endName) {
       return { time: 0, path: [startName] };
     }
@@ -178,32 +276,41 @@ export function createPlannerModel(cities, routeData, options = {}) {
 
     return {
       geometry: buildPathGeometry(result.pathIndexes),
-      path: result.pathIndexes.map((index) => cities[index].name),
+      path: result.pathIndexes.map((index) => {
+        const city = cities[index];
+        if (!city) throw new Error(`Missing city at index ${index}`);
+        return city.name;
+      }),
       time: result.distance
     };
   }
 
-  function dijkstraAll(startName) {
+  function dijkstraAll(startName: string): PlannerReachableDistances {
     const startIndex = cityIndexByName.get(startName);
     if (startIndex === undefined) {
       return {};
     }
 
     const distances = dijkstraAllIndexed(adjacency, startIndex);
-    const result = {};
+    const result: PlannerReachableDistances = {};
     for (let index = 0; index < distances.length; index += 1) {
       const distance = distances[index];
-      if (!Number.isFinite(distance)) {
+      if (distance === undefined || !Number.isFinite(distance)) {
         continue;
       }
-      result[cities[index].name] = distance;
+      const city = cities[index];
+      if (!city) continue;
+      result[city.name] = distance;
     }
 
     return result;
   }
 
-  function findInterestingStops(segments, tripNames) {
-    const suggestions = [];
+  function findInterestingStops(
+    segments: (PlannerSegment | null)[],
+    tripNames: string[]
+  ): PlannerSuggestion[] {
+    const suggestions: PlannerSuggestion[] = [];
     const tripSet = new Set(tripNames);
 
     for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
@@ -214,7 +321,7 @@ export function createPlannerModel(cities, routeData, options = {}) {
 
       for (let pathIndex = 1; pathIndex < segment.path.length - 1; pathIndex += 1) {
         const name = segment.path[pathIndex];
-        if (tripSet.has(name)) {
+        if (name === undefined || tripSet.has(name)) {
           continue;
         }
 
@@ -226,13 +333,20 @@ export function createPlannerModel(cities, routeData, options = {}) {
         suggestions.push({ name, city, afterStop: segmentIndex, detourMin: 0 });
       }
 
-      const from = cityMap[segment.path[0]];
-      const to = cityMap[segment.path[segment.path.length - 1]];
+      const fromName = segment.path[0];
+      const toName = segment.path[segment.path.length - 1];
+      if (fromName === undefined || toName === undefined) {
+        continue;
+      }
+      const from = cityMap[fromName];
+      const to = cityMap[toName];
       if (!from || !to) {
         continue;
       }
 
-      const routeSet = Object.fromEntries(segment.path.map((name) => [name, true]));
+      const routeSet: Record<string, true> = Object.fromEntries(
+        segment.path.map((name) => [name, true])
+      );
       for (const city of cities) {
         if (city.interest < 7 || routeSet[city.name] || tripSet.has(city.name)) {
           continue;
@@ -249,8 +363,8 @@ export function createPlannerModel(cities, routeData, options = {}) {
           continue;
         }
 
-        const toCandidate = dijkstra(segment.path[0], city.name);
-        const fromCandidate = dijkstra(city.name, segment.path[segment.path.length - 1]);
+        const toCandidate = dijkstra(fromName, city.name);
+        const fromCandidate = dijkstra(city.name, toName);
         if (!toCandidate || !fromCandidate) {
           continue;
         }
@@ -262,7 +376,7 @@ export function createPlannerModel(cities, routeData, options = {}) {
       }
     }
 
-    const seen = new Set();
+    const seen = new Set<string>();
     return suggestions
       .filter((suggestion) => {
         if (seen.has(suggestion.name)) {
@@ -282,7 +396,7 @@ export function createPlannerModel(cities, routeData, options = {}) {
     cities,
     cityIndexByName,
     cityMap,
-    deriveTripPlan(trip) {
+    deriveTripPlan(trip: string[]): PlannerTripPlan {
       return deriveTripPlan(
         {
           dijkstra,
@@ -297,23 +411,28 @@ export function createPlannerModel(cities, routeData, options = {}) {
     edges,
     findInterestingStops,
     invalidRouteKeys,
-    searchCities(query, limit) {
+    searchCities(query: string, limit?: number): PlannerCity[] {
       return searchCities({ cities, searchIndex }, { query, limit });
     },
     searchIndex
   };
 
-  function buildPathGeometry(pathIndexes) {
-    const merged = [];
+  function buildPathGeometry(pathIndexes: number[]): GeoPoint[] {
+    const merged: GeoPoint[] = [];
     for (let index = 1; index < pathIndexes.length; index += 1) {
       const fromIndex = pathIndexes[index - 1];
       const toIndex = pathIndexes[index];
-      const edge = adjacency[fromIndex].find((candidate) => candidate.toIndex === toIndex);
-      const segmentGeometry =
+      if (fromIndex === undefined || toIndex === undefined) continue;
+      const fromAdj = adjacency[fromIndex];
+      const fromCity = cities[fromIndex];
+      const toCity = cities[toIndex];
+      if (!fromAdj || !fromCity || !toCity) continue;
+      const edge = fromAdj.find((candidate) => candidate.toIndex === toIndex);
+      const segmentGeometry: GeoPoint[] =
         edge?.geometry ||
         [
-          { lat: cities[fromIndex].lat, lon: cities[fromIndex].lon },
-          { lat: cities[toIndex].lat, lon: cities[toIndex].lon }
+          { lat: fromCity.lat, lon: fromCity.lon },
+          { lat: toCity.lat, lon: toCity.lon }
         ];
       appendGeometry(merged, segmentGeometry);
     }
@@ -321,10 +440,12 @@ export function createPlannerModel(cities, routeData, options = {}) {
   }
 }
 
-function parseRouteKeyFactory(cityMap) {
+function parseRouteKeyFactory(
+  cityMap: Record<string, PlannerCity>
+): (routeKey: string) => [string, string] | null {
   const cityNames = Object.keys(cityMap).sort((left, right) => right.length - left.length);
 
-  return function parseRouteKey(routeKey) {
+  return function parseRouteKey(routeKey: string): [string, string] | null {
     for (const cityName of cityNames) {
       const prefix = `${cityName}-`;
       if (!routeKey.startsWith(prefix)) {
@@ -341,7 +462,7 @@ function parseRouteKeyFactory(cityMap) {
   };
 }
 
-function normalizeSearchQuery(query) {
+function normalizeSearchQuery(query: unknown): string {
   return String(query || "")
     .normalize("NFKD")
     .replaceAll(/\p{Diacritic}/gu, "")
@@ -349,23 +470,30 @@ function normalizeSearchQuery(query) {
     .trim();
 }
 
-function createSearchIndex(cities, searchEntries) {
+function createSearchIndex(
+  cities: PlannerCity[],
+  searchEntries?: SearchIndexEntry[]
+): PlannerSearchIndexEntry[] {
   if (Array.isArray(searchEntries) && searchEntries.length > 0) {
     return searchEntries
-      .map((entry) => ({
-        city: cities[entry.cityIndex],
-        cityNameNormalized: entry.cityNameNormalized,
-        countryNormalized: entry.countryNormalized,
-        searchText: entry.searchText
-      }))
-      .filter((entry) => entry.city);
+      .map((entry): PlannerSearchIndexEntry | null => {
+        const city = cities[entry.cityIndex];
+        if (!city) return null;
+        return {
+          city,
+          cityNameNormalized: entry.cityNameNormalized,
+          countryNormalized: entry.countryNormalized,
+          searchText: entry.searchText
+        };
+      })
+      .filter((entry): entry is PlannerSearchIndexEntry => entry !== null);
   }
 
   return [...cities]
     .sort((left, right) => {
       return right.interest - left.interest || right.pop - left.pop || left.name.localeCompare(right.name);
     })
-    .map((city) => {
+    .map((city): PlannerSearchIndexEntry => {
       const cityNameNormalized = normalizeSearchQuery(city.name);
       const countryNormalized = normalizeSearchQuery(city.country);
       return {
@@ -377,14 +505,14 @@ function createSearchIndex(cities, searchEntries) {
     });
 }
 
-function reverseGeometry(geometry) {
+function reverseGeometry(geometry: GeoPoint[] | undefined): GeoPoint[] | undefined {
   if (!Array.isArray(geometry)) {
     return geometry;
   }
   return [...geometry].reverse();
 }
 
-function appendGeometry(target, segment) {
+function appendGeometry(target: GeoPoint[], segment: GeoPoint[]): GeoPoint[] {
   if (!Array.isArray(segment) || segment.length === 0) {
     return target;
   }
@@ -400,7 +528,11 @@ function appendGeometry(target, segment) {
   return target;
 }
 
-function dijkstraIndexed(adjacency, startIndex, endIndex) {
+function dijkstraIndexed(
+  adjacency: PlannerAdjacencyEntry[][],
+  startIndex: number,
+  endIndex: number
+): DijkstraIndexedResult | null {
   const distance = new Float64Array(adjacency.length);
   distance.fill(Number.POSITIVE_INFINITY);
   const previous = new Int32Array(adjacency.length);
@@ -422,9 +554,14 @@ function dijkstraIndexed(adjacency, startIndex, endIndex) {
       break;
     }
 
-    for (const edge of adjacency[current.node]) {
-      const alt = distance[current.node] + edge.t;
-      if (alt >= distance[edge.toIndex]) {
+    const neighbors = adjacency[current.node];
+    if (!neighbors) continue;
+    for (const edge of neighbors) {
+      const currentDistance = distance[current.node];
+      if (currentDistance === undefined) continue;
+      const alt = currentDistance + edge.t;
+      const neighborDistance = distance[edge.toIndex];
+      if (neighborDistance === undefined || alt >= neighborDistance) {
         continue;
       }
 
@@ -434,12 +571,13 @@ function dijkstraIndexed(adjacency, startIndex, endIndex) {
     }
   }
 
-  if (!Number.isFinite(distance[endIndex])) {
+  const endDistance = distance[endIndex];
+  if (endDistance === undefined || !Number.isFinite(endDistance)) {
     return null;
   }
 
-  const pathIndexes = [];
-  for (let cursor = endIndex; cursor >= 0; cursor = previous[cursor]) {
+  const pathIndexes: number[] = [];
+  for (let cursor = endIndex; cursor >= 0; cursor = previous[cursor] ?? -1) {
     pathIndexes.unshift(cursor);
     if (cursor === startIndex) {
       break;
@@ -447,12 +585,15 @@ function dijkstraIndexed(adjacency, startIndex, endIndex) {
   }
 
   return {
-    distance: distance[endIndex],
+    distance: endDistance,
     pathIndexes
   };
 }
 
-function dijkstraAllIndexed(adjacency, startIndex) {
+function dijkstraAllIndexed(
+  adjacency: PlannerAdjacencyEntry[][],
+  startIndex: number
+): Float64Array {
   const distance = new Float64Array(adjacency.length);
   distance.fill(Number.POSITIVE_INFINITY);
   const visited = new Uint8Array(adjacency.length);
@@ -468,9 +609,14 @@ function dijkstraAllIndexed(adjacency, startIndex) {
     }
 
     visited[current.node] = 1;
-    for (const edge of adjacency[current.node]) {
-      const alt = distance[current.node] + edge.t;
-      if (alt >= distance[edge.toIndex]) {
+    const neighbors = adjacency[current.node];
+    if (!neighbors) continue;
+    for (const edge of neighbors) {
+      const currentDistance = distance[current.node];
+      if (currentDistance === undefined) continue;
+      const alt = currentDistance + edge.t;
+      const neighborDistance = distance[edge.toIndex];
+      if (neighborDistance === undefined || alt >= neighborDistance) {
         continue;
       }
 
@@ -482,14 +628,14 @@ function dijkstraAllIndexed(adjacency, startIndex) {
   return distance;
 }
 
-function createMinHeap() {
-  const items = [];
+function createMinHeap(): MinHeap {
+  const items: MinHeapItem[] = [];
 
   return {
-    isEmpty() {
+    isEmpty(): boolean {
       return items.length === 0;
     },
-    pop() {
+    pop(): MinHeapItem | null {
       if (items.length === 0) {
         return null;
       }
@@ -500,46 +646,48 @@ function createMinHeap() {
         items[0] = last;
         siftDown(items, 0);
       }
-      return top;
+      return top ?? null;
     },
-    push(node, distance) {
+    push(node: number, distance: number): void {
       items.push({ distance, node });
       siftUp(items, items.length - 1);
     }
   };
 }
 
-function siftUp(items, index) {
+function siftUp(items: MinHeapItem[], index: number): void {
   let cursor = index;
   while (cursor > 0) {
     const parentIndex = Math.floor((cursor - 1) / 2);
-    if (items[parentIndex].distance <= items[cursor].distance) {
+    const parent = items[parentIndex];
+    const current = items[cursor];
+    if (!parent || !current || parent.distance <= current.distance) {
       break;
     }
 
-    [items[parentIndex], items[cursor]] = [items[cursor], items[parentIndex]];
+    items[parentIndex] = current;
+    items[cursor] = parent;
     cursor = parentIndex;
   }
 }
 
-function siftDown(items, index) {
+function siftDown(items: MinHeapItem[], index: number): void {
   let cursor = index;
   while (cursor < items.length) {
     const leftIndex = cursor * 2 + 1;
     const rightIndex = cursor * 2 + 2;
     let smallestIndex = cursor;
 
-    if (
-      leftIndex < items.length &&
-      items[leftIndex].distance < items[smallestIndex].distance
-    ) {
+    const smallest = items[smallestIndex];
+    const left = items[leftIndex];
+    const right = items[rightIndex];
+
+    if (left && smallest && left.distance < smallest.distance) {
       smallestIndex = leftIndex;
     }
 
-    if (
-      rightIndex < items.length &&
-      items[rightIndex].distance < items[smallestIndex].distance
-    ) {
+    const newSmallest = items[smallestIndex];
+    if (right && newSmallest && right.distance < newSmallest.distance) {
       smallestIndex = rightIndex;
     }
 
@@ -547,7 +695,11 @@ function siftDown(items, index) {
       break;
     }
 
-    [items[cursor], items[smallestIndex]] = [items[smallestIndex], items[cursor]];
+    const swapItem = items[smallestIndex];
+    const cursorItem = items[cursor];
+    if (!swapItem || !cursorItem) break;
+    items[cursor] = swapItem;
+    items[smallestIndex] = cursorItem;
     cursor = smallestIndex;
   }
 }

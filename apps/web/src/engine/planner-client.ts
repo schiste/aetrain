@@ -2,14 +2,38 @@ import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import {
   createPlannerModel
 } from "../legacy/core.ts";
+import type {
+  PlannerArtifacts,
+  PlannerCity,
+  PlannerRouteData
+} from "../types/planner-dataset.ts";
+import type {
+  PlannerEngine,
+  PlannerModelMetadata,
+  PlannerTripPlan
+} from "../types/planner-engine.ts";
 import {
   deserializePlannerError,
-  PLANNER_WORKER_MESSAGE_TYPES
+  PLANNER_WORKER_MESSAGE_TYPES,
+  type PlannerWorkerMessageType,
+  type PlannerWorkerResponse
 } from "./planner-protocol.ts";
 
 const diagnostics = createDiagnostics("web/engine/planner-client");
 
-export async function createPlannerClient(cities, routeData, plannerArtifacts = {}) {
+interface PendingRequest {
+  type: PlannerWorkerMessageType;
+  startedAt: number;
+  requestId: string;
+  resolve: (value: unknown) => void;
+  reject: (reason?: unknown) => void;
+}
+
+export async function createPlannerClient(
+  cities: PlannerCity[],
+  routeData: PlannerRouteData,
+  plannerArtifacts: PlannerArtifacts = {}
+): Promise<PlannerEngine> {
   return diagnostics.timeAsync("create-planner-client", async () => {
     if (typeof Worker === "undefined") {
       diagnostics.warn("worker api unavailable, using inline planner client");
@@ -21,11 +45,14 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
     });
     diagnostics.debug("spawned planner worker");
 
-    const pending = new Map();
+    const pending = new Map<string, PendingRequest>();
     let nextRequestId = 0;
 
-    worker.addEventListener("message", (event) => {
-      const message = event.data || {};
+    worker.addEventListener("message", (event: MessageEvent<PlannerWorkerResponse>) => {
+      const message = event.data;
+      if (!message || typeof message !== "object") {
+        return;
+      }
       const resolver = pending.get(message.requestId);
       if (!resolver) {
         return;
@@ -53,7 +80,7 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
       resolver.reject(error);
     });
 
-    worker.addEventListener("error", (event) => {
+    worker.addEventListener("error", (event: ErrorEvent) => {
       diagnostics.error("planner worker raised error event", {
         error: summarizeError(event.error || new Error(event.message || "Planner worker error"))
       });
@@ -68,7 +95,7 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
       pending.clear();
     });
 
-    function request(type, payload) {
+    function request<T>(type: PlannerWorkerMessageType, payload: unknown): Promise<T> {
       const requestId = `planner-${nextRequestId}`;
       nextRequestId += 1;
       const startedAt = now();
@@ -78,17 +105,26 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
         pending_count: pending.size
       });
 
-      return new Promise((resolve, reject) => {
-        pending.set(requestId, { reject, requestId, resolve, startedAt, type });
+      return new Promise<T>((resolve, reject) => {
+        pending.set(requestId, {
+          reject,
+          requestId,
+          resolve: resolve as (value: unknown) => void,
+          startedAt,
+          type
+        });
         worker.postMessage({ type, payload, requestId });
       });
     }
 
-    const metadata = await request(PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE, {
-      cities,
-      plannerArtifacts,
-      routeData
-    });
+    const metadata = await request<PlannerModelMetadata>(
+      PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE,
+      {
+        cities,
+        plannerArtifacts,
+        routeData
+      }
+    );
     diagnostics.info("planner worker initialized", {
       city_count: metadata?.cities?.length || cities.length,
       edge_count: metadata?.edges?.length || 0,
@@ -97,15 +133,15 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
 
     return {
       metadata,
-      close() {
+      close(): void {
         diagnostics.info("terminating planner worker");
         worker.terminate();
       },
-      deriveTripPlan({ trip }) {
-        return request(PLANNER_WORKER_MESSAGE_TYPES.DERIVE_TRIP, { trip });
+      deriveTripPlan({ trip }: { trip: string[] }): Promise<PlannerTripPlan> {
+        return request<PlannerTripPlan>(PLANNER_WORKER_MESSAGE_TYPES.DERIVE_TRIP, { trip });
       },
-      searchCities({ query, limit }) {
-        return request(PLANNER_WORKER_MESSAGE_TYPES.SEARCH_CITIES, { query, limit });
+      searchCities({ query, limit }: { query: string; limit: number }): Promise<PlannerCity[]> {
+        return request<PlannerCity[]>(PLANNER_WORKER_MESSAGE_TYPES.SEARCH_CITIES, { query, limit });
       }
     };
   }, {
@@ -114,9 +150,13 @@ export async function createPlannerClient(cities, routeData, plannerArtifacts = 
   });
 }
 
-function createInlinePlannerClient(cities, routeData, plannerArtifacts) {
+function createInlinePlannerClient(
+  cities: PlannerCity[],
+  routeData: PlannerRouteData,
+  plannerArtifacts: PlannerArtifacts
+): PlannerEngine {
   const model = createPlannerModel(cities, routeData, plannerArtifacts);
-  const metadata = {
+  const metadata: PlannerModelMetadata = {
     cities: model.cities,
     cityMap: model.cityMap,
     edges: model.edges,
@@ -129,17 +169,17 @@ function createInlinePlannerClient(cities, routeData, plannerArtifacts) {
 
   return {
     metadata,
-    close() {
+    close(): void {
       diagnostics.debug("closed inline planner client");
     },
-    async deriveTripPlan({ trip }) {
+    async deriveTripPlan({ trip }: { trip: string[] }): Promise<PlannerTripPlan> {
       return diagnostics.timeAsync("inline-derive-trip-plan", async () => {
         return model.deriveTripPlan(trip);
       }, {
         trip_length: trip.length
       });
     },
-    async searchCities({ query, limit }) {
+    async searchCities({ query, limit }: { query: string; limit: number }): Promise<PlannerCity[]> {
       return diagnostics.timeAsync("inline-search-cities", async () => {
         return model.searchCities(query, limit);
       }, {
@@ -150,13 +190,13 @@ function createInlinePlannerClient(cities, routeData, plannerArtifacts) {
   };
 }
 
-function now() {
+function now(): number {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
     return performance.now();
   }
   return Date.now();
 }
 
-function elapsedSince(startedAt) {
+function elapsedSince(startedAt: number): number {
   return Math.round((now() - startedAt) * 1000) / 1000;
 }

@@ -2,14 +2,42 @@ import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import { createPlannerModel } from "../legacy/core.ts";
 import {
   PLANNER_WORKER_MESSAGE_TYPES,
-  serializePlannerError
+  serializePlannerError,
+  type PlannerWorkerMessageType
 } from "../engine/planner-protocol.ts";
+import type {
+  PlannerArtifacts,
+  PlannerCity,
+  PlannerRouteData
+} from "../types/planner-dataset.ts";
+import type { PlannerModel } from "../types/planner-engine.ts";
+
+interface InitializePayload {
+  cities?: PlannerCity[];
+  routeData?: PlannerRouteData;
+  plannerArtifacts?: PlannerArtifacts;
+}
+
+interface DeriveTripPayload {
+  trip?: string[];
+}
+
+interface SearchCitiesPayload {
+  query?: string;
+  limit?: number;
+}
+
+interface IncomingMessage {
+  type?: PlannerWorkerMessageType;
+  requestId?: string;
+  payload?: InitializePayload | DeriveTripPayload | SearchCitiesPayload;
+}
 
 const diagnostics = createDiagnostics("web/worker/planner");
-let model = null;
+let model: PlannerModel | null = null;
 
-self.addEventListener("message", async (event) => {
-  const message = event.data || {};
+self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
+  const message: IncomingMessage = event.data || {};
   const startedAt = now();
   diagnostics.debug("planner worker received message", {
     request_id: message.requestId || null,
@@ -18,7 +46,8 @@ self.addEventListener("message", async (event) => {
 
   try {
     if (message.type === PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE) {
-      const { cities, plannerArtifacts, routeData } = message.payload || {};
+      const payload = (message.payload as InitializePayload | undefined) || {};
+      const { cities, plannerArtifacts, routeData } = payload;
       model = createPlannerModel(cities || [], routeData || {}, plannerArtifacts || {});
       diagnostics.info("planner worker initialized model", {
         city_count: model.cities.length,
@@ -40,7 +69,8 @@ self.addEventListener("message", async (event) => {
         throw new Error("Planner worker is not initialized");
       }
 
-      const trip = message.payload?.trip || [];
+      const payload = (message.payload as DeriveTripPayload | undefined) || {};
+      const trip = payload.trip || [];
       const derived = model.deriveTripPlan(trip);
       diagnostics.info("planner worker derived trip plan", {
         request_id: message.requestId,
@@ -58,8 +88,9 @@ self.addEventListener("message", async (event) => {
         throw new Error("Planner worker is not initialized");
       }
 
-      const query = message.payload?.query || "";
-      const limit = message.payload?.limit || 14;
+      const payload = (message.payload as SearchCitiesPayload | undefined) || {};
+      const query = payload.query || "";
+      const limit = payload.limit || 14;
       const results = model.searchCities(query, limit);
       diagnostics.info("planner worker searched cities", {
         request_id: message.requestId,
@@ -85,7 +116,7 @@ self.addEventListener("message", async (event) => {
   }
 });
 
-function postSuccess(requestId, payload) {
+function postSuccess(requestId: string | undefined, payload: unknown): void {
   self.postMessage({
     ok: true,
     requestId,
@@ -93,13 +124,13 @@ function postSuccess(requestId, payload) {
   });
 }
 
-function now() {
+function now(): number {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
     return performance.now();
   }
   return Date.now();
 }
 
-function elapsedSince(startedAt) {
+function elapsedSince(startedAt: number): number {
   return Math.round((now() - startedAt) * 1000) / 1000;
 }

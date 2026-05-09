@@ -20,16 +20,16 @@ test("buildLandmassPolygons normalizes polygon and multipolygon inputs", () => {
   ]);
 
   assert.equal(polygons.length, 3);
-  assert.deepEqual(polygons[0][0][0], { lat: 2, lon: 1 });
-  assert.deepEqual(polygons[2][0][2], { lat: 18, lon: 17 });
+  assert.deepEqual(polygons[0]![0]![0]!, { lat: 2, lon: 1 });
+  assert.deepEqual(polygons[2]![0]![2]!, { lat: 18, lon: 17 });
 });
 
 test("buildLandmassPolygons produces drawable polygons for the bundled landmass dataset", () => {
-  const polygons = buildLandmassPolygons(borderData);
+  const polygons = buildLandmassPolygons(borderData as Parameters<typeof buildLandmassPolygons>[0]);
 
   assert.equal(polygons.length > 0, true);
-  assert.equal(polygons[0].length > 0, true);
-  assert.equal(polygons[0][0].length >= 3, true);
-  assert.equal(typeof polygons[0][0][0].lat, "number");
-  assert.equal(typeof polygons[0][0][0].lon, "number");
+  assert.equal(polygons[0]!.length > 0, true);
+  assert.equal(polygons[0]![0]!.length >= 3, true);
+  assert.equal(typeof polygons[0]![0]![0]!.lat, "number");
+  assert.equal(typeof polygons[0]![0]![0]!.lon, "number");
 });

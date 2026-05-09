@@ -52,11 +52,11 @@ test("buildProductionPlannerData carries decoded route geometry into planner art
     }
   });
 
-  assert.equal(dataset.plannerArtifacts.routePairs.length, 1);
-  assert.deepEqual(dataset.plannerArtifacts.routePairs[0].geometry, [
+  assert.equal(dataset.plannerArtifacts!.routePairs!.length, 1);
+  assert.deepEqual(dataset.plannerArtifacts!.routePairs![0]!.geometry, [
     { lat: 48.8566, lon: 2.3522 },
     { lat: 48.3, lon: 2.9 },
     { lat: 45.764, lon: 4.8357 }
   ]);
-  assert.match(dataset.plannerArtifacts.searchIndex[1].searchText, /avignon centre/);
+  assert.match(dataset.plannerArtifacts!.searchIndex![1]!.searchText, /avignon centre/);
 });

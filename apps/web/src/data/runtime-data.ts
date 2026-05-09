@@ -1,6 +1,18 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import { cities as pocCities, routeData as pocRouteData } from "../legacy/data.ts";
-import { fetchEdgeGeometryArtifact } from "./edge-geometry-artifacts.ts";
+import type {
+  PlannerDataSourceId,
+  PlannerDataset,
+  ProductionArtifactBundle,
+  RawCity,
+  RawEdge,
+  RawEdgeGeometries,
+  RuntimeArtifactMeta
+} from "../types/planner-dataset.ts";
+import {
+  fetchEdgeGeometryArtifact,
+  type EdgeGeometryManifest
+} from "./edge-geometry-artifacts.ts";
 import {
   assertPlannerDataset,
   isKnownPlannerDataSourceId
@@ -9,13 +21,30 @@ import { buildProductionPlannerData } from "./production-adapter.ts";
 
 const DATA_SOURCE_STORAGE_KEY = "aetrain-data-source";
 const DATA_SOURCE_QUERY_PARAM = "source";
-const PRODUCTION_BASE_PATHS = [
+const PRODUCTION_BASE_PATHS: readonly string[] = [
   new URL("../../public/data/production/", import.meta.url).href,
   new URL("../../data/production/", import.meta.url).href
 ];
 const diagnostics = createDiagnostics("web/data/runtime");
 
-export function getRequestedDataSourceId() {
+interface FetchAssetError extends Error {
+  artifactStatus?: number;
+}
+
+interface SerializedWorkerError {
+  name?: string;
+  message?: string;
+  stack?: string;
+}
+
+interface WorkerLoadResponse {
+  requestId?: string;
+  ok?: boolean;
+  dataset?: PlannerDataset;
+  error?: SerializedWorkerError;
+}
+
+export function getRequestedDataSourceId(): PlannerDataSourceId {
   const url = new URL(window.location.href);
   const fromQuery = url.searchParams.get(DATA_SOURCE_QUERY_PARAM);
   if (isKnownPlannerDataSourceId(fromQuery)) {
@@ -39,7 +68,7 @@ export function getRequestedDataSourceId() {
   return "poc";
 }
 
-export function navigateToDataSource(sourceId) {
+export function navigateToDataSource(sourceId: unknown): void {
   if (!isKnownPlannerDataSourceId(sourceId)) {
     diagnostics.warn("ignored navigation to unknown data source", {
       source_id: sourceId
@@ -65,7 +94,9 @@ export function navigateToDataSource(sourceId) {
   window.location.assign(url.toString());
 }
 
-export async function loadPlannerDataSource(sourceId) {
+export async function loadPlannerDataSource(
+  sourceId: PlannerDataSourceId
+): Promise<PlannerDataset> {
   return diagnostics.timeAsync("load-planner-data-source", async () => {
     diagnostics.info("loading planner data source", {
       source_id: sourceId
@@ -93,7 +124,7 @@ export async function loadPlannerDataSource(sourceId) {
   });
 }
 
-async function loadProductionDataSource() {
+async function loadProductionDataSource(): Promise<PlannerDataset> {
   try {
     return await loadProductionDataSourceFromWorker();
   } catch (error) {
@@ -104,12 +135,12 @@ async function loadProductionDataSource() {
   }
 }
 
-async function loadProductionDataSourceInline() {
+async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
   return diagnostics.timeAsync("load-production-inline", async () => {
     const [meta, rawCities, rawEdges, rawEdgeGeometries] = await Promise.all([
-      fetchJsonWithFallback("meta.json"),
-      fetchJsonWithFallback("cities.json"),
-      fetchJsonWithFallback("edges.json"),
+      fetchJsonWithFallback("meta.json") as Promise<RuntimeArtifactMeta>,
+      fetchJsonWithFallback("cities.json") as Promise<RawCity[]>,
+      fetchJsonWithFallback("edges.json") as Promise<RawEdge[]>,
       fetchEdgeGeometryArtifact({
         basePaths: PRODUCTION_BASE_PATHS,
         fetchJsonWithFallback,
@@ -119,7 +150,13 @@ async function loadProductionDataSourceInline() {
       })
     ]);
 
-    const dataset = buildProductionPlannerData({ meta, rawCities, rawEdges, rawEdgeGeometries });
+    const bundle: ProductionArtifactBundle = {
+      meta,
+      rawCities,
+      rawEdges,
+      rawEdgeGeometries
+    };
+    const dataset = buildProductionPlannerData(bundle);
     diagnostics.info("built production dataset inline", {
       dataset_version: dataset.meta?.dataset_version || null,
       city_count: dataset.cities.length,
@@ -129,7 +166,7 @@ async function loadProductionDataSourceInline() {
   });
 }
 
-async function loadProductionDataSourceFromWorker() {
+async function loadProductionDataSourceFromWorker(): Promise<PlannerDataset> {
   if (typeof Worker === "undefined") {
     throw new Error("Worker API unavailable");
   }
@@ -140,29 +177,29 @@ async function loadProductionDataSourceFromWorker() {
     });
     diagnostics.debug("spawned runtime data worker");
 
-    return new Promise((resolve, reject) => {
+    return new Promise<PlannerDataset>((resolve, reject) => {
       const requestId = `production-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-      function cleanup() {
+      function cleanup(): void {
         diagnostics.debug("terminating runtime data worker", {
           request_id: requestId
         });
         worker.terminate();
       }
 
-      worker.addEventListener("message", (event) => {
-        const message = event.data || {};
+      worker.addEventListener("message", (event: MessageEvent<WorkerLoadResponse>) => {
+        const message: WorkerLoadResponse = event.data || {};
         if (message.requestId !== requestId) {
           return;
         }
 
         cleanup();
-        if (message.ok) {
+        if (message.ok && message.dataset) {
           diagnostics.info("runtime data worker loaded production dataset", {
             request_id: requestId,
-            dataset_version: message.dataset?.meta?.dataset_version || null,
-            city_count: message.dataset?.cities?.length || null,
-            route_count: Object.keys(message.dataset?.routeData || {}).length
+            dataset_version: message.dataset.meta?.dataset_version || null,
+            city_count: message.dataset.cities?.length || null,
+            route_count: Object.keys(message.dataset.routeData || {}).length
           });
           resolve(message.dataset);
           return;
@@ -171,7 +208,7 @@ async function loadProductionDataSourceFromWorker() {
         reject(deserializeWorkerError(message.error));
       });
 
-      worker.addEventListener("error", (event) => {
+      worker.addEventListener("error", (event: ErrorEvent) => {
         cleanup();
         reject(event.error || new Error(event.message || "Worker error"));
       });
@@ -189,20 +226,23 @@ async function loadProductionDataSourceFromWorker() {
   });
 }
 
-async function fetchJsonWithFallback(fileName) {
+async function fetchJsonWithFallback(fileName: string): Promise<unknown> {
   const result = await fetchJsonAssetWithFallback(fileName);
   return result.json;
 }
 
-async function fetchOptionalJsonWithFallback(fileName) {
-  let lastError = null;
+async function fetchOptionalJsonWithFallback(
+  fileName: string
+): Promise<{ basePath: string; json: EdgeGeometryManifest } | null> {
+  let lastError: unknown = null;
   let sawNonNotFoundError = false;
   for (const basePath of PRODUCTION_BASE_PATHS) {
     try {
-      const json = await fetchJsonFromBasePath(basePath, fileName);
+      const json = (await fetchJsonFromBasePath(basePath, fileName)) as EdgeGeometryManifest;
       return { basePath, json };
     } catch (error) {
-      if (error?.artifactStatus !== 404) {
+      const status = (error as FetchAssetError | null)?.artifactStatus;
+      if (status !== 404) {
         sawNonNotFoundError = true;
         lastError = error;
       }
@@ -215,8 +255,10 @@ async function fetchOptionalJsonWithFallback(fileName) {
   return null;
 }
 
-async function fetchJsonAssetWithFallback(fileName) {
-  let lastError = null;
+async function fetchJsonAssetWithFallback(
+  fileName: string
+): Promise<{ basePath: string; json: unknown }> {
+  let lastError: unknown = null;
   for (const basePath of PRODUCTION_BASE_PATHS) {
     try {
       const json = await fetchJsonFromBasePath(basePath, fileName);
@@ -234,14 +276,17 @@ async function fetchJsonAssetWithFallback(fileName) {
   throw lastError || new Error(`Failed to load ${fileName}`);
 }
 
-async function fetchJsonFromBasePath(basePath, fileName) {
+async function fetchJsonFromBasePath(
+  basePath: string,
+  fileName: string
+): Promise<unknown> {
   diagnostics.debug("fetching runtime artifact", {
     file_name: fileName,
     base_path: basePath
   });
   const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
   if (!response.ok) {
-    const error = new Error(`HTTP ${response.status}`);
+    const error: FetchAssetError = new Error(`HTTP ${response.status}`);
     error.artifactStatus = response.status;
     throw error;
   }
@@ -253,7 +298,9 @@ async function fetchJsonFromBasePath(basePath, fileName) {
   return json;
 }
 
-function deserializeWorkerError(error) {
+function deserializeWorkerError(
+  error: SerializedWorkerError | undefined
+): Error {
   if (!error) {
     return new Error("Unknown worker error");
   }

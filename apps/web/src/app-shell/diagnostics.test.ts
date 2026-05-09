@@ -12,9 +12,9 @@ test("diagnostics buffer keeps debug events even when console output is filtered
     const diagnostics = createDiagnostics("test/diagnostics");
     diagnostics.debug("hidden-debug", { value: 1 });
 
-    const store = globalThis.__AETRAIN_DIAGNOSTICS__;
+    const store = globalThis.__AETRAIN_DIAGNOSTICS__!;
     assert.equal(store.consoleLevel, "info");
-    assert.equal(store.events.at(-1).message, "hidden-debug");
+    assert.equal(store.events.at(-1)!.message, "hidden-debug");
     assert.equal(restore.calls.debug.length, 0);
   } finally {
     delete globalThis.__AETRAIN_DIAGNOSTICS__;
@@ -30,7 +30,7 @@ test("diagnostics store exposes runtime tuning for console level and max events"
 
   try {
     const diagnostics = createDiagnostics("test/diagnostics");
-    const store = globalThis.__AETRAIN_DIAGNOSTICS__;
+    const store = globalThis.__AETRAIN_DIAGNOSTICS__!;
     store.setConsoleLevel("debug");
     store.setMaxEvents(2);
 
@@ -39,7 +39,7 @@ test("diagnostics store exposes runtime tuning for console level and max events"
     diagnostics.warn("third");
 
     assert.equal(store.events.length, 2);
-    assert.deepEqual(store.events.map((event) => event.message), ["second", "third"]);
+    assert.deepEqual(store.events.map((event: { message: string }) => event.message), ["second", "third"]);
     assert.equal(restore.calls.debug.length >= 1, true);
   } finally {
     delete globalThis.__AETRAIN_DIAGNOSTICS__;
@@ -48,8 +48,15 @@ test("diagnostics store exposes runtime tuning for console level and max events"
   }
 });
 
-function installConsoleSpies() {
-  const calls = {
+interface ConsoleSpyCalls {
+  debug: unknown[][];
+  error: unknown[][];
+  info: unknown[][];
+  warn: unknown[][];
+}
+
+function installConsoleSpies(): { calls: ConsoleSpyCalls; restore: () => void } {
+  const calls: ConsoleSpyCalls = {
     debug: [],
     error: [],
     info: [],
@@ -63,10 +70,10 @@ function installConsoleSpies() {
     warn: console.warn
   };
 
-  console.debug = (...args) => calls.debug.push(args);
-  console.error = (...args) => calls.error.push(args);
-  console.info = (...args) => calls.info.push(args);
-  console.warn = (...args) => calls.warn.push(args);
+  console.debug = (...args: unknown[]) => calls.debug.push(args);
+  console.error = (...args: unknown[]) => calls.error.push(args);
+  console.info = (...args: unknown[]) => calls.info.push(args);
+  console.warn = (...args: unknown[]) => calls.warn.push(args);
 
   return {
     calls,
