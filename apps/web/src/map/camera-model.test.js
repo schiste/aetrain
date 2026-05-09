@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  boundsCenter,
+  fitBoundsZoom,
   mercatorProject,
   mercatorUnproject,
   panCameraByPixels,
@@ -42,4 +44,14 @@ test("panCameraByPixels shifts the projected scene by the requested screen delta
 
   assert.ok(Math.abs((after.x - before.x) - 42) < 0.01);
   assert.ok(Math.abs((after.y - before.y) + 18) < 0.01);
+});
+
+test("fitBoundsZoom and boundsCenter produce a Europe-scale overview", () => {
+  const europeBounds = { west: -11, east: 35, south: 34, north: 72 };
+  const center = boundsCenter(europeBounds);
+  const zoom = fitBoundsZoom(europeBounds, { x: 1200, y: 900 }, 32);
+
+  assert.ok(center.lon > 5 && center.lon < 20);
+  assert.ok(center.lat > 45 && center.lat < 60);
+  assert.ok(zoom > 3 && zoom < 6);
 });

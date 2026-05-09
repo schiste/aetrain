@@ -3,6 +3,26 @@ const MIN_WORLD = 0;
 const MAX_WORLD = 1;
 const WORLD_SIZE = 256;
 
+export function boundsCenter(bounds) {
+  const westNorth = mercatorProject(bounds.west, bounds.north);
+  const eastSouth = mercatorProject(bounds.east, bounds.south);
+  return mercatorUnproject(
+    (westNorth.x + eastSouth.x) / 2,
+    (westNorth.y + eastSouth.y) / 2
+  );
+}
+
+export function fitBoundsZoom(bounds, size, padding = 0) {
+  const westNorth = mercatorProject(bounds.west, bounds.north);
+  const eastSouth = mercatorProject(bounds.east, bounds.south);
+  const worldWidth = Math.max(0.000001, Math.abs(eastSouth.x - westNorth.x));
+  const worldHeight = Math.max(0.000001, Math.abs(eastSouth.y - westNorth.y));
+  const availableWidth = Math.max(1, size.x - padding * 2);
+  const availableHeight = Math.max(1, size.y - padding * 2);
+  const scale = Math.min(availableWidth / worldWidth, availableHeight / worldHeight);
+  return Math.log2(scale / WORLD_SIZE);
+}
+
 export function mercatorProject(lon, lat) {
   const clampedLat = clamp(lat, -MAX_MERCATOR_LAT, MAX_MERCATOR_LAT);
   const normalizedLon = clamp(lon, -180, 180);

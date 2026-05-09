@@ -1,5 +1,7 @@
 import { createDiagnostics } from "../app-shell/diagnostics.js";
 import {
+  boundsCenter,
+  fitBoundsZoom,
   mercatorProject,
   mercatorUnproject,
   panCameraByPixels,
@@ -18,14 +20,25 @@ import {
 } from "./render-model.js";
 
 const DEFAULT_VIEW = {
-  lat: 50,
-  lon: 10,
+  ...boundsCenter({
+    west: -11,
+    east: 35,
+    south: 34,
+    north: 72
+  }),
   zoom: 5
+};
+const EUROPE_BOUNDS = {
+  west: -11,
+  east: 35,
+  south: 34,
+  north: 72
 };
 const MAX_CANVAS_PIXEL_RATIO = 3;
 const MIN_CANVAS_PIXEL_RATIO = 1.5;
 const MIN_ZOOM = 3;
 const MAX_ZOOM = 15;
+const EUROPE_VIEW_PADDING_PX = 32;
 const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const ZOOM_SETTLE_DELAY_MS = 120;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
@@ -194,6 +207,8 @@ export function createLeafletMapSurface({
             return;
           }
           currentSize = nextSize;
+          camera = clampCamera(camera, currentSize);
+          semanticZoom = clampZoom(semanticZoom, currentSize);
           invalidateView("canvas-resize", {
             notifyViewChange: true
           });
@@ -270,7 +285,7 @@ export function createLeafletMapSurface({
       diagnostics.info("setting map view state", viewState);
       stopFlyAnimation();
       clearZoomInteraction();
-      camera = clampCamera(viewState);
+      camera = clampCamera(viewState, currentSize);
       semanticZoom = camera.zoom;
       invalidateView("set-view-state");
     },
@@ -290,6 +305,8 @@ export function createLeafletMapSurface({
 
   function handleWindowResize() {
     currentSize = readSize(mapRoot);
+    camera = clampCamera(camera, currentSize);
+    semanticZoom = clampZoom(semanticZoom, currentSize);
     invalidateView("window-resize", {
       notifyViewChange: true
     });
@@ -305,14 +322,18 @@ export function createLeafletMapSurface({
     }
 
     beginZoomInteraction();
-    const nextZoom = clampZoom(camera.zoom - wheelDelta / WHEEL_PIXELS_PER_ZOOM_LEVEL);
+    const nextZoom = clampZoom(
+      camera.zoom - wheelDelta / WHEEL_PIXELS_PER_ZOOM_LEVEL,
+      currentSize
+    );
     if (Math.abs(nextZoom - camera.zoom) < 0.000001) {
       scheduleZoomSettle();
       return;
     }
 
     camera = clampCamera(
-      zoomCameraAroundPoint(camera, currentSize, point, nextZoom)
+      zoomCameraAroundPoint(camera, currentSize, point, nextZoom),
+      currentSize
     );
     invalidateView("wheel-zoom");
     scheduleZoomSettle();
@@ -354,7 +375,7 @@ export function createLeafletMapSurface({
       return;
     }
 
-    camera = clampCamera(panCameraByPixels(camera, deltaX, deltaY));
+    camera = clampCamera(panCameraByPixels(camera, deltaX, deltaY), currentSize);
     hideTooltip();
     invalidateView("pointer-pan");
   }
@@ -419,9 +440,20 @@ export function createLeafletMapSurface({
       x: currentSize.x / 2,
       y: currentSize.y / 2
     };
+    const nextZoom = clampZoom(camera.zoom + delta, currentSize);
+    if (Math.abs(nextZoom - camera.zoom) < 0.000001) {
+      return;
+    }
+
     beginZoomInteraction();
     camera = clampCamera(
-      zoomCameraAroundPoint(camera, currentSize, anchorPoint, clampZoom(camera.zoom + delta))
+      zoomCameraAroundPoint(
+        camera,
+        currentSize,
+        anchorPoint,
+        nextZoom
+      ),
+      currentSize
     );
     invalidateView("button-zoom");
     scheduleZoomSettle();
@@ -467,7 +499,7 @@ export function createLeafletMapSurface({
 
     const startCamera = { ...camera };
     const startWorld = mercatorProject(startCamera.lon, startCamera.lat);
-    const endCamera = clampCamera(target);
+    const endCamera = clampCamera(target, currentSize);
     const endWorld = mercatorProject(endCamera.lon, endCamera.lat);
     const startedAt = now();
     const durationMs = 560;
@@ -1367,18 +1399,29 @@ function normalizeWheelDelta(event) {
   return deltaY;
 }
 
-function clampCamera(camera) {
+function clampCamera(camera, size) {
   const centerWorld = mercatorProject(camera.lon, camera.lat);
   const clampedCenter = mercatorUnproject(centerWorld.x, centerWorld.y);
+  const minZoom = effectiveMinZoom(size);
+  const zoom = clampZoom(camera.zoom, size);
+  const shouldSnapToEuropeOverview = zoom <= minZoom + 0.000001;
+  const center = shouldSnapToEuropeOverview ? DEFAULT_VIEW : clampedCenter;
   return {
-    lat: clampedCenter.lat,
-    lon: clampedCenter.lon,
-    zoom: clampZoom(camera.zoom)
+    lat: center.lat,
+    lon: center.lon,
+    zoom
   };
 }
 
-function clampZoom(zoom) {
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+function clampZoom(zoom, size) {
+  return Math.min(MAX_ZOOM, Math.max(effectiveMinZoom(size), zoom));
+}
+
+function effectiveMinZoom(size) {
+  return Math.max(
+    MIN_ZOOM,
+    fitBoundsZoom(EUROPE_BOUNDS, size, EUROPE_VIEW_PADDING_PX)
+  );
 }
 
 function easeInOutCubic(value) {
