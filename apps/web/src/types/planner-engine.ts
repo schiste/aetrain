@@ -57,11 +57,19 @@ export interface PlannerTripPlan {
   suggestions: PlannerSuggestion[];
 }
 
+export type PlannerEngineKind = "wasm" | "js-fallback";
+
 export interface PlannerModelMetadata {
   cities: PlannerCity[];
   cityMap: Record<string, PlannerCity>;
   edges: PlannerEdge[];
   invalidRouteKeys: string[];
+  /**
+   * Identifies the engine that produced this metadata. Optional so legacy
+   * metadata payloads stay structurally compatible; populated by the worker
+   * (planner.worker.ts) and the inline fallback in planner-client.ts.
+   */
+  engineKind?: PlannerEngineKind;
 }
 
 export interface PlannerModel extends PlannerModelMetadata {

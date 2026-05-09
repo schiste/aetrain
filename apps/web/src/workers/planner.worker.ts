@@ -1,5 +1,6 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import { createPlannerModel } from "../legacy/core.ts";
+import { createWasmPlannerModel } from "../engine/planner-wasm-adapter.ts";
 import {
   PLANNER_WORKER_MESSAGE_TYPES,
   serializePlannerError,
@@ -10,7 +11,10 @@ import type {
   PlannerCity,
   PlannerRouteData
 } from "../types/planner-dataset.ts";
-import type { PlannerModel } from "../types/planner-engine.ts";
+import type {
+  PlannerEngineKind,
+  PlannerModel
+} from "../types/planner-engine.ts";
 
 interface InitializePayload {
   cities?: PlannerCity[];
@@ -35,6 +39,7 @@ interface IncomingMessage {
 
 const diagnostics = createDiagnostics("web/worker/planner");
 let model: PlannerModel | null = null;
+let activeEngineKind: PlannerEngineKind = "js-fallback";
 
 self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
   const message: IncomingMessage = event.data || {};
@@ -48,8 +53,15 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
     if (message.type === PLANNER_WORKER_MESSAGE_TYPES.INITIALIZE) {
       const payload = (message.payload as InitializePayload | undefined) || {};
       const { cities, plannerArtifacts, routeData } = payload;
-      model = createPlannerModel(cities || [], routeData || {}, plannerArtifacts || {});
+      const built = await buildModel(
+        cities || [],
+        routeData || {},
+        plannerArtifacts || {}
+      );
+      model = built.model;
+      activeEngineKind = built.engineKind;
       diagnostics.info("planner worker initialized model", {
+        engine_kind: activeEngineKind,
         city_count: model.cities.length,
         edge_count: model.edges.length,
         invalid_route_count: model.invalidRouteKeys.length,
@@ -59,7 +71,8 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
         cities: model.cities,
         cityMap: model.cityMap,
         edges: model.edges,
-        invalidRouteKeys: model.invalidRouteKeys
+        invalidRouteKeys: model.invalidRouteKeys,
+        engineKind: activeEngineKind
       });
       return;
     }
@@ -74,6 +87,7 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
       const derived = model.deriveTripPlan(trip);
       diagnostics.info("planner worker derived trip plan", {
         request_id: message.requestId,
+        engine_kind: activeEngineKind,
         trip_length: trip.length,
         segment_count: derived.segments.length,
         suggestion_count: derived.suggestions.length,
@@ -94,6 +108,7 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
       const results = model.searchCities(query, limit);
       diagnostics.info("planner worker searched cities", {
         request_id: message.requestId,
+        engine_kind: activeEngineKind,
         query,
         result_count: results.length,
         limit,
@@ -116,6 +131,34 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
     });
   }
 });
+
+async function buildModel(
+  cities: PlannerCity[],
+  routeData: PlannerRouteData,
+  plannerArtifacts: PlannerArtifacts
+): Promise<{ model: PlannerModel; engineKind: PlannerEngineKind }> {
+  // Try the WASM-backed adapter first; on any failure (module import error,
+  // wasm init failure, graph construction failure) fall back to the inline
+  // JS implementation. The fallback path keeps the worker viable in environs
+  // that cannot load the wasm asset (older browsers, sandbox restrictions,
+  // misconfigured CSP).
+  try {
+    const wasmModel = await createWasmPlannerModel(
+      cities,
+      routeData,
+      plannerArtifacts
+    );
+    return { model: wasmModel, engineKind: "wasm" };
+  } catch (error) {
+    diagnostics.warn("wasm planner unavailable, falling back to inline JS engine", {
+      city_count: cities.length,
+      route_count: Object.keys(routeData || {}).length,
+      error: summarizeError(error)
+    });
+    const fallback = createPlannerModel(cities, routeData, plannerArtifacts);
+    return { model: fallback, engineKind: "js-fallback" };
+  }
+}
 
 function postSuccess(requestId: string | undefined, payload: unknown): void {
   self.postMessage({

@@ -160,7 +160,8 @@ function createInlinePlannerClient(
     cities: model.cities,
     cityMap: model.cityMap,
     edges: model.edges,
-    invalidRouteKeys: model.invalidRouteKeys
+    invalidRouteKeys: model.invalidRouteKeys,
+    engineKind: "js-fallback"
   };
   diagnostics.info("created inline planner client", {
     city_count: cities.length,
