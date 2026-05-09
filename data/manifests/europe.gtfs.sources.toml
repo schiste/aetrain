@@ -1,0 +1,89 @@
+dataset_id = "stage1-europe-gtfs"
+schema_version = 1
+description = "Direct GTFS seed feeds discovered during the Europe rail onboarding pass. These records stay inactive until endpoint and rail-scope validation are complete."
+
+[[target]]
+id = "ee-national"
+adapter = "gtfs_basic"
+source_ids = ["ee-peatus-gtfs"]
+active = false
+canonical_export = true
+web_debug_export = false
+notes = "Inactive: the historical peatus.ee gtfs.zip endpoint returned a shutdown HTML page during live validation on 2026-05-08."
+
+[[target]]
+id = "lt-national"
+adapter = "gtfs_basic"
+source_ids = ["lt-ltsa-gtfs"]
+active = false
+canonical_export = true
+web_debug_export = false
+notes = "Inactive: the verified LTSA archive fetches successfully, but it yielded zero rail artifacts under the current rail-only filtering rules."
+
+[[target]]
+id = "lu-national"
+adapter = "gtfs_basic"
+source_ids = ["lu-atp-gtfs"]
+active = true
+canonical_export = true
+web_debug_export = false
+notes = "Luxembourg national GTFS resolved through the official data.public.lu dataset API."
+
+[[target]]
+id = "de-national"
+adapter = "gtfs_basic"
+source_ids = ["de-delfi-gtfs"]
+active = false
+canonical_export = true
+web_debug_export = false
+notes = "Inactive by default: official Germany-wide DELFI GTFS resolved from the archive directory listing. Large feed; enable intentionally."
+
+[[source]]
+id = "ee-peatus-gtfs"
+kind = "gtfs"
+country_code = "EE"
+adapter = "gtfs_basic"
+role = "schedule"
+url = "https://www.peatus.ee/gtfs/gtfs.zip"
+file_name = "ee-peatus-gtfs.zip"
+active = false
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "Inactive after live validation: the endpoint returned a shutdown HTML page on 2026-05-08."
+
+[[source]]
+id = "lt-ltsa-gtfs"
+kind = "gtfs"
+country_code = "LT"
+adapter = "gtfs_basic"
+role = "schedule"
+url = "https://www.visimarsrutai.lt/gtfs/LTSAR.zip"
+file_name = "lt-ltsa-gtfs.zip"
+active = false
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "Inactive after live validation: the feed fetched cleanly on 2026-05-08, but it yielded zero rail artifacts under the current rail-only scope."
+
+[[source]]
+id = "lu-atp-gtfs"
+kind = "gtfs"
+country_code = "LU"
+adapter = "gtfs_basic"
+url = "https://data.public.lu/api/1/datasets/horaires-et-arrets-des-transport-publics-gtfs/"
+file_name = "lu-atp-gtfs.zip"
+active = true
+role = "schedule"
+resolver = { kind = "udata_latest_resource", dataset_api_url = "https://data.public.lu/api/1/datasets/horaires-et-arrets-des-transport-publics-gtfs/", format = "zip", title_pattern = '^gtfs-.*\.zip$' }
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "Official Luxembourg GTFS feed resolved through the data.public.lu dataset API."
+
+[[source]]
+id = "de-delfi-gtfs"
+kind = "gtfs"
+country_code = "DE"
+adapter = "gtfs_basic"
+url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/"
+file_name = "de-delfi-gtfs.zip"
+active = false
+role = "schedule"
+resolver = { kind = "directory_listing_cascade", index_url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/", steps = [{ href_pattern = '^20\d{2}/$' }, { href_pattern = '.*\.zip$' }] }
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "Official Germany-wide GTFS archive resolved from the DELFI directory listing."
