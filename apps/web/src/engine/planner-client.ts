@@ -128,7 +128,8 @@ export async function createPlannerClient(
     diagnostics.info("planner worker initialized", {
       city_count: metadata?.cities?.length || cities.length,
       edge_count: metadata?.edges?.length || 0,
-      invalid_route_count: metadata?.invalidRouteKeys?.length || 0
+      invalid_route_count: metadata?.invalidRouteKeys?.length || 0,
+      engine_kind: metadata?.engineKind || "unknown"
     });
 
     return {
