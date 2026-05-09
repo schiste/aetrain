@@ -100,6 +100,7 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
         duration_ms: elapsedSince(startedAt)
       });
       postSuccess(message.requestId, results);
+      return;
     }
   } catch (error) {
     diagnostics.error("planner worker failed", {
