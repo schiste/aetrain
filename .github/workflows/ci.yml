@@ -144,7 +144,11 @@ jobs:
         run: npx playwright install-deps chromium
 
       - name: Playwright (${{ matrix.project }})
-        run: npx playwright test --project=${{ matrix.project }}
+        # Exclude visual-regression.spec.ts — its baselines are platform-
+        # suffixed and live in their own job (visual-regression.yml) so a
+        # pixel diff cannot block the smoke build. Fault-injection and
+        # the WASM/golden-path/component suites stay in the matrix.
+        run: npx playwright test --project=${{ matrix.project }} --grep-invert "visual regression"
 
       - name: Upload Playwright report on failure
         if: failure()

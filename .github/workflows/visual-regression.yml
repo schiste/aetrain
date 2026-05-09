@@ -1,0 +1,73 @@
+name: Visual Regression
+
+# Phase 4 deliverable. Runs the Playwright visual-regression suite in
+# isolation from the smoke matrix in ci.yml so a flaky pixel diff cannot
+# block the smoke build. The runner is pinned to ubuntu-22.04 so font
+# rendering stays stable; baselines committed in
+# apps/web/e2e/visual-regression.spec.ts-snapshots/ are platform-suffixed
+# and must be regenerated on the same OS.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "apps/web/**"
+      - ".github/workflows/visual-regression.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-regression-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  visual:
+    name: Visual regression (Playwright snapshots)
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install OS dependencies (cached browsers path)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Playwright (visual regression only)
+        run: npx playwright test e2e/visual-regression.spec.ts
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7
