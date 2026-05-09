@@ -288,7 +288,12 @@ fn fetch_one(
         .with_context(|| format!("received error response for {}", resolved.download_url))?;
     let response_headers = response.headers().clone();
     let bytes = response.bytes().context("failed to read response body")?;
-    validate_downloaded_payload(definition, &resolved.download_url, &resolved_file_name, &bytes)?;
+    validate_downloaded_payload(
+        definition,
+        &resolved.download_url,
+        &resolved_file_name,
+        &bytes,
+    )?;
 
     let parent = local_path
         .parent()
@@ -452,8 +457,8 @@ fn resolve_html_latest_match(
     page_url: &str,
     href_pattern: &str,
 ) -> Result<ResolvedRemoteSource> {
-    let current_url =
-        Url::parse(page_url).with_context(|| format!("invalid HTML resolver page URL {page_url}"))?;
+    let current_url = Url::parse(page_url)
+        .with_context(|| format!("invalid HTML resolver page URL {page_url}"))?;
     let response = client
         .get(current_url.clone())
         .send()
@@ -485,8 +490,8 @@ fn resolve_udata_latest_resource(
         .with_context(|| format!("received error response for {}", dataset_api_url))?
         .text()
         .context("failed to read udata dataset response body")?;
-    let payload =
-        serde_json::from_str::<UdataDatasetPayload>(&payload).context("failed to parse udata dataset JSON")?;
+    let payload = serde_json::from_str::<UdataDatasetPayload>(&payload)
+        .context("failed to parse udata dataset JSON")?;
 
     let resource = select_udata_resource(&payload.resources, format, title_pattern, url_pattern)?;
     Ok(ResolvedRemoteSource {
@@ -514,10 +519,11 @@ fn resolve_ckan_latest_resource(
         .with_context(|| format!("received error response for {}", package_show_url))?
         .text()
         .context("failed to read CKAN package response body")?;
-    let payload =
-        serde_json::from_str::<CkanPackagePayload>(&payload).context("failed to parse CKAN package JSON")?;
+    let payload = serde_json::from_str::<CkanPackagePayload>(&payload)
+        .context("failed to parse CKAN package JSON")?;
 
-    let resource = select_ckan_resource(&payload.result.resources, format, name_pattern, url_pattern)?;
+    let resource =
+        select_ckan_resource(&payload.result.resources, format, name_pattern, url_pattern)?;
     Ok(ResolvedRemoteSource {
         download_url: resource.url.clone(),
         resolver_version: resource
@@ -562,7 +568,10 @@ fn select_udata_resource<'a>(
         .iter()
         .filter(|resource| {
             matches_format(resource.format.as_deref(), format)
-                && matches_optional_regex(resource.title.as_deref().unwrap_or_default(), title_regex.as_ref())
+                && matches_optional_regex(
+                    resource.title.as_deref().unwrap_or_default(),
+                    title_regex.as_ref(),
+                )
                 && matches_optional_regex(resource.url.as_str(), url_regex.as_ref())
         })
         .collect::<Vec<_>>();
@@ -593,7 +602,10 @@ fn select_ckan_resource<'a>(
         .iter()
         .filter(|resource| {
             matches_format(resource.format.as_deref(), format)
-                && matches_optional_regex(resource.name.as_deref().unwrap_or_default(), name_regex.as_ref())
+                && matches_optional_regex(
+                    resource.name.as_deref().unwrap_or_default(),
+                    name_regex.as_ref(),
+                )
                 && matches_optional_regex(resource.url.as_str(), url_regex.as_ref())
         })
         .collect::<Vec<_>>();
@@ -821,7 +833,10 @@ mod tests {
         )
         .expect("href should resolve");
         assert_eq!(href, "https://cdn.example.invalid/gtfs_20260508.zip");
-        assert_eq!(url.as_str(), "https://cdn.example.invalid/gtfs_20260508.zip");
+        assert_eq!(
+            url.as_str(),
+            "https://cdn.example.invalid/gtfs_20260508.zip"
+        );
     }
 
     #[test]
@@ -843,13 +858,9 @@ mod tests {
             },
         ];
 
-        let resource = select_udata_resource(
-            &resources,
-            Some("zip"),
-            Some(r"^gtfs-.*\.zip$"),
-            None,
-        )
-        .expect("resource should resolve");
+        let resource =
+            select_udata_resource(&resources, Some("zip"), Some(r"^gtfs-.*\.zip$"), None)
+                .expect("resource should resolve");
         assert_eq!(resource.url, "https://example.invalid/gtfs-20260506.zip");
     }
 

@@ -1666,6 +1666,128 @@ fn read_json<T: DeserializeOwned>(path: &Path) -> Result<T> {
         .with_context(|| format!("failed to parse JSON from {}", path.display()))
 }
 
+fn adapter_for(adapter_id: &str) -> Option<&'static dyn PipelineAdapter> {
+    static SNCF_ADAPTER: SncfAdapter = SncfAdapter;
+    static GTFS_BASIC_ADAPTER: GtfsBasicAdapter = GtfsBasicAdapter;
+    static AGGREGATE_BUNDLE_ADAPTER: AggregateBundleAdapter = AggregateBundleAdapter;
+
+    match adapter_id {
+        "sncf_fr" => Some(&SNCF_ADAPTER),
+        "gtfs_basic" => Some(&GTFS_BASIC_ADAPTER),
+        "aggregate_bundle" => Some(&AGGREGATE_BUNDLE_ADAPTER),
+        _ => None,
+    }
+}
+
+impl PipelineAdapter for SncfAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "sncf_fr"
+    }
+
+    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
+        let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
+        let stations =
+            request.source_by_role_or_kind("stations_reference", SourceKind::Supplementary)?;
+        let rail_geometry = request.optional_source_by_role("rail_geometry");
+
+        let output = build_sncf_dataset(
+            &gtfs.local_path,
+            &stations.local_path,
+            rail_geometry.map(|source| source.local_path.as_path()),
+            &gtfs.definition.id,
+            &stations.definition.id,
+            rail_geometry.map(|source| source.definition.id.as_str()),
+            request.dataset_version,
+            request.generated_at,
+            request.source_snapshots,
+            request.overrides,
+        )?;
+
+        let counters = BTreeMap::from([
+            (
+                "station_reference_count".to_string(),
+                output.summary.station_reference_count as u64,
+            ),
+            (
+                "gtfs_station_count".to_string(),
+                output.summary.gtfs_station_count as u64,
+            ),
+            (
+                "matched_station_count".to_string(),
+                output.summary.matched_station_count as u64,
+            ),
+            (
+                "unmatched_station_count".to_string(),
+                output.summary.unmatched_station_count as u64,
+            ),
+        ]);
+
+        Ok(AdapterBuildArtifacts {
+            canonical: bundle_from_output(&output),
+            edge_geometries: Some(output.edge_geometries),
+            station_mappings: Some(output.station_mappings),
+            duplicates: output.duplicates,
+            issues: output.issues,
+            counters,
+            notes: vec![
+                format!("adapter={}", self.adapter_id()),
+                format!("target={}", request.target.id),
+            ],
+            source_artifacts: Vec::new(),
+        })
+    }
+}
+
+impl PipelineAdapter for GtfsBasicAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "gtfs_basic"
+    }
+
+    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
+        let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
+        let country_code = gtfs.definition.country_code.clone();
+        let output = build_gtfs_basic_dataset(
+            &gtfs.local_path,
+            &gtfs.definition.id,
+            &country_code,
+            request.dataset_version,
+            request.generated_at,
+            request.source_snapshots,
+            request.overrides,
+        )?;
+
+        let counters = BTreeMap::from([(
+            "gtfs_station_count".to_string(),
+            output.summary.gtfs_station_count as u64,
+        )]);
+
+        Ok(AdapterBuildArtifacts {
+            canonical: bundle_from_basic_output(&output),
+            edge_geometries: Some(output.edge_geometries),
+            station_mappings: Some(output.station_mappings),
+            duplicates: output.duplicates,
+            issues: output.issues,
+            counters,
+            notes: vec![
+                format!("adapter={}", self.adapter_id()),
+                format!("target={}", request.target.id),
+                format!("country_code={country_code}"),
+            ],
+            source_artifacts: Vec::new(),
+        })
+    }
+}
+
+impl PipelineAdapter for AggregateBundleAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "aggregate_bundle"
+    }
+
+    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
+        build_aggregate_bundle(request)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2046,127 +2168,5 @@ mod tests {
             Some(&lux_city.city_id),
             "station-qualified city variant should merge into canonical city identity"
         );
-    }
-}
-
-fn adapter_for(adapter_id: &str) -> Option<&'static dyn PipelineAdapter> {
-    static SNCF_ADAPTER: SncfAdapter = SncfAdapter;
-    static GTFS_BASIC_ADAPTER: GtfsBasicAdapter = GtfsBasicAdapter;
-    static AGGREGATE_BUNDLE_ADAPTER: AggregateBundleAdapter = AggregateBundleAdapter;
-
-    match adapter_id {
-        "sncf_fr" => Some(&SNCF_ADAPTER),
-        "gtfs_basic" => Some(&GTFS_BASIC_ADAPTER),
-        "aggregate_bundle" => Some(&AGGREGATE_BUNDLE_ADAPTER),
-        _ => None,
-    }
-}
-
-impl PipelineAdapter for SncfAdapter {
-    fn adapter_id(&self) -> &'static str {
-        "sncf_fr"
-    }
-
-    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
-        let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
-        let stations =
-            request.source_by_role_or_kind("stations_reference", SourceKind::Supplementary)?;
-        let rail_geometry = request.optional_source_by_role("rail_geometry");
-
-        let output = build_sncf_dataset(
-            &gtfs.local_path,
-            &stations.local_path,
-            rail_geometry.map(|source| source.local_path.as_path()),
-            &gtfs.definition.id,
-            &stations.definition.id,
-            rail_geometry.map(|source| source.definition.id.as_str()),
-            request.dataset_version,
-            request.generated_at,
-            request.source_snapshots,
-            request.overrides,
-        )?;
-
-        let counters = BTreeMap::from([
-            (
-                "station_reference_count".to_string(),
-                output.summary.station_reference_count as u64,
-            ),
-            (
-                "gtfs_station_count".to_string(),
-                output.summary.gtfs_station_count as u64,
-            ),
-            (
-                "matched_station_count".to_string(),
-                output.summary.matched_station_count as u64,
-            ),
-            (
-                "unmatched_station_count".to_string(),
-                output.summary.unmatched_station_count as u64,
-            ),
-        ]);
-
-        Ok(AdapterBuildArtifacts {
-            canonical: bundle_from_output(&output),
-            edge_geometries: Some(output.edge_geometries),
-            station_mappings: Some(output.station_mappings),
-            duplicates: output.duplicates,
-            issues: output.issues,
-            counters,
-            notes: vec![
-                format!("adapter={}", self.adapter_id()),
-                format!("target={}", request.target.id),
-            ],
-            source_artifacts: Vec::new(),
-        })
-    }
-}
-
-impl PipelineAdapter for GtfsBasicAdapter {
-    fn adapter_id(&self) -> &'static str {
-        "gtfs_basic"
-    }
-
-    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
-        let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
-        let country_code = gtfs.definition.country_code.clone();
-        let output = build_gtfs_basic_dataset(
-            &gtfs.local_path,
-            &gtfs.definition.id,
-            &country_code,
-            request.dataset_version,
-            request.generated_at,
-            request.source_snapshots,
-            request.overrides,
-        )?;
-
-        let counters = BTreeMap::from([(
-            "gtfs_station_count".to_string(),
-            output.summary.gtfs_station_count as u64,
-        )]);
-
-        Ok(AdapterBuildArtifacts {
-            canonical: bundle_from_basic_output(&output),
-            edge_geometries: Some(output.edge_geometries),
-            station_mappings: Some(output.station_mappings),
-            duplicates: output.duplicates,
-            issues: output.issues,
-            counters,
-            notes: vec![
-                format!("adapter={}", self.adapter_id()),
-                format!("target={}", request.target.id),
-                format!("country_code={country_code}"),
-            ],
-            source_artifacts: Vec::new(),
-        })
-    }
-}
-
-impl PipelineAdapter for AggregateBundleAdapter {
-    fn adapter_id(&self) -> &'static str {
-        "aggregate_bundle"
-    }
-
-    fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
-        build_aggregate_bundle(request)
     }
 }

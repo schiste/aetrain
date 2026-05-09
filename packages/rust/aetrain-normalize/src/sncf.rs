@@ -1285,10 +1285,10 @@ fn build_edge_geometry(
     from_station_key: &str,
     to_station_key: &str,
 ) -> (Vec<GeoPoint>, EdgeGeometrySource, Vec<String>) {
-    if let Some(shape_points) = shape_points {
-        if let Some(points) = extract_shape_segment(shape_points, from_location, to_location) {
-            return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
-        }
+    if let Some(shape_points) = shape_points
+        && let Some(points) = extract_shape_segment(shape_points, from_location, to_location)
+    {
+        return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
     }
 
     if let Some(rail_geometry_network) = rail_geometry_network {
@@ -1973,11 +1973,7 @@ fn normalize_name(input: &str) -> String {
             last_was_space = true;
         }
     }
-    normalized
-        .trim()
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
+    normalized.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 fn slugify(input: &str) -> String {
