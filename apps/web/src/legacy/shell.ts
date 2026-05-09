@@ -8,7 +8,7 @@ export const EMPTY_TRIP_MARKUP = `
   </div>
 `;
 
-export function renderShell(root) {
+export function renderShell(root: HTMLElement): void {
   root.innerHTML = `
     <div id="side">
       <div class="side-main">

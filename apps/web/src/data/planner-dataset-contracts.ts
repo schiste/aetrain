@@ -1,10 +1,32 @@
-const KNOWN_DATA_SOURCE_IDS = new Set(["poc", "production"]);
+import type {
+  GeoPoint,
+  PlannerArtifacts,
+  PlannerDataSourceId,
+  PlannerDataset,
+  ProductionArtifactBundle,
+  RawCity,
+  RawCityLocation,
+  RawEdge,
+  RawEdgeGeometries,
+  RawEdgeGeometryPoint,
+  RoutePair,
+  RuntimeArtifactMeta,
+  SearchIndexEntry
+} from "../types/planner-dataset.ts";
 
-export function isKnownPlannerDataSourceId(value) {
-  return KNOWN_DATA_SOURCE_IDS.has(value);
+const KNOWN_DATA_SOURCE_IDS = new Set<PlannerDataSourceId>(["poc", "production"]);
+
+export function isKnownPlannerDataSourceId(
+  value: unknown
+): value is PlannerDataSourceId {
+  return typeof value === "string"
+    && (KNOWN_DATA_SOURCE_IDS as Set<string>).has(value);
 }
 
-export function assertPlannerDataset(dataset, context = "planner dataset") {
+export function assertPlannerDataset(
+  dataset: unknown,
+  context = "planner dataset"
+): PlannerDataset {
   assertRecord(dataset, context);
 
   if (!isKnownPlannerDataSourceId(dataset.id)) {
@@ -18,30 +40,45 @@ export function assertPlannerDataset(dataset, context = "planner dataset") {
   assertCities(dataset.cities, `${context}.cities`);
   assertRouteData(dataset.routeData, `${context}.routeData`);
   if (dataset.plannerArtifacts !== undefined) {
-    assertPlannerArtifacts(dataset.plannerArtifacts, `${context}.plannerArtifacts`);
+    assertPlannerArtifacts(
+      dataset.plannerArtifacts,
+      `${context}.plannerArtifacts`
+    );
   }
 
   if (dataset.meta !== undefined) {
     assertRuntimeArtifactMeta(dataset.meta, `${context}.meta`);
   }
 
-  return dataset;
+  return dataset as unknown as PlannerDataset;
 }
 
-export function assertProductionArtifactBundle(bundle, context = "production artifact bundle") {
+export function assertProductionArtifactBundle(
+  bundle: unknown,
+  context = "production artifact bundle"
+): ProductionArtifactBundle {
   assertRecord(bundle, context);
   assertRuntimeArtifactMeta(bundle.meta, `${context}.meta`);
   assertRuntimeCities(bundle.rawCities, `${context}.rawCities`);
   assertRuntimeEdges(bundle.rawEdges, `${context}.rawEdges`);
-  assertRuntimeEdgeGeometries(bundle.rawEdgeGeometries, `${context}.rawEdgeGeometries`);
-  return bundle;
+  assertRuntimeEdgeGeometries(
+    bundle.rawEdgeGeometries,
+    `${context}.rawEdgeGeometries`
+  );
+  return bundle as unknown as ProductionArtifactBundle;
 }
 
-function assertRuntimeArtifactMeta(meta, context) {
+function assertRuntimeArtifactMeta(
+  meta: unknown,
+  context: string
+): asserts meta is RuntimeArtifactMeta {
   assertRecord(meta, context);
   assertString(meta.dataset_version, `${context}.dataset_version`);
 
-  if (typeof meta.schema_version !== "number" || !Number.isFinite(meta.schema_version)) {
+  if (
+    typeof meta.schema_version !== "number"
+    || !Number.isFinite(meta.schema_version)
+  ) {
     throw new Error(`${context}.schema_version must be a finite number`);
   }
 
@@ -50,14 +87,14 @@ function assertRuntimeArtifactMeta(meta, context) {
   }
 }
 
-function assertCities(cities, context) {
+function assertCities(cities: unknown, context: string): void {
   if (!Array.isArray(cities)) {
     throw new Error(`${context} must be an array`);
   }
 
   for (let index = 0; index < cities.length; index += 1) {
-    const city = cities[index];
     const cityContext = `${context}[${index}]`;
+    const city = cities[index];
     assertRecord(city, cityContext);
     assertString(city.name, `${cityContext}.name`);
     assertString(city.country, `${cityContext}.country`);
@@ -68,12 +105,14 @@ function assertCities(cities, context) {
   }
 }
 
-function assertRouteData(routeData, context) {
+function assertRouteData(routeData: unknown, context: string): void {
   assertRecord(routeData, context);
 
   for (const [routeKey, durationMinutes] of Object.entries(routeData)) {
     if (!routeKey || !routeKey.includes("-")) {
-      throw new Error(`${context} contains an invalid route key: ${JSON.stringify(routeKey)}`);
+      throw new Error(
+        `${context} contains an invalid route key: ${JSON.stringify(routeKey)}`
+      );
     }
 
     if (typeof durationMinutes !== "number" || !Number.isFinite(durationMinutes)) {
@@ -86,14 +125,17 @@ function assertRouteData(routeData, context) {
   }
 }
 
-function assertRuntimeCities(rawCities, context) {
+function assertRuntimeCities(
+  rawCities: unknown,
+  context: string
+): asserts rawCities is RawCity[] {
   if (!Array.isArray(rawCities)) {
     throw new Error(`${context} must be an array`);
   }
 
   for (let index = 0; index < rawCities.length; index += 1) {
-    const city = rawCities[index];
     const cityContext = `${context}[${index}]`;
+    const city = rawCities[index];
     assertRecord(city, cityContext);
     assertString(city.city_id, `${cityContext}.city_id`);
     assertString(city.display_name, `${cityContext}.display_name`);
@@ -110,14 +152,17 @@ function assertRuntimeCities(rawCities, context) {
   }
 }
 
-function assertRuntimeEdges(rawEdges, context) {
+function assertRuntimeEdges(
+  rawEdges: unknown,
+  context: string
+): asserts rawEdges is RawEdge[] {
   if (!Array.isArray(rawEdges)) {
     throw new Error(`${context} must be an array`);
   }
 
   for (let index = 0; index < rawEdges.length; index += 1) {
-    const edge = rawEdges[index];
     const edgeContext = `${context}[${index}]`;
+    const edge = rawEdges[index];
     assertRecord(edge, edgeContext);
     assertString(edge.from_city_id, `${edgeContext}.from_city_id`);
     assertString(edge.to_city_id, `${edgeContext}.to_city_id`);
@@ -125,15 +170,18 @@ function assertRuntimeEdges(rawEdges, context) {
   }
 }
 
-function assertRuntimeEdgeGeometries(rawEdgeGeometries, context) {
+function assertRuntimeEdgeGeometries(
+  rawEdgeGeometries: unknown,
+  context: string
+): asserts rawEdgeGeometries is RawEdgeGeometries {
   assertRecord(rawEdgeGeometries, context);
   if (!Array.isArray(rawEdgeGeometries.geometries)) {
     throw new Error(`${context}.geometries must be an array`);
   }
 
   for (let index = 0; index < rawEdgeGeometries.geometries.length; index += 1) {
-    const geometry = rawEdgeGeometries.geometries[index];
     const geometryContext = `${context}.geometries[${index}]`;
+    const geometry = rawEdgeGeometries.geometries[index];
     assertRecord(geometry, geometryContext);
     assertString(geometry.from_city_id, `${geometryContext}.from_city_id`);
     assertString(geometry.to_city_id, `${geometryContext}.to_city_id`);
@@ -142,7 +190,10 @@ function assertRuntimeEdgeGeometries(rawEdgeGeometries, context) {
   }
 }
 
-function assertPlannerArtifacts(artifacts, context) {
+function assertPlannerArtifacts(
+  artifacts: unknown,
+  context: string
+): asserts artifacts is PlannerArtifacts {
   assertRecord(artifacts, context);
 
   if (artifacts.routePairs !== undefined) {
@@ -151,14 +202,18 @@ function assertPlannerArtifacts(artifacts, context) {
     }
 
     for (let index = 0; index < artifacts.routePairs.length; index += 1) {
-      const route = artifacts.routePairs[index];
       const routeContext = `${context}.routePairs[${index}]`;
+      const route = artifacts.routePairs[index];
       assertRecord(route, routeContext);
       assertString(route.from, `${routeContext}.from`);
       assertString(route.to, `${routeContext}.to`);
       assertFiniteNumber(route.minutes, `${routeContext}.minutes`);
-      if (route.geometry !== undefined) {
-        assertLatLonPolyline(route.geometry, `${routeContext}.geometry`);
+      const routeRecord = route as Record<string, unknown>;
+      if (routeRecord.geometry !== undefined) {
+        assertLatLonPolyline(
+          routeRecord.geometry,
+          `${routeContext}.geometry`
+        );
       }
     }
   }
@@ -169,38 +224,48 @@ function assertPlannerArtifacts(artifacts, context) {
     }
 
     for (let index = 0; index < artifacts.searchIndex.length; index += 1) {
-      const entry = artifacts.searchIndex[index];
       const entryContext = `${context}.searchIndex[${index}]`;
+      const entry = artifacts.searchIndex[index];
       assertRecord(entry, entryContext);
-      assertFiniteNumber(entry.cityIndex, `${entryContext}.cityIndex`);
-      assertString(entry.cityNameNormalized, `${entryContext}.cityNameNormalized`);
-      assertString(entry.countryNormalized, `${entryContext}.countryNormalized`);
-      assertString(entry.searchText, `${entryContext}.searchText`);
+      const entryRecord = entry as Record<string, unknown>;
+      assertFiniteNumber(entryRecord.cityIndex, `${entryContext}.cityIndex`);
+      assertString(entryRecord.cityNameNormalized, `${entryContext}.cityNameNormalized`);
+      assertString(entryRecord.countryNormalized, `${entryContext}.countryNormalized`);
+      assertString(entryRecord.searchText, `${entryContext}.searchText`);
     }
   }
 }
 
-function assertLocation(location, context) {
+function assertLocation(
+  location: unknown,
+  context: string
+): asserts location is RawCityLocation {
   assertRecord(location, context);
   assertFiniteNumber(location.lat, `${context}.lat`);
   assertFiniteNumber(location.lon, `${context}.lon`);
 }
 
-function assertPolylinePoints(points, context) {
+function assertPolylinePoints(
+  points: unknown,
+  context: string
+): asserts points is RawEdgeGeometryPoint[] {
   if (!Array.isArray(points) || points.length < 2) {
     throw new Error(`${context} must be an array with at least 2 points`);
   }
 
   for (let index = 0; index < points.length; index += 1) {
-    const point = points[index];
     const pointContext = `${context}[${index}]`;
+    const point = points[index];
     assertRecord(point, pointContext);
     assertFiniteNumber(point.lat_e5, `${pointContext}.lat_e5`);
     assertFiniteNumber(point.lon_e5, `${pointContext}.lon_e5`);
   }
 }
 
-function assertLatLonPolyline(points, context) {
+function assertLatLonPolyline(
+  points: unknown,
+  context: string
+): asserts points is GeoPoint[] {
   if (!Array.isArray(points) || points.length < 2) {
     throw new Error(`${context} must be an array with at least 2 points`);
   }
@@ -210,19 +275,25 @@ function assertLatLonPolyline(points, context) {
   }
 }
 
-function assertRecord(value, context) {
+function assertRecord(
+  value: unknown,
+  context: string
+): asserts value is Record<string, unknown> {
   if (!value || Array.isArray(value) || typeof value !== "object") {
     throw new Error(`${context} must be an object`);
   }
 }
 
-function assertString(value, context) {
+function assertString(value: unknown, context: string): asserts value is string {
   if (typeof value !== "string" || value.length === 0) {
     throw new Error(`${context} must be a non-empty string`);
   }
 }
 
-function assertFiniteNumber(value, context) {
+function assertFiniteNumber(
+  value: unknown,
+  context: string
+): asserts value is number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new Error(`${context} must be a finite number`);
   }
