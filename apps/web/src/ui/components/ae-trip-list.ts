@@ -1,0 +1,139 @@
+// Trip stop list with inline suggestions. Reads trip + suggestions from
+// the AppContext; calls store.removeStop / store.addStopAfter on click.
+
+import { createDiagnostics, summarizeError } from "../../app-shell/diagnostics.ts";
+import { defineComponent } from "../runtime/component.ts";
+import { html } from "../runtime/html.ts";
+import { tryUseAppContext } from "../runtime/context.ts";
+import { formatMinutes, formatPopulation } from "../runtime/format.ts";
+import type { PlannerSuggestion } from "../../types/planner-engine.ts";
+
+const diagnostics = createDiagnostics("web/ui/trip-list");
+
+defineComponent("ae-trip-list", () => ({
+  render() {
+    const ctx = tryUseAppContext();
+    if (!ctx) {
+      return html`<div id="tl">${renderEmpty()}</div>`;
+    }
+
+    const state = ctx.state();
+    if (state.trip.length === 0) {
+      return html`<div id="tl">${renderEmpty()}</div>`;
+    }
+
+    const segments = ctx.segmentsOf(state);
+    const suggestions = ctx.suggestionsOf(state);
+
+    const onRemove = (index: number) => () => {
+      diagnostics.info("remove stop requested", { index });
+      void ctx.store.removeStop(index).catch((error: unknown) => {
+        diagnostics.error("removeStop failed", { error: summarizeError(error) });
+      });
+    };
+    const onAddAfter = (index: number, name: string) => () => {
+      diagnostics.info("add stop requested", { index, city_name: name });
+      void ctx.store.addStopAfter(index, name).catch((error: unknown) => {
+        diagnostics.error("addStopAfter failed", { error: summarizeError(error) });
+      });
+    };
+
+    const items: DocumentFragment[] = [];
+    for (let index = 0; index < state.trip.length; index += 1) {
+      const cityName = state.trip[index];
+      if (cityName === undefined) continue;
+      const city = ctx.graph.cityMap[cityName];
+      const segment = index > 0 ? segments[index - 1] : null;
+
+      let badge: DocumentFragment | null = null;
+      if (segment?.time) {
+        const previousStop = state.trip[index - 1] ?? "";
+        badge = html`<div class="tt">${`🚂 ${formatMinutes(segment.time)} from ${previousStop}`}</div>`;
+      } else if (index > 0) {
+        badge = html`<div class="tt err">⚠ No route found</div>`;
+      }
+
+      const meta = city
+        ? html`${city.country}${" · ★"}${String(city.interest)}/10`
+        : html``;
+      const popLabel = city ? formatPopulation(city.pop) : "";
+
+      items.push(html`
+        <div class="ts">
+          ${index > 0 ? html`<div class="tcon"></div>` : null}
+          <div class="tn">${String(index + 1)}</div>
+          <div class="ti">
+            <div class="cn">
+              ${cityName}
+              ${city
+                ? html`<span style="color:#475569;font-size:10px"> ${popLabel}</span>`
+                : null}
+            </div>
+            <div class="cc">${meta}</div>
+            ${badge}
+          </div>
+          <button
+            class="tx"
+            type="button"
+            data-action="remove-stop"
+            data-index=${String(index)}
+            title="Remove"
+            onclick=${onRemove(index)}
+          >×</button>
+        </div>
+      `);
+
+      const segmentSuggestions = suggestions
+        .filter((suggestion: PlannerSuggestion) => suggestion.afterStop === index)
+        .slice(0, 2);
+      for (const suggestion of segmentSuggestions) {
+        const detourLabel =
+          suggestion.detourMin > 0
+            ? `+${formatMinutes(suggestion.detourMin)} detour`
+            : "on your route";
+        items.push(html`
+          <div
+            class="suggest"
+            data-action="add-stop"
+            data-index=${String(index)}
+            data-city=${encodeURIComponent(suggestion.name)}
+            role="button"
+            tabindex="0"
+            onclick=${onAddAfter(index, suggestion.name)}
+            onkeydown=${onSuggestionKeydown(onAddAfter(index, suggestion.name))}
+          >
+            <span>💎</span>
+            <span class="sg-n">${suggestion.name}</span>
+            <span style="color:#475569">${suggestion.city.country}</span>
+            <span class="sg-i">${`★${String(suggestion.city.interest)} · ${detourLabel}`}</span>
+          </div>
+        `);
+      }
+    }
+
+    return html`<div id="tl">${items}</div>`;
+  }
+}));
+
+function renderEmpty(): DocumentFragment {
+  return html`
+    <div id="empty">
+      <div class="icon">🚂</div>
+      Click any city on the map<br />
+      or search to build your trip.<br /><br />
+      Interesting stops along your<br />
+      route will be suggested automatically.
+    </div>
+  `;
+}
+
+function onSuggestionKeydown(
+  trigger: () => void
+): (event: KeyboardEvent) => void {
+  return (event: KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      trigger();
+    }
+  };
+}

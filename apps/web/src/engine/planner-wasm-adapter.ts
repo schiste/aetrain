@@ -1,5 +1,5 @@
 // WASM-backed PlannerModel implementation. Phase 1.4 of the WASM migration:
-// the adapter speaks the same PlannerModel surface that legacy/core.ts
+// the adapter speaks the same PlannerModel surface that planner-core.ts
 // implements, so callers (the worker, the inline fallback path, tests) can
 // swap engines without code changes.
 //
@@ -16,7 +16,7 @@
 //     both directions so a path traversal can look up the segment regardless
 //     of edge orientation)
 //   * stitching the pair-by-pair WASM path back into a deduplicated
-//     GeoPoint[] using the same join semantics as legacy/core.ts'
+//     GeoPoint[] using the same join semantics as planner-core.ts'
 //     appendGeometry
 //   * an adjacency[] view + searchIndex view so legacy callers that read
 //     these PlannerModel fields directly keep working
@@ -67,7 +67,7 @@ export async function createWasmPlannerModel(
 
   // Derive the canonical edge list once: prefer routePairs (geometry-bearing)
   // and fall back to routeData (string-keyed, no geometry). Mirrors
-  // legacy/core.ts' buildPlannerGraph branch logic.
+  // planner-core.ts' buildPlannerGraph branch logic.
   const cityMap: Record<string, PlannerCity> = Object.fromEntries(
     cities.map((city) => [city.name, city])
   );
@@ -203,7 +203,7 @@ export async function createWasmPlannerModel(
   function dijkstra(startName: string, endName: string): PlannerRouteResult | null {
     const callStartedAt = now();
     if (startName === endName) {
-      // Mirror legacy/core.ts: a zero-length trip returns time=0 and a single
+      // Mirror planner-core.ts: a zero-length trip returns time=0 and a single
       // entry path. We still emit a (trivial) geometry so downstream code can
       // treat the field uniformly.
       return {
@@ -406,7 +406,7 @@ function deriveEdges(
   }
 
   // Avoid `cities` lint hint while keeping the parameter for symmetry with
-  // legacy/core.ts' signature.
+  // planner-core.ts' signature.
   void cities;
 
   return { derivedEdges, invalidFromInput };
@@ -417,7 +417,7 @@ function parseRouteKeyFactory(
 ): (routeKey: string) => [string, string] | null {
   // Longest-name-first lets us disambiguate "Aix-en-Provence-Marseille" from
   // "Aix-Marseille" without explicit separators (city names contain
-  // hyphens). Same algorithm as legacy/core.ts.
+  // hyphens). Same algorithm as planner-core.ts.
   const cityNames = Object.keys(cityMap).sort(
     (left, right) => right.length - left.length
   );

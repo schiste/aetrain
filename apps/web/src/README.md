@@ -11,7 +11,6 @@ Target boundaries:
 - `state/`: canonical app state and URL synchronization
 - `data/`: runtime artifact loading and adaptation
 - `workers/`: worker entry points
-- `legacy/`: transitional proof-of-concept code being retired
 
 The goal is a thin browser shell around a shared Rust engine and a
 performance-oriented renderer.

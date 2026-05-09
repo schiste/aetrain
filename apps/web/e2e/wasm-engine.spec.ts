@@ -4,8 +4,8 @@ import { expect, test, type Page } from "@playwright/test";
 // performance budget for derive-trip round-trips defined in
 // docs/architecture/performance-budgets.md.
 //
-// "Equivalence" with the JS engine is guaranteed transitively: legacy/core's
-// Dijkstra + suggestion + search are unit-tested in apps/web/src/legacy and
+// "Equivalence" with the JS engine is guaranteed transitively: planner-core's
+// Dijkstra + suggestion + search are unit-tested in apps/web/src/engine and
 // the Rust PlannerGraph is tested in packages/rust/aetrain-routing. This spec
 // proves the WASM engine actually drives the live golden path so a silent
 // fallback to the JS path doesn't go unnoticed.

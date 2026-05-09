@@ -1,5 +1,5 @@
 // Public planner engine interface used by the store, UI, workers, and clients.
-// The legacy/core.ts module provides an inline implementation; the worker/client
+// The engine/planner-core.ts module provides an inline implementation; the worker/client
 // pair (engine/planner-client.ts + workers/planner.worker.ts) provides a
 // concurrent implementation that conforms to the same shape.
 

@@ -1,7 +1,5 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
-import {
-  createPlannerModel
-} from "../legacy/core.ts";
+import { createPlannerModel } from "./planner-core.ts";
 import type {
   PlannerArtifacts,
   PlannerCity,

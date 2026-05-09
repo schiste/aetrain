@@ -1,5 +1,5 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
-import { createPlannerModel } from "../legacy/core.ts";
+import { createPlannerModel } from "../engine/planner-core.ts";
 import { createWasmPlannerModel } from "../engine/planner-wasm-adapter.ts";
 import {
   PLANNER_WORKER_MESSAGE_TYPES,

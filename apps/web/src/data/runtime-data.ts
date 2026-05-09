@@ -1,5 +1,5 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
-import { cities as pocCities, routeData as pocRouteData } from "../legacy/data.ts";
+import { cities as pocCities, routeData as pocRouteData } from "./poc-dataset.ts";
 import type {
   PlannerDataSourceId,
   PlannerDataset,

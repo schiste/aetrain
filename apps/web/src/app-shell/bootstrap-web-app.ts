@@ -1,5 +1,5 @@
 import { createDiagnostics, summarizeError } from "./diagnostics.ts";
-import { mountLegacyApp } from "../legacy/app.ts";
+import { mountAetrainShell } from "../ui/shell/ae-app.ts";
 
 const diagnostics = createDiagnostics("web/bootstrap");
 
@@ -25,7 +25,7 @@ export async function bootstrapWebApp(): Promise<void> {
       });
     }
 
-    await mountLegacyApp(root);
+    await mountAetrainShell(root);
     diagnostics.info("web app mounted");
   }).catch((error: unknown) => {
     diagnostics.error("bootstrap failed", {
