@@ -13,7 +13,7 @@ use aetrain_domain::{
     City, CityId, GeoPoint, ServiceClass, ServiceKind, SourceRef, Station, StationId, TravelEdge,
 };
 use anyhow::{Context, Result};
-use csv::ReaderBuilder;
+use csv::{ReaderBuilder, Trim};
 use deunicode::deunicode;
 use serde::{Deserialize, Serialize};
 use zip::ZipArchive;
@@ -447,6 +447,7 @@ pub fn bundle_from_basic_output(output: &BasicGtfsBuildOutput) -> DatasetBundle 
 fn load_station_references(path: &Path) -> Result<Vec<ReferenceStation>> {
     let mut reader = ReaderBuilder::new()
         .flexible(true)
+        .trim(Trim::All)
         .from_path(path)
         .with_context(|| format!("failed to open {}", path.display()))?;
     let headers = reader
@@ -496,10 +497,12 @@ fn load_station_references(path: &Path) -> Result<Vec<ReferenceStation>> {
 fn load_gtfs_stations(path: &Path) -> Result<(Vec<GtfsStationArea>, HashMap<String, String>)> {
     let file = File::open(path).with_context(|| format!("failed to open {}", path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
-    let stops = archive
-        .by_name("stops.txt")
+    let stops_entry = resolve_gtfs_archive_member_name(&mut archive, "stops.txt")
         .context("missing stops.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new().from_reader(stops);
+    let stops = archive
+        .by_name(&stops_entry)
+        .context("missing stops.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(stops);
 
     let mut stop_to_station_key = HashMap::new();
     let mut areas = BTreeMap::<String, GtfsStationArea>::new();
@@ -1114,10 +1117,14 @@ fn build_city_edges(
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
 
-    let stop_times = archive
-        .by_name("stop_times.txt")
+    let stop_times_entry = resolve_gtfs_archive_member_name(&mut archive, "stop_times.txt")
         .context("missing stop_times.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new().from_reader(stop_times);
+    let stop_times = archive
+        .by_name(&stop_times_entry)
+        .context("missing stop_times.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new()
+        .trim(Trim::All)
+        .from_reader(stop_times);
     let mut edge_map = BTreeMap::<(CityId, CityId), EdgeAccumulator>::new();
     let mut previous_by_trip = HashMap::<String, StopVisit>::new();
     let mut geometry_cache = HashMap::<(String, String), Option<Vec<GeoPoint>>>::new();
@@ -1374,10 +1381,12 @@ fn scale_geo_point_e5(point: GeoPoint) -> Result<PolylinePointE5> {
 }
 
 fn load_allowed_routes(archive: &mut ZipArchive<File>) -> Result<HashMap<String, i16>> {
-    let routes = archive
-        .by_name("routes.txt")
+    let routes_entry = resolve_gtfs_archive_member_name(archive, "routes.txt")
         .context("missing routes.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new().from_reader(routes);
+    let routes = archive
+        .by_name(&routes_entry)
+        .context("missing routes.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(routes);
     let mut allowed = HashMap::new();
     for row in reader.deserialize::<GtfsRouteRow>() {
         let row = row.context("failed to parse GTFS route")?;
@@ -1392,10 +1401,12 @@ fn load_trip_descriptors(
     archive: &mut ZipArchive<File>,
     allowed_routes: &HashMap<String, i16>,
 ) -> Result<HashMap<String, TripDescriptor>> {
-    let trips = archive
-        .by_name("trips.txt")
+    let trips_entry = resolve_gtfs_archive_member_name(archive, "trips.txt")
         .context("missing trips.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new().from_reader(trips);
+    let trips = archive
+        .by_name(&trips_entry)
+        .context("missing trips.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(trips);
     let mut trip_descriptors = HashMap::new();
     for row in reader.deserialize::<GtfsTripRow>() {
         let row = row.context("failed to parse GTFS trip")?;
@@ -1431,10 +1442,13 @@ fn load_gtfs_shapes_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, Vec<Ge
     let file =
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
-    let Ok(shapes) = archive.by_name("shapes.txt") else {
+    let Some(shapes_entry) = resolve_gtfs_archive_member_name(&mut archive, "shapes.txt") else {
         return Ok(HashMap::new());
     };
-    let mut reader = ReaderBuilder::new().from_reader(shapes);
+    let Ok(shapes) = archive.by_name(&shapes_entry) else {
+        return Ok(HashMap::new());
+    };
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(shapes);
     let mut shapes_by_id = HashMap::<String, Vec<(u32, GeoPoint)>>::new();
     for row in reader.deserialize::<GtfsShapeRow>() {
         let row = row.context("failed to parse GTFS shape row")?;
@@ -1470,10 +1484,14 @@ fn collect_used_station_keys(
     let file =
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
-    let stop_times = archive
-        .by_name("stop_times.txt")
+    let stop_times_entry = resolve_gtfs_archive_member_name(&mut archive, "stop_times.txt")
         .context("missing stop_times.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new().from_reader(stop_times);
+    let stop_times = archive
+        .by_name(&stop_times_entry)
+        .context("missing stop_times.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new()
+        .trim(Trim::All)
+        .from_reader(stop_times);
     let mut station_keys = HashSet::new();
 
     for row in reader.deserialize::<GtfsStopTimeRow>() {
@@ -1519,6 +1537,23 @@ fn build_override_lookup(
         }
     }
     Ok(lookup)
+}
+
+fn resolve_gtfs_archive_member_name(
+    archive: &mut ZipArchive<File>,
+    logical_name: &str,
+) -> Option<String> {
+    let suffix = format!("/{logical_name}");
+    for index in 0..archive.len() {
+        let Ok(entry) = archive.by_index(index) else {
+            continue;
+        };
+        let entry_name = entry.name().to_string();
+        if entry_name == logical_name || entry_name.ends_with(&suffix) {
+            return Some(entry_name);
+        }
+    }
+    None
 }
 
 fn resolve_station_override(
@@ -2211,6 +2246,100 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
                 .iter()
                 .any(|city| city.display_name == "Lyon Part Dieu")
         );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn gtfs_basic_dataset_reads_archives_with_a_common_root_folder() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-rooted-test.zip",
+            &[
+                (
+                    "GTFS_Fahrplan_2026/stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+AT:WIE,WIEN HBF,48.1850,16.3740,1,\n\
+AT:SZG,SALZBURG HBF,47.8133,13.0458,1,\n",
+                ),
+                (
+                    "GTFS_Fahrplan_2026/routes.txt",
+                    "route_id,route_type\nR1,2\n",
+                ),
+                (
+                    "GTFS_Fahrplan_2026/trips.txt",
+                    "route_id,trip_id\nR1,T1\n",
+                ),
+                (
+                    "GTFS_Fahrplan_2026/stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,AT:WIE,1\n\
+T1,10:30:00,10:35:00,AT:SZG,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "at-oebb-gtfs",
+            "AT",
+            "test-version",
+            "2026-05-09T10:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("rooted GTFS archive should build");
+
+        assert_eq!(output.summary.city_count, 2);
+        assert_eq!(output.summary.station_count, 2);
+        assert_eq!(output.summary.edge_count, 1);
+        assert_eq!(output.edge_geometries.geometries.len(), 1);
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn gtfs_basic_dataset_trims_padded_headers_and_values() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-padded-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+12006,Zaragoza Delicias,41.6586576,-0.9112693,1,\n\
+12005,Calatayud,41.353249,-1.643768,1,\n",
+                ),
+                (
+                    "routes.txt",
+                    "route_id,route_type,route_short_name\n10T0001C1  ,2,C1  \n",
+                ),
+                (
+                    "trips.txt",
+                    "route_id,trip_id\n10T0001C1  ,1026S27616C8b\n",
+                ),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence                                                                                             \n\
+1026S27616C8b,11:28:00,11:31:00,12006,010                                                                                                             \n\
+1026S27616C8b,11:35:00,11:35:00,12005,011                                                                                                             \n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "es-renfe-cercanias-gtfs",
+            "ES",
+            "test-version",
+            "2026-05-09T10:30:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("padded GTFS archive should build");
+
+        assert_eq!(output.summary.city_count, 2);
+        assert_eq!(output.summary.edge_count, 1);
 
         let _ = fs::remove_file(zip_path);
     }
