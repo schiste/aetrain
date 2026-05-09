@@ -1,8 +1,24 @@
+import type {
+  Diagnostics,
+  DiagnosticsData,
+  DiagnosticsEvent,
+  DiagnosticsLevel,
+  DiagnosticsStore,
+  SummarizedError
+} from "../types/diagnostics.ts";
+
 const DIAGNOSTICS_KEY = "__AETRAIN_DIAGNOSTICS__";
 const DEFAULT_MAX_EVENTS = 5000;
-const DEFAULT_CONSOLE_LEVEL = "info";
-const KNOWN_LEVELS = ["debug", "metric", "info", "warn", "error", "silent"];
-const LEVEL_PRIORITY = {
+const DEFAULT_CONSOLE_LEVEL: DiagnosticsLevel = "info";
+const KNOWN_LEVELS: readonly DiagnosticsLevel[] = [
+  "debug",
+  "metric",
+  "info",
+  "warn",
+  "error",
+  "silent"
+];
+const LEVEL_PRIORITY: Record<DiagnosticsLevel, number> = {
   debug: 10,
   metric: 10,
   info: 20,
@@ -11,71 +27,82 @@ const LEVEL_PRIORITY = {
   silent: 100
 };
 
-export function createDiagnostics(scope) {
+type ConsoleMethod = (...args: unknown[]) => void;
+
+export function createDiagnostics(scope: string): Diagnostics {
   const store = ensureDiagnosticsStore();
 
   return {
-    child(childScope) {
+    child(childScope: string): Diagnostics {
       return createDiagnostics(`${scope}/${childScope}`);
     },
-    debug(message, data) {
+    debug(message: string, data?: DiagnosticsData): void {
       logEvent(store, "debug", scope, message, data);
     },
-    error(message, data) {
+    error(message: string, data?: DiagnosticsData): void {
       logEvent(store, "error", scope, message, data);
     },
-    info(message, data) {
+    info(message: string, data?: DiagnosticsData): void {
       logEvent(store, "info", scope, message, data);
     },
-    metric(name, value, data) {
+    metric(name: string, value?: number, data?: DiagnosticsData): void {
       logEvent(store, "metric", scope, name, { value, ...data });
     },
-    time(label, fn, data) {
+    time<T>(label: string, fn: () => T, data?: DiagnosticsData): T {
       return timeSync(store, scope, label, fn, data);
     },
-    async timeAsync(label, fn, data) {
+    async timeAsync<T>(
+      label: string,
+      fn: () => Promise<T>,
+      data?: DiagnosticsData
+    ): Promise<T> {
       return timeAsync(store, scope, label, fn, data);
     },
-    warn(message, data) {
+    warn(message: string, data?: DiagnosticsData): void {
       logEvent(store, "warn", scope, message, data);
     }
   };
 }
 
-export function summarizeError(error) {
-  if (!error) {
-    return { name: "Error", message: "Unknown error" };
+export function summarizeError(error: unknown): SummarizedError {
+  if (!error || typeof error !== "object") {
+    return { name: "Error", message: error == null ? "Unknown error" : String(error) };
   }
 
+  const candidate = error as { name?: unknown; message?: unknown; stack?: unknown };
   return {
-    name: error.name || "Error",
-    message: error.message || String(error),
-    stack: error.stack || null
+    name: typeof candidate.name === "string" ? candidate.name : "Error",
+    message:
+      typeof candidate.message === "string" ? candidate.message : String(error),
+    stack: typeof candidate.stack === "string" ? candidate.stack : null
   };
 }
 
-function ensureDiagnosticsStore() {
-  const root = globalThis;
-  if (root[DIAGNOSTICS_KEY]) {
-    return root[DIAGNOSTICS_KEY];
+function ensureDiagnosticsStore(): DiagnosticsStore {
+  const root = globalThis as typeof globalThis & {
+    [DIAGNOSTICS_KEY]?: DiagnosticsStore;
+  };
+  const existing = root[DIAGNOSTICS_KEY];
+  if (existing) {
+    return existing;
   }
 
   const startedAtMs = now();
-  const store = {
+  const store: DiagnosticsStore = {
     startedAtIso: new Date().toISOString(),
     startedAtMs,
     consoleLevel: resolveConsoleLevel(),
     maxEvents: DEFAULT_MAX_EVENTS,
     nextIndex: 0,
     events: [],
-    clear() {
+    clear(): void {
       store.events.length = 0;
       console.info("[aetrain][diagnostics] cleared event buffer");
     },
-    dump() {
+    dump(): DiagnosticsEvent[] {
       return [...store.events];
     },
-    setConsoleLevel(level) {
+    setConsoleLevel(level: DiagnosticsLevel): void {
       if (!KNOWN_LEVELS.includes(level)) {
         throw new Error(`Unknown diagnostics console level: ${level}`);
       }
@@ -84,7 +111,7 @@ function ensureDiagnosticsStore() {
         console_level: level
       });
     },
-    setMaxEvents(count) {
+    setMaxEvents(count: number): void {
       if (!Number.isFinite(count) || count < 1) {
         throw new Error(`Invalid diagnostics max event count: ${count}`);
       }
@@ -94,7 +121,7 @@ function ensureDiagnosticsStore() {
         max_events: store.maxEvents
       });
     },
-    table() {
+    table(): void {
       console.table(
         store.events.map((event) => ({
           index: event.index,
@@ -116,7 +143,13 @@ function ensureDiagnosticsStore() {
   return store;
 }
 
-function timeSync(store, scope, label, fn, data) {
+function timeSync<T>(
+  store: DiagnosticsStore,
+  scope: string,
+  label: string,
+  fn: () => T,
+  data?: DiagnosticsData
+): T {
   const startedAt = now();
   logEvent(store, "debug", scope, `${label}:start`, data);
   try {
@@ -136,7 +169,13 @@ function timeSync(store, scope, label, fn, data) {
   }
 }
 
-async function timeAsync(store, scope, label, fn, data) {
+async function timeAsync<T>(
+  store: DiagnosticsStore,
+  scope: string,
+  label: string,
+  fn: () => Promise<T>,
+  data?: DiagnosticsData
+): Promise<T> {
   const startedAt = now();
   logEvent(store, "debug", scope, `${label}:start`, data);
   try {
@@ -156,8 +195,14 @@ async function timeAsync(store, scope, label, fn, data) {
   }
 }
 
-function logEvent(store, level, scope, message, data) {
-  const event = {
+function logEvent(
+  store: DiagnosticsStore,
+  level: DiagnosticsLevel,
+  scope: string,
+  message: string,
+  data?: DiagnosticsData
+): void {
+  const event: DiagnosticsEvent = {
     index: store.nextIndex,
     iso: new Date().toISOString(),
     elapsedMs: Math.round((now() - store.startedAtMs) * 1000) / 1000,
@@ -183,7 +228,7 @@ function logEvent(store, level, scope, message, data) {
   }
 }
 
-function selectConsoleMethod(level) {
+function selectConsoleMethod(level: DiagnosticsLevel): ConsoleMethod {
   if (level === "error") {
     return console.error.bind(console);
   }
@@ -199,64 +244,76 @@ function selectConsoleMethod(level) {
   return console.debug.bind(console);
 }
 
-function shouldEmitToConsole(store, level) {
+function shouldEmitToConsole(store: DiagnosticsStore, level: DiagnosticsLevel): boolean {
   return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[store.consoleLevel];
 }
 
-function sanitizeData(data) {
+function sanitizeData(data: DiagnosticsData | undefined): DiagnosticsData | undefined {
   if (data === undefined) {
     return undefined;
   }
 
   try {
-    return JSON.parse(JSON.stringify(data));
+    return JSON.parse(JSON.stringify(data)) as DiagnosticsData;
   } catch {
     return { value: String(data) };
   }
 }
 
-function now() {
+function now(): number {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
     return performance.now();
   }
   return Date.now();
 }
 
-function elapsedSince(startedAt) {
+function elapsedSince(startedAt: number): number {
   return Math.round((now() - startedAt) * 1000) / 1000;
 }
 
-function resolveConsoleLevel() {
-  const root = globalThis;
-  const inBrowser = typeof root.window !== "undefined" && root.window === root;
+function resolveConsoleLevel(): DiagnosticsLevel {
+  const root = globalThis as typeof globalThis & {
+    __AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__?: DiagnosticsLevel;
+  };
   const fromGlobal = root.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__;
-  if (KNOWN_LEVELS.includes(fromGlobal)) {
+  if (fromGlobal && KNOWN_LEVELS.includes(fromGlobal)) {
     return fromGlobal;
   }
 
   try {
-    const url = new URL(root.location?.href || "http://localhost/");
+    const browser = globalThis as typeof globalThis & {
+      location?: { href?: string };
+    };
+    const url = new URL(browser.location?.href || "http://localhost/");
     const fromQuery = url.searchParams.get("diag");
-    if (KNOWN_LEVELS.includes(fromQuery)) {
-      return fromQuery;
+    if (fromQuery && (KNOWN_LEVELS as readonly string[]).includes(fromQuery)) {
+      return fromQuery as DiagnosticsLevel;
     }
-  } catch {}
+  } catch {
+    // ignore — non-browser environments without a usable location
+  }
 
+  const inBrowser =
+    typeof (globalThis as { window?: unknown }).window !== "undefined" &&
+    (globalThis as { window?: unknown }).window === globalThis;
   if (!inBrowser) {
     return DEFAULT_CONSOLE_LEVEL;
   }
 
   try {
-    const fromStorage = root.localStorage?.getItem("aetrain-diagnostics-console-level");
-    if (KNOWN_LEVELS.includes(fromStorage)) {
-      return fromStorage;
+    const storage = (globalThis as { localStorage?: Storage }).localStorage;
+    const fromStorage = storage?.getItem("aetrain-diagnostics-console-level");
+    if (fromStorage && (KNOWN_LEVELS as readonly string[]).includes(fromStorage)) {
+      return fromStorage as DiagnosticsLevel;
     }
-  } catch {}
+  } catch {
+    // ignore — storage may be disabled
+  }
 
   return DEFAULT_CONSOLE_LEVEL;
 }
 
-function trimEvents(store) {
+function trimEvents(store: DiagnosticsStore): void {
   while (store.events.length > store.maxEvents) {
     store.events.shift();
   }
