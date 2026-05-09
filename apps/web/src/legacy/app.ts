@@ -1,4 +1,3 @@
-// @ts-nocheck — this file is deleted in Phase 2; not worth typing the transitional UI bash.
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import { createPlannerClient } from "../engine/planner-client.ts";
 import {
@@ -7,63 +6,85 @@ import {
   navigateToDataSource
 } from "../data/runtime-data.ts";
 import { createPlannerStore } from "../state/planner-store.ts";
+import type { PlannerState } from "../state/planner-store.ts";
 import { bindPlannerUrlState } from "../state/planner-url-state.ts";
 import { createLeafletMapSurface } from "../map/leaflet-map-surface.ts";
+import type { LabelThresholdValue } from "../map/render-model.ts";
+import type { RawBorderRecord } from "../map/landmass-model.ts";
+import type {
+  PlannerSegment,
+  PlannerSuggestion
+} from "../types/planner-engine.ts";
+import type { PlannerDataset } from "../types/planner-dataset.ts";
 import {
   escapeHtml,
   formatMinutes,
   formatPopulation,
   haversine
 } from "./core.ts";
-import { borderData } from "./landmass.ts";
+import { borderData as rawBorderData } from "./landmass.ts";
 import { EMPTY_TRIP_MARKUP, renderShell } from "./shell.ts";
 
 const diagnostics = createDiagnostics("web/ui/legacy-app");
 
-function getRefs(root) {
-  const required = [
-    "copyBtn",
-    "cc-n",
-    "cc-t",
-    "dual-fill",
-    "f-int",
-    "f-leg-max",
-    "f-leg-min",
-    "f-pop",
-    "fi-txt",
-    "fv-int",
-    "fv-leg",
-    "fv-pop",
-    "leg-filter",
-    "leg-from",
-    "leg-info",
-    "map",
-    "side",
-    "sinput",
-    "source-meta",
-    "source-poc",
-    "source-production",
-    "sr",
-    "sv-c",
-    "sv-d",
-    "sv-h",
-    "sv-s",
-    "tl"
-  ];
+const borderData = rawBorderData as RawBorderRecord[];
 
-  const refs = {};
-  for (const id of required) {
+const REQUIRED_REF_IDS = [
+  "copyBtn",
+  "cc-n",
+  "cc-t",
+  "dual-fill",
+  "f-int",
+  "f-leg-max",
+  "f-leg-min",
+  "f-pop",
+  "fi-txt",
+  "fv-int",
+  "fv-leg",
+  "fv-pop",
+  "leg-filter",
+  "leg-from",
+  "leg-info",
+  "map",
+  "side",
+  "sinput",
+  "source-meta",
+  "source-poc",
+  "source-production",
+  "sr",
+  "sv-c",
+  "sv-d",
+  "sv-h",
+  "sv-s",
+  "tl"
+] as const;
+
+type RequiredRefId = (typeof REQUIRED_REF_IDS)[number];
+
+type InputRefId = "f-int" | "f-leg-max" | "f-leg-min" | "f-pop" | "sinput";
+type ButtonRefId = "copyBtn" | "source-poc" | "source-production";
+
+type RefsMap = {
+  [K in RequiredRefId]: K extends InputRefId
+    ? HTMLInputElement
+    : K extends ButtonRefId
+      ? HTMLButtonElement
+      : HTMLElement;
+};
+
+function getRefs(root: HTMLElement): RefsMap {
+  const refs: Partial<Record<RequiredRefId, HTMLElement>> = {};
+  for (const id of REQUIRED_REF_IDS) {
     const element = root.querySelector(`#${CSS.escape(id)}`);
     if (!element) {
       throw new Error(`Missing required element #${id}`);
     }
-    refs[id] = element;
+    refs[id] = element as HTMLElement;
   }
-
-  return refs;
+  return refs as RefsMap;
 }
 
-function formatLeg(minutes) {
+function formatLeg(minutes: number): string {
   if (minutes === 0) {
     return "0h";
   }
@@ -80,7 +101,7 @@ function formatLeg(minutes) {
   return `${remainder}min`;
 }
 
-function labelThreshold(zoom) {
+function labelThreshold(zoom: number): LabelThresholdValue {
   if (zoom <= 4) return { interest: 10, pop: 2_000_000 };
   if (zoom <= 5) return { interest: 8, pop: 500_000 };
   if (zoom <= 6) return { interest: 7, pop: 200_000 };
@@ -90,7 +111,7 @@ function labelThreshold(zoom) {
   return { interest: 1, pop: 0 };
 }
 
-async function copyText(text) {
+async function copyText(text: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return;
@@ -107,7 +128,23 @@ async function copyText(text) {
   document.body.removeChild(input);
 }
 
-export async function mountLegacyApp(root) {
+interface RenderedVisibilityStats {
+  shown: number;
+  total: number;
+  reachable: number;
+}
+
+interface MakeEditableOptions {
+  min?: number;
+  max?: number;
+  step?: number;
+  width?: string;
+  getValue: () => number;
+  setValue: (value: number) => void;
+  formatValue: (value: number) => string;
+}
+
+export async function mountLegacyApp(root: HTMLDivElement): Promise<void> {
   diagnostics.info("mounting legacy app shell");
 
   renderShell(root);
@@ -119,7 +156,7 @@ export async function mountLegacyApp(root) {
     source_id: requestedSourceId
   });
 
-  let dataset;
+  let dataset: PlannerDataset;
   let loadWarning = "";
   try {
     dataset = await loadPlannerDataSource(requestedSourceId);
@@ -130,7 +167,8 @@ export async function mountLegacyApp(root) {
     });
     dataset = await loadPlannerDataSource("poc");
     if (requestedSourceId !== "poc") {
-      loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${error.message || String(error)}`;
+      const summary = summarizeError(error);
+      loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${summary.message}`;
     }
   }
 
@@ -162,8 +200,8 @@ export async function mountLegacyApp(root) {
     root.dataset.sourceVersion = dataset.meta.dataset_version;
   }
 
-  let mapSurface = null;
-  let stopUrlSync = null;
+  let mapSurface: ReturnType<typeof createLeafletMapSurface> | null = null;
+  let stopUrlSync: (() => void) | null = null;
   let searchResultsOpen = false;
   const plannerStore = createPlannerStore({
     cities,
@@ -180,7 +218,7 @@ export async function mountLegacyApp(root) {
       refs["fi-txt"].textContent = text;
     }
   });
-  const state = plannerStore.getState();
+  const state: PlannerState = plannerStore.getState();
   mapSurface = createLeafletMapSurface({
     borderData,
     cities,
@@ -198,11 +236,11 @@ export async function mountLegacyApp(root) {
     }
   });
 
-  function getSegments() {
+  function getSegments(): (PlannerSegment | null)[] {
     return state.segments;
   }
 
-  function updateDualFill() {
+  function updateDualFill(): void {
     const range = state.legDynMax || 1440;
     const left = (state.legMin / range) * 100;
     const right = (state.legMax / range) * 100;
@@ -214,12 +252,16 @@ export async function mountLegacyApp(root) {
     }
   }
 
-  function updateRenderedVisibility() {
-    mapSurface.render(state);
+  function updateRenderedVisibility(): void {
+    mapSurface?.render(state);
   }
 
-  function applyRenderedVisibility(stats) {
-    diagnostics.debug("applied rendered visibility stats", stats);
+  function applyRenderedVisibility(stats: RenderedVisibilityStats): void {
+    diagnostics.debug("applied rendered visibility stats", {
+      shown: stats.shown,
+      total: stats.total,
+      reachable: stats.reachable
+    });
     refs["cc-n"].textContent = String(stats.shown);
     refs["cc-t"].textContent = String(stats.total);
     refs["fi-txt"].textContent = `Showing ${stats.shown} of ${stats.total} cities`;
@@ -228,14 +270,14 @@ export async function mountLegacyApp(root) {
     }
   }
 
-  function updateFilterBadges() {
+  function updateFilterBadges(): void {
     refs["f-int"].value = String(state.filterInterest);
     refs["fv-int"].textContent = `${state.filterInterest}+`;
     refs["f-pop"].value = String(state.filterPop);
     refs["fv-pop"].textContent = state.filterPop === 0 ? "All" : `${state.filterPop}k+`;
   }
 
-  function updateLegFilter() {
+  function updateLegFilter(): void {
     if (state.trip.length < 1) {
       refs["leg-filter"].style.display = "none";
       return;
@@ -243,7 +285,7 @@ export async function mountLegacyApp(root) {
 
     refs["leg-filter"].style.display = "block";
     const lastStop = state.trip[state.trip.length - 1];
-    refs["leg-from"].textContent = lastStop;
+    refs["leg-from"].textContent = lastStop ?? "";
     refs["f-leg-min"].max = String(state.legDynMax);
     refs["f-leg-max"].max = String(state.legDynMax);
     refs["f-leg-min"].value = String(state.legMin);
@@ -251,14 +293,17 @@ export async function mountLegacyApp(root) {
     updateDualFill();
   }
 
-  function updateStats() {
+  function updateStats(): void {
     refs["sv-s"].textContent = String(state.trip.length);
 
     const segments = getSegments();
-    const totalMinutes = segments.reduce((sum, segment) => sum + (segment?.time || 0), 0);
+    const totalMinutes = segments.reduce(
+      (sum: number, segment: PlannerSegment | null | undefined) => sum + (segment?.time || 0),
+      0
+    );
     refs["sv-h"].textContent = formatMinutes(totalMinutes);
 
-    const countries = {};
+    const countries: Record<string, true> = {};
     for (const stop of state.trip) {
       const city = graph.cityMap[stop];
       if (city) {
@@ -269,8 +314,13 @@ export async function mountLegacyApp(root) {
 
     let distanceKm = 0;
     for (let index = 1; index < state.trip.length; index += 1) {
-      const from = graph.cityMap[state.trip[index - 1]];
-      const to = graph.cityMap[state.trip[index]];
+      const previousStop = state.trip[index - 1];
+      const currentStop = state.trip[index];
+      if (previousStop === undefined || currentStop === undefined) {
+        continue;
+      }
+      const from = graph.cityMap[previousStop];
+      const to = graph.cityMap[currentStop];
       if (from && to) {
         distanceKm += haversine(from, to);
       }
@@ -278,7 +328,7 @@ export async function mountLegacyApp(root) {
     refs["sv-d"].textContent = `${Math.round(distanceKm)}km`;
   }
 
-  function updateSidebar() {
+  function updateSidebar(): void {
     if (state.trip.length === 0) {
       refs["tl"].innerHTML = EMPTY_TRIP_MARKUP;
       return;
@@ -290,12 +340,16 @@ export async function mountLegacyApp(root) {
 
     for (let index = 0; index < state.trip.length; index += 1) {
       const cityName = state.trip[index];
+      if (cityName === undefined) {
+        continue;
+      }
       const city = graph.cityMap[cityName];
       const segment = index > 0 ? segments[index - 1] : null;
       let tripBadge = "";
 
       if (segment?.time) {
-        tripBadge = `<div class="tt">&#x1F682; ${escapeHtml(formatMinutes(segment.time))} from ${escapeHtml(state.trip[index - 1])}</div>`;
+        const previousStop = state.trip[index - 1] ?? "";
+        tripBadge = `<div class="tt">&#x1F682; ${escapeHtml(formatMinutes(segment.time))} from ${escapeHtml(previousStop)}</div>`;
       } else if (index > 0) {
         tripBadge = `<div class="tt err">&#x26A0; No route found</div>`;
       }
@@ -318,7 +372,9 @@ export async function mountLegacyApp(root) {
         </div>
       `;
 
-      const segmentSuggestions = suggestions.filter((suggestion) => suggestion.afterStop === index).slice(0, 2);
+      const segmentSuggestions = suggestions
+        .filter((suggestion: PlannerSuggestion) => suggestion.afterStop === index)
+        .slice(0, 2);
       for (const suggestion of segmentSuggestions) {
         const detourLabel = suggestion.detourMin > 0 ? `+${formatMinutes(suggestion.detourMin)} detour` : "on your route";
         html += `
@@ -342,7 +398,7 @@ export async function mountLegacyApp(root) {
     refs["tl"].innerHTML = html;
   }
 
-  async function shareTrip() {
+  async function shareTrip(): Promise<void> {
     if (state.trip.length === 0) {
       diagnostics.debug("ignored share for empty trip");
       return;
@@ -352,22 +408,33 @@ export async function mountLegacyApp(root) {
     const lines = ["My Aetrain Trip\n"];
     for (let index = 0; index < state.trip.length; index += 1) {
       const cityName = state.trip[index];
+      if (cityName === undefined) {
+        continue;
+      }
       const city = graph.cityMap[cityName];
       const segment = index > 0 ? segments[index - 1] : null;
       const segmentTime = segment?.time ? ` (${formatMinutes(segment.time)})` : "";
       lines.push(`${index + 1}. ${cityName}, ${city ? city.country : ""}${segmentTime}`);
     }
 
-    const totalMinutes = segments.reduce((sum, segment) => sum + (segment?.time || 0), 0);
-    const countries = {};
+    const totalMinutes = segments.reduce(
+      (sum: number, segment: PlannerSegment | null | undefined) => sum + (segment?.time || 0),
+      0
+    );
+    const countries: Record<string, true> = {};
     let distanceKm = 0;
     for (let index = 0; index < state.trip.length; index += 1) {
-      const city = graph.cityMap[state.trip[index]];
+      const stopName = state.trip[index];
+      if (stopName === undefined) {
+        continue;
+      }
+      const city = graph.cityMap[stopName];
       if (city) {
         countries[city.country] = true;
       }
       if (index > 0) {
-        const previous = graph.cityMap[state.trip[index - 1]];
+        const previousName = state.trip[index - 1];
+        const previous = previousName !== undefined ? graph.cityMap[previousName] : undefined;
         if (previous && city) {
           distanceKm += haversine(previous, city);
         }
@@ -382,7 +449,7 @@ export async function mountLegacyApp(root) {
     await copyText(lines.join("\n"));
     diagnostics.info("copied trip summary", {
       trip_length: state.trip.length,
-      total_minutes,
+      total_minutes: totalMinutes,
       distance_km: Math.round(distanceKm),
       country_count: Object.keys(countries).length
     });
@@ -392,21 +459,21 @@ export async function mountLegacyApp(root) {
     }, 1500);
   }
 
-  function toggleCity(name) {
+  function toggleCity(name: string): void {
     diagnostics.info("toggle city requested", {
       city_name: name
     });
     void plannerStore.toggleCity(name).catch(handlePlannerMutationError);
   }
 
-  function removeStop(index) {
+  function removeStop(index: number): void {
     diagnostics.info("remove stop requested", {
       index
     });
     void plannerStore.removeStop(index).catch(handlePlannerMutationError);
   }
 
-  function addStopAfter(index, name) {
+  function addStopAfter(index: number, name: string): void {
     diagnostics.info("add stop requested", {
       index,
       city_name: name
@@ -414,18 +481,18 @@ export async function mountLegacyApp(root) {
     void plannerStore.addStopAfter(index, name).catch(handlePlannerMutationError);
   }
 
-  function clearTrip() {
+  function clearTrip(): void {
     diagnostics.info("clear trip requested");
     void plannerStore.clearTrip().catch(handlePlannerMutationError);
   }
 
-  function handlePlannerMutationError(error) {
+  function handlePlannerMutationError(error: unknown): void {
     diagnostics.error("failed to update planner view", {
       error: summarizeError(error)
     });
   }
 
-  function updateSearchResults() {
+  function updateSearchResults(): void {
     refs["sinput"].value = state.searchQuery;
     if (state.searchQuery.trim().length < 1) {
       refs["sr"].style.display = "none";
@@ -459,7 +526,7 @@ export async function mountLegacyApp(root) {
     refs["sr"].style.display = "block";
   }
 
-  function makeEditable(target, options) {
+  function makeEditable(target: HTMLElement, options: MakeEditableOptions): void {
     target.addEventListener("click", () => {
       if (target.querySelector("input")) {
         return;
@@ -482,7 +549,7 @@ export async function mountLegacyApp(root) {
       input.focus();
       input.select();
 
-      function commit() {
+      function commit(): void {
         let value = Number.parseInt(input.value, 10);
         if (Number.isNaN(value)) {
           value = currentValue;
@@ -495,7 +562,7 @@ export async function mountLegacyApp(root) {
       }
 
       input.addEventListener("blur", commit);
-      input.addEventListener("keydown", (event) => {
+      input.addEventListener("keydown", (event: KeyboardEvent) => {
         if (event.key === "Enter") {
           event.preventDefault();
           input.blur();
@@ -508,9 +575,14 @@ export async function mountLegacyApp(root) {
     });
   }
 
-  function installLegEditor() {
-    const replacement = refs["fv-leg"].cloneNode(true);
-    refs["fv-leg"].parentNode.replaceChild(replacement, refs["fv-leg"]);
+  function installLegEditor(): void {
+    const original = refs["fv-leg"];
+    const replacement = original.cloneNode(true) as HTMLElement;
+    const parent = original.parentNode;
+    if (!parent) {
+      throw new Error("Missing parent for #fv-leg");
+    }
+    parent.replaceChild(replacement, original);
     refs["fv-leg"] = replacement;
 
     replacement.addEventListener("click", () => {
@@ -554,7 +626,7 @@ export async function mountLegacyApp(root) {
       minInput.focus();
       minInput.select();
 
-      function commit() {
+      function commit(): void {
         let nextMin = Number.parseFloat(minInput.value);
         let nextMax = Number.parseFloat(maxInput.value);
         if (Number.isNaN(nextMin)) nextMin = state.legMin / 60;
@@ -574,7 +646,7 @@ export async function mountLegacyApp(root) {
         replacement.textContent = `${formatLeg(state.legMin)} — ${formatLeg(state.legMax)}`;
       }
 
-      minInput.addEventListener("keydown", (event) => {
+      minInput.addEventListener("keydown", (event: KeyboardEvent) => {
         if (event.key === "Enter") {
           event.preventDefault();
           maxInput.focus();
@@ -585,7 +657,7 @@ export async function mountLegacyApp(root) {
         }
       });
 
-      maxInput.addEventListener("keydown", (event) => {
+      maxInput.addEventListener("keydown", (event: KeyboardEvent) => {
         if (event.key === "Enter" || event.key === "Escape") {
           event.preventDefault();
           commit();
@@ -610,25 +682,29 @@ export async function mountLegacyApp(root) {
     });
   }
 
-  refs["f-int"].addEventListener("input", (event) => {
-    plannerStore.setFilterInterest(event.target.value);
+  refs["f-int"].addEventListener("input", (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    plannerStore.setFilterInterest(target.value);
   });
 
-  refs["f-pop"].addEventListener("input", (event) => {
-    plannerStore.setFilterPop(event.target.value);
+  refs["f-pop"].addEventListener("input", (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    plannerStore.setFilterPop(target.value);
   });
 
-  refs["f-leg-min"].addEventListener("input", (event) => {
+  refs["f-leg-min"].addEventListener("input", (event: Event) => {
+    const target = event.target as HTMLInputElement;
     plannerStore.setLegRange({
-      min: event.target.value,
+      min: target.value,
       max: state.legMax
     });
   });
 
-  refs["f-leg-max"].addEventListener("input", (event) => {
+  refs["f-leg-max"].addEventListener("input", (event: Event) => {
+    const target = event.target as HTMLInputElement;
     plannerStore.setLegRange({
       min: state.legMin,
-      max: event.target.value
+      max: target.value
     });
   });
 
@@ -637,11 +713,11 @@ export async function mountLegacyApp(root) {
     max: 10,
     step: 1,
     getValue: () => state.filterInterest,
-    setValue: (value) => {
+    setValue: (value: number) => {
       plannerStore.setFilterInterest(value);
       refs["f-int"].value = String(state.filterInterest);
     },
-    formatValue: (value) => `${value}+`
+    formatValue: (value: number) => `${value}+`
   });
 
   makeEditable(refs["fv-pop"], {
@@ -649,21 +725,22 @@ export async function mountLegacyApp(root) {
     max: 1000,
     step: 10,
     getValue: () => state.filterPop,
-    setValue: (value) => {
+    setValue: (value: number) => {
       plannerStore.setFilterPop(value);
       refs["f-pop"].value = String(state.filterPop);
     },
-    formatValue: (value) => (value === 0 ? "All" : `${value}k+`)
+    formatValue: (value: number) => (value === 0 ? "All" : `${value}k+`)
   });
 
   installLegEditor();
 
-  refs["sinput"].addEventListener("input", (event) => {
+  refs["sinput"].addEventListener("input", (event: Event) => {
+    const target = event.target as HTMLInputElement;
     searchResultsOpen = true;
     diagnostics.debug("search input changed", {
-      query: event.target.value
+      query: target.value
     });
-    void plannerStore.setSearchQuery(event.target.value).catch(handlePlannerMutationError);
+    void plannerStore.setSearchQuery(target.value).catch(handlePlannerMutationError);
   });
   refs["sinput"].addEventListener("blur", () => {
     window.setTimeout(() => {
@@ -671,7 +748,7 @@ export async function mountLegacyApp(root) {
       refs["sr"].style.display = "none";
     }, 200);
   });
-  refs["sinput"].addEventListener("keydown", (event) => {
+  refs["sinput"].addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       searchResultsOpen = false;
       diagnostics.debug("search input dismissed with escape");
@@ -680,13 +757,21 @@ export async function mountLegacyApp(root) {
     }
   });
 
-  refs["sr"].addEventListener("click", (event) => {
-    const item = event.target.closest(".sri");
+  refs["sr"].addEventListener("click", (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const item = target.closest(".sri");
     if (!item) {
       return;
     }
 
-    const cityName = decodeURIComponent(item.getAttribute("data-city"));
+    const dataCity = item.getAttribute("data-city");
+    if (dataCity === null) {
+      return;
+    }
+    const cityName = decodeURIComponent(dataCity);
     diagnostics.info("selected search result", {
       city_name: cityName
     });
@@ -694,42 +779,67 @@ export async function mountLegacyApp(root) {
     searchResultsOpen = false;
     void plannerStore.setSearchQuery("").catch(handlePlannerMutationError);
     refs["sr"].style.display = "none";
-    mapSurface.flyToCity(cityName);
+    mapSurface?.flyToCity(cityName);
   });
 
-  refs["tl"].addEventListener("click", (event) => {
-    const removeButton = event.target.closest('[data-action="remove-stop"]');
+  refs["tl"].addEventListener("click", (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const removeButton = target.closest('[data-action="remove-stop"]');
     if (removeButton) {
-      removeStop(Number.parseInt(removeButton.getAttribute("data-index"), 10));
+      const indexAttr = removeButton.getAttribute("data-index");
+      if (indexAttr !== null) {
+        removeStop(Number.parseInt(indexAttr, 10));
+      }
       return;
     }
 
-    const suggestion = event.target.closest('[data-action="add-stop"]');
+    const suggestion = target.closest('[data-action="add-stop"]');
     if (suggestion) {
-      const index = Number.parseInt(suggestion.getAttribute("data-index"), 10);
-      const cityName = decodeURIComponent(suggestion.getAttribute("data-city"));
+      const indexAttr = suggestion.getAttribute("data-index");
+      const cityAttr = suggestion.getAttribute("data-city");
+      if (indexAttr === null || cityAttr === null) {
+        return;
+      }
+      const index = Number.parseInt(indexAttr, 10);
+      const cityName = decodeURIComponent(cityAttr);
       addStopAfter(index, cityName);
     }
   });
 
-  refs["tl"].addEventListener("keydown", (event) => {
+  refs["tl"].addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
 
-    const suggestion = event.target.closest('[data-action="add-stop"]');
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const suggestion = target.closest('[data-action="add-stop"]');
     if (!suggestion) {
       return;
     }
 
     event.preventDefault();
-    const index = Number.parseInt(suggestion.getAttribute("data-index"), 10);
-    const cityName = decodeURIComponent(suggestion.getAttribute("data-city"));
+    const indexAttr = suggestion.getAttribute("data-index");
+    const cityAttr = suggestion.getAttribute("data-city");
+    if (indexAttr === null || cityAttr === null) {
+      return;
+    }
+    const index = Number.parseInt(indexAttr, 10);
+    const cityName = decodeURIComponent(cityAttr);
     addStopAfter(index, cityName);
   });
 
-  refs["side"].addEventListener("click", async (event) => {
-    const sourceButton = event.target.closest("[data-source-id]");
+  refs["side"].addEventListener("click", async (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const sourceButton = target.closest("[data-source-id]");
     if (sourceButton) {
       const nextSourceId = sourceButton.getAttribute("data-source-id");
       if (nextSourceId && nextSourceId !== dataset.id) {
@@ -742,7 +852,7 @@ export async function mountLegacyApp(root) {
       return;
     }
 
-    const button = event.target.closest("[data-action]");
+    const button = target.closest("[data-action]");
     if (!button) {
       return;
     }
