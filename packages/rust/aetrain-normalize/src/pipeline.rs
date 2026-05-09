@@ -933,7 +933,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         ),
     ]);
 
-    let merged_cities = merge_cities(&dependency_inputs, request.target.id.as_str());
+    let mut merged_cities = merge_cities(&dependency_inputs, request.target.id.as_str());
     let stations = merge_stations(
         &dependency_inputs,
         &merged_cities.city_id_remap,
@@ -942,6 +942,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     let edges = merge_edges(&dependency_inputs, &merged_cities.city_id_remap);
     let edge_geometries = merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
     let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
+    apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
     let duplicates = recompute_duplicates(request.generated_at, &merged_cities.cities);
 
     let mut issues = dependency_inputs
@@ -1393,9 +1394,10 @@ fn choose_canonical_city<'a>(
 
 fn canonical_city_rank(
     city: &aetrain_domain::City,
-) -> (u8, u8, usize, u64, u8, usize, std::cmp::Reverse<String>) {
+) -> (u8, u8, u8, usize, u64, u8, usize, std::cmp::Reverse<String>) {
     (
         city_identity_quality(city),
+        u8::from(!is_station_qualified_city_name(&city.display_name)),
         u8::from(city.country_code != "ZZ"),
         city.station_ids.len(),
         city.population.unwrap_or(0),
@@ -1420,6 +1422,72 @@ fn city_identity_quality(city: &aetrain_domain::City) -> u8 {
     }
 
     0
+}
+
+fn apply_computed_city_enrichment(
+    cities: &mut [aetrain_domain::City],
+    edges: &[aetrain_domain::TravelEdge],
+) {
+    let mut neighbors_by_city = HashMap::<String, BTreeSet<String>>::new();
+    for edge in edges {
+        neighbors_by_city
+            .entry(edge.from_city_id.as_str().to_string())
+            .or_default()
+            .insert(edge.to_city_id.as_str().to_string());
+        neighbors_by_city
+            .entry(edge.to_city_id.as_str().to_string())
+            .or_default()
+            .insert(edge.from_city_id.as_str().to_string());
+    }
+
+    for city in cities {
+        if city.interest_score.is_some() {
+            continue;
+        }
+        let degree = neighbors_by_city
+            .get(city.city_id.as_str())
+            .map(|neighbors| neighbors.len())
+            .unwrap_or(0);
+        city.interest_score = Some(compute_city_interest_score(city, degree));
+    }
+}
+
+fn compute_city_interest_score(city: &aetrain_domain::City, degree: usize) -> u8 {
+    if is_station_qualified_city_name(&city.display_name) {
+        let mut score = if city.country_code == "ZZ" { 0u8 } else { 1u8 };
+        if degree >= 32 {
+            score += 1;
+        }
+        return score.min(10);
+    }
+
+    let mut score = if city.country_code == "ZZ" { 2u8 } else { 4u8 };
+    score += match city.station_ids.len() {
+        0..=1 => 0,
+        2..=3 => 1,
+        4..=7 => 2,
+        _ => 3,
+    };
+    score += match degree {
+        0..=1 => 0,
+        2..=7 => 1,
+        8..=23 => 2,
+        24..=63 => 3,
+        _ => 4,
+    };
+    if city.aliases.len() >= 4 {
+        score += 1;
+    }
+    if let Some(population) = city.population {
+        score += match population {
+            0..=99_999 => 0,
+            100_000..=499_999 => 1,
+            500_000..=1_499_999 => 2,
+            _ => 3,
+        };
+    }
+
+    score.min(10)
 }
 
 fn recompute_duplicates(
@@ -1613,31 +1681,32 @@ fn city_identity_key(value: &str) -> String {
         .map(str::to_string)
         .collect::<Vec<_>>();
 
-    loop {
-        let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["gare".to_string(), "central".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["central".to_string(), "station".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.last().is_some_and(|token| {
-            matches!(
-                token.as_str(),
-                "bahnhof" | "bahnhst" | "bhf" | "hbf" | "hb" | "hauptbahnhof" | "station" | "gare"
-            )
-        }) {
-            Some(tokens.len() - 1)
-        } else {
-            None
-        };
-
-        let Some(new_len) = trimmed else {
-            break;
-        };
-        if new_len == 0 {
-            break;
+    if let Some(index) = first_station_qualifier_index(&tokens) {
+        if index > 0 {
+            tokens.truncate(index);
         }
-        tokens.truncate(new_len);
+    } else {
+        loop {
+            let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()]) {
+                Some(tokens.len() - 2)
+            } else if tokens.ends_with(&["gare".to_string(), "central".to_string()]) {
+                Some(tokens.len() - 2)
+            } else if tokens.ends_with(&["central".to_string(), "station".to_string()]) {
+                Some(tokens.len() - 2)
+            } else if tokens.last().is_some_and(|token| is_station_token(token)) {
+                Some(tokens.len() - 1)
+            } else {
+                None
+            };
+
+            let Some(new_len) = trimmed else {
+                break;
+            };
+            if new_len == 0 {
+                break;
+            }
+            tokens.truncate(new_len);
+        }
     }
 
     if tokens.is_empty() {
@@ -1645,6 +1714,47 @@ fn city_identity_key(value: &str) -> String {
     } else {
         tokens.join(" ")
     }
+}
+
+fn is_station_qualified_city_name(value: &str) -> bool {
+    let tokens = normalize_name(value)
+        .split_whitespace()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    tokens.len() > 1 && first_station_qualifier_index(&tokens).is_some()
+}
+
+fn first_station_qualifier_index(tokens: &[String]) -> Option<usize> {
+    tokens
+        .iter()
+        .enumerate()
+        .skip(1)
+        .find_map(|(index, token)| is_station_token(token).then_some(index))
+}
+
+fn is_station_token(token: &str) -> bool {
+    matches!(
+        token,
+        "aeroport"
+            | "airport"
+            | "bahn"
+            | "bahnhof"
+            | "bahnhst"
+            | "bhf"
+            | "busbahnhof"
+            | "busstation"
+            | "centrale"
+            | "gare"
+            | "gareroutiere"
+            | "hbf"
+            | "hauptbahnhof"
+            | "hb"
+            | "routiere"
+            | "stazione"
+            | "station"
+            | "tgv"
+            | "zob"
+    )
 }
 
 fn geo_distance_meters(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> f64 {
@@ -2168,5 +2278,189 @@ mod tests {
             Some(&lux_city.city_id),
             "station-qualified city variant should merge into canonical city identity"
         );
+    }
+
+    #[test]
+    fn aggregate_city_merge_strips_interior_station_tokens() {
+        let berlin = City {
+            city_id: CityId::new("berlin-de-5b922f02").expect("valid city id"),
+            slug: "berlin".to_string(),
+            display_name: "Berlin".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint {
+                lat: 52.5200,
+                lon: 13.4050,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-8011160").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let berlin_hbf = City {
+            city_id: CityId::new("berlin-hbf-lehrter-bahnhof-nord-zz-1fb4c6e1")
+                .expect("valid city id"),
+            slug: "berlin-hbf-lehrter-bahnhof-nord".to_string(),
+            display_name: "Berlin Hbf Lehrter Bahnhof Nord".to_string(),
+            country_code: "ZZ".to_string(),
+            location: GeoPoint {
+                lat: 52.5251,
+                lon: 13.3694,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![
+                StationId::new("station-europe-berlin-hbf").expect("valid station id"),
+            ],
+            aliases: Vec::new(),
+        };
+
+        let mut issues = Vec::new();
+        let remap = build_aggregate_city_id_remap(
+            vec![&berlin, &berlin_hbf],
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(
+            remap.get(&berlin_hbf.city_id),
+            Some(&berlin.city_id),
+            "interior station tokens should collapse station-shaped Berlin variants"
+        );
+    }
+
+    #[test]
+    fn aggregate_enrichment_assigns_low_interest_to_station_shaped_rows() {
+        let berlin = City {
+            city_id: CityId::new("berlin-de-5b922f02").expect("valid city id"),
+            slug: "berlin".to_string(),
+            display_name: "Berlin".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint {
+                lat: 52.5200,
+                lon: 13.4050,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![
+                StationId::new("station-berlin-1").expect("valid station id"),
+                StationId::new("station-berlin-2").expect("valid station id"),
+                StationId::new("station-berlin-3").expect("valid station id"),
+            ],
+            aliases: vec!["Berlin Hauptbahnhof".to_string()],
+        };
+        let berlin_spandau = City {
+            city_id: CityId::new("s-spandau-bhf-berlin-de-9dc6342d").expect("valid city id"),
+            slug: "s-spandau-bhf-berlin".to_string(),
+            display_name: "S Spandau Bhf Berlin".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint {
+                lat: 52.5344,
+                lon: 13.1982,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-berlin-spandau").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let lyon = City {
+            city_id: CityId::new("lyon-fr-69123").expect("valid city id"),
+            slug: "lyon".to_string(),
+            display_name: "Lyon".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 45.7640,
+                lon: 4.8357,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: (0..11)
+                .map(|index| {
+                    StationId::new(format!("station-lyon-{index}")).expect("valid station id")
+                })
+                .collect(),
+            aliases: vec!["Lyon Part Dieu".to_string(), "Lyon Perrache".to_string()],
+        };
+        let lyon_routiere = City {
+            city_id: CityId::new("lyon-part-dieu-gare-routiere-zz-1f21be10")
+                .expect("valid city id"),
+            slug: "lyon-part-dieu-gare-routiere".to_string(),
+            display_name: "Lyon Part Dieu Gare Routiere".to_string(),
+            country_code: "ZZ".to_string(),
+            location: GeoPoint {
+                lat: 45.7607,
+                lon: 4.8619,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-lyon-routiere").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let edges = vec![
+            TravelEdge {
+                from_city_id: berlin.city_id.clone(),
+                to_city_id: lyon.city_id.clone(),
+                duration_min: 60,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Intercity,
+                change_count_estimate: Some(0),
+                source_confidence: 100,
+                provenance: vec!["test:1".to_string()],
+            },
+            TravelEdge {
+                from_city_id: berlin.city_id.clone(),
+                to_city_id: berlin_spandau.city_id.clone(),
+                duration_min: 10,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Regional,
+                change_count_estimate: Some(0),
+                source_confidence: 100,
+                provenance: vec!["test:2".to_string()],
+            },
+            TravelEdge {
+                from_city_id: lyon.city_id.clone(),
+                to_city_id: lyon_routiere.city_id.clone(),
+                duration_min: 5,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Regional,
+                change_count_estimate: Some(0),
+                source_confidence: 100,
+                provenance: vec!["test:3".to_string()],
+            },
+        ];
+        let mut cities = vec![berlin, berlin_spandau, lyon, lyon_routiere];
+
+        apply_computed_city_enrichment(&mut cities, &edges);
+
+        let berlin_interest = cities
+            .iter()
+            .find(|city| city.display_name == "Berlin")
+            .and_then(|city| city.interest_score)
+            .expect("Berlin should get computed interest");
+        let berlin_spandau_interest = cities
+            .iter()
+            .find(|city| city.display_name == "S Spandau Bhf Berlin")
+            .and_then(|city| city.interest_score)
+            .expect("station-shaped Berlin should get computed interest");
+        let lyon_interest = cities
+            .iter()
+            .find(|city| city.display_name == "Lyon")
+            .and_then(|city| city.interest_score)
+            .expect("Lyon should get computed interest");
+        let lyon_routiere_interest = cities
+            .iter()
+            .find(|city| city.display_name == "Lyon Part Dieu Gare Routiere")
+            .and_then(|city| city.interest_score)
+            .expect("station-shaped Lyon should get computed interest");
+
+        assert!(berlin_interest >= 5);
+        assert!(lyon_interest >= 7);
+        assert!(berlin_spandau_interest <= 2);
+        assert!(lyon_routiere_interest <= 1);
     }
 }
