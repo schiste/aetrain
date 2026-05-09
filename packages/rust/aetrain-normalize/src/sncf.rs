@@ -523,9 +523,14 @@ fn load_gtfs_stations(path: &Path) -> Result<(Vec<GtfsStationArea>, HashMap<Stri
         };
         stop_to_station_key.insert(stop_id.clone(), station_key.clone());
 
+        let display_name = row.stop_name.trim().to_string();
+        if is_placeholder_station_name(&display_name) {
+            continue;
+        }
+
         let candidate = GtfsStationArea {
             station_key: station_key.clone(),
-            display_name: row.stop_name.trim().to_string(),
+            display_name,
             location: GeoPoint {
                 lat: row.stop_lat,
                 lon: row.stop_lon,
@@ -675,7 +680,7 @@ fn normalize_stations(
                 )
             };
 
-        let station_id = StationId::new(stable_station_id(station))
+        let station_id = StationId::new(stable_station_id(gtfs_source_id, station))
             .context("failed to build stable station id")?;
 
         station_key_confidence.insert(station.station_key.clone(), confidence);
@@ -915,7 +920,7 @@ fn normalize_gtfs_only_stations(
             (cluster_key, 60, None)
         };
 
-        let station_id = StationId::new(stable_station_id(station))
+        let station_id = StationId::new(stable_station_id(gtfs_source_id, station))
             .context("failed to build stable station id")?;
         station_key_confidence.insert(station.station_key.clone(), confidence);
         pending_stations.push(PendingStation {
@@ -1122,9 +1127,7 @@ fn build_city_edges(
     let stop_times = archive
         .by_name(&stop_times_entry)
         .context("missing stop_times.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new()
-        .trim(Trim::All)
-        .from_reader(stop_times);
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(stop_times);
     let mut edge_map = BTreeMap::<(CityId, CityId), EdgeAccumulator>::new();
     let mut previous_by_trip = HashMap::<String, StopVisit>::new();
     let mut geometry_cache = HashMap::<(String, String), Option<Vec<GeoPoint>>>::new();
@@ -1489,9 +1492,7 @@ fn collect_used_station_keys(
     let stop_times = archive
         .by_name(&stop_times_entry)
         .context("missing stop_times.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new()
-        .trim(Trim::All)
-        .from_reader(stop_times);
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(stop_times);
     let mut station_keys = HashSet::new();
 
     for row in reader.deserialize::<GtfsStopTimeRow>() {
@@ -1594,6 +1595,9 @@ fn derive_gtfs_basic_city_stems(gtfs_stations: &[GtfsStationArea]) -> HashMap<St
             .collect::<Vec<_>>();
         for prefix_len in 1..tokens.len() {
             let prefix = tokens[..prefix_len].join(" ");
+            if !is_usable_city_name_prefix(&prefix) {
+                continue;
+            }
             prefix_groups
                 .entry(prefix)
                 .or_default()
@@ -1612,6 +1616,9 @@ fn derive_gtfs_basic_city_stems(gtfs_stations: &[GtfsStationArea]) -> HashMap<St
 
         for prefix_len in (1..tokens.len()).rev() {
             let prefix = tokens[..prefix_len].join(" ");
+            if !is_usable_city_name_prefix(&prefix) {
+                continue;
+            }
             let Some(matches) = prefix_groups.get(&prefix) else {
                 continue;
             };
@@ -1708,6 +1715,10 @@ fn choose_name_match<'a>(
 }
 
 fn derive_city_display_name(names: &[String]) -> String {
+    if names.len() == 1 {
+        return cleaned_city_name_candidate(&names[0]);
+    }
+
     let tokenized = names
         .iter()
         .map(|name| {
@@ -1729,8 +1740,8 @@ fn derive_city_display_name(names: &[String]) -> String {
         }
     }
 
-    if !common.is_empty() {
-        return title_case(&common.join(" "));
+    if !common.is_empty() && is_usable_city_name_prefix(&common.join(" ")) {
+        return cleaned_city_name_candidate(&title_case(&common.join(" ")));
     }
 
     let mut prefix_counts = HashMap::<String, usize>::new();
@@ -1744,6 +1755,7 @@ fn derive_city_display_name(names: &[String]) -> String {
     if let Some((prefix, _)) = prefix_counts
         .into_iter()
         .filter(|(_, count)| *count >= 2)
+        .filter(|(prefix, _)| is_usable_city_name_prefix(prefix))
         .max_by(|left, right| {
             left.1
                 .cmp(&right.1)
@@ -1756,14 +1768,129 @@ fn derive_city_display_name(names: &[String]) -> String {
                 .then_with(|| right.0.len().cmp(&left.0.len()))
         })
     {
-        return title_case(&prefix);
+        return cleaned_city_name_candidate(&title_case(&prefix));
     }
 
-    names
-        .iter()
-        .min_by_key(|name| normalize_name(name).len())
-        .cloned()
-        .unwrap_or_else(|| "Unknown".to_string())
+    let mut candidate_counts = HashMap::<String, usize>::new();
+    for name in names {
+        let candidate = cleaned_city_name_candidate(name);
+        *candidate_counts.entry(candidate).or_default() += 1;
+    }
+
+    if let Some((candidate, _)) = candidate_counts
+        .into_iter()
+        .filter(|(candidate, _)| !normalize_name(candidate).is_empty())
+        .max_by(|left, right| {
+            left.1
+                .cmp(&right.1)
+                .then_with(|| {
+                    city_name_candidate_quality(&left.0).cmp(&city_name_candidate_quality(&right.0))
+                })
+                .then_with(|| right.0.len().cmp(&left.0.len()))
+        })
+    {
+        return candidate;
+    }
+
+    "Unknown".to_string()
+}
+
+fn is_usable_city_name_prefix(prefix: &str) -> bool {
+    let tokens = prefix.split_whitespace().collect::<Vec<_>>();
+    if tokens.is_empty() {
+        return false;
+    }
+
+    if tokens.len() == 1 {
+        return !matches!(
+            tokens[0],
+            "a" | "o"
+                | "l"
+                | "la"
+                | "le"
+                | "les"
+                | "el"
+                | "los"
+                | "las"
+                | "de"
+                | "des"
+                | "du"
+                | "saint"
+                | "st"
+                | "san"
+                | "sant"
+                | "santa"
+                | "santo"
+                | "bad"
+                | "bus"
+        );
+    }
+
+    true
+}
+
+fn cleaned_city_name_candidate(name: &str) -> String {
+    let mut tokens = normalize_name(name)
+        .split_whitespace()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+
+    loop {
+        let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["gare".to_string(), "central".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["central".to_string(), "station".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.last().is_some_and(|token| {
+            matches!(
+                token.as_str(),
+                "bahnhof" | "bahnhst" | "bhf" | "hbf" | "hb" | "hauptbahnhof" | "station" | "gare"
+            )
+        }) {
+            Some(tokens.len() - 1)
+        } else {
+            None
+        };
+
+        let Some(new_len) = trimmed else {
+            break;
+        };
+        if new_len == 0 {
+            break;
+        }
+        tokens.truncate(new_len);
+    }
+
+    let cleaned = tokens.join(" ");
+    if cleaned.is_empty() {
+        "Unknown".to_string()
+    } else {
+        title_case(&cleaned)
+    }
+}
+
+fn city_name_candidate_quality(candidate: &str) -> (u8, usize, usize) {
+    let normalized = normalize_name(candidate);
+    let token_count = normalized.split_whitespace().count();
+    (
+        u8::from(is_usable_city_name_prefix(&normalized)),
+        token_count,
+        normalized.len(),
+    )
+}
+
+fn is_placeholder_station_name(name: &str) -> bool {
+    let normalized = normalize_name(name);
+    let tokens = normalized.split_whitespace().collect::<Vec<_>>();
+    match tokens.as_slice() {
+        ["bus"] | ["bahn"] => true,
+        [token] if token.starts_with("bus") && token[3..].chars().all(|ch| ch.is_ascii_digit()) => {
+            true
+        }
+        [first, second] if (*first == "bus" || *first == "bahn") && !second.is_empty() => true,
+        _ => false,
+    }
 }
 
 fn detect_duplicate_cities(
@@ -1907,11 +2034,15 @@ fn fallback_cluster_key(station: &GtfsStationArea) -> String {
     }
 }
 
-fn stable_station_id(station: &GtfsStationArea) -> String {
+fn stable_station_id(source_id: &str, station: &GtfsStationArea) -> String {
+    let source_slug = slugify(source_id);
     if let Some(uic) = &station.uic_code {
-        format!("sncf-fr-{uic}")
+        format!("station-uic-{uic}")
     } else {
-        format!("sncf-fr-stop-{}", stable_hash(&station.station_key))
+        format!(
+            "station-{source_slug}-{}",
+            stable_hash(&station.station_key)
+        )
     }
 }
 
@@ -2251,6 +2382,209 @@ T1,10:00:00,10:05:00,StopArea:LYONPD,3\n",
     }
 
     #[test]
+    fn gtfs_basic_dataset_does_not_collapse_generic_single_token_prefixes() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-bad-prefix-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:BADG,Bad Gastein Bahnhof,47.1158,13.1343,1,\n\
+StopArea:BADH,Bad Hofgastein Bahnhof,47.1720,13.1000,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:BADG,1\n\
+T1,08:20:00,08:25:00,StopArea:BADH,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "at-oebb-gtfs",
+            "AT",
+            "test-version",
+            "2026-05-09T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert_eq!(output.summary.city_count, 2);
+        assert!(
+            output.cities.iter().all(|city| city.display_name != "Bad"),
+            "generic one-word stem should not become a canonical city"
+        );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn gtfs_basic_dataset_uses_clean_city_names_and_source_scoped_station_ids() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-station-id-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:LUX,Luxembourg Gare Centrale,49.5997,6.1346,1,\n\
+StopArea:TRIER,Trier Hauptbahnhof,49.7567,6.6441,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:LUX,1\n\
+T1,08:40:00,08:45:00,StopArea:TRIER,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "lu-atp-gtfs",
+            "LU",
+            "test-version",
+            "2026-05-09T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert!(
+            output
+                .cities
+                .iter()
+                .any(|city| city.display_name == "Luxembourg"),
+            "station suffix should be stripped from canonical city names"
+        );
+        assert!(
+            output
+                .stations
+                .iter()
+                .all(|station| !station.station_id.as_str().starts_with("sncf-fr-")),
+            "non-French GTFS feeds should not emit SNCF-prefixed station ids"
+        );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn gtfs_basic_dataset_drops_placeholder_bus_station_areas() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-bus-filter-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:BUSONLY,Bus,47.7000,16.5000,1,\n\
+StopArea:WIENHBF,Wien Hbf,48.1850,16.3740,1,\n\
+StopArea:LINZHBF,Linz Hbf,48.2900,14.2920,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:WIENHBF,1\n\
+T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "at-oebb-gtfs",
+            "AT",
+            "test-version",
+            "2026-05-09T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert!(
+            output.cities.iter().all(|city| city.display_name != "Bus"),
+            "placeholder Bus stop areas should not become canonical cities"
+        );
+        assert!(
+            output
+                .stations
+                .iter()
+                .all(|station| station.display_name != "Bus"),
+            "placeholder Bus stop areas should be filtered out before normalization"
+        );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn placeholder_station_name_filter_catches_bus_and_bahn_variants() {
+        assert!(is_placeholder_station_name("Bus"));
+        assert!(is_placeholder_station_name("bus"));
+        assert!(is_placeholder_station_name("Bus A"));
+        assert!(is_placeholder_station_name("Bus1"));
+        assert!(is_placeholder_station_name("Bahn"));
+        assert!(!is_placeholder_station_name("Baden Bahnhof"));
+        assert!(!is_placeholder_station_name("Bad Gastein Bahnhof"));
+        assert!(!is_placeholder_station_name("Buchs Bahnhof"));
+    }
+
+    #[test]
+    fn gtfs_basic_stem_rejects_low_signal_single_token_prefixes() {
+        let stations = vec![
+            GtfsStationArea {
+                station_key: "s1".to_string(),
+                display_name: "Bad Gastein Bahnhof".to_string(),
+                location: GeoPoint {
+                    lat: 47.116,
+                    lon: 13.134,
+                },
+                uic_code: None,
+            },
+            GtfsStationArea {
+                station_key: "s2".to_string(),
+                display_name: "Bad Hofgastein Bahnhof".to_string(),
+                location: GeoPoint {
+                    lat: 47.172,
+                    lon: 13.100,
+                },
+                uic_code: None,
+            },
+        ];
+
+        let stems = derive_gtfs_basic_city_stems(&stations);
+        assert_eq!(
+            stems.get("s1").map(String::as_str),
+            Some("bad gastein bahnhof")
+        );
+        assert_eq!(
+            stems.get("s2").map(String::as_str),
+            Some("bad hofgastein bahnhof")
+        );
+    }
+
+    #[test]
+    fn derive_city_display_name_strips_station_suffixes() {
+        assert_eq!(
+            derive_city_display_name(&["Luxembourg Gare Centrale".to_string()]),
+            "Luxembourg"
+        );
+        assert_eq!(
+            derive_city_display_name(&["Aalen Hauptbahnhof".to_string()]),
+            "Aalen"
+        );
+    }
+
+    #[test]
     fn gtfs_basic_dataset_reads_archives_with_a_common_root_folder() {
         let zip_path = write_test_gtfs_zip(
             "aetrain-gtfs-basic-rooted-test.zip",
@@ -2265,10 +2599,7 @@ AT:SZG,SALZBURG HBF,47.8133,13.0458,1,\n",
                     "GTFS_Fahrplan_2026/routes.txt",
                     "route_id,route_type\nR1,2\n",
                 ),
-                (
-                    "GTFS_Fahrplan_2026/trips.txt",
-                    "route_id,trip_id\nR1,T1\n",
-                ),
+                ("GTFS_Fahrplan_2026/trips.txt", "route_id,trip_id\nR1,T1\n"),
                 (
                     "GTFS_Fahrplan_2026/stop_times.txt",
                     "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\

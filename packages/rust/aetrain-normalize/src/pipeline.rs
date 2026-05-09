@@ -160,6 +160,14 @@ struct ChunkedEdgeGeometryManifestChunk {
 }
 
 const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
+const AGGREGATE_CITY_MERGE_DISTANCE_METERS: u32 = 20_000;
+
+struct MergedCityOutput {
+    cities: Vec<aetrain_domain::City>,
+    aliases: Vec<aetrain_dataset::AliasRecord>,
+    city_id_remap: BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+    issues: Vec<NormalizationIssue>,
+}
 
 pub fn build_pipeline_target(
     manifest: &SourceManifest,
@@ -769,10 +777,7 @@ fn export_chunked_web_debug_edge_geometries(
         });
     }
 
-    write_json(
-        &output_dir.join("edge-geometries.manifest.json"),
-        &manifest,
-    )?;
+    write_json(&output_dir.join("edge-geometries.manifest.json"), &manifest)?;
     Ok(())
 }
 
@@ -808,8 +813,7 @@ fn chunk_edge_geometry_ranges(
 
 fn recreate_dir(path: &Path) -> Result<()> {
     if path.exists() {
-        fs::remove_dir_all(path)
-            .with_context(|| format!("failed to remove {}", path.display()))?;
+        fs::remove_dir_all(path).with_context(|| format!("failed to remove {}", path.display()))?;
     }
     fs::create_dir_all(path).with_context(|| format!("failed to create {}", path.display()))
 }
@@ -929,18 +933,22 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         ),
     ]);
 
-    let (cities, aliases, aggregate_issues) = merge_cities(&dependency_inputs, request.target.id.as_str());
-    let stations = merge_stations(&dependency_inputs, request.target.id.as_str())?;
-    let edges = merge_edges(&dependency_inputs);
-    let edge_geometries = merge_edge_geometries(&dependency_inputs);
-    let station_mappings = merge_station_mappings(&dependency_inputs);
-    let duplicates = recompute_duplicates(request.generated_at, &cities);
+    let merged_cities = merge_cities(&dependency_inputs, request.target.id.as_str());
+    let stations = merge_stations(
+        &dependency_inputs,
+        &merged_cities.city_id_remap,
+        request.target.id.as_str(),
+    )?;
+    let edges = merge_edges(&dependency_inputs, &merged_cities.city_id_remap);
+    let edge_geometries = merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
+    let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
+    let duplicates = recompute_duplicates(request.generated_at, &merged_cities.cities);
 
     let mut issues = dependency_inputs
         .iter()
         .flat_map(|input| input.issues.iter().cloned())
         .collect::<Vec<_>>();
-    issues.extend(aggregate_issues);
+    issues.extend(merged_cities.issues);
 
     let canonical = DatasetBundle {
         meta: DatasetMeta {
@@ -950,10 +958,10 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
             source_snapshots,
             attribution_path: "attribution.json".to_string(),
         },
-        cities,
+        cities: merged_cities.cities,
         stations,
         edges,
-        aliases,
+        aliases: merged_cities.aliases,
     };
 
     Ok(AdapterBuildArtifacts {
@@ -1004,17 +1012,13 @@ fn merge_source_artifacts(inputs: &[AggregateTargetInput]) -> Vec<PipelineSource
     deduped.into_values().collect()
 }
 
-fn merge_cities(
-    inputs: &[AggregateTargetInput],
-    aggregate_source_id: &str,
-) -> (Vec<aetrain_domain::City>, Vec<aetrain_dataset::AliasRecord>, Vec<NormalizationIssue>) {
-    let mut merged = BTreeMap::<aetrain_domain::CityId, aetrain_domain::City>::new();
-    let mut alias_pairs = BTreeSet::<(String, aetrain_domain::CityId)>::new();
+fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> MergedCityOutput {
+    let mut merged_by_input_id = BTreeMap::<aetrain_domain::CityId, aetrain_domain::City>::new();
     let mut issues = Vec::new();
 
     for input in inputs {
         for city in &input.canonical.cities {
-            merged
+            merged_by_input_id
                 .entry(city.city_id.clone())
                 .and_modify(|existing| {
                     if existing.slug != city.slug || existing.country_code != city.country_code {
@@ -1031,7 +1035,11 @@ fn merge_cities(
                     }
 
                     if existing.display_name != city.display_name {
-                        if !existing.aliases.iter().any(|alias| alias == &city.display_name) {
+                        if !existing
+                            .aliases
+                            .iter()
+                            .any(|alias| alias == &city.display_name)
+                        {
                             existing.aliases.push(city.display_name.clone());
                         }
                         if city.population.unwrap_or(0) > existing.population.unwrap_or(0) {
@@ -1051,17 +1059,76 @@ fn merge_cities(
                 })
                 .or_insert_with(|| city.clone());
         }
+    }
 
-        for alias in &input.canonical.aliases {
-            alias_pairs.insert((alias.alias.clone(), alias.city_id.clone()));
-        }
+    let city_id_remap = build_aggregate_city_id_remap(
+        merged_by_input_id.values().collect(),
+        aggregate_source_id,
+        &mut issues,
+    );
+    let mut merged = BTreeMap::<aetrain_domain::CityId, aetrain_domain::City>::new();
+    let mut alias_pairs = BTreeSet::<(String, aetrain_domain::CityId)>::new();
+
+    for city in merged_by_input_id.into_values() {
+        let canonical_city_id = city_id_remap
+            .get(&city.city_id)
+            .cloned()
+            .unwrap_or_else(|| city.city_id.clone());
+        merged
+            .entry(canonical_city_id.clone())
+            .and_modify(|existing| {
+                if city.city_id == canonical_city_id {
+                    existing.slug = city.slug.clone();
+                    existing.display_name = city.display_name.clone();
+                    existing.country_code = city.country_code.clone();
+                    existing.location = city.location;
+                    if city.wikidata_qid.is_some() {
+                        existing.wikidata_qid = city.wikidata_qid.clone();
+                    }
+                    if city.population.is_some() {
+                        existing.population = city.population;
+                    }
+                    if city.interest_score.is_some() {
+                        existing.interest_score = city.interest_score;
+                    }
+                }
+
+                if existing.display_name != city.display_name
+                    && !existing
+                        .aliases
+                        .iter()
+                        .any(|alias| alias == &city.display_name)
+                {
+                    existing.aliases.push(city.display_name.clone());
+                }
+
+                if existing.country_code == "ZZ" && city.country_code != "ZZ" {
+                    existing.country_code = city.country_code.clone();
+                }
+                if existing.wikidata_qid.is_none() {
+                    existing.wikidata_qid = city.wikidata_qid.clone();
+                }
+                existing.population = merge_optional_u64(existing.population, city.population);
+                existing.interest_score =
+                    merge_optional_u8(existing.interest_score, city.interest_score);
+                existing.location = merge_geo_points(existing.location, city.location);
+                merge_station_ids(&mut existing.station_ids, &city.station_ids);
+                merge_string_vec(&mut existing.aliases, &city.aliases);
+            })
+            .or_insert_with(|| {
+                let mut canonical_city = city.clone();
+                canonical_city.city_id = canonical_city_id;
+                canonical_city
+            });
     }
 
     for city in merged.values_mut() {
         city.aliases.sort();
         city.aliases.dedup();
-        city.station_ids.sort_by(|left, right| left.as_str().cmp(right.as_str()));
-        city.station_ids.dedup_by(|left, right| left.as_str() == right.as_str());
+        city.station_ids
+            .sort_by(|left, right| left.as_str().cmp(right.as_str()));
+        city.station_ids
+            .dedup_by(|left, right| left.as_str() == right.as_str());
         for alias in &city.aliases {
             alias_pairs.insert((alias.clone(), city.city_id.clone()));
         }
@@ -1074,30 +1141,39 @@ fn merge_cities(
         .map(|(alias, city_id)| aetrain_dataset::AliasRecord { alias, city_id })
         .collect::<Vec<_>>();
 
-    (merged.into_values().collect(), aliases, issues)
+    MergedCityOutput {
+        cities: merged.into_values().collect(),
+        aliases,
+        city_id_remap,
+        issues,
+    }
 }
 
 fn merge_stations(
     inputs: &[AggregateTargetInput],
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
     aggregate_source_id: &str,
 ) -> Result<Vec<aetrain_domain::Station>> {
     let mut merged = BTreeMap::<aetrain_domain::StationId, aetrain_domain::Station>::new();
 
     for input in inputs {
         for station in &input.canonical.stations {
+            let mut station = station.clone();
+            station.city_id = city_id_remap
+                .get(&station.city_id)
+                .cloned()
+                .unwrap_or_else(|| station.city_id.clone());
             merged
                 .entry(station.station_id.clone())
                 .and_modify(|existing| {
                     if existing.city_id != station.city_id {
-                        existing
-                            .source_refs
-                            .push(aetrain_domain::SourceRef {
-                                source_id: aggregate_source_id.to_string(),
-                                raw_id: format!(
-                                    "conflicting-city:{}:{}",
-                                    existing.city_id, station.city_id
-                                ),
-                            });
+                        existing.source_refs.push(aetrain_domain::SourceRef {
+                            source_id: aggregate_source_id.to_string(),
+                            raw_id: format!(
+                                "conflicting-city:{}:{}",
+                                existing.city_id, station.city_id
+                            ),
+                        });
                         return;
                     }
 
@@ -1117,13 +1193,19 @@ fn merge_stations(
     let stations = merged.into_values().collect::<Vec<_>>();
     for station in &stations {
         if station.display_name.trim().is_empty() {
-            bail!("aggregate station {} has an empty display name", station.station_id);
+            bail!(
+                "aggregate station {} has an empty display name",
+                station.station_id
+            );
         }
     }
     Ok(stations)
 }
 
-fn merge_edges(inputs: &[AggregateTargetInput]) -> Vec<aetrain_domain::TravelEdge> {
+fn merge_edges(
+    inputs: &[AggregateTargetInput],
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) -> Vec<aetrain_domain::TravelEdge> {
     let mut merged = BTreeMap::<
         (aetrain_domain::CityId, aetrain_domain::CityId),
         aetrain_domain::TravelEdge,
@@ -1131,30 +1213,59 @@ fn merge_edges(inputs: &[AggregateTargetInput]) -> Vec<aetrain_domain::TravelEdg
 
     for input in inputs {
         for edge in &input.canonical.edges {
-            let key = (edge.from_city_id.clone(), edge.to_city_id.clone());
+            let from_city_id = city_id_remap
+                .get(&edge.from_city_id)
+                .cloned()
+                .unwrap_or_else(|| edge.from_city_id.clone());
+            let to_city_id = city_id_remap
+                .get(&edge.to_city_id)
+                .cloned()
+                .unwrap_or_else(|| edge.to_city_id.clone());
+            if from_city_id == to_city_id {
+                continue;
+            }
+            let mut edge = edge.clone();
+            edge.from_city_id = from_city_id.clone();
+            edge.to_city_id = to_city_id.clone();
+            let key = (from_city_id, to_city_id);
             merged
                 .entry(key)
-                .and_modify(|existing| merge_edge_record(existing, edge))
-                .or_insert_with(|| edge.clone());
+                .and_modify(|existing| merge_edge_record(existing, &edge))
+                .or_insert(edge);
         }
     }
 
     merged.into_values().collect()
 }
 
-fn merge_edge_geometries(inputs: &[AggregateTargetInput]) -> EdgeGeometryArtifact {
-    let mut merged = BTreeMap::<
-        (aetrain_domain::CityId, aetrain_domain::CityId),
-        EdgeGeometryRecord,
-    >::new();
+fn merge_edge_geometries(
+    inputs: &[AggregateTargetInput],
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) -> EdgeGeometryArtifact {
+    let mut merged =
+        BTreeMap::<(aetrain_domain::CityId, aetrain_domain::CityId), EdgeGeometryRecord>::new();
 
     for input in inputs {
         for geometry in &input.edge_geometries.geometries {
-            let key = (geometry.from_city_id.clone(), geometry.to_city_id.clone());
+            let from_city_id = city_id_remap
+                .get(&geometry.from_city_id)
+                .cloned()
+                .unwrap_or_else(|| geometry.from_city_id.clone());
+            let to_city_id = city_id_remap
+                .get(&geometry.to_city_id)
+                .cloned()
+                .unwrap_or_else(|| geometry.to_city_id.clone());
+            if from_city_id == to_city_id {
+                continue;
+            }
+            let mut geometry = geometry.clone();
+            geometry.from_city_id = from_city_id.clone();
+            geometry.to_city_id = to_city_id.clone();
+            let key = (from_city_id, to_city_id);
             merged
                 .entry(key)
-                .and_modify(|existing| merge_edge_geometry_record(existing, geometry))
-                .or_insert_with(|| geometry.clone());
+                .and_modify(|existing| merge_edge_geometry_record(existing, &geometry))
+                .or_insert(geometry);
         }
     }
 
@@ -1163,20 +1274,152 @@ fn merge_edge_geometries(inputs: &[AggregateTargetInput]) -> EdgeGeometryArtifac
     }
 }
 
-fn merge_station_mappings(inputs: &[AggregateTargetInput]) -> StationMappingReport {
+fn merge_station_mappings(
+    inputs: &[AggregateTargetInput],
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) -> StationMappingReport {
     let mut records = BTreeMap::<String, crate::StationMappingRecord>::new();
     for input in inputs {
         if let Some(report) = &input.station_mappings {
             for record in &report.records {
+                let mut record = record.clone();
+                record.city_id = city_id_remap
+                    .get(&record.city_id)
+                    .cloned()
+                    .unwrap_or_else(|| record.city_id.clone());
                 records
                     .entry(record.station_id.as_str().to_string())
-                    .or_insert_with(|| record.clone());
+                    .or_insert(record);
             }
         }
     }
     StationMappingReport {
         records: records.into_values().collect(),
     }
+}
+
+fn build_aggregate_city_id_remap(
+    cities: Vec<&aetrain_domain::City>,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId> {
+    let mut grouped = BTreeMap::<String, Vec<&aetrain_domain::City>>::new();
+    for city in cities {
+        grouped
+            .entry(city_identity_key(&city.display_name))
+            .or_default()
+            .push(city);
+    }
+
+    let mut remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
+    for (normalized_name, group) in grouped {
+        if group.len() < 2 {
+            continue;
+        }
+
+        let components = connected_city_components(&group);
+        for component in components {
+            if component.len() < 2 {
+                continue;
+            }
+
+            let canonical = choose_canonical_city(component.iter().map(|index| group[*index]));
+            for index in component {
+                let city = group[index];
+                if city.city_id == canonical.city_id {
+                    continue;
+                }
+                remap.insert(city.city_id.clone(), canonical.city_id.clone());
+                issues.push(NormalizationIssue {
+                    severity: crate::IssueSeverity::Info,
+                    source_id: aggregate_source_id.to_string(),
+                    entity_ref: city.city_id.to_string(),
+                    message: format!(
+                        "merged duplicate city {} into {} while aggregating normalized name {}",
+                        city.city_id, canonical.city_id, normalized_name
+                    ),
+                });
+            }
+        }
+    }
+
+    remap
+}
+
+fn connected_city_components(group: &[&aetrain_domain::City]) -> Vec<Vec<usize>> {
+    let mut visited = vec![false; group.len()];
+    let mut components = Vec::new();
+
+    for start in 0..group.len() {
+        if visited[start] {
+            continue;
+        }
+
+        let mut stack = vec![start];
+        let mut component = Vec::new();
+        visited[start] = true;
+
+        while let Some(index) = stack.pop() {
+            component.push(index);
+            for candidate in 0..group.len() {
+                if visited[candidate] {
+                    continue;
+                }
+                if should_merge_city_records(group[index], group[candidate]) {
+                    visited[candidate] = true;
+                    stack.push(candidate);
+                }
+            }
+        }
+
+        components.push(component);
+    }
+
+    components
+}
+
+fn should_merge_city_records(left: &aetrain_domain::City, right: &aetrain_domain::City) -> bool {
+    geo_distance_meters(left.location, right.location)
+        <= AGGREGATE_CITY_MERGE_DISTANCE_METERS as f64
+}
+
+fn choose_canonical_city<'a>(
+    cities: impl Iterator<Item = &'a aetrain_domain::City>,
+) -> &'a aetrain_domain::City {
+    cities
+        .max_by(|left, right| canonical_city_rank(left).cmp(&canonical_city_rank(right)))
+        .expect("city merge component should not be empty")
+}
+
+fn canonical_city_rank(
+    city: &aetrain_domain::City,
+) -> (u8, u8, usize, u64, u8, usize, std::cmp::Reverse<String>) {
+    (
+        city_identity_quality(city),
+        u8::from(city.country_code != "ZZ"),
+        city.station_ids.len(),
+        city.population.unwrap_or(0),
+        city.interest_score.unwrap_or(0),
+        city.aliases.len(),
+        std::cmp::Reverse(city.city_id.as_str().to_string()),
+    )
+}
+
+fn city_identity_quality(city: &aetrain_domain::City) -> u8 {
+    let city_id = city.city_id.as_str();
+    let mut parts = city_id.rsplitn(3, '-');
+    let Some(last) = parts.next() else {
+        return 0;
+    };
+    let Some(country) = parts.next() else {
+        return 0;
+    };
+
+    if country == "fr" && last.len() == 5 && last.chars().all(|ch| ch.is_ascii_digit()) {
+        return 2;
+    }
+
+    0
 }
 
 fn recompute_duplicates(
@@ -1186,7 +1429,7 @@ fn recompute_duplicates(
     let mut grouped = BTreeMap::<String, Vec<&aetrain_domain::City>>::new();
     for city in cities {
         grouped
-            .entry(normalize_name(&city.display_name))
+            .entry(city_identity_key(&city.display_name))
             .or_default()
             .push(city);
     }
@@ -1197,7 +1440,8 @@ fn recompute_duplicates(
             for right_index in (left_index + 1)..group.len() {
                 let left = group[left_index];
                 let right = group[right_index];
-                let distance_meters = geo_distance_meters(left.location, right.location).round() as u32;
+                let distance_meters =
+                    geo_distance_meters(left.location, right.location).round() as u32;
                 if distance_meters <= crate::DEFAULT_DUPLICATE_DISTANCE_METERS {
                     candidates.push(crate::DuplicateCityCandidate {
                         left_city_id: left.city_id.clone(),
@@ -1233,8 +1477,10 @@ fn merge_edge_record(
         existing.service_class = incoming.service_class.clone();
     }
 
-    existing.change_count_estimate =
-        merge_optional_u8_min(existing.change_count_estimate, incoming.change_count_estimate);
+    existing.change_count_estimate = merge_optional_u8_min(
+        existing.change_count_estimate,
+        incoming.change_count_estimate,
+    );
     existing.source_confidence = existing.source_confidence.max(incoming.source_confidence);
     merge_string_vec(&mut existing.provenance, &incoming.provenance);
 }
@@ -1262,7 +1508,10 @@ fn edge_geometry_source_rank(source: &EdgeGeometrySource) -> u8 {
     }
 }
 
-fn merge_geo_points(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> aetrain_domain::GeoPoint {
+fn merge_geo_points(
+    left: aetrain_domain::GeoPoint,
+    right: aetrain_domain::GeoPoint,
+) -> aetrain_domain::GeoPoint {
     aetrain_domain::GeoPoint {
         lat: (left.lat + right.lat) / 2.0,
         lon: (left.lon + right.lon) / 2.0,
@@ -1321,7 +1570,10 @@ fn merge_station_ids(
     }
 }
 
-fn merge_source_refs(target: &mut Vec<aetrain_domain::SourceRef>, values: &[aetrain_domain::SourceRef]) {
+fn merge_source_refs(
+    target: &mut Vec<aetrain_domain::SourceRef>,
+    values: &[aetrain_domain::SourceRef],
+) {
     let mut seen = target
         .iter()
         .map(|source_ref| (source_ref.source_id.clone(), source_ref.raw_id.clone()))
@@ -1354,6 +1606,47 @@ fn normalize_alias(value: &str) -> String {
     normalize_name(value)
 }
 
+fn city_identity_key(value: &str) -> String {
+    let normalized = normalize_name(value);
+    let mut tokens = normalized
+        .split_whitespace()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+
+    loop {
+        let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["gare".to_string(), "central".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["central".to_string(), "station".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.last().is_some_and(|token| {
+            matches!(
+                token.as_str(),
+                "bahnhof" | "bahnhst" | "bhf" | "hbf" | "hb" | "hauptbahnhof" | "station" | "gare"
+            )
+        }) {
+            Some(tokens.len() - 1)
+        } else {
+            None
+        };
+
+        let Some(new_len) = trimmed else {
+            break;
+        };
+        if new_len == 0 {
+            break;
+        }
+        tokens.truncate(new_len);
+    }
+
+    if tokens.is_empty() {
+        normalized
+    } else {
+        tokens.join(" ")
+    }
+}
+
 fn geo_distance_meters(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> f64 {
     let earth_radius_m = 6_371_000.0_f64;
     let lat1 = left.lat.to_radians();
@@ -1361,8 +1654,8 @@ fn geo_distance_meters(left: aetrain_domain::GeoPoint, right: aetrain_domain::Ge
     let delta_lat = (right.lat - left.lat).to_radians();
     let delta_lon = (right.lon - left.lon).to_radians();
 
-    let haversine = (delta_lat / 2.0).sin().powi(2)
-        + lat1.cos() * lat2.cos() * (delta_lon / 2.0).sin().powi(2);
+    let haversine =
+        (delta_lat / 2.0).sin().powi(2) + lat1.cos() * lat2.cos() * (delta_lon / 2.0).sin().powi(2);
     let angular_distance = 2.0 * haversine.sqrt().asin();
     earth_radius_m * angular_distance
 }
@@ -1503,8 +1796,7 @@ mod tests {
         let geometries = (0..6)
             .map(|index| EdgeGeometryRecord {
                 from_city_id: CityId::new(format!("city-{index}-fr")).expect("valid city id"),
-                to_city_id: CityId::new(format!("city-{}-fr", index + 1))
-                    .expect("valid city id"),
+                to_city_id: CityId::new(format!("city-{}-fr", index + 1)).expect("valid city id"),
                 points: vec![
                     PolylinePointE5 {
                         lat_e5: 4_800_000 + index,
@@ -1526,6 +1818,233 @@ mod tests {
         assert_eq!(
             chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),
             geometries.len()
+        );
+    }
+
+    #[test]
+    fn aggregate_city_merge_canonicalizes_duplicate_foreign_feed_cities() {
+        let paris_fr = City {
+            city_id: CityId::new("paris-fr-75056").expect("valid city id"),
+            slug: "paris".to_string(),
+            display_name: "Paris".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.8552,
+                lon: 2.3501,
+            },
+            wikidata_qid: None,
+            population: Some(2_100_000),
+            interest_score: Some(10),
+            station_ids: vec![
+                StationId::new("sncf-fr-8727100").expect("valid station id"),
+                StationId::new("sncf-fr-8739100").expect("valid station id"),
+            ],
+            aliases: vec!["Paris Nord".to_string()],
+        };
+        let paris_ch = City {
+            city_id: CityId::new("paris-ch-a8788511").expect("valid city id"),
+            slug: "paris".to_string(),
+            display_name: "Paris".to_string(),
+            country_code: "CH".to_string(),
+            location: GeoPoint {
+                lat: 48.8484,
+                lon: 2.3604,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("sncf-fr-8711300").expect("valid station id")],
+            aliases: vec!["Paris Gare de Lyon".to_string()],
+        };
+        let lyon = City {
+            city_id: CityId::new("lyon-fr-69123").expect("valid city id"),
+            slug: "lyon".to_string(),
+            display_name: "Lyon".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 45.764,
+                lon: 4.8357,
+            },
+            wikidata_qid: None,
+            population: Some(500_000),
+            interest_score: Some(7),
+            station_ids: vec![StationId::new("sncf-fr-8772319").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+
+        let lyon = lyon;
+        let input = vec![paris_fr.clone(), paris_ch.clone(), lyon];
+        let mut issues = Vec::new();
+        let remap =
+            build_aggregate_city_id_remap(input.iter().collect(), "europe-aggregate", &mut issues);
+
+        assert_eq!(
+            remap.get(&paris_ch.city_id),
+            Some(&paris_fr.city_id),
+            "foreign-feed Paris should collapse into canonical Paris"
+        );
+        assert!(
+            !issues.is_empty(),
+            "merge should emit an informational issue"
+        );
+
+        let aggregate_input = AggregateTargetInput {
+            target_id: "test-target".to_string(),
+            manifest: PipelineArtifactManifest {
+                dataset_id: "test".to_string(),
+                target_id: "test-target".to_string(),
+                adapter: "aggregate_bundle".to_string(),
+                dataset_version: "test".to_string(),
+                generated_at: "2026-05-09T00:00:00Z".to_string(),
+                source_snapshots: Vec::new(),
+                source_artifacts: Vec::new(),
+                outputs: PipelineOutputPaths {
+                    target_root: String::new(),
+                    canonical_dir: None,
+                    web_dir: None,
+                    web_debug_dir: None,
+                },
+                summary: PipelineBuildSummary {
+                    city_count: 3,
+                    station_count: 0,
+                    edge_count: 0,
+                    alias_count: 0,
+                    duplicate_count: 0,
+                    issue_count: 0,
+                    counters: BTreeMap::new(),
+                },
+                notes: Vec::new(),
+            },
+            canonical: DatasetBundle {
+                meta: DatasetMeta::new("2026-05-09", "2026-05-09T00:00:00Z"),
+                cities: input,
+                stations: Vec::new(),
+                edges: Vec::new(),
+                aliases: Vec::new(),
+            },
+            edge_geometries: EdgeGeometryArtifact {
+                geometries: Vec::new(),
+            },
+            station_mappings: None,
+            issues: Vec::new(),
+        };
+        let merged = merge_cities(&[aggregate_input], "europe-aggregate");
+        let paris = merged
+            .cities
+            .iter()
+            .find(|city| city.city_id == paris_fr.city_id)
+            .expect("merged Paris should exist");
+        assert_eq!(paris.country_code, "FR");
+    }
+
+    #[test]
+    fn merge_edges_applies_city_id_remap() {
+        let paris_fr = CityId::new("paris-fr-75056").expect("valid city id");
+        let paris_ch = CityId::new("paris-ch-a8788511").expect("valid city id");
+        let lyon = CityId::new("lyon-fr-69123").expect("valid city id");
+        let edge = TravelEdge {
+            from_city_id: paris_ch.clone(),
+            to_city_id: lyon.clone(),
+            duration_min: 120,
+            service_kind: ServiceKind::Rail,
+            service_class: ServiceClass::Intercity,
+            change_count_estimate: Some(0),
+            source_confidence: 70,
+            provenance: vec!["test:ch-feed".to_string()],
+        };
+        let canonical = DatasetBundle {
+            meta: DatasetMeta::new("2026-05-09", "2026-05-09T00:00:00Z"),
+            cities: Vec::new(),
+            stations: Vec::new(),
+            edges: vec![edge],
+            aliases: Vec::new(),
+        };
+        let input = AggregateTargetInput {
+            target_id: "ch-target".to_string(),
+            manifest: PipelineArtifactManifest {
+                dataset_id: "test".to_string(),
+                target_id: "ch-target".to_string(),
+                adapter: "gtfs_basic".to_string(),
+                dataset_version: "test".to_string(),
+                generated_at: "2026-05-09T00:00:00Z".to_string(),
+                source_snapshots: Vec::new(),
+                source_artifacts: Vec::new(),
+                outputs: PipelineOutputPaths {
+                    target_root: String::new(),
+                    canonical_dir: None,
+                    web_dir: None,
+                    web_debug_dir: None,
+                },
+                summary: PipelineBuildSummary {
+                    city_count: 0,
+                    station_count: 0,
+                    edge_count: 1,
+                    alias_count: 0,
+                    duplicate_count: 0,
+                    issue_count: 0,
+                    counters: BTreeMap::new(),
+                },
+                notes: Vec::new(),
+            },
+            canonical,
+            edge_geometries: EdgeGeometryArtifact {
+                geometries: Vec::new(),
+            },
+            station_mappings: None,
+            issues: Vec::new(),
+        };
+        let remap = BTreeMap::from([(paris_ch, paris_fr.clone())]);
+        let edges = merge_edges(&[input], &remap);
+
+        assert_eq!(edges.len(), 1);
+        assert_eq!(edges[0].from_city_id, paris_fr);
+        assert_eq!(edges[0].to_city_id, lyon);
+    }
+
+    #[test]
+    fn aggregate_city_merge_uses_station_qualified_identity_keys() {
+        let lux_city = City {
+            city_id: CityId::new("luxembourg-lu-bb74daf2").expect("valid city id"),
+            slug: "luxembourg".to_string(),
+            display_name: "Luxembourg".to_string(),
+            country_code: "LU".to_string(),
+            location: GeoPoint {
+                lat: 49.5997,
+                lon: 6.1346,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-82001000").expect("valid station id")],
+            aliases: vec!["Luxembourg Gare Centrale".to_string()],
+        };
+        let lux_station_city = City {
+            city_id: CityId::new("luxembourg-gare-centrale-lu-bb74daf3").expect("valid city id"),
+            slug: "luxembourg-gare-centrale".to_string(),
+            display_name: "Luxembourg Gare Centrale".to_string(),
+            country_code: "LU".to_string(),
+            location: GeoPoint {
+                lat: 49.6000,
+                lon: 6.1339,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-europe-1").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+
+        let mut issues = Vec::new();
+        let remap = build_aggregate_city_id_remap(
+            vec![&lux_city, &lux_station_city],
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(
+            remap.get(&lux_station_city.city_id),
+            Some(&lux_city.city_id),
+            "station-qualified city variant should merge into canonical city identity"
         );
     }
 }
