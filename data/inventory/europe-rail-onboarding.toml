@@ -1,0 +1,494 @@
+schema_version = 1
+description = "Europe-wide rail source inventory and onboarding status for the Aetrain Stage 1 pipeline."
+generated_by = "codex"
+generated_on = "2026-05-08"
+
+[[country]]
+code = "AD"
+name = "Andorra"
+rail_system_status = "no_active_national_rail"
+schedule_source_status = "not_applicable"
+geometry_source_status = "not_applicable"
+pipeline_readiness = "out_of_scope_no_rail"
+notes = "No active national railway system."
+
+[[country]]
+code = "AL"
+name = "Albania"
+rail_system_status = "limited_or_unclear"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Passenger rail exists in limited form, but no official machine-readable national feed was verified in this pass."
+
+[[country]]
+code = "AM"
+name = "Armenia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Included because it matters to the wider European rail space. No official machine-readable source was verified in this pass."
+
+[[country]]
+code = "AT"
+name = "Austria"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.mobilitydata.gv.at/en/daten/soll-fahrplandaten-gtfs"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://www.mobilitydata.gv.at/en/daten/gtfs-fahrplan"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_after_catalog_resolver"
+notes = "Mobilitydata Austria publishes official GTFS and nationwide stops/line-network datasets, but the current pipeline needs a resolver step for changing resource URLs."
+
+[[country]]
+code = "AZ"
+name = "Azerbaijan"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Included because it matters to the wider European rail space. No official machine-readable source was verified in this pass."
+
+[[country]]
+code = "BA"
+name = "Bosnia and Herzegovina"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "BE"
+name = "Belgium"
+rail_system_status = "national_rail"
+official_portal_url = "https://transportdata.be/en/dataset/sncb-gfts-scheduled-timetable-and-real-time-data"
+schedule_source_status = "official_gtfs_or_gtfs_rt_with_license_or_contract"
+schedule_source_url = "https://transportdata.be/en/dataset/sncb-gfts-scheduled-timetable-and-real-time-data/resource/1d19dde0-e56e-41d7-891d-c9fae3c21cdc"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "ready_after_contract_or_license_step"
+notes = "SNCB publishes official GTFS through transportdata.be, but access and usage are subject to a licence agreement requested via Belgian Train."
+
+[[country]]
+code = "BG"
+name = "Bulgaria"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.mtc.government.bg/en/category/1/new-public-transport-act-introduces-single-electronic-ticket-coordinated-schedules-and-transport-every-settlement"
+schedule_source_status = "official_portal_no_machine_readable_schedule_verified"
+geometry_source_status = "official_infrastructure_portal_only"
+pipeline_readiness = "needs_official_source_verification"
+notes = "National ministry and infrastructure sources were found, but no official downloadable machine-readable national rail timetable feed was verified in this pass."
+
+[[country]]
+code = "BY"
+name = "Belarus"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national rail source was verified in this pass."
+
+[[country]]
+code = "CH"
+name = "Switzerland"
+rail_system_status = "national_rail"
+official_portal_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_after_catalog_resolver"
+notes = "Official national GTFS is published through opentransportdata.swiss with frequent rotating resources. The pipeline needs a CKAN-style latest-resource resolver."
+
+[[country]]
+code = "CY"
+name = "Cyprus"
+rail_system_status = "no_active_national_rail"
+schedule_source_status = "not_applicable"
+geometry_source_status = "not_applicable"
+pipeline_readiness = "out_of_scope_no_rail"
+notes = "No active national railway system."
+
+[[country]]
+code = "CZ"
+name = "Czechia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Regional authorities and national open-data catalogs exist, but no official national machine-readable rail feed was verified in this pass."
+
+[[country]]
+code = "DE"
+name = "Germany"
+rail_system_status = "national_rail"
+official_portal_url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://archiv.opendata-oepnv.de/DELFI/Soll-Fahrplandaten%20%28GTFS%29/"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "ready_after_catalog_resolver"
+notes = "DELFI publishes official nationwide GTFS and NeTEx archives. The pipeline needs a directory-listing resolver to select the latest weekly file."
+
+[[country]]
+code = "DK"
+name = "Denmark"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "An official national rail/public-transport source is likely available, but it was not verified to a machine-usable feed URL in this pass."
+
+[[country]]
+code = "EE"
+name = "Estonia"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.peatus.ee/gtfs/?C=M%3BO%3DA"
+schedule_source_status = "official_gtfs_direct"
+schedule_source_url = "https://www.peatus.ee/gtfs/gtfs.zip"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "needs_official_source_verification"
+notes = "The historical peatus.ee gtfs.zip endpoint was verified as official, but a live fetch on 2026-05-08 returned a shutdown HTML page instead of a ZIP archive. Estonia stays inventoried, but not activated for rail onboarding."
+
+[[country]]
+code = "ES"
+name = "Spain"
+rail_system_status = "national_rail"
+official_portal_url = "https://data.renfe.com/"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://data.renfe.com/dataset?res_format=GTFS"
+geometry_source_status = "official_infrastructure_portal_only"
+infrastructure_source_url = "https://www.adif.es/en/web/adif/sobre-adif/red-ferroviaria"
+pipeline_readiness = "ready_after_catalog_resolver"
+notes = "Renfe publishes official GTFS schedule datasets and Adif publishes the infrastructure/network context. The pipeline needs a stable resource resolver and likely separate target partitioning by Renfe product family."
+
+[[country]]
+code = "FI"
+name = "Finland"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.fintraffic.fi/en/transport/transport-system/digital-data-services-transport-system"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://developer.matka.fi/"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_after_catalog_resolver"
+notes = "Fintraffic's public transport information pool aggregates national GTFS, including rail and ferry, but the current pipeline still needs a robust way to resolve the right downloadable national feed."
+
+[[country]]
+code = "FR"
+name = "France"
+rail_system_status = "national_rail"
+official_portal_url = "https://data.sncf.com/explore/dataset/horaires-sncf/"
+schedule_source_status = "official_gtfs_direct"
+schedule_source_url = "https://eu.ftp.opendatasoft.com/sncf/plandata/Export_OpenData_SNCF_GTFS_NewTripId.zip"
+geometry_source_status = "official_network_geometry_verified"
+infrastructure_source_url = "https://data.sncf.com/explore/dataset/formes-des-lignes-du-rfn/"
+pipeline_readiness = "onboarded_manifest_ready"
+notes = "Already onboarded through the sncf_fr adapter with official GTFS, station reference data, and RFN geometry fallback."
+
+[[country]]
+code = "GB"
+name = "United Kingdom"
+rail_system_status = "national_rail"
+official_portal_url = "https://raildata.org.uk/"
+schedule_source_status = "official_non_gtfs_open_data"
+schedule_source_url = "https://www.data.gov.uk/dataset/4d209708-c55e-4cef-8355-b2c66a66ae4c/rail-timetables"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "ready_after_new_adapter"
+notes = "Official rail timetable and Darwin data exist, but not as a national GTFS feed. A CIF/Darwin-oriented adapter is needed."
+
+[[country]]
+code = "GE"
+name = "Georgia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Included because it matters to the wider European rail space. No official machine-readable source was verified in this pass."
+
+[[country]]
+code = "GR"
+name = "Greece"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "HR"
+name = "Croatia"
+rail_system_status = "national_rail"
+official_portal_url = "https://eng.hzinfra.hr/?page_id=418"
+schedule_source_status = "official_portal_no_machine_readable_schedule_verified"
+geometry_source_status = "official_infrastructure_portal_only"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Official infrastructure/network information is public, but no official machine-readable national passenger-rail schedule feed was verified in this pass."
+
+[[country]]
+code = "HU"
+name = "Hungary"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "IE"
+name = "Ireland"
+rail_system_status = "national_rail"
+official_portal_url = "https://developer.ntaapptest.transportforireland.ie/GTFS"
+schedule_source_status = "official_gtfs_direct_with_api_key"
+schedule_source_url = "https://developer.ntaapptest.transportforireland.ie/"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_with_api_key_support"
+notes = "The National Transport Authority publishes GTFS and realtime developer surfaces covering Irish Rail and the wider TFI network, but the pipeline needs key/account handling."
+
+[[country]]
+code = "IS"
+name = "Iceland"
+rail_system_status = "no_active_national_rail"
+schedule_source_status = "not_applicable"
+geometry_source_status = "not_applicable"
+pipeline_readiness = "out_of_scope_no_rail"
+notes = "No active national railway system."
+
+[[country]]
+code = "IT"
+name = "Italy"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.dati.gov.it/"
+schedule_source_status = "official_portal_no_machine_readable_schedule_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Official open-data portals expose many local GTFS feeds, but no verified national passenger-rail feed was identified in this pass."
+
+[[country]]
+code = "LI"
+name = "Liechtenstein"
+rail_system_status = "microstate_foreign_operated"
+schedule_source_status = "covered_by_neighboring_feed"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "covered_by_neighboring_target"
+notes = "Rail service is effectively covered by neighboring Switzerland/Austria feeds rather than a standalone national source."
+
+[[country]]
+code = "LT"
+name = "Lithuania"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.visimarsrutai.lt/gtfs/"
+schedule_source_status = "official_gtfs_direct"
+schedule_source_url = "https://www.visimarsrutai.lt/gtfs/LTSAR.zip"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_after_feed_scope_fix"
+notes = "A live fetch on 2026-05-08 produced a valid GTFS archive, but the verified LTSAR feed uses route_type=3 bus services and yielded zero rail artifacts in the current rail-only pipeline. Lithuania needs a rail-specific official feed or a clearer split between bus and rail sources."
+
+[[country]]
+code = "LU"
+name = "Luxembourg"
+rail_system_status = "national_rail"
+official_portal_url = "https://data.public.lu/en/datasets/horaires-et-arrets-des-transport-publics-gtfs/"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://data.public.lu/en/datasets/horaires-et-arrets-des-transport-publics-gtfs/"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "onboarded_manifest_ready"
+notes = "Official GTFS and NeTEx feeds are published through data.public.lu with rotating dated resources. A Udata resolver is now implemented and the lu-national target built successfully on 2026-05-09."
+
+[[country]]
+code = "LV"
+name = "Latvia"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.sam.gov.lv/en/railway"
+schedule_source_status = "official_portal_no_machine_readable_schedule_verified"
+geometry_source_status = "official_infrastructure_portal_only"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Official rail policy/infrastructure information is public, but no official machine-readable national passenger-rail feed was verified in this pass."
+
+[[country]]
+code = "MC"
+name = "Monaco"
+rail_system_status = "microstate_foreign_operated"
+schedule_source_status = "covered_by_neighboring_feed"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "covered_by_neighboring_target"
+notes = "Rail service is effectively covered by neighboring France/SNCF rather than a standalone national source."
+
+[[country]]
+code = "MD"
+name = "Moldova"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "ME"
+name = "Montenegro"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "MK"
+name = "North Macedonia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "MT"
+name = "Malta"
+rail_system_status = "no_active_national_rail"
+schedule_source_status = "not_applicable"
+geometry_source_status = "not_applicable"
+pipeline_readiness = "out_of_scope_no_rail"
+notes = "No active national railway system."
+
+[[country]]
+code = "NL"
+name = "Netherlands"
+rail_system_status = "national_rail"
+official_portal_url = "https://ndovloket.nl/"
+schedule_source_status = "official_gtfs_or_gtfs_rt_with_license_or_contract"
+schedule_source_url = "https://www2.ndovloket.nl/"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "ready_after_contract_or_license_step"
+notes = "NDOV Loket distributes national public-transport data, including rail, but requires registration and a signed user agreement."
+
+[[country]]
+code = "NO"
+name = "Norway"
+rail_system_status = "national_rail"
+official_portal_url = "https://developer.entur.org/stops-and-timetable-data"
+schedule_source_status = "official_gtfs_dynamic_catalog"
+schedule_source_url = "https://developer.entur.org/stops-and-timetable-data"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_after_catalog_resolver"
+notes = "Entur documents permanent national GTFS and NeTEx dumps and a national stop registry, but the exact download URLs were not captured into the current pipeline yet."
+
+[[country]]
+code = "PL"
+name = "Poland"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Community GTFS aggregation exists, but no official national passenger-rail feed was verified in this pass."
+
+[[country]]
+code = "PT"
+name = "Portugal"
+rail_system_status = "national_rail"
+official_portal_url = "https://dados.gov.pt/"
+schedule_source_status = "official_portal_no_machine_readable_schedule_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Official portals expose local GTFS datasets, but no verified national passenger-rail feed was identified in this pass."
+
+[[country]]
+code = "RO"
+name = "Romania"
+rail_system_status = "national_rail"
+official_portal_url = "https://cfr.ro/"
+schedule_source_status = "official_portal_no_machine_readable_schedule_verified"
+geometry_source_status = "official_infrastructure_portal_only"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Official rail/infrastructure pages were found, but no official machine-readable national passenger-rail schedule feed was verified in this pass."
+
+[[country]]
+code = "RS"
+name = "Serbia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "RU"
+name = "Russia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Included because it spans geographic Europe, but no official machine-readable source was verified in this pass."
+
+[[country]]
+code = "SE"
+name = "Sweden"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.trafiklab.se/api/gtfs-datasets/gtfs-sweden/"
+schedule_source_status = "official_gtfs_direct_with_api_key"
+schedule_source_url = "https://opendata.samtrafiken.se/gtfs-sweden/sweden.zip?key={apikey}"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_with_api_key_support"
+notes = "Trafiklab publishes official nationwide GTFS with rail coverage and optional realtime feeds. The pipeline needs API key support."
+
+[[country]]
+code = "SI"
+name = "Slovenia"
+rail_system_status = "national_rail"
+official_portal_url = "https://www.nap.si/en/about-nap"
+schedule_source_status = "official_netex_only_or_preferred"
+schedule_source_url = "https://www.nap.si/en/about-nap"
+geometry_source_status = "official_station_or_stop_registry_verified"
+pipeline_readiness = "ready_after_netex_adapter"
+notes = "NAP Slovenia publishes transport data for exchange and reuse in NeTEx and DATEX II with business registration/B2B access. The pipeline needs a NeTEx adapter."
+
+[[country]]
+code = "SK"
+name = "Slovakia"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "SM"
+name = "San Marino"
+rail_system_status = "no_active_national_rail"
+schedule_source_status = "not_applicable"
+geometry_source_status = "not_applicable"
+pipeline_readiness = "out_of_scope_no_rail"
+notes = "Historic railway only; no active national railway target."
+
+[[country]]
+code = "TR"
+name = "Turkey"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Included because it matters to the wider European rail space. No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "UA"
+name = "Ukraine"
+rail_system_status = "national_rail"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "No official machine-readable national passenger-rail source was verified in this pass."
+
+[[country]]
+code = "VA"
+name = "Vatican City"
+rail_system_status = "no_active_national_rail"
+schedule_source_status = "not_applicable"
+geometry_source_status = "not_applicable"
+pipeline_readiness = "out_of_scope_no_rail"
+notes = "No meaningful public national passenger-rail target."
+
+[[country]]
+code = "XK"
+name = "Kosovo"
+rail_system_status = "limited_or_unclear"
+schedule_source_status = "not_verified"
+geometry_source_status = "fallback_osm_needed"
+pipeline_readiness = "needs_official_source_verification"
+notes = "Passenger rail exists in limited form, but no official machine-readable national feed was verified in this pass."

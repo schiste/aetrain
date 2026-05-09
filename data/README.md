@@ -6,6 +6,7 @@ cache, and generated artifacts.
 Subdirectories:
 
 - `manifests/`: source manifests, target definitions, and ingest policy
+- `inventory/`: source discovery registries and onboarding status
 - `overrides/`: tracked manual exceptions with rationale
 - `cache/`: raw fetch cache and update state
 - `build/`: target-scoped generated outputs
