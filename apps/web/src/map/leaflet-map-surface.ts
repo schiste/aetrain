@@ -107,6 +107,10 @@ interface MapFrame {
   projectWorld(worldPoint: WorldPoint): MapPoint;
   size: MapSize;
   zoom: number;
+  /** The visible map area expressed in mercator world space, padded by
+   *  the LOD's networkPadding. Lets per-edge bbox culling skip the
+   *  expensive frame.projectWorld() pass for off-screen edges. */
+  viewportWorldBbox: WorldBoundingBox;
 }
 
 interface RenderPlan {
@@ -139,6 +143,13 @@ interface PreparedCity {
   world: WorldPoint;
 }
 
+interface WorldBoundingBox {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
 interface PreparedEdge {
   from: string;
   to: string;
@@ -151,6 +162,12 @@ interface PreparedEdge {
   fromWorld: WorldPoint;
   toWorld: WorldPoint;
   geometryWorld: WorldPoint[] | null;
+  /** Bounding box of the polyline (fromWorld, toWorld, plus geometry
+   *  points if any) in mercator world space. Lets the network draw skip
+   *  per-edge projection for edges entirely outside the viewport — a
+   *  cheap pre-cull before frame.projectWorld() and the screen-space
+   *  polyline test. Recomputed when geometry is augmented. */
+  worldBbox: WorldBoundingBox;
   renderPriority: number;
 }
 
@@ -359,6 +376,9 @@ export function createLeafletMapSurface({
         return null;
       }
 
+      const geometryWorld: WorldPoint[] | null = Array.isArray(edge.geometry)
+        ? edge.geometry.map((point) => mercatorProject(point.lon, point.lat))
+        : null;
       return {
         from: edge.from,
         to: edge.to,
@@ -368,9 +388,8 @@ export function createLeafletMapSurface({
         key: edge.key,
         fromCity,
         fromWorld,
-        geometryWorld: Array.isArray(edge.geometry)
-          ? edge.geometry.map((point) => mercatorProject(point.lon, point.lat))
-          : null,
+        geometryWorld,
+        worldBbox: computeEdgeWorldBbox(fromWorld, toWorld, geometryWorld),
         renderPriority: edgeRenderPriority(fromCity, toCity),
         toCity,
         toWorld
@@ -534,6 +553,11 @@ export function createLeafletMapSurface({
         }
         prepared.geometryWorld = edge.geometry.map((point) =>
           mercatorProject(point.lon, point.lat)
+        );
+        prepared.worldBbox = computeEdgeWorldBbox(
+          prepared.fromWorld,
+          prepared.toWorld,
+          prepared.geometryWorld
         );
         updated += 1;
       }
@@ -1100,6 +1124,7 @@ export function createLeafletMapSurface({
       roundCoordinate(semanticZoom, 4)
     ].join(":");
     const cameraWorld = mercatorProject(camera.lon, camera.lat);
+    const cameraScale = scaleForZoom(camera.zoom);
     const baseLod = buildLodProfile(semanticZoom, labelThreshold);
     const lod = isInteractingWithCamera()
       ? {
@@ -1152,7 +1177,13 @@ export function createLeafletMapSurface({
         return projected;
       },
       size,
-      zoom: camera.zoom
+      zoom: camera.zoom,
+      viewportWorldBbox: computeViewportWorldBbox(
+        cameraWorld,
+        cameraScale,
+        size,
+        lod.networkPadding
+      )
     };
 
     return currentFrame;
@@ -1246,6 +1277,14 @@ export function createLeafletMapSurface({
         edge.fromCity.interest < frame.lod.networkMinInterest &&
         edge.toCity.interest < frame.lod.networkMinInterest
       ) {
+        continue;
+      }
+
+      // Cheap world-bbox cull BEFORE projection. Most edges at high
+      // zoom sit entirely outside the viewport — skipping their points'
+      // projection is the dominant settle-time win on the production
+      // graph (39k edges × multi-point geometries).
+      if (!worldBboxIntersectsViewport(edge.worldBbox, frame.viewportWorldBbox)) {
         continue;
       }
 
@@ -1796,6 +1835,57 @@ function tracePoints(context: CanvasRenderingContext2D, points: MapPoint[]): voi
     if (!point) continue;
     context.lineTo(point.x, point.y);
   }
+}
+
+function computeEdgeWorldBbox(
+  fromWorld: WorldPoint,
+  toWorld: WorldPoint,
+  geometryWorld: WorldPoint[] | null
+): WorldBoundingBox {
+  let minX = Math.min(fromWorld.x, toWorld.x);
+  let maxX = Math.max(fromWorld.x, toWorld.x);
+  let minY = Math.min(fromWorld.y, toWorld.y);
+  let maxY = Math.max(fromWorld.y, toWorld.y);
+  if (geometryWorld) {
+    for (const point of geometryWorld) {
+      if (point.x < minX) minX = point.x;
+      if (point.x > maxX) maxX = point.x;
+      if (point.y < minY) minY = point.y;
+      if (point.y > maxY) maxY = point.y;
+    }
+  }
+  return { minX, maxX, minY, maxY };
+}
+
+function computeViewportWorldBbox(
+  cameraWorld: WorldPoint,
+  cameraScale: number,
+  size: MapSize,
+  paddingPx: number
+): WorldBoundingBox {
+  // World units per pixel = 1 / scale. Inflate the visible window by
+  // the LOD padding (a screen-space margin we let the network lap into
+  // before culling kicks in).
+  const halfWorldX = (size.x / 2 + paddingPx) / cameraScale;
+  const halfWorldY = (size.y / 2 + paddingPx) / cameraScale;
+  return {
+    minX: cameraWorld.x - halfWorldX,
+    maxX: cameraWorld.x + halfWorldX,
+    minY: cameraWorld.y - halfWorldY,
+    maxY: cameraWorld.y + halfWorldY
+  };
+}
+
+function worldBboxIntersectsViewport(
+  edge: WorldBoundingBox,
+  viewport: WorldBoundingBox
+): boolean {
+  return !(
+    edge.maxX < viewport.minX
+    || edge.minX > viewport.maxX
+    || edge.maxY < viewport.minY
+    || edge.minY > viewport.maxY
+  );
 }
 
 function polylineIntersectsViewport(
