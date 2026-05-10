@@ -678,23 +678,37 @@ fn abbreviation_candidate_record(
     let normalized_name = normalize_name(&city.display_name);
     let token_count = normalized_name.split_whitespace().count();
     let compact = normalized_name.replace(' ', "");
-    let suspicious = compact.len() <= 3
-        || compact.chars().all(|ch| ch.is_ascii_uppercase())
-        || compact
-            .chars()
-            .all(|ch| ch.is_ascii_alphabetic())
-            && compact.len() <= 4
-            && token_count <= 2
-            && city.wikidata_qid.is_none();
-    if !suspicious || is_station_qualified_city_name(&city.display_name) {
+    let reason = if is_station_qualified_city_name(&city.display_name) {
+        None
+    } else if city.display_name.chars().any(|ch| ch.is_ascii_digit()) {
+        Some("digit_or_route_like_name")
+    } else if token_count > 1
+        && normalized_name
+            .split_whitespace()
+            .all(|token| token.len() <= 2)
+    {
+        Some("multi_token_short_code")
+    } else if compact.len() <= 2 {
+        Some("single_token_too_short")
+    } else if compact.chars().all(|ch| ch.is_ascii_alphabetic())
+        && compact.len() <= 4
+        && compact.chars().all(|ch| !"aeiouy".contains(ch))
+    {
+        Some("single_token_consonant_only_code")
+    } else if city.display_name == city.display_name.to_ascii_uppercase() && compact.len() <= 5 {
+        Some("uppercase_code")
+    } else {
+        None
+    };
+    let Some(reason) = reason else {
         return None;
-    }
+    };
     Some(PipelineAbbreviationCandidateRecord {
         city_id: city.city_id.clone(),
         display_name: city.display_name.clone(),
         country_code: city.country_code.clone(),
         normalized_name,
-        reason: "short_or_low_signal_name_without_registry_authority".to_string(),
+        reason: reason.to_string(),
     })
 }
 
@@ -3690,6 +3704,78 @@ mod tests {
                 .expect("zz gate")
                 .status,
             "fail"
+        );
+    }
+
+    #[test]
+    fn abbreviation_candidates_skip_legitimate_short_place_names() {
+        let agde = City {
+            city_id: CityId::new("agde-fr-34003").expect("valid city id"),
+            slug: "agde".to_string(),
+            display_name: "Agde".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint { lat: 43.31, lon: 3.47 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let gd = City {
+            city_id: CityId::new("gd-de-c0b2ec09").expect("valid city id"),
+            slug: "gd".to_string(),
+            display_name: "Gd".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let au_sg = City {
+            city_id: CityId::new("au-sg-ch-e9228a80").expect("valid city id"),
+            slug: "au-sg".to_string(),
+            display_name: "Au Sg".to_string(),
+            country_code: "CH".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let rn = City {
+            city_id: CityId::new("rn-fr-x").expect("valid city id"),
+            slug: "rn".to_string(),
+            display_name: "Kilstett 13 Route Nationale".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+
+        assert!(abbreviation_candidate_record(&agde).is_none());
+        assert_eq!(
+            abbreviation_candidate_record(&gd)
+                .expect("gd candidate")
+                .reason,
+            "single_token_too_short"
+        );
+        assert_eq!(
+            abbreviation_candidate_record(&au_sg)
+                .expect("au sg candidate")
+                .reason,
+            "multi_token_short_code"
+        );
+        assert_eq!(
+            abbreviation_candidate_record(&rn)
+                .expect("route candidate")
+                .reason,
+            "digit_or_route_like_name"
         );
     }
 }
