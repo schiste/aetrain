@@ -9,6 +9,12 @@ Rules:
 - refresh by deltas after the seed
 - never let timetable feeds mint canonical cities directly
 - store immutable raw snapshots separately from canonical outputs
+- expand registry authority only behind explicit quality gates
+
+See:
+
+- `ARCHITECTURE.md`
+- `docs/data-hardening-roadmap.md`
 
 Subdirectories:
 

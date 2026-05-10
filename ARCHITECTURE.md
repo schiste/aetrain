@@ -128,6 +128,20 @@ Consequence:
 - Every manual override must be stored in a tracked registry with rationale and
   provenance.
 
+### 7. Breadth follows quality, not the reverse
+
+Adding more feeds before city identity and country inference are stable creates
+more inconsistency than value.
+
+Consequence:
+
+- Data hardening takes priority over new-country onboarding until the current
+  aggregate passes explicit quality gates.
+- Registry authority, country inference, station-vs-city separation, and audit
+  outputs are part of the core architecture, not cleanup afterthoughts.
+- The working execution plan for this is tracked in
+  `docs/data-hardening-roadmap.md`.
+
 ## Key Technical Decisions
 
 ## Decision 1: Separate client surfaces from the shared core and data pipeline
