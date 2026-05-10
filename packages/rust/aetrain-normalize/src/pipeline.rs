@@ -171,6 +171,15 @@ struct MergedCityOutput {
     issues: Vec<NormalizationIssue>,
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct RegistryOverlayStats {
+    matched_count: u64,
+    unmatched_count: u64,
+    ambiguous_count: u64,
+    country_corrected_count: u64,
+    station_promoted_count: u64,
+}
+
 pub fn build_pipeline_target(
     manifest: &SourceManifest,
     manifest_dir: &Path,
@@ -926,7 +935,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         "Aggregated canonical outputs from {} validated targets.",
         dependency_inputs.len()
     )];
-    let counters = BTreeMap::from([
+    let mut counters = BTreeMap::from([
         (
             "dependency_target_count".to_string(),
             dependency_inputs.len() as u64,
@@ -947,11 +956,31 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
                 overlay_path.display()
             )
         })?;
-        apply_registry_city_overlay(
+        let overlay_stats = apply_registry_city_overlay(
             &mut merged_cities.cities,
             &overlay,
             request.target.id.as_str(),
             &mut merged_cities.issues,
+        );
+        counters.insert(
+            "registry_overlay_match_count".to_string(),
+            overlay_stats.matched_count,
+        );
+        counters.insert(
+            "registry_overlay_unmatched_count".to_string(),
+            overlay_stats.unmatched_count,
+        );
+        counters.insert(
+            "registry_overlay_ambiguous_count".to_string(),
+            overlay_stats.ambiguous_count,
+        );
+        counters.insert(
+            "registry_overlay_country_correction_count".to_string(),
+            overlay_stats.country_corrected_count,
+        );
+        counters.insert(
+            "registry_overlay_station_rescue_count".to_string(),
+            overlay_stats.station_promoted_count,
         );
     }
     let stations = merge_stations(
@@ -963,6 +992,22 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     let edge_geometries = merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
     let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
     apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
+    counters.insert(
+        "residual_station_like_city_count".to_string(),
+        merged_cities
+            .cities
+            .iter()
+            .filter(|city| is_station_qualified_city_name(&city.display_name))
+            .count() as u64,
+    );
+    counters.insert(
+        "residual_zz_city_count".to_string(),
+        merged_cities
+            .cities
+            .iter()
+            .filter(|city| city.country_code == "ZZ")
+            .count() as u64,
+    );
     let duplicates = recompute_duplicates(request.generated_at, &merged_cities.cities);
 
     let mut issues = dependency_inputs
@@ -1477,23 +1522,55 @@ fn apply_registry_city_overlay(
     overlay: &RegistryCanonicalBundle,
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
-) {
+) -> RegistryOverlayStats {
     let mut claimed_indexes = BTreeSet::new();
+    let mut stats = RegistryOverlayStats::default();
     for registry_city in &overlay.cities {
-        let Some((index, _score)) = cities
+        let candidates = cities
             .iter()
             .enumerate()
             .filter(|(index, _)| !claimed_indexes.contains(index))
             .filter_map(|(index, city)| {
                 registry_overlay_match_score(city, registry_city).map(|score| (index, score))
             })
-            .max_by(|left, right| left.1.cmp(&right.1))
-        else {
+            .collect::<Vec<_>>();
+        let Some(best_score) = candidates.iter().map(|(_, score)| *score).max() else {
+            stats.unmatched_count += 1;
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Warning,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: registry_city.city_id.to_string(),
+                message: format!(
+                    "registry overlay city {} had no aggregate city match",
+                    registry_city.city_id
+                ),
+            });
             continue;
         };
+        let best_candidates = candidates
+            .into_iter()
+            .filter(|(_, score)| *score == best_score)
+            .collect::<Vec<_>>();
+        if best_candidates.len() > 1 {
+            stats.ambiguous_count += 1;
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Warning,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: registry_city.city_id.to_string(),
+                message: format!(
+                    "registry overlay city {} matched multiple aggregate cities with equal score",
+                    registry_city.city_id
+                ),
+            });
+            continue;
+        }
+        let index = best_candidates[0].0;
         claimed_indexes.insert(index);
         let city = &mut cities[index];
+        stats.matched_count += 1;
         let mut changed = false;
+        let original_display_name = city.display_name.clone();
+        let original_country_code = city.country_code.clone();
         if city.slug != registry_city.slug {
             city.slug = registry_city.slug.clone();
             changed = true;
@@ -1514,6 +1591,12 @@ fn apply_registry_city_overlay(
             city.population = registry_city.population;
             changed = true;
         }
+        if original_country_code != registry_city.country_code {
+            stats.country_corrected_count += 1;
+        }
+        if normalize_name(&original_display_name) != normalize_name(&registry_city.display_name) {
+            stats.station_promoted_count += 1;
+        }
 
         if changed {
             issues.push(NormalizationIssue {
@@ -1527,6 +1610,7 @@ fn apply_registry_city_overlay(
             });
         }
     }
+    stats
 }
 
 fn registry_overlay_match_score(
@@ -2740,7 +2824,8 @@ mod tests {
         };
         let mut issues = Vec::new();
 
-        apply_registry_city_overlay(&mut cities, &overlay, "europe-aggregate", &mut issues);
+        let stats =
+            apply_registry_city_overlay(&mut cities, &overlay, "europe-aggregate", &mut issues);
 
         assert_eq!(cities[0].wikidata_qid.as_deref(), Some("Q90"));
         assert_eq!(cities[0].population, Some(2_243_739));
@@ -2753,5 +2838,88 @@ mod tests {
         assert_eq!(cities[3].country_code, "FR");
         assert_eq!(cities[3].wikidata_qid.as_deref(), Some("Q7880"));
         assert_eq!(issues.len(), 4);
+        assert_eq!(stats.matched_count, 4);
+        assert_eq!(stats.unmatched_count, 0);
+        assert_eq!(stats.ambiguous_count, 0);
+        assert_eq!(stats.country_corrected_count, 2);
+        assert_eq!(stats.station_promoted_count, 1);
+    }
+
+    #[test]
+    fn registry_overlay_skips_ambiguous_equal_score_matches() {
+        let mut cities = vec![
+            aetrain_domain::City {
+                city_id: CityId::new("saint-etienne-fr-a").expect("valid city id"),
+                slug: "saint-etienne".to_string(),
+                display_name: "Saint Etienne".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 45.4397,
+                    lon: 4.3872,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: Vec::new(),
+                aliases: Vec::new(),
+            },
+            aetrain_domain::City {
+                city_id: CityId::new("saint-etienne-fr-b").expect("valid city id"),
+                slug: "saint-etienne".to_string(),
+                display_name: "Saint Etienne".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 45.4397,
+                    lon: 4.3872,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: Vec::new(),
+                aliases: Vec::new(),
+            },
+        ];
+        let overlay = RegistryCanonicalBundle {
+            meta: RegistryMeta {
+                schema_version: 1,
+                dataset_id: "registry-test".to_string(),
+                scope: "fr-test".to_string(),
+                generated_at: "2026-05-10T00:00:00Z".to_string(),
+            },
+            cities: vec![RegistryCity {
+                city_id: CityId::new("saint-etienne-fr-q42716").expect("valid city id"),
+                slug: "saint-etienne".to_string(),
+                display_name: "Saint Etienne".to_string(),
+                country_code: "FR".to_string(),
+                identity_point: GeoPoint {
+                    lat: 45.4397,
+                    lon: 4.3872,
+                },
+                map_anchor_point: GeoPoint {
+                    lat: 45.4397,
+                    lon: 4.3872,
+                },
+                bbox: None,
+                wikidata_qid: Some("Q42716".to_string()),
+                population: Some(199_000),
+                status: RegistryStatus::Resolved,
+                external_refs: Vec::new(),
+            }],
+            stations: Vec::new(),
+            memberships: Vec::new(),
+            name_variants: Vec::new(),
+            city_facts: Vec::new(),
+            city_signals: Vec::new(),
+        };
+        let mut issues = Vec::new();
+
+        let stats =
+            apply_registry_city_overlay(&mut cities, &overlay, "europe-aggregate", &mut issues);
+
+        assert_eq!(stats.matched_count, 0);
+        assert_eq!(stats.unmatched_count, 0);
+        assert_eq!(stats.ambiguous_count, 1);
+        assert!(cities.iter().all(|city| city.wikidata_qid.is_none()));
+        assert_eq!(issues.len(), 1);
     }
 }
