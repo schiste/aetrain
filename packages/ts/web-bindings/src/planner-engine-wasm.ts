@@ -59,6 +59,20 @@ async function ensureWasmInitialised(): Promise<void> {
   return wasmReady;
 }
 
+/**
+ * Kick off the WASM module compile without waiting on it. Safe to call
+ * many times — the underlying promise is cached. The planner worker
+ * calls this at module-load time so the ~300ms wasm-bindgen init runs
+ * in parallel with the dataset fetch + parse, instead of blocking the
+ * INITIALIZE message that arrives after both finish.
+ *
+ * The returned promise can be awaited if a caller needs to gate on
+ * readiness; createWasmPlannerEngine already awaits it internally.
+ */
+export function prewarmWasm(): Promise<void> {
+  return ensureWasmInitialised();
+}
+
 export async function createWasmPlannerEngine(
   nodes: readonly PlannerNodeInput[],
   edges: readonly PlannerEdgeInput[]

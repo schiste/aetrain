@@ -1,6 +1,7 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
 import { createPlannerModel } from "../engine/planner-core.ts";
 import { createWasmPlannerModel } from "../engine/planner-wasm-adapter.ts";
+import { prewarmWasm } from "../../../../packages/ts/web-bindings/src/index.ts";
 import {
   PLANNER_WORKER_MESSAGE_TYPES,
   serializePlannerError,
@@ -49,6 +50,26 @@ interface IncomingMessage {
 const diagnostics = createDiagnostics("web/worker/planner");
 let model: PlannerModel | null = null;
 let activeEngineKind: PlannerEngineKind = "js-fallback";
+
+// Eagerly fetch + compile the WASM module the moment this worker
+// spawns, in parallel with the dataset fetch happening on the main
+// thread. By the time INITIALIZE arrives the wasm-bindgen init has
+// usually already resolved, removing ~300ms from the cold-start path.
+// The promise is cached inside web-bindings; createWasmPlannerEngine
+// awaits the same promise internally so there's no double-compile risk.
+const wasmPrewarmStartedAt = now();
+void prewarmWasm()
+  .then(() => {
+    diagnostics.info("planner worker prewarmed wasm", {
+      duration_ms: elapsedSince(wasmPrewarmStartedAt)
+    });
+  })
+  .catch((error: unknown) => {
+    // Don't reject — the JS-fallback path remains usable. Just record.
+    diagnostics.warn("planner worker wasm prewarm failed", {
+      error: summarizeError(error)
+    });
+  });
 
 self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
   const message: IncomingMessage = event.data || {};

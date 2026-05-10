@@ -1,5 +1,6 @@
 export {
   createWasmPlannerEngine,
+  prewarmWasm,
   type PlannerEdgeInput,
   type PlannerNodeInput,
   type PlannerRouteResult,
