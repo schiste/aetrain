@@ -223,7 +223,11 @@ async function fetchJsonFromBasePath(
     file_name: fileName,
     base_path: basePath
   });
-  const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
+  // No cache: "no-store" — that would bypass the document-level
+  // preload hints in index.html, defeating the cold-load overlap.
+  // Dataset URLs are stable; meta.json carries the version; the
+  // service worker invalidates the data cache by dataset_version.
+  const response = await fetch(new URL(fileName, basePath));
   if (!response.ok) {
     const error: FetchAssetError = new Error(`HTTP ${response.status}`);
     error.artifactStatus = response.status;

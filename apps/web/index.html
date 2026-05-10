@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aetrain Trip Planner</title>
     <link rel="icon" href="data:," />
+    <!-- Tell the browser to start fetching the dataset the moment the
+         HTML is parsed, in parallel with the JS bundle. The runtime
+         data worker requests these same URLs ~200ms later; preload
+         seeds the cache so the worker fetch resolves immediately. -->
+    <link rel="preload" href="/data/production/meta.json" as="fetch" type="application/json" crossorigin="anonymous" />
+    <link rel="preload" href="/data/production/cities.json" as="fetch" type="application/json" crossorigin="anonymous" />
+    <link rel="preload" href="/data/production/edges.json" as="fetch" type="application/json" crossorigin="anonymous" />
     <link
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
       rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
-    />
     <link rel="stylesheet" href="./src/ui/tokens.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   </head>
   <body>
     <div id="app"></div>

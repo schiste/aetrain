@@ -351,7 +351,9 @@ async function fetchJsonFromBasePath(
     file_name: fileName,
     base_path: basePath
   });
-  const response = await fetch(new URL(fileName, basePath), { cache: "no-store" });
+  // See worker counterpart: no cache: "no-store" so the document-level
+  // preload hints can satisfy these requests without a second round-trip.
+  const response = await fetch(new URL(fileName, basePath));
   if (!response.ok) {
     const error: FetchAssetError = new Error(`HTTP ${response.status}`);
     error.artifactStatus = response.status;
