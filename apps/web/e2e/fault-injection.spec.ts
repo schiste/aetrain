@@ -1,12 +1,13 @@
 import { expect, test, type Route } from "@playwright/test";
 
-// Fault-injection scenarios. Phase 4 deliverable. Each test forces a specific
-// failure mode and asserts the user-visible recovery path the architecture
-// promises:
+// Fault-injection scenarios. Phase 4 deliverable, updated after the POC
+// fallback was removed: when production fails, the shell now renders a
+// hard error state (.ae-load-error) instead of silently degrading to the
+// embedded POC dataset. Each test forces a specific failure mode and
+// asserts the user-visible recovery path:
 //
-//   - dataset HTTP 500 → silent fallback to POC, sourceMeta surfaces the
-//     warning
-//   - dataset corrupted → assertion fires, app still mounts on POC
+//   - dataset HTTP 500   → error card shown, retry button present
+//   - dataset corrupted  → error card shown, JSON parse error surfaced
 //   - malformed URL hash → app boots empty, replaces hash on first edit
 //
 // The "worker crash" scenario from the Phase 4 plan is documented as a gap
@@ -14,8 +15,7 @@ import { expect, test, type Route } from "@playwright/test";
 // closure inside engine/planner-client.ts and is not reachable from
 // page.evaluate, so simulating a crash from outside production code would
 // require adding a window-level test hook. We chose not to contaminate
-// production code for this scenario; the inline JS fallback remains
-// covered by the equivalence corpus in src/engine.
+// production code for this scenario.
 
 const PRODUCTION_META_GLOB = "**/data/production/meta.json";
 const PRODUCTION_CITIES_GLOB = "**/data/production/cities.json";
@@ -75,8 +75,6 @@ async function blockServiceWorker(
 async function dumpDiagnostics(
   page: import("@playwright/test").Page
 ): Promise<DiagnosticsEventSummary[]> {
-  // The diagnostics store is created lazily on first import, so by the
-  // time the dataset has finished loading it is guaranteed to be present.
   return page.evaluate<DiagnosticsEventSummary[]>(() => {
     const store = (
       window as unknown as {
@@ -93,7 +91,7 @@ async function dumpDiagnostics(
 }
 
 test.describe("aetrain fault injection", () => {
-  test("dataset 500 falls back to POC and surfaces the error in source meta", async ({
+  test("dataset 500 surfaces the hard error card with a retry affordance", async ({
     page
   }) => {
     await blockServiceWorker(page);
@@ -103,57 +101,42 @@ test.describe("aetrain fault injection", () => {
     // browser context to catch them.
     await page.context().route(PRODUCTION_META_GLOB, fail500);
 
-    await page.goto("/?source=production");
+    await page.goto("/");
 
-    // The shell mounts even on fallback. Wait for the dataset-ready
-    // marker before asserting the meta string.
-    await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 20_000
-    });
-
-    // The shell stamps the active source onto the host element via
-    // data-source-id; the meta panel surfaces the human-readable warning.
-    const sourceMeta = page.locator("#source-meta");
-    await expect(sourceMeta).toContainText(/fell back to POC/i, {
-      timeout: 5_000
-    });
-
-    const sourceHostId = await page.evaluate(
-      () => document.querySelector("ae-app")?.getAttribute("data-source-id") ?? null
-    );
-    expect(sourceHostId).toBe("poc");
+    const errorCard = page.locator("[data-testid=ae-load-error]");
+    await expect(errorCard).toBeVisible({ timeout: 20_000 });
+    await expect(errorCard).toContainText(/Couldn't load planner data/i);
+    // Retry button is the recovery affordance.
+    await expect(errorCard.locator("button", { hasText: /Retry/i })).toBeVisible();
+    // Sidebar must NOT have mounted — there's no dataset to plan against.
+    await expect(page.locator("#side")).toHaveCount(0);
 
     // The runtime data scope should have logged at least one error
     // during the failed attempt.
     const events = await dumpDiagnostics(page);
     const runtimeErrors = events.filter(
-      (event) => event.scope === "web/data/runtime" && event.level === "error"
+      (event) => event.level === "error"
+        && (event.scope === "web/data/runtime" || event.scope === "web/ui/app")
     );
     expect(runtimeErrors.length).toBeGreaterThan(0);
   });
 
-  test("corrupted dataset surfaces an error and falls back to POC", async ({
+  test("corrupted dataset surfaces the hard error card with a parse-error detail", async ({
     page
   }) => {
     await blockServiceWorker(page);
     await page.context().route(PRODUCTION_CITIES_GLOB, fulfillCorrupted);
 
-    await page.goto("/?source=production");
+    await page.goto("/");
 
-    await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 20_000
-    });
-
-    const sourceHostId = await page.evaluate(
-      () => document.querySelector("ae-app")?.getAttribute("data-source-id") ?? null
+    const errorCard = page.locator("[data-testid=ae-load-error]");
+    await expect(errorCard).toBeVisible({ timeout: 20_000 });
+    // The detail block should mention a JSON or parse error of some kind.
+    await expect(errorCard.locator(".ae-load-error-detail")).toContainText(
+      /JSON|parse|valid|Unexpected/i
     );
-    expect(sourceHostId).toBe("poc");
+    await expect(page.locator("#side")).toHaveCount(0);
 
-    // Either the runtime data layer, the worker, or the production
-    // adapter assertion should have logged an error. We accept several
-    // scopes to keep this test robust against future refactors that move
-    // the assertion boundary, but at least one error must reach the
-    // contract.
     const events = await dumpDiagnostics(page);
     const errors = events.filter((event) => event.level === "error");
     expect(errors.length).toBeGreaterThan(0);
@@ -175,7 +158,7 @@ test.describe("aetrain fault injection", () => {
     await page.goto("/#bogus-not-a-version");
 
     await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 15_000
+      timeout: 30_000
     });
 
     // Empty trip is the recovery state — an unparseable hash is treated
@@ -183,9 +166,6 @@ test.describe("aetrain fault injection", () => {
     await expect(page.locator("#tl #empty")).toBeVisible();
     await expect(page.locator("#tl .ts")).toHaveCount(0);
 
-    // Trigger a user interaction that mutates planner state and assert
-    // the URL gets re-stamped on the v1 schema. Lyon is the same shared
-    // city we use in the golden path so it lives in both POC and prod.
     await page.locator("#sinput").fill("Lyon");
     const lyon = page.locator("#sr .sri").first();
     await expect(lyon).toBeVisible({ timeout: 5_000 });

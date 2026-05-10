@@ -32,11 +32,9 @@ export interface AppContext {
   suggestionsOf(state: PlannerState): PlannerSuggestion[];
   visibility: Signal<VisibilityStats>;
   statusText: Signal<string>;
-  source: {
-    activeSourceId: Signal<string>;
-    requestedSourceId: Signal<string>;
-    metaText: Signal<string>;
-  };
+  // Human-readable description of the loaded dataset (label + version etc.)
+  // The legacy POC ↔ Production toggle is gone; this is now read-only.
+  datasetMeta: Signal<string>;
   search: {
     isOpen: Signal<boolean>;
     setOpen(open: boolean): void;

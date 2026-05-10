@@ -27,15 +27,18 @@ async function readDiagnostics(page: Page): Promise<DiagEvent[]> {
 
 async function exerciseTrip(page: Page): Promise<void> {
   await page.goto("/");
-  await expect(page.locator("#fi-txt")).toContainText(/Showing/i, { timeout: 15_000 });
+  await expect(page.locator("#fi-txt")).toContainText(/Showing/i, { timeout: 30_000 });
   await page.locator("#sinput").fill("Lyon");
-  await expect(page.locator("#sr .sri").first()).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator("#sr .sri").first()).toBeVisible({ timeout: 10_000 });
   await page.locator("#sr .sri").first().click();
   await expect(page.locator("#tl .ts")).toHaveCount(1);
 
-  // Add a second stop so derive-trip computes at least one segment.
+  // Add a second stop. Clear the input explicitly before refilling so
+  // the previous selection's async setSearchQuery("") cannot race with
+  // the next fill() on a contended preview server.
+  await page.locator("#sinput").fill("");
   await page.locator("#sinput").fill("Paris");
-  await expect(page.locator("#sr .sri").first()).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator("#sr .sri").first()).toBeVisible({ timeout: 10_000 });
   await page.locator("#sr .sri").first().click();
   await expect(page.locator("#tl .ts")).toHaveCount(2);
 }
@@ -50,7 +53,7 @@ test.describe.configure({ mode: "serial" });
 test.describe("aetrain wasm engine", () => {
   test("worker reports engine_kind=wasm on initialise", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("#fi-txt")).toContainText(/Showing/i, { timeout: 15_000 });
+    await expect(page.locator("#fi-txt")).toContainText(/Showing/i, { timeout: 30_000 });
 
     const events = await readDiagnostics(page);
     const init = events.find(
@@ -93,7 +96,11 @@ test.describe("aetrain wasm engine", () => {
     // depending on a quiet runner. The 35ms desktop-baseline P50 budget in
     // docs/architecture/performance-budgets.md is enforced on the dedicated
     // strict-class runner once that lands (Phase 0.5 follow-up).
-    const ciContentionEnvelope = 250;
+    //
+    // Bumped to 600ms when the POC fallback was removed: every test now
+    // routes against the 13.4k-city production dataset, where Dijkstra-all
+    // + interesting-stop scoring takes ~400-500ms end-to-end on CI runners.
+    const ciContentionEnvelope = 600;
     expect(
       p50,
       `derive-trip P50 ${p50}ms exceeded ${ciContentionEnvelope}ms — investigate before relaxing further`

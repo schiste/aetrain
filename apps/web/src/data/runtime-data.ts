@@ -1,7 +1,5 @@
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
-import { cities as pocCities, routeData as pocRouteData } from "./poc-dataset.ts";
 import type {
-  PlannerDataSourceId,
   PlannerDataset,
   ProductionArtifactBundle
 } from "../types/planner-dataset.ts";
@@ -9,22 +7,15 @@ import {
   fetchEdgeGeometryArtifact,
   type EdgeGeometryManifest
 } from "./edge-geometry-artifacts.ts";
-import {
-  assertPlannerDataset,
-  isKnownPlannerDataSourceId
-} from "./planner-dataset-contracts.ts";
 import { buildProductionPlannerData } from "./production-adapter.ts";
 
-const DATA_SOURCE_STORAGE_KEY = "aetrain-data-source";
-const DATA_SOURCE_QUERY_PARAM = "source";
 // Vite serves `apps/web/public/` contents at the site root in both dev
 // (vite serve) and prod (vite build copies them to dist/). Anchoring the
 // path to the page origin gives a stable absolute URL in both modes.
 //
 // We previously used `new URL("../../public/data/production/", import.meta.url)`
 // here, but in dev Vite rewrites that to `/@fs/...` and drops the
-// `production/` segment, so the JSON fetch returned the SPA-fallback
-// HTML and dataset loading silently fell back to POC.
+// `production/` segment, so the JSON fetch returns the SPA-fallback HTML.
 const PRODUCTION_BASE_PATHS: readonly string[] = [
   new URL("/data/production/", window.location.origin).href
 ];
@@ -47,95 +38,18 @@ interface WorkerLoadResponse {
   error?: SerializedWorkerError;
 }
 
-export function getRequestedDataSourceId(): PlannerDataSourceId {
-  const url = new URL(window.location.href);
-  const fromQuery = url.searchParams.get(DATA_SOURCE_QUERY_PARAM);
-  if (isKnownPlannerDataSourceId(fromQuery)) {
-    diagnostics.debug("resolved data source from query", {
-      source_id: fromQuery
-    });
-    return fromQuery;
-  }
-
-  try {
-    const stored = window.localStorage.getItem(DATA_SOURCE_STORAGE_KEY);
-    if (isKnownPlannerDataSourceId(stored)) {
-      diagnostics.debug("resolved data source from localStorage", {
-        source_id: stored
+export async function loadPlannerDataset(): Promise<PlannerDataset> {
+  return diagnostics.timeAsync("load-planner-dataset", async () => {
+    diagnostics.info("loading planner dataset");
+    try {
+      return await loadProductionDataSourceFromWorker();
+    } catch (error) {
+      diagnostics.warn("falling back to inline production dataset loader", {
+        error: summarizeError(error)
       });
-      return stored;
+      return loadProductionDataSourceInline();
     }
-  } catch {}
-
-  diagnostics.debug("defaulting data source to poc");
-  return "poc";
-}
-
-export function navigateToDataSource(sourceId: unknown): void {
-  if (!isKnownPlannerDataSourceId(sourceId)) {
-    diagnostics.warn("ignored navigation to unknown data source", {
-      source_id: sourceId
-    });
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(DATA_SOURCE_STORAGE_KEY, sourceId);
-  } catch {}
-
-  const url = new URL(window.location.href);
-  if (sourceId === "poc") {
-    url.searchParams.delete(DATA_SOURCE_QUERY_PARAM);
-  } else {
-    url.searchParams.set(DATA_SOURCE_QUERY_PARAM, sourceId);
-  }
-
-  diagnostics.info("navigating to data source", {
-    source_id: sourceId,
-    target_url: url.toString()
   });
-  window.location.assign(url.toString());
-}
-
-export async function loadPlannerDataSource(
-  sourceId: PlannerDataSourceId
-): Promise<PlannerDataset> {
-  return diagnostics.timeAsync("load-planner-data-source", async () => {
-    diagnostics.info("loading planner data source", {
-      source_id: sourceId
-    });
-
-    if (sourceId === "production") {
-      return loadProductionDataSource();
-    }
-
-    const dataset = assertPlannerDataset({
-      id: "poc",
-      label: "POC",
-      description: "Embedded proof-of-concept dataset.",
-      cities: pocCities,
-      routeData: pocRouteData
-    }, "POC dataset");
-
-    diagnostics.info("loaded poc dataset", {
-      city_count: dataset.cities.length,
-      route_count: Object.keys(dataset.routeData).length
-    });
-    return dataset;
-  }, {
-    source_id: sourceId
-  });
-}
-
-async function loadProductionDataSource(): Promise<PlannerDataset> {
-  try {
-    return await loadProductionDataSourceFromWorker();
-  } catch (error) {
-    diagnostics.warn("falling back to inline production dataset loader", {
-      error: summarizeError(error)
-    });
-    return loadProductionDataSourceInline();
-  }
 }
 
 async function loadProductionDataSourceInline(): Promise<PlannerDataset> {

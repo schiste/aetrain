@@ -45,13 +45,35 @@ ae-app, ae-sidebar { display: contents; }
 .sh h1 { font-family: var(--ae-font-mono); font-size: 15px; font-weight: 600; color: var(--ae-accent); letter-spacing: 2px; text-transform: uppercase; }
 .sh p { font-size: 11px; color: var(--ae-fg-muted); margin-top: 3px; font-weight: 300; }
 
-.source-switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
-.source-label { font-size: 10px; color: var(--ae-fg-muted); text-transform: uppercase; letter-spacing: .5px; }
-.source-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 3px; background: var(--ae-bg); border: 1px solid var(--ae-border); border-radius: var(--ae-radius-pill); }
-.source-btn { border: none; background: transparent; color: var(--ae-fg-soft); font-family: var(--ae-font-mono); font-size: 10px; font-weight: 600; padding: 5px 10px; border-radius: var(--ae-radius-pill); cursor: pointer; transition: background .15s, color .15s; }
-.source-btn:hover { color: var(--ae-fg-strong); }
-.source-btn.active { background: var(--ae-accent); color: var(--ae-bg); }
 .source-meta { margin-top: 8px; font-size: 10px; line-height: 1.4; color: var(--ae-fg-soft); }
+
+/* Hard error state shown by ae-app when the dataset fails to load. The
+   shell never mounts in this case; the error card replaces the children
+   of #app entirely. */
+.ae-load-error {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ae-bg);
+  padding: 1.5rem;
+  z-index: 9000;
+}
+.ae-load-error-card {
+  max-width: 32rem;
+  background: var(--ae-bg-2);
+  border: 1px solid var(--ae-border);
+  border-radius: var(--ae-radius-md);
+  padding: 1.75rem 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  font-family: var(--ae-font-display);
+}
+.ae-load-error-card h1 { font-family: var(--ae-font-mono); font-size: 14px; color: var(--ae-danger); letter-spacing: 1px; text-transform: uppercase; margin: 0; }
+.ae-load-error-card p { font-size: 13px; color: var(--ae-fg-soft); line-height: 1.5; margin: 0; }
+.ae-load-error-detail { font-family: var(--ae-font-mono); font-size: 11px; color: var(--ae-fg-muted); background: var(--ae-bg); border: 1px solid var(--ae-border); border-radius: var(--ae-radius-md); padding: .625rem .75rem; margin: 0; white-space: pre-wrap; word-break: break-word; max-height: 8rem; overflow: auto; }
+.ae-load-error-card .btn { align-self: flex-start; padding: .5rem 1.25rem; }
 
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; padding: .625rem 1.375rem; border-bottom: 1px solid var(--ae-border); background: var(--ae-bg-3); flex-shrink: 0; }
 .st { flex: 1; text-align: center; }
@@ -250,7 +272,6 @@ ae-debug-toggles {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fg { gap: .625rem; }
   .fg label { width: 3rem; }
-  .source-switch { flex-wrap: wrap; align-items: flex-start; }
   .actions { grid-template-columns: 1fr; display: grid; }
   .btn { width: 100%; }
 }

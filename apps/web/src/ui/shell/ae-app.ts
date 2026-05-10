@@ -12,10 +12,7 @@
 import { createDiagnostics, summarizeError } from "../../app-shell/diagnostics.ts";
 import { notifyServiceWorkerDatasetVersion } from "../../app-shell/service-worker.ts";
 import { borderData as rawBorderData } from "../../data/landmass-borders.ts";
-import {
-  getRequestedDataSourceId,
-  loadPlannerDataSource
-} from "../../data/runtime-data.ts";
+import { loadPlannerDataset } from "../../data/runtime-data.ts";
 import {
   createPlannerClient,
   prewarmPlannerClient
@@ -103,14 +100,11 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
 
   bootInFlight = (async () => {
     diagnostics.info("booting ae-app shell");
-    const requestedSourceId = getRequestedDataSourceId();
     const statusText = signal("Loading dataset…");
     const visibility = signal({ shown: 0, total: 0, reachable: 0 });
     const stateSignal = signal<PlannerState>(createSeedState());
     const copyButtonLabel = signal("Copy Summary");
-    const sourceActive = signal<string>(requestedSourceId);
-    const sourceRequested = signal<string>(requestedSourceId);
-    const sourceMeta = signal<string>("Loading dataset…");
+    const datasetMeta = signal<string>("Loading dataset…");
     const searchOpen = signal<boolean>(false);
 
     // Pre-warm the planner worker in parallel with the dataset fetch. This
@@ -121,41 +115,23 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     const prewarmedPlanner = prewarmPlannerClient();
 
     let dataset: PlannerDataset;
-    let loadWarning = "";
     try {
-      try {
-        dataset = await loadPlannerDataSource(requestedSourceId);
-      } catch (error) {
-        diagnostics.error(
-          "failed to load requested data source, falling back to poc",
-          {
-            requested_source_id: requestedSourceId,
-            error: summarizeError(error)
-          }
-        );
-        dataset = await loadPlannerDataSource("poc");
-        if (requestedSourceId !== "poc") {
-          const summary = summarizeError(error);
-          loadWarning = `Requested ${requestedSourceId} but fell back to POC: ${summary.message}`;
-        }
-      }
-    } catch (datasetError) {
-      // Both attempts failed — release the pre-warmed worker so we don't
-      // leak a Worker process into the page.
+      dataset = await loadPlannerDataset();
+    } catch (error) {
+      // No POC fallback to silently degrade to. Release the pre-warmed
+      // worker, render a hard error state in place of the shell, and stop.
       prewarmedPlanner.abort();
-      throw datasetError;
+      diagnostics.error("failed to load planner dataset", {
+        error: summarizeError(error)
+      });
+      renderLoadError(host, error);
+      return null;
     }
 
-    sourceActive.set(dataset.id);
-    sourceMeta.set(loadWarning ? `${dataset.description} ${loadWarning}` : dataset.description);
-    host.dataset.sourceId = dataset.id;
-    host.dataset.requestedSourceId = requestedSourceId;
-    if (dataset.meta?.dataset_version) {
-      host.dataset.sourceVersion = dataset.meta.dataset_version;
-    }
+    datasetMeta.set(dataset.description);
+    host.dataset.datasetVersion = dataset.meta?.dataset_version || "";
 
     diagnostics.info("dataset loaded into ae-app", {
-      source_id: dataset.id,
       city_count: dataset.cities.length,
       route_count: Object.keys(dataset.routeData).length,
       dataset_version: dataset.meta?.dataset_version || null
@@ -244,11 +220,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       },
       visibility,
       statusText,
-      source: {
-        activeSourceId: sourceActive,
-        requestedSourceId: sourceRequested,
-        metaText: sourceMeta
-      },
+      datasetMeta,
       search: {
         isOpen: searchOpen,
         setOpen(open: boolean) {
@@ -351,6 +323,32 @@ function createSeedState(): PlannerState {
     suggestions: [],
     trip: []
   };
+}
+
+function renderLoadError(host: HTMLElement, error: unknown): void {
+  const summary = summarizeError(error);
+  const detail = summary.message || "Unknown error";
+  const onRetry = (event: Event) => {
+    event.preventDefault();
+    window.location.reload();
+  };
+  host.replaceChildren(
+    html`
+      <div
+        class="ae-load-error"
+        role="alert"
+        aria-live="assertive"
+        data-testid="ae-load-error"
+      >
+        <div class="ae-load-error-card">
+          <h1>Couldn't load planner data</h1>
+          <p>The Aetrain dataset failed to load. Check your network connection and try again.</p>
+          <pre class="ae-load-error-detail">${detail}</pre>
+          <button type="button" class="btn bp" onclick=${onRetry}>Retry</button>
+        </div>
+      </div>
+    `
+  );
 }
 
 function labelThreshold(zoom: number): LabelThresholdValue {

@@ -1,7 +1,6 @@
 import type {
   GeoPoint,
   PlannerArtifacts,
-  PlannerDataSourceId,
   PlannerDataset,
   ProductionArtifactBundle,
   RawCity,
@@ -14,24 +13,15 @@ import type {
   SearchIndexEntry
 } from "../types/planner-dataset.ts";
 
-const KNOWN_DATA_SOURCE_IDS = new Set<PlannerDataSourceId>(["poc", "production"]);
-
-export function isKnownPlannerDataSourceId(
-  value: unknown
-): value is PlannerDataSourceId {
-  return typeof value === "string"
-    && (KNOWN_DATA_SOURCE_IDS as Set<string>).has(value);
-}
-
 export function assertPlannerDataset(
   dataset: unknown,
   context = "planner dataset"
 ): PlannerDataset {
   assertRecord(dataset, context);
 
-  if (!isKnownPlannerDataSourceId(dataset.id)) {
+  if (dataset.id !== "production") {
     throw new Error(
-      `${context} must use a known source id, received ${JSON.stringify(dataset.id)}`
+      `${context} must have id "production", received ${JSON.stringify(dataset.id)}`
     );
   }
 

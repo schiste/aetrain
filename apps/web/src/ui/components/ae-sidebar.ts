@@ -1,9 +1,8 @@
-// Composes the existing sidebar building blocks (header, source switch,
-// stats, filters, search, trip list, action footer). The previous markup
-// in the prior shell had a single inline structure; here we delegate to
-// the individual custom elements so they own their lifecycle.
+// Composes the sidebar building blocks (header, dataset meta, stats,
+// filters, search, trip list, action footer). The previous markup had a
+// single inline structure; here we delegate to the individual custom
+// elements so they own their lifecycle.
 
-import "./ae-source-switch.ts";
 import "./ae-stats.ts";
 import "./ae-filters.ts";
 import "./ae-search.ts";
@@ -27,13 +26,15 @@ defineComponent("ae-sidebar", () => ({
       void ctx?.onShareTrip();
     };
 
+    const datasetMeta = ctx ? ctx.datasetMeta() : "Loading dataset…";
+
     return html`
       <aside id="side" role="complementary" aria-label="Trip planner">
         <div class="side-main">
           <div class="sh">
             <h1>Aetrain</h1>
             <p>Plan your European rail adventure</p>
-            <ae-source-switch></ae-source-switch>
+            <div class="source-meta" id="source-meta">${datasetMeta}</div>
           </div>
           <ae-stats></ae-stats>
           <ae-filters></ae-filters>

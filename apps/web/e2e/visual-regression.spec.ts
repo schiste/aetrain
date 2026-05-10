@@ -25,7 +25,7 @@ const HUD_MASK_SELECTOR = "#aetrain-perf-hud";
 
 async function waitForDatasetReady(page: Page): Promise<void> {
   await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-    timeout: 15_000
+    timeout: 30_000
   });
 }
 

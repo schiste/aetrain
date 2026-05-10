@@ -1,23 +1,23 @@
 import { expect, test } from "@playwright/test";
 
-// Lightweight integration coverage for the new <ae-source-switch> and
-// <ae-trip-list> custom elements, mounted inside the live preview server.
-// We piggy-back on the shipped shell rather than mounting them in
-// isolation so we exercise the AppContext wiring.
+// Lightweight integration coverage for the custom elements, mounted
+// inside the live preview server. We piggy-back on the shipped shell
+// rather than mounting them in isolation so we exercise the AppContext
+// wiring.
 
 test.describe("aetrain components", () => {
-  test("source switch renders both POC and Production buttons with the active class on POC by default", async ({
+  test("dataset meta line surfaces the loaded production dataset description", async ({
     page
   }) => {
     await page.goto("/");
     await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 15_000
+      timeout: 30_000
     });
 
-    await expect(page.locator("#source-poc")).toBeVisible();
-    await expect(page.locator("#source-production")).toBeVisible();
-    await expect(page.locator("#source-poc")).toHaveClass(/active/);
-    await expect(page.locator("#source-production")).not.toHaveClass(/active/);
+    // The source-meta line is now read-only and renders the dataset
+    // description served from the runtime artifact.
+    await expect(page.locator("#source-meta")).toBeVisible();
+    await expect(page.locator("#source-meta")).not.toContainText(/Loading/);
   });
 
   test("trip list renders the empty hint when no stops are present, then the stop after a search", async ({
@@ -25,7 +25,7 @@ test.describe("aetrain components", () => {
   }) => {
     await page.goto("/");
     await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 15_000
+      timeout: 30_000
     });
 
     // Empty state.

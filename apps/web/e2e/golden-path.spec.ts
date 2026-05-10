@@ -11,7 +11,7 @@ test.describe("aetrain golden path", () => {
     // Wait for the dataset to mount; the legacy status text flips from
     // "Loading dataset…" / "Loading..." to "Showing N of M cities".
     await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 15_000
+      timeout: 30_000
     });
 
     // Stats grid is the easiest mount marker beyond the status text.
@@ -43,7 +43,7 @@ test.describe("aetrain golden path", () => {
     // Reload and confirm the trip is restored from the hash alone.
     await page.reload();
     await expect(page.locator("#fi-txt")).toContainText(/Showing/i, {
-      timeout: 15_000
+      timeout: 30_000
     });
     await expect(page.locator("#tl .ts")).toHaveCount(1);
     await expect(page.locator("#tl .ts .cn")).toContainText(cityName);
@@ -52,7 +52,7 @@ test.describe("aetrain golden path", () => {
 
   test("perf hud activates with ?perf=1 and reads the diagnostics buffer", async ({ page }) => {
     await page.goto("/?perf=1");
-    await expect(page.locator("#aetrain-perf-hud")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("#aetrain-perf-hud")).toBeVisible({ timeout: 30_000 });
     await expect(page.locator("#aetrain-perf-hud")).toContainText(/aetrain · /);
     await expect(page.locator("#aetrain-perf-hud")).toContainText(/boot /);
   });

@@ -3,7 +3,10 @@
 // pipeline artifacts; see ../data/planner-dataset-contracts.ts for the
 // runtime validators that police the boundary.
 
-export type PlannerDataSourceId = "poc" | "production";
+// The runtime carries a single canonical dataset; the source-switch UX
+// (and the POC fallback) was removed in favour of a hard error state when
+// the production load fails.
+export type PlannerDataSourceId = "production";
 
 export interface PlannerCity {
   name: string;
