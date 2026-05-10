@@ -3,9 +3,11 @@ import { createPlannerModel } from "./planner-core.ts";
 import type {
   PlannerArtifacts,
   PlannerCity,
-  PlannerRouteData
+  PlannerRouteData,
+  RawEdgeGeometries
 } from "../types/planner-dataset.ts";
 import type {
+  PlannerEdge,
   PlannerEngine,
   PlannerModelMetadata,
   PlannerTripPlan
@@ -236,6 +238,27 @@ async function attachPlannerClient(
     },
     searchCities({ query, limit }: { query: string; limit: number }): Promise<PlannerCity[]> {
       return request<PlannerCity[]>(PLANNER_WORKER_MESSAGE_TYPES.SEARCH_CITIES, { query, limit });
+    },
+    async augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): Promise<void> {
+      const result = await request<{ edges?: PlannerEdge[] }>(
+        PLANNER_WORKER_MESSAGE_TYPES.AUGMENT_GEOMETRY,
+        { rawEdgeGeometries }
+      );
+      // Mutate the metadata edges array we returned from initialize so
+      // map / sidebar consumers that retained the original reference see
+      // the new geometry on their next render pass.
+      if (result?.edges) {
+        const incoming = result.edges;
+        const byKey = new Map<string, PlannerEdge>(
+          incoming.map((edge) => [edge.key, edge])
+        );
+        for (const edge of metadata.edges) {
+          const fresh = byKey.get(edge.key);
+          if (fresh && fresh.geometry) {
+            edge.geometry = fresh.geometry;
+          }
+        }
+      }
     }
   };
 }
@@ -277,6 +300,12 @@ function createInlinePlannerClient(
         query_length: String(query || "").length,
         limit
       });
+    },
+    async augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): Promise<void> {
+      diagnostics.info("inline planner augmenting geometry", {
+        geometry_count: rawEdgeGeometries.geometries.length
+      });
+      model.augmentGeometry(rawEdgeGeometries);
     }
   };
 }

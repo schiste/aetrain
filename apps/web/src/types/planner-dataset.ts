@@ -39,6 +39,13 @@ export interface SearchIndexEntry {
 export interface PlannerArtifacts {
   routePairs?: RoutePair[];
   searchIndex?: SearchIndexEntry[];
+  /**
+   * Reverse map from raw city_id → resolved display name, populated by
+   * production-adapter so engines can resolve a deferred RawEdgeGeometries
+   * artifact (which is keyed by city_id) against the in-memory edge list
+   * (which is keyed by display name) when augmentGeometry runs.
+   */
+  nameByCityId?: Record<string, string>;
 }
 
 export type PlannerRouteData = Record<string, number>;

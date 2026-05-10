@@ -9,7 +9,8 @@ import {
 import type {
   PlannerArtifacts,
   PlannerCity,
-  PlannerRouteData
+  PlannerRouteData,
+  RawEdgeGeometries
 } from "../types/planner-dataset.ts";
 import type {
   PlannerEngineKind,
@@ -31,10 +32,18 @@ interface SearchCitiesPayload {
   limit?: number;
 }
 
+interface AugmentGeometryPayload {
+  rawEdgeGeometries?: RawEdgeGeometries;
+}
+
 interface IncomingMessage {
   type?: PlannerWorkerMessageType;
   requestId?: string;
-  payload?: InitializePayload | DeriveTripPayload | SearchCitiesPayload;
+  payload?:
+    | InitializePayload
+    | DeriveTripPayload
+    | SearchCitiesPayload
+    | AugmentGeometryPayload;
 }
 
 const diagnostics = createDiagnostics("web/worker/planner");
@@ -94,6 +103,31 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
         duration_ms: elapsedSince(startedAt)
       });
       postSuccess(message.requestId, derived);
+      return;
+    }
+
+    if (message.type === PLANNER_WORKER_MESSAGE_TYPES.AUGMENT_GEOMETRY) {
+      if (!model) {
+        throw new Error("Planner worker is not initialized");
+      }
+
+      const payload = (message.payload as AugmentGeometryPayload | undefined) || {};
+      const rawEdgeGeometries = payload.rawEdgeGeometries;
+      if (!rawEdgeGeometries) {
+        throw new Error("augment-geometry payload missing rawEdgeGeometries");
+      }
+      model.augmentGeometry(rawEdgeGeometries);
+      diagnostics.info("planner worker augmented geometry", {
+        request_id: message.requestId,
+        engine_kind: activeEngineKind,
+        geometry_count: rawEdgeGeometries.geometries.length,
+        duration_ms: elapsedSince(startedAt)
+      });
+      // Echo the updated edges back so the shell-side metadata stays in
+      // sync (the map surface re-projects geometry from this list).
+      postSuccess(message.requestId, {
+        edges: model.edges
+      });
       return;
     }
 

@@ -1,8 +1,10 @@
+import { decodeRawEdgeGeometriesByName } from "../data/production-adapter.ts";
 import type {
   GeoPoint,
   PlannerArtifacts,
   PlannerCity,
   PlannerRouteData,
+  RawEdgeGeometries,
   SearchIndexEntry
 } from "../types/planner-dataset.ts";
 import type {
@@ -391,8 +393,74 @@ export function createPlannerModel(
       });
   }
 
+  const nameByCityId = options.nameByCityId;
+
+  function augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): void {
+    if (!nameByCityId) {
+      return;
+    }
+    const geometryByName = decodeRawEdgeGeometriesByName(
+      rawEdgeGeometries,
+      nameByCityId
+    );
+
+    for (const edge of edges) {
+      const directGeometry = geometryByName.get(`${edge.from} ${edge.to}`);
+      if (directGeometry) {
+        edge.geometry = directGeometry;
+        const fromAdj = adjacency[edge.fromIndex];
+        if (fromAdj) {
+          for (const entry of fromAdj) {
+            if (entry.toIndex === edge.toIndex) {
+              entry.geometry = directGeometry;
+              break;
+            }
+          }
+        }
+        const toAdj = adjacency[edge.toIndex];
+        if (toAdj) {
+          const reversed = reverseGeometry(directGeometry);
+          for (const entry of toAdj) {
+            if (entry.toIndex === edge.fromIndex) {
+              entry.geometry = reversed;
+              break;
+            }
+          }
+        }
+      } else {
+        const reversedKey = `${edge.to} ${edge.from}`;
+        const reverseGeo = geometryByName.get(reversedKey);
+        if (reverseGeo) {
+          const forward = reverseGeometry(reverseGeo);
+          if (forward) {
+            edge.geometry = forward;
+            const fromAdj = adjacency[edge.fromIndex];
+            if (fromAdj) {
+              for (const entry of fromAdj) {
+                if (entry.toIndex === edge.toIndex) {
+                  entry.geometry = forward;
+                  break;
+                }
+              }
+            }
+          }
+          const toAdj = adjacency[edge.toIndex];
+          if (toAdj) {
+            for (const entry of toAdj) {
+              if (entry.toIndex === edge.fromIndex) {
+                entry.geometry = reverseGeo;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   return {
     adjacency,
+    augmentGeometry,
     cities,
     cityIndexByName,
     cityMap,

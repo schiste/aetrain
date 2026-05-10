@@ -12,7 +12,7 @@
 import { createDiagnostics, summarizeError } from "../../app-shell/diagnostics.ts";
 import { notifyServiceWorkerDatasetVersion } from "../../app-shell/service-worker.ts";
 import { borderData as rawBorderData } from "../../data/landmass-borders.ts";
-import { loadPlannerDataset } from "../../data/runtime-data.ts";
+import { loadEdgeGeometries, loadPlannerDataset } from "../../data/runtime-data.ts";
 import {
   createPlannerClient,
   prewarmPlannerClient
@@ -282,6 +282,18 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     mapSurface.render(plannerStore.getState());
     diagnostics.info("ae-app shell mounted");
 
+    // Hot upgrade: kick off the deferred edge-geometry load *after* the
+    // shell is interactive. Cold path remains under the small-payload
+    // budget; once geometry lands we augment the planner model in place
+    // and re-derive the current trip so its segments and the background
+    // network gain curves. Failures degrade silently to straight-line
+    // geometry — the planner adapter already synthesised those.
+    void scheduleEdgeGeometryUpgrade({
+      planner,
+      plannerStore,
+      mapSurface
+    });
+
     const onBeforeUnload = () => {
       diagnostics.info("ae-app beforeunload cleanup");
       planner.close();
@@ -306,6 +318,45 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     return await bootInFlight;
   } finally {
     bootInFlight = null;
+  }
+}
+
+interface EdgeGeometryUpgradeArgs {
+  planner: {
+    augmentGeometry(rawEdgeGeometries: import("../../types/planner-dataset.ts").RawEdgeGeometries): Promise<void>;
+  };
+  plannerStore: {
+    refreshDerivedState(): Promise<boolean>;
+  };
+  mapSurface: { refreshGeometry(): void };
+}
+
+async function scheduleEdgeGeometryUpgrade({
+  planner,
+  plannerStore,
+  mapSurface
+}: EdgeGeometryUpgradeArgs): Promise<void> {
+  const startedAt =
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  try {
+    const rawGeometries = await loadEdgeGeometries();
+    await planner.augmentGeometry(rawGeometries);
+    mapSurface.refreshGeometry();
+    await plannerStore.refreshDerivedState();
+    const now =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    diagnostics.info("geometry augmented", {
+      geometry_count: rawGeometries.geometries.length,
+      elapsed_ms: Math.round((now - startedAt) * 1000) / 1000
+    });
+  } catch (error) {
+    diagnostics.warn("deferred edge-geometry upgrade failed", {
+      error: summarizeError(error)
+    });
   }
 }
 

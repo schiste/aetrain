@@ -1,6 +1,7 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
 import type { PlannerCity } from "../types/planner-dataset.ts";
 import type {
+  PlannerEdge,
   PlannerModelMetadata,
   PlannerSegment
 } from "../types/planner-engine.ts";
@@ -177,6 +178,13 @@ export interface LeafletMapSurface {
   flyToCity(name: string): void;
   getViewState(): MapView;
   render(nextState: PlannerStateInput): RenderStats;
+  /**
+   * Re-project edge geometries from the underlying PlannerModelMetadata.edges
+   * array. Called after a deferred-load augmentGeometry pass so the
+   * background network and prepared route polylines pick up curves without
+   * a full surface rebuild — and crucially without resetting the camera.
+   */
+  refreshGeometry(): void;
   setViewState(viewState: MapView | null | undefined): void;
   subscribeViewChange(listener: ViewChangeListener): () => void;
 }
@@ -478,6 +486,46 @@ export function createLeafletMapSurface({
 
       scheduleRender("planner-state", dirty);
       return lastRenderStats;
+    },
+    refreshGeometry(): void {
+      // Re-project the geometry of every prepared edge from the upstream
+      // planner edge metadata (which augmentGeometry just mutated). We
+      // index by edge.key — guaranteed stable + unique by the planner
+      // engine — so we tolerate any edge ordering. The camera is
+      // intentionally untouched: the spec calls for an in-place upgrade
+      // with no reset.
+      const edgeByKey = new Map<string, PlannerEdge>();
+      for (const edge of graph.edges) {
+        edgeByKey.set(edge.key, edge);
+      }
+      let updated = 0;
+      for (const prepared of edgeRefs) {
+        const edge = edgeByKey.get(prepared.key);
+        if (!edge || !Array.isArray(edge.geometry) || edge.geometry.length < 2) {
+          continue;
+        }
+        prepared.geometryWorld = edge.geometry.map((point) =>
+          mercatorProject(point.lon, point.lat)
+        );
+        updated += 1;
+      }
+      diagnostics.info("map surface refreshed geometry", {
+        updated_edge_count: updated,
+        edge_count: edgeRefs.length
+      });
+      // Drop the render-plan cache and trigger a full redraw — geometry
+      // affects the network background, the prepared route polylines, and
+      // every layer that consults edge polylines for hit-testing. The
+      // camera/state signature is preserved so the cache miss is the only
+      // observable effect.
+      renderPlanCache = null;
+      scheduleRender("refresh-geometry", createDirtyFlags({
+        cities: false,
+        frame: false,
+        labels: false,
+        network: true,
+        routes: true
+      }));
     },
     setViewState(viewState: MapView | null | undefined): void {
       if (!viewState) {

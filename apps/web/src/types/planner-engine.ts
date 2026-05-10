@@ -8,6 +8,7 @@ import type {
   PlannerArtifacts,
   PlannerCity,
   PlannerRouteData,
+  RawEdgeGeometries,
   SearchIndexEntry
 } from "./planner-dataset.ts";
 
@@ -84,6 +85,13 @@ export interface PlannerModel extends PlannerModelMetadata {
   ): PlannerSuggestion[];
   deriveTripPlan(trip: string[]): PlannerTripPlan;
   searchCities(query: string, limit?: number): PlannerCity[];
+  /**
+   * Hot-upgrade path: merge a freshly-loaded RawEdgeGeometries artifact into
+   * the model's geometry index (and the metadata edges array) without
+   * rebuilding the routing graph. Routing continues to use straight-line
+   * fallbacks until the next derive that observes the augmented geometry.
+   */
+  augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): void;
 }
 
 export interface PlannerEngine {
@@ -91,6 +99,12 @@ export interface PlannerEngine {
   close(): void;
   deriveTripPlan(args: { trip: string[] }): Promise<PlannerTripPlan>;
   searchCities(args: { query: string; limit: number }): Promise<PlannerCity[]>;
+  /**
+   * Augment the worker-side planner model with previously-deferred edge
+   * geometry. Resolves once the worker has merged the new geometry index
+   * — the next derive call will produce route polylines with curves.
+   */
+  augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): Promise<void>;
 }
 
 // Convenience re-exports so consumers can pull dataset shapes from one place.

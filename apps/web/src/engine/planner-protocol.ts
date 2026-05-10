@@ -3,7 +3,8 @@ import type { SummarizedError } from "../types/diagnostics.ts";
 export const PLANNER_WORKER_MESSAGE_TYPES = Object.freeze({
   INITIALIZE: "planner/initialize",
   DERIVE_TRIP: "planner/derive-trip",
-  SEARCH_CITIES: "planner/search-cities"
+  SEARCH_CITIES: "planner/search-cities",
+  AUGMENT_GEOMETRY: "planner/augment-geometry"
 } as const);
 
 export type PlannerWorkerMessageType =

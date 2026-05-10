@@ -6,6 +6,7 @@ import type {
   PlannerRouteData,
   ProductionArtifactBundle,
   RawCityLocation,
+  RawEdgeGeometries,
   RawEdgeGeometryPoint,
   RoutePair,
   SearchIndexEntry
@@ -161,6 +162,11 @@ export function buildProductionPlannerData({
 
   const uniqueCountryCount = new Set(rawCities.map((city) => city.country_code)).size;
 
+  const nameByCityIdRecord: Record<string, string> = {};
+  for (const [cityId, displayName] of nameByCityId) {
+    nameByCityIdRecord[cityId] = displayName;
+  }
+
   const dataset = assertPlannerDataset({
     id: "production",
     label: "Production",
@@ -169,7 +175,8 @@ export function buildProductionPlannerData({
     cities,
     plannerArtifacts: {
       routePairs,
-      searchIndex
+      searchIndex,
+      nameByCityId: nameByCityIdRecord
     },
     routeData
   }, "Production planner dataset");
@@ -186,6 +193,34 @@ function decodeGeometryPoints(points: RawEdgeGeometryPoint[]): GeoPoint[] {
     lat: point.lat_e5 / 100_000,
     lon: point.lon_e5 / 100_000
   }));
+}
+
+/**
+ * Decode a RawEdgeGeometries artifact into a name->name keyed map of
+ * GeoPoint polylines. Mirrors the geometry-decode loop inside
+ * buildProductionPlannerData so deferred-load callers (planner engines
+ * augmenting an existing graph) can share the same wire format.
+ *
+ * Geometries whose city_id endpoints are not present in `nameByCityId`
+ * are skipped — they correspond to cities filtered out of the runtime
+ * dataset.
+ */
+export function decodeRawEdgeGeometriesByName(
+  rawEdgeGeometries: RawEdgeGeometries,
+  nameByCityId: Record<string, string> | ReadonlyMap<string, string>
+): Map<string, GeoPoint[]> {
+  const lookup: (id: string) => string | undefined =
+    nameByCityId instanceof Map
+      ? (id: string) => nameByCityId.get(id)
+      : (id: string) => (nameByCityId as Record<string, string>)[id];
+  const out = new Map<string, GeoPoint[]>();
+  for (const geometry of rawEdgeGeometries.geometries) {
+    const fromName = lookup(geometry.from_city_id);
+    const toName = lookup(geometry.to_city_id);
+    if (!fromName || !toName) continue;
+    out.set(`${fromName} ${toName}`, decodeGeometryPoints(geometry.points));
+  }
+  return out;
 }
 
 function countryLabel(countryCode: string | null | undefined): string {

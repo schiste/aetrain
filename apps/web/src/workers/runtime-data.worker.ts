@@ -32,46 +32,50 @@ const diagnostics = createDiagnostics("web/worker/runtime-data");
 
 self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
   const message: IncomingMessage = event.data || {};
-  if (message.type !== "load-production-dataset") {
+  if (message.type === "load-production-dataset") {
+    await handleLoadDataset(message);
     return;
   }
 
+  if (message.type === "load-edge-geometries") {
+    await handleLoadGeometries(message);
+    return;
+  }
+});
+
+async function handleLoadDataset(message: IncomingMessage): Promise<void> {
   const basePaths: string[] = message.basePaths ?? [];
   const requestId = message.requestId;
-  diagnostics.info("received runtime data worker request", {
+  diagnostics.info("received runtime data worker dataset request", {
     request_id: requestId,
     base_path_count: basePaths.length
   });
 
   try {
+    // Geometry is intentionally omitted on the cold path. We feed an empty
+    // RawEdgeGeometries to buildProductionPlannerData and let the adapter
+    // synthesise straight-line fallback geometry. The full geometry chunks
+    // arrive later via the load-edge-geometries message and augment the
+    // planner model in place.
     const dataset = await diagnostics.timeAsync("load-production-dataset", async () => {
-      const [meta, rawCities, rawEdges, rawEdgeGeometries] = await Promise.all([
+      const [meta, rawCities, rawEdges] = await Promise.all([
         fetchJsonWithFallback(basePaths, "meta.json") as Promise<RuntimeArtifactMeta>,
         fetchJsonWithFallback(basePaths, "cities.json") as Promise<RawCity[]>,
-        fetchJsonWithFallback(basePaths, "edges.json") as Promise<RawEdge[]>,
-        fetchEdgeGeometryArtifact({
-          basePaths,
-          fetchJsonWithFallback: (fileName: string) =>
-            fetchJsonWithFallback(basePaths, fileName),
-          fetchOptionalJsonWithFallback: (fileName: string) =>
-            fetchOptionalJsonWithFallback(basePaths, fileName),
-          fetchJsonFromBasePath,
-          diagnostics
-        })
+        fetchJsonWithFallback(basePaths, "edges.json") as Promise<RawEdge[]>
       ]);
 
       const bundle: ProductionArtifactBundle = {
         meta,
         rawCities,
         rawEdges,
-        rawEdgeGeometries
+        rawEdgeGeometries: { geometries: [] }
       };
       return buildProductionPlannerData(bundle);
     }, {
       request_id: requestId
     });
 
-    diagnostics.info("runtime data worker built dataset", {
+    diagnostics.info("runtime data worker built dataset (no geometry)", {
       request_id: requestId,
       dataset_version: dataset.meta?.dataset_version || null,
       city_count: dataset.cities.length,
@@ -79,7 +83,7 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
     });
     self.postMessage({ requestId, ok: true, dataset });
   } catch (error) {
-    diagnostics.error("runtime data worker failed", {
+    diagnostics.error("runtime data worker dataset request failed", {
       request_id: requestId,
       error: summarizeError(error)
     });
@@ -89,7 +93,50 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
       error: serializeError(error)
     });
   }
-});
+}
+
+async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
+  const basePaths: string[] = message.basePaths ?? [];
+  const requestId = message.requestId;
+  diagnostics.info("received runtime data worker geometry request", {
+    request_id: requestId,
+    base_path_count: basePaths.length
+  });
+
+  try {
+    const geometries: RawEdgeGeometries = await diagnostics.timeAsync(
+      "load-edge-geometries",
+      async () => {
+        return fetchEdgeGeometryArtifact({
+          basePaths,
+          fetchJsonWithFallback: (fileName: string) =>
+            fetchJsonWithFallback(basePaths, fileName),
+          fetchOptionalJsonWithFallback: (fileName: string) =>
+            fetchOptionalJsonWithFallback(basePaths, fileName),
+          fetchJsonFromBasePath,
+          diagnostics
+        });
+      },
+      { request_id: requestId }
+    );
+
+    diagnostics.info("runtime data worker loaded edge geometries", {
+      request_id: requestId,
+      geometry_count: geometries.geometries.length
+    });
+    self.postMessage({ requestId, ok: true, geometries });
+  } catch (error) {
+    diagnostics.error("runtime data worker geometry request failed", {
+      request_id: requestId,
+      error: summarizeError(error)
+    });
+    self.postMessage({
+      requestId,
+      ok: false,
+      error: serializeError(error)
+    });
+  }
+}
 
 async function fetchJsonWithFallback(
   basePaths: string[],

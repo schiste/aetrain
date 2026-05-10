@@ -224,6 +224,14 @@ function assertPlannerArtifacts(
       assertString(entryRecord.searchText, `${entryContext}.searchText`);
     }
   }
+
+  if (artifacts.nameByCityId !== undefined) {
+    assertRecord(artifacts.nameByCityId, `${context}.nameByCityId`);
+    for (const [cityId, displayName] of Object.entries(artifacts.nameByCityId)) {
+      assertString(cityId, `${context}.nameByCityId key`);
+      assertString(displayName, `${context}.nameByCityId[${cityId}]`);
+    }
+  }
 }
 
 function assertLocation(

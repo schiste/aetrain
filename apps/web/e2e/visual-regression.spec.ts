@@ -29,6 +29,26 @@ async function waitForDatasetReady(page: Page): Promise<void> {
   });
 }
 
+/**
+ * Edge geometry now loads after the shell mounts (deferred-load
+ * optimisation). Before snapshotting the map we must wait for the
+ * augmentation pass to complete or the network polylines render as
+ * straight-line fallbacks instead of the curved baseline.
+ */
+async function waitForGeometryAugmented(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const store = (
+        globalThis as { __AETRAIN_DIAGNOSTICS__?: { dump(): Array<{ message: string }> } }
+      ).__AETRAIN_DIAGNOSTICS__;
+      const events = store?.dump() ?? [];
+      return events.some((event) => event.message === "geometry augmented");
+    },
+    null,
+    { timeout: 60_000 }
+  );
+}
+
 async function maskedScreenshot(
   target: Page | Locator,
   name: string
@@ -54,6 +74,7 @@ test.describe("aetrain visual regression", () => {
     await page.goto("/");
     await waitForDatasetReady(page);
     await expect(page.locator("#tl #empty")).toBeVisible();
+    await waitForGeometryAugmented(page);
 
     // Give the map a beat to settle its initial fly-to animation. Leaflet
     // animates to the dataset's default viewport on mount even with
@@ -73,6 +94,7 @@ test.describe("aetrain visual regression", () => {
 
     await page.goto("/");
     await waitForDatasetReady(page);
+    await waitForGeometryAugmented(page);
 
     // Seed the trip via the search interaction the golden-path test
     // exercises so we cover the same code path the user takes.
@@ -105,6 +127,7 @@ test.describe("aetrain visual regression", () => {
 
     await page.goto("/");
     await waitForDatasetReady(page);
+    await waitForGeometryAugmented(page);
     await page.waitForTimeout(400);
 
     // Capture the top half of the viewport so we get the sidebar in its
@@ -133,6 +156,7 @@ test.describe("aetrain visual regression", () => {
 
     await page.goto("/");
     await waitForDatasetReady(page);
+    await waitForGeometryAugmented(page);
 
     // The on-canvas markers are not addressable as DOM nodes, so we
     // trigger the map's fly-to via the search component (which calls

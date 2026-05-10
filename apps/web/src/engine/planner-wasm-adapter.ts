@@ -22,11 +22,13 @@
 //     these PlannerModel fields directly keep working
 
 import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import { decodeRawEdgeGeometriesByName } from "../data/production-adapter.ts";
 import type {
   GeoPoint,
   PlannerArtifacts,
   PlannerCity,
   PlannerRouteData,
+  RawEdgeGeometries,
   RoutePair,
   SearchIndexEntry
 } from "../types/planner-dataset.ts";
@@ -176,6 +178,8 @@ export async function createWasmPlannerModel(
 
   const searchIndex = createSearchIndex(cities, options.searchIndex);
 
+  const nameByCityId = options.nameByCityId;
+
   const model: PlannerModel = {
     cities,
     cityMap,
@@ -188,7 +192,8 @@ export async function createWasmPlannerModel(
     dijkstraAll,
     findInterestingStops,
     deriveTripPlan,
-    searchCities
+    searchCities,
+    augmentGeometry
   };
 
   diagnostics.info("wasm planner model constructed", {
@@ -366,6 +371,96 @@ export async function createWasmPlannerModel(
     const city = cityMap[name];
     if (!city) return undefined;
     return [{ lat: city.lat, lon: city.lon }];
+  }
+
+  function augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): void {
+    const startedAt = now();
+    if (!nameByCityId) {
+      diagnostics.warn("augmentGeometry skipped: missing nameByCityId mapping", {
+        geometry_count: rawEdgeGeometries.geometries.length
+      });
+      return;
+    }
+
+    // Decode raw geometry → display-name keyed lookup using the same
+    // transformation production-adapter applies during initial dataset
+    // build. Geometries whose endpoints fell out of the runtime city set
+    // are silently dropped.
+    const geometryByName = decodeRawEdgeGeometriesByName(
+      rawEdgeGeometries,
+      nameByCityId
+    );
+
+    let updatedEdges = 0;
+    let updatedAdjacency = 0;
+
+    // Index edge metadata + adjacency in place. The WASM PlannerGraph is
+    // geometry-agnostic, so no rebuild is required — only the JS-side
+    // views the map / segment renderer consult.
+    for (const edge of edges) {
+      const directGeometry = geometryByName.get(geometryKey(edge.from, edge.to));
+      if (directGeometry) {
+        edge.geometry = directGeometry;
+        edgeGeometryIndex.set(geometryKey(edge.from, edge.to), directGeometry);
+        const reversed = reverseGeometry(directGeometry);
+        if (reversed) {
+          edgeGeometryIndex.set(geometryKey(edge.to, edge.from), reversed);
+        }
+        updatedEdges += 1;
+      } else {
+        const reversedKey = geometryKey(edge.to, edge.from);
+        const reverseDirectGeometry = geometryByName.get(reversedKey);
+        if (reverseDirectGeometry) {
+          // Geometry was provided in the opposite orientation; mirror it
+          // so the forward edge picks up the curves too.
+          const forward = reverseGeometry(reverseDirectGeometry);
+          if (forward) {
+            edge.geometry = forward;
+            edgeGeometryIndex.set(geometryKey(edge.from, edge.to), forward);
+          }
+          edgeGeometryIndex.set(reversedKey, reverseDirectGeometry);
+          updatedEdges += 1;
+        }
+      }
+    }
+
+    // Mirror geometry into the adjacency entries used by both the inline
+    // findInterestingStops fast path and any consumer that walks adjacency
+    // directly. Use the canonical edge geometry as the source of truth.
+    for (const edge of edges) {
+      if (!edge.geometry) continue;
+      const fromAdj = adjacency[edge.fromIndex];
+      const toAdj = adjacency[edge.toIndex];
+      if (fromAdj) {
+        for (const entry of fromAdj) {
+          if (entry.toIndex === edge.toIndex) {
+            entry.geometry = edge.geometry;
+            updatedAdjacency += 1;
+            break;
+          }
+        }
+      }
+      if (toAdj) {
+        const reversed = reverseGeometry(edge.geometry);
+        if (reversed) {
+          for (const entry of toAdj) {
+            if (entry.toIndex === edge.fromIndex) {
+              entry.geometry = reversed;
+              updatedAdjacency += 1;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    diagnostics.info("augment-geometry:end", {
+      geometry_count: rawEdgeGeometries.geometries.length,
+      decoded_geometry_count: geometryByName.size,
+      updated_edge_count: updatedEdges,
+      updated_adjacency_count: updatedAdjacency,
+      duration_ms: elapsedSince(startedAt)
+    });
   }
 }
 

@@ -57,6 +57,13 @@ export interface PlannerStore {
   setFilterInterest(value: number | string): void;
   setFilterPop(value: number | string): void;
   setLegRange(args: { min: number | string; max: number | string }): void;
+  /**
+   * Re-run the derive pipeline for the current trip without otherwise
+   * mutating state. Used by the deferred-geometry hot upgrade so the
+   * current trip picks up curved geometry without the user touching
+   * anything. Bumps deriveVersion so any in-flight derive is discarded.
+   */
+  refreshDerivedState(): Promise<boolean>;
 }
 
 export function createPlannerStore({
@@ -332,6 +339,12 @@ export function createPlannerStore({
         filter_pop: state.filterPop
       });
       emitStateChange();
+    },
+    async refreshDerivedState(): Promise<boolean> {
+      diagnostics.info("refreshing derived state", {
+        trip_length: state.trip.length
+      });
+      return syncTripState();
     },
     setLegRange({ min, max }: { min: number | string; max: number | string }): void {
       state.legMin = clampInteger(min, 0, state.legDynMax);
