@@ -12,6 +12,7 @@ use aetrain_dataset::{
     SourceSnapshot,
 };
 use aetrain_domain::{ServiceClass, ServiceKind};
+use aetrain_registry::RegistryCanonicalBundle;
 use anyhow::{Context, Result, bail};
 use deunicode::deunicode;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -39,6 +40,7 @@ struct AggregateBundleAdapter;
 #[derive(Clone)]
 pub struct AdapterBuildRequest<'a> {
     pub manifest: &'a SourceManifest,
+    pub manifest_dir: &'a Path,
     pub target: &'a TargetDefinition,
     pub sources: Vec<&'a FetchedSource>,
     pub output_root: &'a Path,
@@ -171,6 +173,7 @@ struct MergedCityOutput {
 
 pub fn build_pipeline_target(
     manifest: &SourceManifest,
+    manifest_dir: &Path,
     target: &TargetDefinition,
     fetched_sources: &[FetchedSource],
     overrides: &ManualOverrideRegistry,
@@ -210,6 +213,7 @@ pub fn build_pipeline_target(
 
     let request = AdapterBuildRequest {
         manifest,
+        manifest_dir,
         target,
         sources: sources.clone(),
         output_root,
@@ -934,6 +938,22 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     ]);
 
     let mut merged_cities = merge_cities(&dependency_inputs, request.target.id.as_str());
+    if let Some(registry_overlay_path) = request.target.registry_overlay_path.as_deref() {
+        let overlay_path =
+            resolve_manifest_relative_path(request.manifest_dir, registry_overlay_path);
+        let overlay: RegistryCanonicalBundle = read_json(&overlay_path).with_context(|| {
+            format!(
+                "failed to load registry overlay bundle from {}",
+                overlay_path.display()
+            )
+        })?;
+        apply_registry_city_overlay(
+            &mut merged_cities.cities,
+            &overlay,
+            request.target.id.as_str(),
+            &mut merged_cities.issues,
+        );
+    }
     let stations = merge_stations(
         &dependency_inputs,
         &merged_cities.city_id_remap,
@@ -1452,6 +1472,95 @@ fn apply_computed_city_enrichment(
     }
 }
 
+fn apply_registry_city_overlay(
+    cities: &mut [aetrain_domain::City],
+    overlay: &RegistryCanonicalBundle,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) {
+    let mut claimed_indexes = BTreeSet::new();
+    for registry_city in &overlay.cities {
+        let Some((index, _score)) = cities
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| !claimed_indexes.contains(index))
+            .filter_map(|(index, city)| {
+                registry_overlay_match_score(city, registry_city).map(|score| (index, score))
+            })
+            .max_by(|left, right| left.1.cmp(&right.1))
+        else {
+            continue;
+        };
+        claimed_indexes.insert(index);
+        let city = &mut cities[index];
+        let mut changed = false;
+        if city.slug != registry_city.slug {
+            city.slug = registry_city.slug.clone();
+            changed = true;
+        }
+        if city.display_name != registry_city.display_name {
+            city.display_name = registry_city.display_name.clone();
+            changed = true;
+        }
+        if city.country_code != registry_city.country_code {
+            city.country_code = registry_city.country_code.clone();
+            changed = true;
+        }
+        if city.wikidata_qid != registry_city.wikidata_qid {
+            city.wikidata_qid = registry_city.wikidata_qid.clone();
+            changed = true;
+        }
+        if city.population != registry_city.population {
+            city.population = registry_city.population;
+            changed = true;
+        }
+
+        if changed {
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Info,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "applied registry overlay {} to canonical city {}",
+                    registry_city.city_id, city.city_id
+                ),
+            });
+        }
+    }
+}
+
+fn registry_overlay_match_score(
+    city: &aetrain_domain::City,
+    registry_city: &aetrain_registry::RegistryCity,
+) -> Option<(u8, u8, u8, usize)> {
+    let current_name = normalize_name(&city.display_name);
+    let registry_name = normalize_name(&registry_city.display_name);
+    let exact_name_match = current_name == registry_name;
+    let strong_prefix_match = current_name.starts_with(&(registry_name.clone() + " "));
+    if !exact_name_match && !strong_prefix_match {
+        return None;
+    }
+
+    let name_rank = if exact_name_match { 3 } else { 2 };
+    let country_rank = if city
+        .country_code
+        .eq_ignore_ascii_case(&registry_city.country_code)
+    {
+        2
+    } else if city.country_code == "ZZ" {
+        1
+    } else {
+        0
+    };
+    let station_rank = u8::from(!is_station_qualified_city_name(&city.display_name));
+    Some((
+        name_rank,
+        country_rank,
+        station_rank,
+        city.station_ids.len(),
+    ))
+}
+
 fn compute_city_interest_score(city: &aetrain_domain::City, degree: usize) -> u8 {
     if is_station_qualified_city_name(&city.display_name) {
         let mut score = if city.country_code == "ZZ" { 0u8 } else { 1u8 };
@@ -1610,6 +1719,15 @@ fn merge_optional_u8_min(left: Option<u8>, right: Option<u8>) -> Option<u8> {
         (Some(left), None) => Some(left),
         (None, Some(right)) => Some(right),
         (None, None) => None,
+    }
+}
+
+fn resolve_manifest_relative_path(manifest_dir: &Path, configured_path: &str) -> PathBuf {
+    let path = PathBuf::from(configured_path);
+    if path.is_absolute() {
+        path
+    } else {
+        manifest_dir.join(path)
     }
 }
 
@@ -1906,6 +2024,7 @@ mod tests {
         PolylinePointE5,
     };
     use aetrain_domain::{City, CityId, GeoPoint, Station, StationId, TravelEdge};
+    use aetrain_registry::{RegistryCanonicalBundle, RegistryCity, RegistryMeta, RegistryStatus};
 
     #[test]
     fn compact_web_runtime_bundle_validates() {
@@ -2462,5 +2581,177 @@ mod tests {
         assert!(lyon_interest >= 7);
         assert!(berlin_spandau_interest <= 2);
         assert!(lyon_routiere_interest <= 1);
+    }
+
+    #[test]
+    fn registry_overlay_backfills_wikidata_and_population() {
+        let mut cities = vec![
+            City {
+                city_id: CityId::new("paris-fr-75056").expect("valid city id"),
+                slug: "paris".to_string(),
+                display_name: "Paris".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 48.8552,
+                    lon: 2.3501,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-paris").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("avignon-fr-84007").expect("valid city id"),
+                slug: "avignon".to_string(),
+                display_name: "Avignon".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.949,
+                    lon: 4.805,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-avignon").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("nantes-ch-8fefd121").expect("valid city id"),
+                slug: "nantes".to_string(),
+                display_name: "Nantes".to_string(),
+                country_code: "CH".to_string(),
+                location: GeoPoint {
+                    lat: 47.218,
+                    lon: -1.554,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-nantes").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("toulouse-matabiau-ch-099c66c9").expect("valid city id"),
+                slug: "toulouse-matabiau".to_string(),
+                display_name: "Toulouse Matabiau".to_string(),
+                country_code: "CH".to_string(),
+                location: GeoPoint {
+                    lat: 43.611,
+                    lon: 1.453,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-toulouse").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+        ];
+        let overlay = RegistryCanonicalBundle {
+            meta: RegistryMeta {
+                schema_version: 1,
+                dataset_id: "test-overlay".to_string(),
+                scope: "fr-test".to_string(),
+                generated_at: "2026-05-10T00:00:00Z".to_string(),
+            },
+            cities: vec![
+                RegistryCity {
+                    city_id: CityId::new("paris-fr-q90").expect("valid city id"),
+                    slug: "paris".to_string(),
+                    display_name: "Paris".to_string(),
+                    country_code: "FR".to_string(),
+                    identity_point: GeoPoint {
+                        lat: 48.8566,
+                        lon: 2.3522,
+                    },
+                    map_anchor_point: GeoPoint {
+                        lat: 48.8566,
+                        lon: 2.3522,
+                    },
+                    bbox: None,
+                    wikidata_qid: Some("Q90".to_string()),
+                    population: Some(2_243_739),
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+                RegistryCity {
+                    city_id: CityId::new("avignon-fr-q6397").expect("valid city id"),
+                    slug: "avignon".to_string(),
+                    display_name: "Avignon".to_string(),
+                    country_code: "FR".to_string(),
+                    identity_point: GeoPoint {
+                        lat: 43.9486,
+                        lon: 4.8083,
+                    },
+                    map_anchor_point: GeoPoint {
+                        lat: 43.9486,
+                        lon: 4.8083,
+                    },
+                    bbox: None,
+                    wikidata_qid: Some("Q6397".to_string()),
+                    population: Some(94_200),
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+                RegistryCity {
+                    city_id: CityId::new("nantes-fr-q12191").expect("valid city id"),
+                    slug: "nantes".to_string(),
+                    display_name: "Nantes".to_string(),
+                    country_code: "FR".to_string(),
+                    identity_point: GeoPoint {
+                        lat: 47.2172,
+                        lon: -1.5539,
+                    },
+                    map_anchor_point: GeoPoint {
+                        lat: 47.2172,
+                        lon: -1.5539,
+                    },
+                    bbox: None,
+                    wikidata_qid: Some("Q12191".to_string()),
+                    population: Some(327_734),
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+                RegistryCity {
+                    city_id: CityId::new("toulouse-fr-q7880").expect("valid city id"),
+                    slug: "toulouse".to_string(),
+                    display_name: "Toulouse".to_string(),
+                    country_code: "FR".to_string(),
+                    identity_point: GeoPoint {
+                        lat: 43.6044,
+                        lon: 1.4433,
+                    },
+                    map_anchor_point: GeoPoint {
+                        lat: 43.6044,
+                        lon: 1.4433,
+                    },
+                    bbox: None,
+                    wikidata_qid: Some("Q7880".to_string()),
+                    population: Some(514_819),
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+            ],
+            stations: Vec::new(),
+            memberships: Vec::new(),
+            name_variants: Vec::new(),
+            city_facts: Vec::new(),
+            city_signals: Vec::new(),
+        };
+        let mut issues = Vec::new();
+
+        apply_registry_city_overlay(&mut cities, &overlay, "europe-aggregate", &mut issues);
+
+        assert_eq!(cities[0].wikidata_qid.as_deref(), Some("Q90"));
+        assert_eq!(cities[0].population, Some(2_243_739));
+        assert_eq!(cities[1].wikidata_qid.as_deref(), Some("Q6397"));
+        assert_eq!(cities[1].population, Some(94_200));
+        assert_eq!(cities[2].display_name, "Nantes");
+        assert_eq!(cities[2].country_code, "FR");
+        assert_eq!(cities[2].wikidata_qid.as_deref(), Some("Q12191"));
+        assert_eq!(cities[3].display_name, "Toulouse");
+        assert_eq!(cities[3].country_code, "FR");
+        assert_eq!(cities[3].wikidata_qid.as_deref(), Some("Q7880"));
+        assert_eq!(issues.len(), 4);
     }
 }

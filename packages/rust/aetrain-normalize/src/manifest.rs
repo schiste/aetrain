@@ -107,6 +107,8 @@ pub struct TargetDefinition {
     #[serde(default = "default_true")]
     pub web_debug_export: bool,
     #[serde(default)]
+    pub registry_overlay_path: Option<String>,
+    #[serde(default)]
     pub notes: Option<String>,
 }
 
@@ -418,6 +420,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    registry_overlay_path: None,
                     notes: None,
                 },
                 TargetDefinition {
@@ -428,6 +431,7 @@ mod tests {
                     active: false,
                     canonical_export: true,
                     web_debug_export: true,
+                    registry_overlay_path: None,
                     notes: None,
                 },
             ],
@@ -457,6 +461,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    registry_overlay_path: None,
                     notes: None,
                 },
                 TargetDefinition {
@@ -467,6 +472,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    registry_overlay_path: None,
                     notes: None,
                 },
                 TargetDefinition {
@@ -477,6 +483,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    registry_overlay_path: None,
                     notes: None,
                 },
             ],

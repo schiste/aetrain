@@ -168,6 +168,7 @@ fn build_targets(
     for target in targets {
         let artifact = build_pipeline_target(
             manifest,
+            args.manifest_path.parent().unwrap_or(Path::new(".")),
             target,
             fetched_sources,
             &overrides,

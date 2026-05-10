@@ -8,6 +8,7 @@ rust-version.workspace = true
 [dependencies]
 aetrain-dataset = { path = "../aetrain-dataset" }
 aetrain-domain = { path = "../aetrain-domain" }
+aetrain-registry = { path = "../aetrain-registry" }
 anyhow = "1.0"
 csv = "1.4"
 deunicode = "1.6"
