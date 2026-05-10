@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-wikidata-10",
+    "scope": "fr-wikidata-10",
+    "generated_at": "2026-05-10T00:00:00Z"
+  },
+  "signals": [
+    {
+      "city_id": "paris-fr-q90",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    }
+  ]
+}

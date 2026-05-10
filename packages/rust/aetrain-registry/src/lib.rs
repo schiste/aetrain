@@ -12,6 +12,7 @@ mod partition;
 mod pilot;
 mod schema;
 mod seed;
+mod slice;
 mod wikidata;
 
 pub use artifacts::{
@@ -50,4 +51,5 @@ pub use schema::{
     RegistryObservationSource, RegistryStation, RegistryStationCollection, RegistryStatus,
 };
 pub use seed::{SeedPlan, build_seed_plan};
+pub use slice::{WikidataCitySliceSummary, build_wikidata_city_slice};
 pub use wikidata::{WikidataCityObservation, WikidataStationObservation};

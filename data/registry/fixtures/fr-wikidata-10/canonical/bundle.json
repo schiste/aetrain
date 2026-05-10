@@ -1,0 +1,984 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-wikidata-10",
+    "scope": "fr-wikidata-10",
+    "generated_at": "2026-05-10T00:00:00Z"
+  },
+  "cities": [
+    {
+      "city_id": "paris-fr-q90",
+      "slug": "paris",
+      "display_name": "Paris",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.85666666666667,
+        "lon": 2.352222222222222
+      },
+      "map_anchor_point": {
+        "lat": 48.85666666666667,
+        "lon": 2.352222222222222
+      },
+      "bbox": {
+        "min_lat": 48.85666666666667,
+        "min_lon": 2.352222222222222,
+        "max_lat": 48.85666666666667,
+        "max_lon": 2.352222222222222
+      },
+      "wikidata_qid": "Q90",
+      "population": 2243739,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q90"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "slug": "lyon",
+      "display_name": "Lyon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.7675,
+        "lon": 4.835
+      },
+      "map_anchor_point": {
+        "lat": 45.7675,
+        "lon": 4.835
+      },
+      "bbox": {
+        "min_lat": 45.7675,
+        "min_lon": 4.835,
+        "max_lat": 45.7675,
+        "max_lon": 4.835
+      },
+      "wikidata_qid": "Q456",
+      "population": 522969,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q456"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "slug": "marseille",
+      "display_name": "Marseille",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.296666666667,
+        "lon": 5.3763888888889
+      },
+      "map_anchor_point": {
+        "lat": 43.296666666667,
+        "lon": 5.3763888888889
+      },
+      "bbox": {
+        "min_lat": 43.296666666667,
+        "min_lon": 5.3763888888889,
+        "max_lat": 43.296666666667,
+        "max_lon": 5.3763888888889
+      },
+      "wikidata_qid": "Q23482",
+      "population": 914000,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q23482"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "slug": "toulouse",
+      "display_name": "Toulouse",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.60444444444445,
+        "lon": 1.4433333333333334
+      },
+      "map_anchor_point": {
+        "lat": 43.60444444444445,
+        "lon": 1.4433333333333334
+      },
+      "bbox": {
+        "min_lat": 43.60444444444445,
+        "min_lon": 1.4433333333333334,
+        "max_lat": 43.60444444444445,
+        "max_lon": 1.4433333333333334
+      },
+      "wikidata_qid": "Q7880",
+      "population": 514819,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q7880"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "slug": "bordeaux",
+      "display_name": "Bordeaux",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.837777777778,
+        "lon": -0.57944444444444
+      },
+      "map_anchor_point": {
+        "lat": 44.837777777778,
+        "lon": -0.57944444444444
+      },
+      "bbox": {
+        "min_lat": 44.837777777778,
+        "min_lon": -0.57944444444444,
+        "max_lat": 44.837777777778,
+        "max_lon": -0.57944444444444
+      },
+      "wikidata_qid": "Q1479",
+      "population": 267991,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q1479"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "slug": "nantes",
+      "display_name": "Nantes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.217222222222,
+        "lon": -1.5538888888889
+      },
+      "map_anchor_point": {
+        "lat": 47.217222222222,
+        "lon": -1.5538888888889
+      },
+      "bbox": {
+        "min_lat": 47.217222222222,
+        "min_lon": -1.5538888888889,
+        "max_lat": 47.217222222222,
+        "max_lon": -1.5538888888889
+      },
+      "wikidata_qid": "Q12191",
+      "population": 327734,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q12191"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "slug": "lille",
+      "display_name": "Lille",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 50.631944444444,
+        "lon": 3.0575
+      },
+      "map_anchor_point": {
+        "lat": 50.631944444444,
+        "lon": 3.0575
+      },
+      "bbox": {
+        "min_lat": 50.631944444444,
+        "min_lon": 3.0575,
+        "max_lat": 50.631944444444,
+        "max_lon": 3.0575
+      },
+      "wikidata_qid": "Q648",
+      "population": 238695,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q648"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "slug": "strasbourg",
+      "display_name": "Strasbourg",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.573333333333,
+        "lon": 7.7522222222222
+      },
+      "map_anchor_point": {
+        "lat": 48.573333333333,
+        "lon": 7.7522222222222
+      },
+      "bbox": {
+        "min_lat": 48.573333333333,
+        "min_lon": 7.7522222222222,
+        "max_lat": 48.573333333333,
+        "max_lon": 7.7522222222222
+      },
+      "wikidata_qid": "Q6602",
+      "population": 293771,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q6602"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "slug": "nice",
+      "display_name": "Nice",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.701944444444,
+        "lon": 7.2683333333333
+      },
+      "map_anchor_point": {
+        "lat": 43.701944444444,
+        "lon": 7.2683333333333
+      },
+      "bbox": {
+        "min_lat": 43.701944444444,
+        "min_lon": 7.2683333333333,
+        "max_lat": 43.701944444444,
+        "max_lon": 7.2683333333333
+      },
+      "wikidata_qid": "Q33959",
+      "population": 357737,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q33959"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "slug": "avignon",
+      "display_name": "Avignon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.948611111111,
+        "lon": 4.8083333333333
+      },
+      "map_anchor_point": {
+        "lat": 43.948611111111,
+        "lon": 4.8083333333333
+      },
+      "bbox": {
+        "min_lat": 43.948611111111,
+        "min_lon": 4.8083333333333,
+        "max_lat": 43.948611111111,
+        "max_lon": 4.8083333333333
+      },
+      "wikidata_qid": "Q6397",
+      "population": 94200,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q6397"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397"
+        }
+      ]
+    }
+  ],
+  "stations": [],
+  "memberships": [],
+  "name_variants": [
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville-Lumière",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paname",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Lutèce",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville de l'Amour",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "FR-75",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Pantruche",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville de Paris",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "City of Light",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "City of Love",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Lutetia",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Commune-Affranchie",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "capitale des Gaules",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "City of Lyon",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Cité phocéenne",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Ville-sans-Nom",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Sans-Nom",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massalia",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massilia",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massaliotes",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsailles",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseilles",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsielles",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsielle",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "City of Marseille",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsaille",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsiglia",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille City",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Ville rose",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Tolosa",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse, Occitania",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Pink City",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Burdigala",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordèu",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Commune-Franklin",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordele",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordeu",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Naoned",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Naunnt",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "\"cité des ducs de Bretagne\"",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Rijsel",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lile",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Rysel",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Straßburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strassburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Schdroosburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strossburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strossburig",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strosburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strasburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nizza",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nissa",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nikaia",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nicaea",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Niça",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice, French Riviera",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice, Côte d'Azur",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "cité des papes",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avinhon",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avignoun",
+      "kind": "canonical_alias",
+      "source": "wikidata-manual-fr-10"
+    }
+  ],
+  "city_facts": [
+    {
+      "city_id": "paris-fr-q90",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q90"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q456"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q23482"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q7880"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q1479"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q12191"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q648"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q6602"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q33959"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q6397"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397"
+        }
+      ]
+    }
+  ],
+  "city_signals": [
+    {
+      "city_id": "paris-fr-q90",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    }
+  ]
+}

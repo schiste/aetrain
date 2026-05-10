@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-wikidata-10",
+    "scope": "fr-wikidata-10",
+    "generated_at": "2026-05-10T00:00:00Z"
+  },
+  "facts": [
+    {
+      "city_id": "paris-fr-q90",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q90"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q456"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q23482"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q7880"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q1479"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q12191"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q648"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q6602"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q33959"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-manual-fr-10",
+          "external_id": "Q6397"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397"
+        }
+      ]
+    }
+  ]
+}
