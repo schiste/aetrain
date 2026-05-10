@@ -46,6 +46,7 @@ pub fn build_wikidata_city_slice(
         scope: scope.to_string(),
         generated_at: generated_at.to_string(),
     };
+    let source_id = format!("wikidata-slice-{}", scope);
 
     let mut cities = Vec::new();
     let mut variants = Vec::new();
@@ -79,7 +80,7 @@ pub fn build_wikidata_city_slice(
 
         let external_refs = vec![
             ExternalRecordRef {
-                source_id: "wikidata-manual-fr-10".to_string(),
+                source_id: source_id.clone(),
                 external_id: observation.qid.clone(),
             },
             ExternalRecordRef {
@@ -92,7 +93,7 @@ pub fn build_wikidata_city_slice(
                 city_id: city_id.clone(),
                 value: alias.clone(),
                 kind: RegistryNameVariantKind::CanonicalAlias,
-                source: "wikidata-manual-fr-10".to_string(),
+                source: source_id.clone(),
             });
         }
 

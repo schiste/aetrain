@@ -28,7 +28,7 @@ input_target_ids = [
 active = true
 canonical_export = true
 web_debug_export = true
-registry_overlay_path = "../registry/fixtures/fr-wikidata-10/canonical/bundle.json"
+registry_overlay_path = "../registry/fixtures/fr-wikidata-20/canonical/bundle.json"
 notes = "Aggregate Europe target built from the currently validated national rail targets."
 
 [[target]]

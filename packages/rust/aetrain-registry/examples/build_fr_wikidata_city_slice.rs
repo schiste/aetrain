@@ -7,12 +7,12 @@ fn main() -> Result<()> {
     let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../..")
         .canonicalize()?;
-    let output_root = repo_root.join("data/registry/fixtures/fr-wikidata-10");
+    let output_root = repo_root.join("data/registry/fixtures/fr-wikidata-20");
     let summary = build_wikidata_city_slice(
-        "aetrain-registry-fr-wikidata-10",
-        "fr-wikidata-10",
+        "aetrain-registry-fr-wikidata-20",
+        "fr-wikidata-20",
         "2026-05-10T00:00:00Z",
-        &repo_root.join("data/registry/raw/wikidata/fr-city-enrichment-10.jsonl"),
+        &repo_root.join("data/registry/raw/wikidata/fr-city-enrichment-20.jsonl"),
         &repo_root.join("data/registry/overrides/city-name-rules.toml"),
         &output_root,
     )?;

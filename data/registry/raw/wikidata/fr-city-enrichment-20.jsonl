@@ -1,0 +1,20 @@
+{"qid":"Q90","label":"Paris","aliases":["Ville-Lumière","Paname","Lutèce","Ville de l'Amour","FR-75","Pantruche","Ville de Paris","City of Light","City of Love","Lutetia"],"country_code":"FR","location":{"lat":48.85666666666667,"lon":2.352222222222222},"population":2243739}
+{"qid":"Q456","label":"Lyon","aliases":["Commune-Affranchie","capitale des Gaules","City of Lyon"],"country_code":"FR","location":{"lat":45.7675,"lon":4.835},"population":522969}
+{"qid":"Q23482","label":"Marseille","aliases":["Cité phocéenne","Ville-sans-Nom","Sans-Nom","Massalia","Massilia","Massaliotes","Marsailles","Marseilles","Marsielles","Marsielle","City of Marseille","Marsaille","Marsiglia","Marseille, France","Marseille City"],"country_code":"FR","location":{"lat":43.296666666667,"lon":5.3763888888889},"population":914000}
+{"qid":"Q7880","label":"Toulouse","aliases":["Ville rose","Tolosa","Toulouse, France","Toulouse, Occitania","Pink City"],"country_code":"FR","location":{"lat":43.60444444444445,"lon":1.4433333333333334},"population":514819}
+{"qid":"Q1479","label":"Bordeaux","aliases":["Burdigala","Bordèu","Commune-Franklin","Bordele","Bordeu"],"country_code":"FR","location":{"lat":44.837777777778,"lon":-0.57944444444444},"population":267991}
+{"qid":"Q12191","label":"Nantes","aliases":["Naoned","Naunnt","\"cité des ducs de Bretagne\""],"country_code":"FR","location":{"lat":47.217222222222,"lon":-1.5538888888889},"population":327734}
+{"qid":"Q648","label":"Lille","aliases":["Rijsel","Lile","Rysel"],"country_code":"FR","location":{"lat":50.631944444444,"lon":3.0575},"population":238695}
+{"qid":"Q6602","label":"Strasbourg","aliases":["Straßburg","Strassburg","Schdroosburi","Strossburi","Strossburig","Strosburi","Strasburg"],"country_code":"FR","location":{"lat":48.573333333333,"lon":7.7522222222222},"population":293771}
+{"qid":"Q33959","label":"Nice","aliases":["Nizza","Nissa","Nikaia","Nicaea","Niça","Nice, French Riviera","Nice, Côte d'Azur"],"country_code":"FR","location":{"lat":43.701944444444,"lon":7.2683333333333},"population":357737}
+{"qid":"Q6397","label":"Avignon","aliases":["cité des papes","Avinhon","Avignoun"],"country_code":"FR","location":{"lat":43.948611111111,"lon":4.8083333333333},"population":94200}
+{"qid":"Q6441","label":"Montpellier","aliases":["Montpelhièr"],"country_code":"FR","location":{"lat":43.610919444444,"lon":3.8772305555556},"population":310240}
+{"qid":"Q647","label":"Rennes","aliases":["Rennes, France","City of Rennes","Roazhon"],"country_code":"FR","location":{"lat":48.114166666667,"lon":-1.6808333333333},"population":230890}
+{"qid":"Q1289","label":"Grenoble","aliases":[],"country_code":"FR","location":{"lat":45.186944444444,"lon":5.7263888888889},"population":166037}
+{"qid":"Q7003","label":"Dijon","aliases":[],"country_code":"FR","location":{"lat":47.323055555556,"lon":5.0419444444444},"population":161830}
+{"qid":"Q30974","label":"Rouen","aliases":["Rotomagus"],"country_code":"FR","location":{"lat":49.443055555556,"lon":1.1025},"population":117662}
+{"qid":"Q41876","label":"Reims","aliases":["Rheims"],"country_code":"FR","location":{"lat":49.265277777778,"lon":4.0286111111111},"population":187206}
+{"qid":"Q42716","label":"Saint-Étienne","aliases":["St. Etienne","Armes-Ville","Commune-d'Armes","Canton-d'Armes","Libre-Ville","St. Étienne","Sant Estève"],"country_code":"FR","location":{"lat":45.433888888889,"lon":4.3897222222222},"population":199000}
+{"qid":"Q44160","label":"Toulon","aliases":["Port-la-Montagne","Tolon"],"country_code":"FR","location":{"lat":43.125,"lon":5.9305555555556},"population":180834}
+{"qid":"Q38380","label":"Angers","aliases":["Saint-Augustin (réunie à Angers)","Saint-Léonard (réunie à Angers)","Peu-de-Fonds","Fruits-Sucrés","Gaie-Vallée","Saint-Samson (réunie à Angers)"],"country_code":"FR","location":{"lat":47.472777777778,"lon":-0.55555555555556},"population":159022}
+{"qid":"Q42807","label":"Nîmes","aliases":["Nismes","Nimes"],"country_code":"FR","location":{"lat":43.83833333333333,"lon":4.3597222222222225},"population":154196}
