@@ -784,7 +784,7 @@ export function createLeafletMapSurface({
         zoom: lerp(startCamera.zoom, endCamera.zoom, eased)
       };
       semanticZoom = camera.zoom;
-      invalidateView("fly-to");
+      invalidateAnimationFrame("fly-to");
 
       if (progress < 1) {
         flyAnimationId = window.requestAnimationFrame(tick);
@@ -792,6 +792,9 @@ export function createLeafletMapSurface({
       }
 
       flyAnimationId = 0;
+      // Final full repaint once the camera has settled — restores the
+      // network + landmass layers that the cheap animation frames skipped.
+      invalidateView("fly-to-settle");
       scheduleViewChangeNotification();
       if (pendingArrivalPulseFor) {
         startArrivalPulse(pendingArrivalPulseFor);
@@ -817,7 +820,9 @@ export function createLeafletMapSurface({
       invalidateView("arrival-pulse-end");
       return;
     }
-    invalidateView("arrival-pulse");
+    // The pulse only animates a single ring on the cities canvas — no
+    // need to redraw the network / landmass / routes layers every frame.
+    invalidateAnimationFrame("arrival-pulse");
     window.requestAnimationFrame(schedulePulseFrame);
   }
 
@@ -851,6 +856,26 @@ export function createLeafletMapSurface({
     if (options.notifyViewChange) {
       scheduleViewChangeNotification();
     }
+  }
+
+  // Cheaper invalidation for camera-animation frames (fly-to, arrival
+  // pulse). Skips the network + landmass + routes layers — those iterate
+  // tens of thousands of edges/polygons per frame and dominate the frame
+  // budget. The cities canvas is enough to convey camera motion; the
+  // surface gets a final full repaint via invalidateView() once the
+  // animation settles. Per docs/architecture/performance-budgets.md the
+  // hot-path render budget is 16ms; on production this would otherwise
+  // sit at ~400ms per frame during fly-to.
+  function invalidateAnimationFrame(reason: string): void {
+    currentFrame = null;
+    renderPlanCache = null;
+    scheduleRender(reason, createDirtyFlags({
+      cities: true,
+      frame: true,
+      labels: false,
+      network: false,
+      routes: false
+    }));
   }
 
   function scheduleViewChangeNotification(): void {
