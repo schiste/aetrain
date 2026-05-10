@@ -108,6 +108,66 @@ pub struct PipelineBuildSummary {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineQualityGateResult {
+    pub gate_id: String,
+    pub metric: String,
+    pub actual: u64,
+    pub target: String,
+    pub status: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineRegistryMatchReport {
+    pub authoritative_city_count: usize,
+    pub cities_with_wikidata_qid: usize,
+    pub cities_with_population: usize,
+    pub matched_count: u64,
+    pub unmatched_count: u64,
+    pub ambiguous_count: u64,
+    pub country_correction_count: u64,
+    pub station_rescue_count: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCountryQualityRecord {
+    pub country_code: String,
+    pub city_count: usize,
+    pub station_like_city_count: usize,
+    pub zz_city_count: usize,
+    pub wikidata_city_count: usize,
+    pub population_city_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCityQualityRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub country_code: String,
+    pub station_count: usize,
+    pub wikidata_qid: Option<String>,
+    pub population: Option<u64>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineAbbreviationCandidateRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub country_code: String,
+    pub normalized_name: String,
+    pub reason: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineQualityReport {
+    pub gate_results: Vec<PipelineQualityGateResult>,
+    pub registry_match_report: PipelineRegistryMatchReport,
+    pub country_quality: Vec<PipelineCountryQualityRecord>,
+    pub station_like_cities: Vec<PipelineCityQualityRecord>,
+    pub zz_cities: Vec<PipelineCityQualityRecord>,
+    pub abbreviation_candidates: Vec<PipelineAbbreviationCandidateRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineSourceArtifact {
     pub source_id: String,
     pub local_path: String,
@@ -137,6 +197,9 @@ pub struct PipelineArtifactManifest {
     pub summary: PipelineBuildSummary,
     pub notes: Vec<String>,
 }
+
+const QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES: u64 = 100;
+const QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES: u64 = 250;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineAttributionFile {
@@ -344,6 +407,12 @@ fn export_pipeline_target(
         None
     };
 
+    let quality_report = build_quality_report(
+        &artifacts.canonical.cities,
+        &artifacts.counters,
+        artifacts.duplicates.candidates.len(),
+    );
+
     let summary = PipelineBuildSummary {
         city_count: artifacts.canonical.cities.len(),
         station_count: artifacts.canonical.stations.len(),
@@ -353,6 +422,19 @@ fn export_pipeline_target(
         issue_count: artifacts.issues.len(),
         counters: artifacts.counters.clone(),
     };
+    let mut notes = artifacts.notes.clone();
+    let failing_gates = quality_report
+        .gate_results
+        .iter()
+        .filter(|gate| gate.status == "fail")
+        .map(|gate| format!("{}={} violates {}", gate.metric, gate.actual, gate.target))
+        .collect::<Vec<_>>();
+    if !failing_gates.is_empty() {
+        notes.push(format!(
+            "Data quality gates currently failing: {}.",
+            failing_gates.join(", ")
+        ));
+    }
 
     let artifact_manifest = PipelineArtifactManifest {
         dataset_id: manifest.dataset_id.clone(),
@@ -373,7 +455,7 @@ fn export_pipeline_target(
                 .map(|path| path.display().to_string()),
         },
         summary,
-        notes: artifacts.notes.clone(),
+        notes,
     };
 
     write_json(
@@ -383,6 +465,26 @@ fn export_pipeline_target(
     write_json(
         &target_root.join("summary.json"),
         &artifact_manifest.summary,
+    )?;
+    let quality_dir = target_root.join("quality");
+    recreate_dir(&quality_dir)?;
+    write_json(&quality_dir.join("quality-report.json"), &quality_report)?;
+    write_json(
+        &quality_dir.join("country-quality.json"),
+        &quality_report.country_quality,
+    )?;
+    write_json(
+        &quality_dir.join("registry-match-report.json"),
+        &quality_report.registry_match_report,
+    )?;
+    write_json(
+        &quality_dir.join("station-like-cities.json"),
+        &quality_report.station_like_cities,
+    )?;
+    write_json(&quality_dir.join("zz-cities.json"), &quality_report.zz_cities)?;
+    write_json(
+        &quality_dir.join("abbreviation-candidates.json"),
+        &quality_report.abbreviation_candidates,
     )?;
     Ok(artifact_manifest)
 }
@@ -417,6 +519,192 @@ fn export_canonical_bundle(
     write_json(&output_dir.join("issues.json"), &artifacts.issues)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
+}
+
+fn build_quality_report(
+    cities: &[aetrain_domain::City],
+    counters: &BTreeMap<String, u64>,
+    duplicate_count: usize,
+) -> PipelineQualityReport {
+    let registry_match_report = PipelineRegistryMatchReport {
+        authoritative_city_count: cities
+            .iter()
+            .filter(|city| city.wikidata_qid.is_some() && city_id_has_registry_qid(city))
+            .count(),
+        cities_with_wikidata_qid: cities.iter().filter(|city| city.wikidata_qid.is_some()).count(),
+        cities_with_population: cities.iter().filter(|city| city.population.is_some()).count(),
+        matched_count: counter_value(counters, "registry_overlay_match_count"),
+        unmatched_count: counter_value(counters, "registry_overlay_unmatched_count"),
+        ambiguous_count: counter_value(counters, "registry_overlay_ambiguous_count"),
+        country_correction_count: counter_value(counters, "registry_overlay_country_correction_count"),
+        station_rescue_count: counter_value(counters, "registry_overlay_station_rescue_count"),
+    };
+
+    let mut grouped = BTreeMap::<String, PipelineCountryQualityRecord>::new();
+    for city in cities {
+        let record = grouped
+            .entry(city.country_code.clone())
+            .or_insert_with(|| PipelineCountryQualityRecord {
+                country_code: city.country_code.clone(),
+                city_count: 0,
+                station_like_city_count: 0,
+                zz_city_count: 0,
+                wikidata_city_count: 0,
+                population_city_count: 0,
+            });
+        record.city_count += 1;
+        if is_station_qualified_city_name(&city.display_name) {
+            record.station_like_city_count += 1;
+        }
+        if city.country_code == "ZZ" {
+            record.zz_city_count += 1;
+        }
+        if city.wikidata_qid.is_some() {
+            record.wikidata_city_count += 1;
+        }
+        if city.population.is_some() {
+            record.population_city_count += 1;
+        }
+    }
+
+    let station_like_cities = cities
+        .iter()
+        .filter(|city| is_station_qualified_city_name(&city.display_name))
+        .map(city_quality_record)
+        .collect::<Vec<_>>();
+    let zz_cities = cities
+        .iter()
+        .filter(|city| city.country_code == "ZZ")
+        .map(city_quality_record)
+        .collect::<Vec<_>>();
+    let abbreviation_candidates = cities
+        .iter()
+        .filter_map(abbreviation_candidate_record)
+        .collect::<Vec<_>>();
+
+    let gate_results = vec![
+        quality_gate_equals(
+            "registry_overlay_ambiguous_count_zero",
+            "registry_overlay_ambiguous_count",
+            counter_value(counters, "registry_overlay_ambiguous_count"),
+            0,
+        ),
+        quality_gate_equals(
+            "duplicate_count_zero",
+            "duplicate_count",
+            duplicate_count as u64,
+            0,
+        ),
+        quality_gate_less_than(
+            "residual_station_like_city_count",
+            "residual_station_like_city_count",
+            counter_value(counters, "residual_station_like_city_count"),
+            QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES,
+        ),
+        quality_gate_less_than(
+            "residual_zz_city_count",
+            "residual_zz_city_count",
+            counter_value(counters, "residual_zz_city_count"),
+            QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES,
+        ),
+    ];
+
+    PipelineQualityReport {
+        gate_results,
+        registry_match_report,
+        country_quality: grouped.into_values().collect(),
+        station_like_cities,
+        zz_cities,
+        abbreviation_candidates,
+    }
+}
+
+fn counter_value(counters: &BTreeMap<String, u64>, key: &str) -> u64 {
+    counters.get(key).copied().unwrap_or(0)
+}
+
+fn quality_gate_equals(
+    gate_id: &str,
+    metric: &str,
+    actual: u64,
+    expected: u64,
+) -> PipelineQualityGateResult {
+    PipelineQualityGateResult {
+        gate_id: gate_id.to_string(),
+        metric: metric.to_string(),
+        actual,
+        target: format!("== {}", expected),
+        status: if actual == expected {
+            "pass".to_string()
+        } else {
+            "fail".to_string()
+        },
+    }
+}
+
+fn quality_gate_less_than(
+    gate_id: &str,
+    metric: &str,
+    actual: u64,
+    threshold: u64,
+) -> PipelineQualityGateResult {
+    PipelineQualityGateResult {
+        gate_id: gate_id.to_string(),
+        metric: metric.to_string(),
+        actual,
+        target: format!("< {}", threshold),
+        status: if actual < threshold {
+            "pass".to_string()
+        } else {
+            "fail".to_string()
+        },
+    }
+}
+
+fn city_quality_record(city: &aetrain_domain::City) -> PipelineCityQualityRecord {
+    PipelineCityQualityRecord {
+        city_id: city.city_id.clone(),
+        display_name: city.display_name.clone(),
+        country_code: city.country_code.clone(),
+        station_count: city.station_ids.len(),
+        wikidata_qid: city.wikidata_qid.clone(),
+        population: city.population,
+    }
+}
+
+fn abbreviation_candidate_record(
+    city: &aetrain_domain::City,
+) -> Option<PipelineAbbreviationCandidateRecord> {
+    let normalized_name = normalize_name(&city.display_name);
+    let token_count = normalized_name.split_whitespace().count();
+    let compact = normalized_name.replace(' ', "");
+    let suspicious = compact.len() <= 3
+        || compact.chars().all(|ch| ch.is_ascii_uppercase())
+        || compact
+            .chars()
+            .all(|ch| ch.is_ascii_alphabetic())
+            && compact.len() <= 4
+            && token_count <= 2
+            && city.wikidata_qid.is_none();
+    if !suspicious || is_station_qualified_city_name(&city.display_name) {
+        return None;
+    }
+    Some(PipelineAbbreviationCandidateRecord {
+        city_id: city.city_id.clone(),
+        display_name: city.display_name.clone(),
+        country_code: city.country_code.clone(),
+        normalized_name,
+        reason: "short_or_low_signal_name_without_registry_authority".to_string(),
+    })
+}
+
+fn city_id_has_registry_qid(city: &aetrain_domain::City) -> bool {
+    let Some(qid) = city.wikidata_qid.as_deref() else {
+        return false;
+    };
+    city.city_id
+        .as_str()
+        .ends_with(&qid.to_ascii_lowercase())
 }
 
 fn export_web_debug_bundle(
@@ -2978,5 +3266,74 @@ mod tests {
         assert_eq!(stats.ambiguous_count, 1);
         assert!(cities.iter().all(|city| city.wikidata_qid.is_none()));
         assert_eq!(issues.len(), 1);
+    }
+
+    #[test]
+    fn quality_report_flags_station_like_and_zz_gate_failures() {
+        let cities = vec![
+            City {
+                city_id: CityId::new("alpha-zz-1").expect("valid city id"),
+                slug: "alpha".to_string(),
+                display_name: "Alpha".to_string(),
+                country_code: "ZZ".to_string(),
+                location: GeoPoint { lat: 0.0, lon: 0.0 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: Vec::new(),
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("beta-fr-2").expect("valid city id"),
+                slug: "beta".to_string(),
+                display_name: "Beta Gare".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint { lat: 1.0, lon: 1.0 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-beta").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+        ];
+        let counters = BTreeMap::from([
+            ("registry_overlay_ambiguous_count".to_string(), 0),
+            ("residual_station_like_city_count".to_string(), 121),
+            ("residual_zz_city_count".to_string(), 360),
+        ]);
+
+        let report = build_quality_report(&cities, &counters, 0);
+
+        assert_eq!(report.registry_match_report.authoritative_city_count, 0);
+        assert_eq!(report.station_like_cities.len(), 1);
+        assert_eq!(report.zz_cities.len(), 1);
+        assert_eq!(report.gate_results.len(), 4);
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "registry_overlay_ambiguous_count")
+                .expect("ambiguous gate")
+                .status,
+            "pass"
+        );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "residual_station_like_city_count")
+                .expect("station gate")
+                .status,
+            "fail"
+        );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "residual_zz_city_count")
+                .expect("zz gate")
+                .status,
+            "fail"
+        );
     }
 }
