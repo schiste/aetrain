@@ -165,6 +165,7 @@ pub struct PipelineQualityReport {
     pub station_like_cities: Vec<PipelineCityQualityRecord>,
     pub zz_cities: Vec<PipelineCityQualityRecord>,
     pub abbreviation_candidates: Vec<PipelineAbbreviationCandidateRecord>,
+    pub route_like_candidates: Vec<PipelineAbbreviationCandidateRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -486,6 +487,10 @@ fn export_pipeline_target(
         &quality_dir.join("abbreviation-candidates.json"),
         &quality_report.abbreviation_candidates,
     )?;
+    write_json(
+        &quality_dir.join("route-like-candidates.json"),
+        &quality_report.route_like_candidates,
+    )?;
     Ok(artifact_manifest)
 }
 
@@ -577,10 +582,16 @@ fn build_quality_report(
         .filter(|city| city.country_code == "ZZ")
         .map(city_quality_record)
         .collect::<Vec<_>>();
-    let abbreviation_candidates = cities
+    let low_signal_candidates = cities
         .iter()
         .filter_map(abbreviation_candidate_record)
         .collect::<Vec<_>>();
+    let (route_like_candidates, abbreviation_candidates): (
+        Vec<PipelineAbbreviationCandidateRecord>,
+        Vec<PipelineAbbreviationCandidateRecord>,
+    ) = low_signal_candidates
+        .into_iter()
+        .partition(|record| record.reason == "digit_or_route_like_name");
 
     let gate_results = vec![
         quality_gate_equals(
@@ -616,6 +627,7 @@ fn build_quality_report(
         station_like_cities,
         zz_cities,
         abbreviation_candidates,
+        route_like_candidates,
     }
 }
 
@@ -3677,6 +3689,7 @@ mod tests {
         assert_eq!(report.registry_match_report.authoritative_city_count, 0);
         assert_eq!(report.station_like_cities.len(), 1);
         assert_eq!(report.zz_cities.len(), 1);
+        assert_eq!(report.route_like_candidates.len(), 0);
         assert_eq!(report.gate_results.len(), 4);
         assert_eq!(
             report
@@ -3777,5 +3790,41 @@ mod tests {
                 .reason,
             "digit_or_route_like_name"
         );
+    }
+
+    #[test]
+    fn quality_report_splits_abbreviation_and_route_like_candidates() {
+        let route_like = City {
+            city_id: CityId::new("rn-fr-x").expect("valid city id"),
+            slug: "rn".to_string(),
+            display_name: "Kilstett 13 Route Nationale".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let abbrev = City {
+            city_id: CityId::new("gd-de-c0b2ec09").expect("valid city id"),
+            slug: "gd".to_string(),
+            display_name: "Gd".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let counters = BTreeMap::new();
+
+        let report = build_quality_report(&[route_like, abbrev], &counters, 0);
+
+        assert_eq!(report.route_like_candidates.len(), 1);
+        assert_eq!(report.route_like_candidates[0].reason, "digit_or_route_like_name");
+        assert_eq!(report.abbreviation_candidates.len(), 1);
+        assert_eq!(report.abbreviation_candidates[0].reason, "single_token_too_short");
     }
 }
