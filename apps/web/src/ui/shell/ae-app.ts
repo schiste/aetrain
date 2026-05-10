@@ -288,14 +288,37 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     // and re-derive the current trip so its segments and the background
     // network gain curves. Failures degrade silently to straight-line
     // geometry — the planner adapter already synthesised those.
+    //
+    // The viewport-streaming stub passes the current map bounds so the
+    // backend's (forthcoming) per-chunk bbox metadata can be used to
+    // skip non-visible chunks. Without bboxes, every chunk is treated
+    // as visible — same behaviour as before. See
+    // docs/bugs/2026-05-edge-geometry-chunk-bboxes.md.
+    const loadedChunkFiles = new Set<string>();
     void scheduleEdgeGeometryUpgrade({
       planner,
       plannerStore,
-      mapSurface
+      mapSurface,
+      loadedChunkFiles
+    });
+    // Re-fetch newly-visible chunks on view change. Debounced via the
+    // existing subscribeViewChange (which already batches at
+    // VIEW_CHANGE_COMMIT_DELAY_MS in the surface). When the manifest
+    // has no bboxes, the seenChunkFiles dedupe makes every re-fetch a
+    // no-op after the first call — current behaviour is preserved.
+    const stopGeometryRefetch = mapSurface.subscribeViewChange(() => {
+      void scheduleEdgeGeometryUpgrade({
+        planner,
+        plannerStore,
+        mapSurface,
+        loadedChunkFiles,
+        triggeredBy: "view-change"
+      });
     });
 
     const onBeforeUnload = () => {
       diagnostics.info("ae-app beforeunload cleanup");
+      stopGeometryRefetch();
       planner.close();
       stopUrlSync();
     };
@@ -306,6 +329,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       dispose(): void {
         diagnostics.info("ae-app shell disposing");
         window.removeEventListener("beforeunload", onBeforeUnload);
+        stopGeometryRefetch();
         stopUrlSync();
         planner.close();
       }
@@ -328,21 +352,45 @@ interface EdgeGeometryUpgradeArgs {
   plannerStore: {
     refreshDerivedState(): Promise<boolean>;
   };
-  mapSurface: { refreshGeometry(): void };
+  mapSurface: {
+    refreshGeometry(): void;
+    getViewportBounds(): import("../../map/leaflet-map-surface.ts").MapViewportBounds;
+  };
+  /** Mutated in place to record which chunk files have been fetched
+   *  across all calls in this shell instance. Lets re-fetches dedupe. */
+  loadedChunkFiles: Set<string>;
+  triggeredBy?: "initial" | "view-change";
 }
 
 async function scheduleEdgeGeometryUpgrade({
   planner,
   plannerStore,
-  mapSurface
+  mapSurface,
+  loadedChunkFiles,
+  triggeredBy = "initial"
 }: EdgeGeometryUpgradeArgs): Promise<void> {
   const startedAt =
     typeof performance !== "undefined" && typeof performance.now === "function"
       ? performance.now()
       : Date.now();
   try {
-    const rawGeometries = await loadEdgeGeometries();
-    await planner.augmentGeometry(rawGeometries);
+    const result = await loadEdgeGeometries({
+      viewport: mapSurface.getViewportBounds(),
+      seenChunkFiles: loadedChunkFiles
+    });
+    if (result.geometries.geometries.length === 0) {
+      // Nothing new to apply (cache hit on every visible chunk). The
+      // common case for view-change triggers once everything's loaded.
+      diagnostics.debug("geometry upgrade no-op", {
+        triggered_by: triggeredBy,
+        already_loaded_count: loadedChunkFiles.size
+      });
+      return;
+    }
+    for (const file of result.loadedChunkFiles) {
+      loadedChunkFiles.add(file);
+    }
+    await planner.augmentGeometry(result.geometries);
     mapSurface.refreshGeometry();
     await plannerStore.refreshDerivedState();
     const now =
@@ -350,11 +398,15 @@ async function scheduleEdgeGeometryUpgrade({
         ? performance.now()
         : Date.now();
     diagnostics.info("geometry augmented", {
-      geometry_count: rawGeometries.geometries.length,
+      triggered_by: triggeredBy,
+      geometry_count: result.geometries.geometries.length,
+      newly_loaded_chunks: result.loadedChunkFiles.length,
+      total_loaded_chunks: loadedChunkFiles.size,
       elapsed_ms: Math.round((now - startedAt) * 1000) / 1000
     });
   } catch (error) {
     diagnostics.warn("deferred edge-geometry upgrade failed", {
+      triggered_by: triggeredBy,
       error: summarizeError(error)
     });
   }

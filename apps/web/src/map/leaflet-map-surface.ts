@@ -12,6 +12,7 @@ import {
   mercatorUnproject,
   panCameraByPixels,
   projectWorldToScreen,
+  scaleForZoom,
   zoomCameraAroundPoint,
   type MapPoint,
   type MapSize,
@@ -174,9 +175,21 @@ export interface CreateLeafletMapSurfaceOptions {
   onRenderStatsChange?: (stats: RenderStats) => void;
 }
 
+export interface MapViewportBounds {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 export interface LeafletMapSurface {
   flyToCity(name: string): void;
   getViewState(): MapView;
+  /** Returns the visible map area as a lat/lon bounding box. Used by
+   *  the deferred-geometry stub to fetch only chunks whose bbox
+   *  intersects what the user is looking at (once the backend ships
+   *  per-chunk bboxes). */
+  getViewportBounds(): MapViewportBounds;
   render(nextState: PlannerStateInput): RenderStats;
   /**
    * Re-project edge geometries from the underlying PlannerModelMetadata.edges
@@ -470,6 +483,7 @@ export function createLeafletMapSurface({
       });
     },
     getViewState,
+    getViewportBounds,
     render(nextState: PlannerStateInput): RenderStats {
       const normalizedState = normalizePlannerState(nextState);
       const nextSignature = summarizePlannerRenderState(normalizedState);
@@ -888,6 +902,30 @@ export function createLeafletMapSurface({
       lat: camera.lat,
       lon: camera.lon,
       zoom: camera.zoom
+    };
+  }
+
+  function getViewportBounds(): MapViewportBounds {
+    const centerWorld = mercatorProject(camera.lon, camera.lat);
+    const scale = scaleForZoom(camera.zoom);
+    const halfWorldX = currentSize.x / 2 / scale;
+    const halfWorldY = currentSize.y / 2 / scale;
+    // Mercator world Y grows DOWN, lat grows UP — top-of-screen is the
+    // higher latitude. Project the four corners and take the spanning
+    // min/max so the result is normalised regardless of camera state.
+    const topLeft = mercatorUnproject(
+      centerWorld.x - halfWorldX,
+      centerWorld.y - halfWorldY
+    );
+    const bottomRight = mercatorUnproject(
+      centerWorld.x + halfWorldX,
+      centerWorld.y + halfWorldY
+    );
+    return {
+      west: Math.min(topLeft.lon, bottomRight.lon),
+      east: Math.max(topLeft.lon, bottomRight.lon),
+      south: Math.min(topLeft.lat, bottomRight.lat),
+      north: Math.max(topLeft.lat, bottomRight.lat)
     };
   }
 

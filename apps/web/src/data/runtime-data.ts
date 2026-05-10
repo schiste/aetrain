@@ -6,6 +6,7 @@ import type {
 } from "../types/planner-dataset.ts";
 import {
   fetchEdgeGeometryArtifact,
+  type EdgeGeometryBoundingBox,
   type EdgeGeometryManifest
 } from "./edge-geometry-artifacts.ts";
 import { buildProductionPlannerData } from "./production-adapter.ts";
@@ -43,6 +44,7 @@ interface WorkerLoadGeometriesResponse {
   requestId?: string;
   ok?: boolean;
   geometries?: RawEdgeGeometries;
+  loadedChunkFiles?: string[];
   error?: SerializedWorkerError;
 }
 
@@ -66,18 +68,43 @@ export async function loadPlannerDataset(): Promise<PlannerDataset> {
  * geometry chunks. The result is fed to PlannerEngine.augmentGeometry to
  * upgrade the in-memory routing graph in place.
  */
-export async function loadEdgeGeometries(): Promise<RawEdgeGeometries> {
+export interface LoadEdgeGeometriesResult {
+  geometries: RawEdgeGeometries;
+  /** The chunk `file` strings the loader actually fetched. Empty when
+   *  every visible chunk was already in `seenChunkFiles`. Callers merge
+   *  this into their tracking set so subsequent view-change re-fetches
+   *  skip the same chunks. */
+  loadedChunkFiles: string[];
+}
+
+export async function loadEdgeGeometries(
+  options: LoadEdgeGeometriesOptions = {}
+): Promise<LoadEdgeGeometriesResult> {
   return diagnostics.timeAsync("load-edge-geometries", async () => {
-    diagnostics.info("loading edge geometries");
+    diagnostics.info("loading edge geometries", {
+      viewport_filtered: Boolean(options.viewport),
+      already_loaded_count: options.seenChunkFiles?.size ?? 0
+    });
     try {
-      return await loadEdgeGeometriesFromWorker();
+      return await loadEdgeGeometriesFromWorker(options);
     } catch (error) {
       diagnostics.warn("falling back to inline edge geometry loader", {
         error: summarizeError(error)
       });
-      return loadEdgeGeometriesInline();
+      return loadEdgeGeometriesInline(options);
     }
   });
+}
+
+export interface LoadEdgeGeometriesOptions {
+  /** Visible map bounding box. When set together with the new bbox-aware
+   *  manifest, only chunks whose bbox intersects the viewport are
+   *  fetched. Without bboxes (today's backend) the option is silently
+   *  ignored — see docs/bugs/2026-05-edge-geometry-chunk-bboxes.md. */
+  viewport?: EdgeGeometryBoundingBox;
+  /** Files already fetched on previous calls. Lets the view-change
+   *  re-fetcher avoid re-loading the same chunk on every pan. */
+  seenChunkFiles?: ReadonlySet<string>;
 }
 
 async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
@@ -113,19 +140,28 @@ async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
   });
 }
 
-async function loadEdgeGeometriesInline(): Promise<RawEdgeGeometries> {
+async function loadEdgeGeometriesInline(
+  options: LoadEdgeGeometriesOptions
+): Promise<LoadEdgeGeometriesResult> {
   return diagnostics.timeAsync("load-edge-geometries-inline", async () => {
-    const geometries = await fetchEdgeGeometryArtifact({
-      basePaths: PRODUCTION_BASE_PATHS,
-      fetchJsonWithFallback,
-      fetchOptionalJsonWithFallback,
-      fetchJsonFromBasePath,
-      diagnostics
-    });
+    const result = await fetchEdgeGeometryArtifact(
+      {
+        basePaths: PRODUCTION_BASE_PATHS,
+        fetchJsonWithFallback,
+        fetchOptionalJsonWithFallback,
+        fetchJsonFromBasePath,
+        diagnostics
+      },
+      {
+        viewport: options.viewport,
+        seenChunkFiles: options.seenChunkFiles
+      }
+    );
     diagnostics.info("loaded edge geometries inline", {
-      geometry_count: geometries.geometries.length
+      geometry_count: result.geometries.geometries.length,
+      loaded_chunk_count: result.loadedChunkFiles.length
     });
-    return geometries;
+    return result;
   });
 }
 
@@ -189,7 +225,9 @@ async function loadProductionDataSourceFromWorker(): Promise<PlannerDataset> {
   });
 }
 
-async function loadEdgeGeometriesFromWorker(): Promise<RawEdgeGeometries> {
+async function loadEdgeGeometriesFromWorker(
+  options: LoadEdgeGeometriesOptions
+): Promise<LoadEdgeGeometriesResult> {
   if (typeof Worker === "undefined") {
     throw new Error("Worker API unavailable");
   }
@@ -200,7 +238,7 @@ async function loadEdgeGeometriesFromWorker(): Promise<RawEdgeGeometries> {
     });
     diagnostics.debug("spawned runtime data worker for geometry");
 
-    return new Promise<RawEdgeGeometries>((resolve, reject) => {
+    return new Promise<LoadEdgeGeometriesResult>((resolve, reject) => {
       const requestId = `geometries-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
       function cleanup(): void {
@@ -220,9 +258,13 @@ async function loadEdgeGeometriesFromWorker(): Promise<RawEdgeGeometries> {
         if (message.ok && message.geometries) {
           diagnostics.info("runtime data worker loaded edge geometries", {
             request_id: requestId,
-            geometry_count: message.geometries.geometries.length
+            geometry_count: message.geometries.geometries.length,
+            loaded_chunk_count: message.loadedChunkFiles?.length ?? 0
           });
-          resolve(message.geometries);
+          resolve({
+            geometries: message.geometries,
+            loadedChunkFiles: message.loadedChunkFiles ?? []
+          });
           return;
         }
 
@@ -241,7 +283,11 @@ async function loadEdgeGeometriesFromWorker(): Promise<RawEdgeGeometries> {
       worker.postMessage({
         type: "load-edge-geometries",
         requestId,
-        basePaths: PRODUCTION_BASE_PATHS
+        basePaths: PRODUCTION_BASE_PATHS,
+        viewport: options.viewport,
+        seenChunkFiles: options.seenChunkFiles
+          ? Array.from(options.seenChunkFiles)
+          : undefined
       });
     });
   });

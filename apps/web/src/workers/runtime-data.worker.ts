@@ -16,6 +16,13 @@ interface IncomingMessage {
   type?: string;
   basePaths?: string[];
   requestId?: string;
+  /** Set when the load-edge-geometries message wants viewport-filtered
+   *  fetching. The chunk-bbox manifest field gates the actual filter;
+   *  see selectVisibleChunks in edge-geometry-artifacts.ts. */
+  viewport?: import("../data/edge-geometry-artifacts.ts").EdgeGeometryBoundingBox;
+  /** Files already fetched on previous load-edge-geometries calls;
+   *  the worker treats these as cache hits and skips them. */
+  seenChunkFiles?: string[];
 }
 
 interface FetchAssetError extends Error {
@@ -98,33 +105,48 @@ async function handleLoadDataset(message: IncomingMessage): Promise<void> {
 async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
   const basePaths: string[] = message.basePaths ?? [];
   const requestId = message.requestId;
+  const viewport = message.viewport;
+  const seenChunkFiles = message.seenChunkFiles
+    ? new Set<string>(message.seenChunkFiles)
+    : undefined;
   diagnostics.info("received runtime data worker geometry request", {
     request_id: requestId,
-    base_path_count: basePaths.length
+    base_path_count: basePaths.length,
+    viewport_filtered: Boolean(viewport),
+    already_loaded_count: seenChunkFiles?.size ?? 0
   });
 
   try {
-    const geometries: RawEdgeGeometries = await diagnostics.timeAsync(
+    const result = await diagnostics.timeAsync(
       "load-edge-geometries",
       async () => {
-        return fetchEdgeGeometryArtifact({
-          basePaths,
-          fetchJsonWithFallback: (fileName: string) =>
-            fetchJsonWithFallback(basePaths, fileName),
-          fetchOptionalJsonWithFallback: (fileName: string) =>
-            fetchOptionalJsonWithFallback(basePaths, fileName),
-          fetchJsonFromBasePath,
-          diagnostics
-        });
+        return fetchEdgeGeometryArtifact(
+          {
+            basePaths,
+            fetchJsonWithFallback: (fileName: string) =>
+              fetchJsonWithFallback(basePaths, fileName),
+            fetchOptionalJsonWithFallback: (fileName: string) =>
+              fetchOptionalJsonWithFallback(basePaths, fileName),
+            fetchJsonFromBasePath,
+            diagnostics
+          },
+          { viewport, seenChunkFiles }
+        );
       },
       { request_id: requestId }
     );
 
     diagnostics.info("runtime data worker loaded edge geometries", {
       request_id: requestId,
-      geometry_count: geometries.geometries.length
+      geometry_count: result.geometries.geometries.length,
+      loaded_chunk_count: result.loadedChunkFiles.length
     });
-    self.postMessage({ requestId, ok: true, geometries });
+    self.postMessage({
+      requestId,
+      ok: true,
+      geometries: result.geometries,
+      loadedChunkFiles: result.loadedChunkFiles
+    });
   } catch (error) {
     diagnostics.error("runtime data worker geometry request failed", {
       request_id: requestId,
