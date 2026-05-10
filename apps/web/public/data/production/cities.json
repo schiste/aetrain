@@ -10916,8 +10916,8 @@
       "lat": 43.927058833333334,
       "lon": 4.803929500000001
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q6397",
+    "population": 94200,
     "interest_score": 10,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-fc620aa6",
@@ -27188,16 +27188,16 @@
   },
   {
     "city_id": "bordeaux-saint-jean-fr-33063",
-    "slug": "bordeaux-saint-jean",
-    "display_name": "Bordeaux Saint Jean",
+    "slug": "bordeaux",
+    "display_name": "Bordeaux",
     "country_code": "FR",
     "location": {
       "lat": 44.8342475,
       "lon": -0.592221
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
+    "wikidata_qid": "Q1479",
+    "population": 267991,
+    "interest_score": 9,
     "station_ids": [
       "station-uic-87581009",
       "station-uic-87581538"
@@ -126525,8 +126525,8 @@
       "lat": 50.62337128571429,
       "lon": 3.0805224285714283
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q648",
+    "population": 238695,
     "interest_score": 10,
     "station_ids": [
       "station-uic-87109306",
@@ -132447,8 +132447,8 @@
       "lat": 45.761011,
       "lon": 4.827087
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q456",
+    "population": 522969,
     "interest_score": 10,
     "station_ids": [
       "station-uic-8728262",
@@ -136442,8 +136442,8 @@
       "lat": 43.3245224,
       "lon": 5.3902785
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q23482",
+    "population": 914000,
     "interest_score": 10,
     "station_ids": [
       "station-uic-87580340",
@@ -149733,14 +149733,14 @@
     "city_id": "nantes-ch-8fefd121",
     "slug": "nantes",
     "display_name": "Nantes",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.21709028,
       "lon": -1.5414731
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
+    "wikidata_qid": "Q12191",
+    "population": 327734,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8748100"
     ],
@@ -154492,9 +154492,9 @@
       "lat": 43.7008825,
       "lon": 7.264987249999999
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
+    "wikidata_qid": "Q33959",
+    "population": 357737,
+    "interest_score": 9,
     "station_ids": [
       "station-uic-87590299",
       "station-uic-87756056",
@@ -166121,8 +166121,8 @@
       "lat": 48.855238625,
       "lon": 2.350099625
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q90",
+    "population": 2243739,
     "interest_score": 10,
     "station_ids": [
       "station-uic-000008700011",
@@ -212063,14 +212063,14 @@
     "city_id": "strasbourg-de-72a2d3fe",
     "slug": "strasbourg",
     "display_name": "Strasbourg",
-    "country_code": "DE",
+    "country_code": "FR",
     "location": {
       "lat": 48.585339,
       "lon": 7.734067
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
+    "wikidata_qid": "Q6602",
+    "population": 293771,
+    "interest_score": 9,
     "station_ids": [
       "station-de-delfi-gtfs-c5f971b6",
       "station-uic-8721202"
@@ -218457,16 +218457,16 @@
   },
   {
     "city_id": "toulouse-matabiau-ch-099c66c9",
-    "slug": "toulouse-matabiau",
-    "display_name": "Toulouse Matabiau",
-    "country_code": "CH",
+    "slug": "toulouse",
+    "display_name": "Toulouse",
+    "country_code": "FR",
     "location": {
       "lat": 43.6114061,
       "lon": 1.45394125
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
+    "wikidata_qid": "Q7880",
+    "population": 514819,
+    "interest_score": 7,
     "station_ids": [
       "station-uic-8761100"
     ],
