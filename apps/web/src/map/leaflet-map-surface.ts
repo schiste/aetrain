@@ -224,6 +224,13 @@ const MAX_ZOOM = 15;
 const EUROPE_VIEW_PADDING_PX = 32;
 const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const ZOOM_SETTLE_DELAY_MS = 120;
+const PAN_SETTLE_DELAY_MS = 120;
+// During active wheel-zoom / pan we tighten the network LOD so the
+// per-frame draw doesn't blow the budget on the production graph
+// (39k edges × multi-point geometries). Cities stay at full LOD so the
+// user's input still feels responsive; a settle pass after the
+// interaction restores full network density.
+const INTERACTION_NETWORK_BUDGET_DIVISOR = 5;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
 const INTERACTION_LABEL_OPACITY = "0.18";
 const OCEAN_FILL_COLOR = "#0f1729";
@@ -410,6 +417,13 @@ export function createLeafletMapSurface({
   let flyAnimationId = 0;
   let lastHotRenderInfoAt = 0;
   let isZooming = false;
+  // Tracks active pan (pointer drag or keyboard arrow). When set, the
+  // next render uses the cheap interaction LOD profile so the network
+  // re-projection cost (39k edges × multi-point geometries) stops
+  // dominating the wheel-tick frame budget. Cleared on pan-end via
+  // schedulePanSettle → clearPanInteraction.
+  let isPanning = false;
+  let panSettleTimeoutId = 0;
   let pointerState: PointerState | null = null;
   // Last observed pointer position inside the map (used by the Enter
   // keyboard shortcut to pick the hovered city). null until first hover.
@@ -641,6 +655,7 @@ export function createLeafletMapSurface({
 
     camera = clampCamera(panCameraByPixels(camera, deltaX, deltaY), currentSize);
     hideTooltip();
+    beginPanInteraction();
     invalidateView("pointer-pan");
   }
 
@@ -654,6 +669,7 @@ export function createLeafletMapSurface({
     finishPointerInteraction(event.pointerId);
 
     if (wasDrag) {
+      schedulePanSettle();
       scheduleViewChangeNotification();
       updateHover(point);
       return;
@@ -714,25 +730,33 @@ export function createLeafletMapSurface({
       case "ArrowUp":
         event.preventDefault();
         camera = clampCamera(panCameraByPixels(camera, 0, panStep), currentSize);
+        beginPanInteraction();
         invalidateView("keyboard-pan");
+        schedulePanSettle();
         scheduleViewChangeNotification();
         return;
       case "ArrowDown":
         event.preventDefault();
         camera = clampCamera(panCameraByPixels(camera, 0, -panStep), currentSize);
+        beginPanInteraction();
         invalidateView("keyboard-pan");
+        schedulePanSettle();
         scheduleViewChangeNotification();
         return;
       case "ArrowLeft":
         event.preventDefault();
         camera = clampCamera(panCameraByPixels(camera, panStep, 0), currentSize);
+        beginPanInteraction();
         invalidateView("keyboard-pan");
+        schedulePanSettle();
         scheduleViewChangeNotification();
         return;
       case "ArrowRight":
         event.preventDefault();
         camera = clampCamera(panCameraByPixels(camera, -panStep, 0), currentSize);
+        beginPanInteraction();
         invalidateView("keyboard-pan");
+        schedulePanSettle();
         scheduleViewChangeNotification();
         return;
       case "+":
@@ -785,6 +809,36 @@ export function createLeafletMapSurface({
     );
     invalidateView("button-zoom");
     scheduleZoomSettle();
+  }
+
+  function isInteractingWithCamera(): boolean {
+    return isZooming || isPanning;
+  }
+
+  function beginPanInteraction(): void {
+    if (isPanning) {
+      window.clearTimeout(panSettleTimeoutId);
+      panSettleTimeoutId = 0;
+      return;
+    }
+    isPanning = true;
+  }
+
+  function schedulePanSettle(): void {
+    window.clearTimeout(panSettleTimeoutId);
+    panSettleTimeoutId = window.setTimeout(() => {
+      clearPanInteraction(true);
+    }, PAN_SETTLE_DELAY_MS);
+  }
+
+  function clearPanInteraction(notifyViewChange: boolean): void {
+    if (!isPanning && !panSettleTimeoutId) {
+      return;
+    }
+    window.clearTimeout(panSettleTimeoutId);
+    panSettleTimeoutId = 0;
+    isPanning = false;
+    invalidateView("pan-settle", { notifyViewChange });
   }
 
   function beginZoomInteraction(): void {
@@ -1046,7 +1100,19 @@ export function createLeafletMapSurface({
       roundCoordinate(semanticZoom, 4)
     ].join(":");
     const cameraWorld = mercatorProject(camera.lon, camera.lat);
-    const lod = buildLodProfile(semanticZoom, labelThreshold);
+    const baseLod = buildLodProfile(semanticZoom, labelThreshold);
+    const lod = isInteractingWithCamera()
+      ? {
+          ...baseLod,
+          // Tighter network during active zoom/pan keeps the per-tick
+          // render under the 16ms budget on the production graph. The
+          // settle path runs invalidateView() at full LOD afterwards.
+          networkEdgeBudget: Math.max(
+            300,
+            Math.round(baseLod.networkEdgeBudget / INTERACTION_NETWORK_BUDGET_DIVISOR)
+          )
+        }
+      : baseLod;
     const projectCache = new Map<string, MapPoint>();
     const worldProjectCache = new Map<string, MapPoint>();
 
@@ -1166,7 +1232,12 @@ export function createLeafletMapSurface({
     networkContext.lineWidth = 0.6;
 
     let drawnEdges = 0;
-    const shouldSimplifyGeometry = frame.zoom < BACKGROUND_NETWORK_SIMPLIFIED_ZOOM;
+    // Force straight-line geometry during active interaction — the
+    // multi-point projections per edge are the dominant cost on the
+    // hot wheel/pan path. Visual fidelity restores on settle.
+    const shouldSimplifyGeometry =
+      isInteractingWithCamera()
+      || frame.zoom < BACKGROUND_NETWORK_SIMPLIFIED_ZOOM;
     for (const edge of edgeRefs) {
       if (drawnEdges >= frame.lod.networkEdgeBudget) {
         break;
