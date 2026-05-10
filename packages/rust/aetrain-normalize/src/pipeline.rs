@@ -956,12 +956,14 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
                 overlay_path.display()
             )
         })?;
-        let overlay_stats = apply_registry_city_overlay(
+        let overlay_stats = apply_registry_city_authority(
             &mut merged_cities.cities,
+            &mut merged_cities.city_id_remap,
             &overlay,
             request.target.id.as_str(),
             &mut merged_cities.issues,
         );
+        merged_cities.aliases = rebuild_alias_records(&merged_cities.cities);
         counters.insert(
             "registry_overlay_match_count".to_string(),
             overlay_stats.matched_count,
@@ -1133,8 +1135,6 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
         &mut issues,
     );
     let mut merged = BTreeMap::<aetrain_domain::CityId, aetrain_domain::City>::new();
-    let mut alias_pairs = BTreeSet::<(String, aetrain_domain::CityId)>::new();
-
     for city in merged_by_input_id.into_values() {
         let canonical_city_id = city_id_remap
             .get(&city.city_id)
@@ -1195,24 +1195,31 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
             .sort_by(|left, right| left.as_str().cmp(right.as_str()));
         city.station_ids
             .dedup_by(|left, right| left.as_str() == right.as_str());
+    }
+    let merged_cities = merged.into_values().collect::<Vec<_>>();
+    let aliases = rebuild_alias_records(&merged_cities);
+
+    MergedCityOutput {
+        cities: merged_cities,
+        aliases,
+        city_id_remap,
+        issues,
+    }
+}
+
+fn rebuild_alias_records(cities: &[aetrain_domain::City]) -> Vec<aetrain_dataset::AliasRecord> {
+    let mut alias_pairs = BTreeSet::<(String, aetrain_domain::CityId)>::new();
+    for city in cities {
         for alias in &city.aliases {
             alias_pairs.insert((alias.clone(), city.city_id.clone()));
         }
         alias_pairs.insert((normalize_alias(&city.display_name), city.city_id.clone()));
     }
-
-    let aliases = alias_pairs
+    alias_pairs
         .into_iter()
         .filter(|(alias, _)| !alias.trim().is_empty())
         .map(|(alias, city_id)| aetrain_dataset::AliasRecord { alias, city_id })
-        .collect::<Vec<_>>();
-
-    MergedCityOutput {
-        cities: merged.into_values().collect(),
-        aliases,
-        city_id_remap,
-        issues,
-    }
+        .collect()
 }
 
 fn merge_stations(
@@ -1517,8 +1524,9 @@ fn apply_computed_city_enrichment(
     }
 }
 
-fn apply_registry_city_overlay(
+fn apply_registry_city_authority(
     cities: &mut [aetrain_domain::City],
+    city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
     overlay: &RegistryCanonicalBundle,
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
@@ -1569,14 +1577,26 @@ fn apply_registry_city_overlay(
         let city = &mut cities[index];
         stats.matched_count += 1;
         let mut changed = false;
+        let original_city_id = city.city_id.clone();
         let original_display_name = city.display_name.clone();
         let original_country_code = city.country_code.clone();
+        if city.city_id != registry_city.city_id {
+            rebind_city_id_remap(city_id_remap, &city.city_id, &registry_city.city_id);
+            city.city_id = registry_city.city_id.clone();
+            changed = true;
+        }
         if city.slug != registry_city.slug {
             city.slug = registry_city.slug.clone();
             changed = true;
         }
         if city.display_name != registry_city.display_name {
             city.display_name = registry_city.display_name.clone();
+            changed = true;
+        }
+        if original_display_name != registry_city.display_name
+            && !city.aliases.iter().any(|alias| alias == &original_display_name)
+        {
+            city.aliases.push(original_display_name.clone());
             changed = true;
         }
         if city.country_code != registry_city.country_code {
@@ -1602,15 +1622,28 @@ fn apply_registry_city_overlay(
             issues.push(NormalizationIssue {
                 severity: crate::IssueSeverity::Info,
                 source_id: aggregate_source_id.to_string(),
-                entity_ref: city.city_id.to_string(),
+                entity_ref: original_city_id.to_string(),
                 message: format!(
-                    "applied registry overlay {} to canonical city {}",
-                    registry_city.city_id, city.city_id
+                    "applied authoritative registry city {} to aggregate city {}",
+                    registry_city.city_id, original_city_id
                 ),
             });
         }
     }
     stats
+}
+
+fn rebind_city_id_remap(
+    city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+    from_city_id: &aetrain_domain::CityId,
+    to_city_id: &aetrain_domain::CityId,
+) {
+    city_id_remap.insert(from_city_id.clone(), to_city_id.clone());
+    for remapped_city_id in city_id_remap.values_mut() {
+        if remapped_city_id == from_city_id {
+            *remapped_city_id = to_city_id.clone();
+        }
+    }
 }
 
 fn registry_overlay_match_score(
@@ -2823,20 +2856,40 @@ mod tests {
             city_signals: Vec::new(),
         };
         let mut issues = Vec::new();
+        let mut remap = cities
+            .iter()
+            .map(|city| (city.city_id.clone(), city.city_id.clone()))
+            .collect::<BTreeMap<_, _>>();
 
         let stats =
-            apply_registry_city_overlay(&mut cities, &overlay, "europe-aggregate", &mut issues);
+            apply_registry_city_authority(&mut cities, &mut remap, &overlay, "europe-aggregate", &mut issues);
 
+        assert_eq!(cities[0].city_id.as_str(), "paris-fr-q90");
         assert_eq!(cities[0].wikidata_qid.as_deref(), Some("Q90"));
         assert_eq!(cities[0].population, Some(2_243_739));
+        assert_eq!(cities[1].city_id.as_str(), "avignon-fr-q6397");
         assert_eq!(cities[1].wikidata_qid.as_deref(), Some("Q6397"));
         assert_eq!(cities[1].population, Some(94_200));
+        assert_eq!(cities[2].city_id.as_str(), "nantes-fr-q12191");
         assert_eq!(cities[2].display_name, "Nantes");
         assert_eq!(cities[2].country_code, "FR");
         assert_eq!(cities[2].wikidata_qid.as_deref(), Some("Q12191"));
+        assert_eq!(cities[3].city_id.as_str(), "toulouse-fr-q7880");
         assert_eq!(cities[3].display_name, "Toulouse");
         assert_eq!(cities[3].country_code, "FR");
         assert_eq!(cities[3].wikidata_qid.as_deref(), Some("Q7880"));
+        assert_eq!(
+            remap.get(&CityId::new("nantes-ch-8fefd121").expect("valid city id"))
+                .expect("remapped nantes")
+                .as_str(),
+            "nantes-fr-q12191"
+        );
+        assert_eq!(
+            remap.get(&CityId::new("toulouse-matabiau-ch-099c66c9").expect("valid city id"))
+                .expect("remapped toulouse")
+                .as_str(),
+            "toulouse-fr-q7880"
+        );
         assert_eq!(issues.len(), 4);
         assert_eq!(stats.matched_count, 4);
         assert_eq!(stats.unmatched_count, 0);
@@ -2912,9 +2965,13 @@ mod tests {
             city_signals: Vec::new(),
         };
         let mut issues = Vec::new();
+        let mut remap = cities
+            .iter()
+            .map(|city| (city.city_id.clone(), city.city_id.clone()))
+            .collect::<BTreeMap<_, _>>();
 
         let stats =
-            apply_registry_city_overlay(&mut cities, &overlay, "europe-aggregate", &mut issues);
+            apply_registry_city_authority(&mut cities, &mut remap, &overlay, "europe-aggregate", &mut issues);
 
         assert_eq!(stats.matched_count, 0);
         assert_eq!(stats.unmatched_count, 0);
