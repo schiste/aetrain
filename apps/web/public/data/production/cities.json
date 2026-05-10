@@ -6732,9 +6732,9 @@
       "lat": 47.465801,
       "lon": -0.5446035
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
+    "wikidata_qid": "Q38380",
+    "population": 159022,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-87484006",
       "station-uic-87484048"
@@ -49167,9 +49167,9 @@
       "lat": 47.3231055,
       "lon": 5.0410805
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
+    "wikidata_qid": "Q7003",
+    "population": 161830,
+    "interest_score": 9,
     "station_ids": [
       "station-uic-87713008",
       "station-uic-8771304",
@@ -77923,9 +77923,9 @@
       "lat": 45.192092,
       "lon": 5.7144569999999995
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
+    "wikidata_qid": "Q1289",
+    "population": 166037,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-87335521",
       "station-uic-8774700",
@@ -145093,9 +145093,9 @@
       "lat": 43.599942,
       "lon": 3.9023415
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
+    "wikidata_qid": "Q6441",
+    "population": 310240,
+    "interest_score": 9,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-77845621",
       "station-uic-8768888",
@@ -156156,15 +156156,15 @@
   {
     "city_id": "nimes-ch-aa8440b6",
     "slug": "nimes",
-    "display_name": "Nimes",
-    "country_code": "CH",
+    "display_name": "Nîmes",
+    "country_code": "FR",
     "location": {
       "lat": 43.832344774999996,
       "lon": 4.366008305
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
+    "wikidata_qid": "Q42807",
+    "population": 154196,
+    "interest_score": 7,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-1b615812",
       "station-uic-8777500"
@@ -178714,14 +178714,14 @@
     "city_id": "reims-ch-493dd4cf",
     "slug": "reims",
     "display_name": "Reims",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 49.25924572,
       "lon": 4.02415603
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
+    "wikidata_qid": "Q41876",
+    "population": 187206,
+    "interest_score": 7,
     "station_ids": [
       "station-uic-8717100"
     ],
@@ -179473,14 +179473,14 @@
     "city_id": "rennes-ch-96bf0582",
     "slug": "rennes",
     "display_name": "Rennes",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.10317696,
       "lon": -1.67233967
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
+    "wikidata_qid": "Q647",
+    "population": 230890,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8747100"
     ],
@@ -185535,16 +185535,16 @@
   },
   {
     "city_id": "rouen-rive-droite-fr-76540",
-    "slug": "rouen-rive-droite",
-    "display_name": "Rouen Rive Droite",
+    "slug": "rouen",
+    "display_name": "Rouen",
     "country_code": "FR",
     "location": {
       "lat": 49.448663,
       "lon": 1.094103
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
+    "wikidata_qid": "Q30974",
+    "population": 117662,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-8741101",
       "station-uic-87411017"
@@ -189335,14 +189335,14 @@
   {
     "city_id": "saint-etienne-fr-42218",
     "slug": "saint-etienne",
-    "display_name": "Saint Etienne",
+    "display_name": "Saint-Étienne",
     "country_code": "FR",
     "location": {
       "lat": 45.4419066,
       "lon": 4.387131999999999
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q42716",
+    "population": 199000,
     "interest_score": 10,
     "station_ids": [
       "station-uic-8772600",
@@ -218443,9 +218443,9 @@
       "lat": 43.1266805,
       "lon": 5.9509185
     },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
+    "wikidata_qid": "Q44160",
+    "population": 180834,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-87742262",
       "station-uic-8775500",
