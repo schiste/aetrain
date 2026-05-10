@@ -1483,7 +1483,13 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
             .sort_by(|left, right| left.as_str().cmp(right.as_str()));
         city.station_ids
             .dedup_by(|left, right| left.as_str() == right.as_str());
+        if city.country_code == "ZZ" {
+            if let Some(inferred_country_code) = infer_country_code_from_station_ids(&city.station_ids) {
+                city.country_code = inferred_country_code;
+            }
+        }
     }
+    canonicalize_aggregate_city_names(merged.values_mut(), aggregate_source_id, &mut issues);
     let merged_cities = merged.into_values().collect::<Vec<_>>();
     let aliases = rebuild_alias_records(&merged_cities);
 
@@ -1492,6 +1498,121 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
         aliases,
         city_id_remap,
         issues,
+    }
+}
+
+fn canonicalize_aggregate_city_names<'a>(
+    cities: impl Iterator<Item = &'a mut aetrain_domain::City>,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) {
+    for city in cities {
+        let normalized_name = normalize_name(&city.display_name);
+        let base_identity_key = city_identity_key(&city.display_name);
+        if normalized_name == base_identity_key {
+            continue;
+        }
+        if city.wikidata_qid.is_some() {
+            continue;
+        }
+        if !is_plausible_aggregate_city_name(&base_identity_key) {
+            continue;
+        }
+        if !(is_station_qualified_city_name(&city.display_name) || city.country_code == "ZZ") {
+            continue;
+        }
+
+        let original_display_name = city.display_name.clone();
+        let cleaned_display_name = title_case_ascii_name(&base_identity_key);
+        if cleaned_display_name == city.display_name {
+            continue;
+        }
+        if !city.aliases.iter().any(|alias| alias == &original_display_name) {
+            city.aliases.push(original_display_name.clone());
+        }
+        city.display_name = cleaned_display_name;
+        city.slug = base_identity_key.replace(' ', "-");
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Info,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: city.city_id.to_string(),
+            message: format!(
+                "canonicalized aggregate city display name from {} to {}",
+                original_display_name, city.display_name
+            ),
+        });
+    }
+}
+
+fn is_plausible_aggregate_city_name(normalized_name: &str) -> bool {
+    let tokens = normalized_name.split_whitespace().collect::<Vec<_>>();
+    !normalized_name.is_empty()
+        && !is_station_qualified_city_name(normalized_name)
+        && !(tokens.len() == 1 && normalized_name.len() <= 2)
+}
+
+fn title_case_ascii_name(normalized_name: &str) -> String {
+    normalized_name
+        .split_whitespace()
+        .map(|token| {
+            let mut chars = token.chars();
+            match chars.next() {
+                Some(first) => {
+                    let mut title = String::new();
+                    title.push(first.to_ascii_uppercase());
+                    title.push_str(chars.as_str());
+                    title
+                }
+                None => String::new(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn infer_country_code_from_station_ids(
+    station_ids: &[aetrain_domain::StationId],
+) -> Option<String> {
+    let mut inferred = BTreeSet::new();
+    for station_id in station_ids {
+        let Some(uic_code) = extract_uic_code_from_station_id(station_id.as_str()) else {
+            continue;
+        };
+        let Some(country_code) = infer_country_code_from_uic_code(uic_code) else {
+            continue;
+        };
+        inferred.insert(country_code);
+    }
+    if inferred.len() == 1 {
+        inferred.into_iter().next().map(str::to_string)
+    } else {
+        None
+    }
+}
+
+fn extract_uic_code_from_station_id(station_id: &str) -> Option<&str> {
+    station_id.strip_prefix("station-uic-")
+}
+
+fn infer_country_code_from_uic_code(uic_code: &str) -> Option<&'static str> {
+    let prefix = uic_code.get(0..2)?;
+    match prefix {
+        "71" => Some("ES"),
+        "72" => Some("RS"),
+        "73" => Some("GR"),
+        "74" => Some("SE"),
+        "76" => Some("NO"),
+        "79" => Some("SI"),
+        "80" => Some("DE"),
+        "81" => Some("AT"),
+        "82" => Some("LU"),
+        "83" => Some("IT"),
+        "84" => Some("NL"),
+        "85" => Some("CH"),
+        "86" => Some("DK"),
+        "87" => Some("FR"),
+        "88" => Some("BE"),
+        _ => None,
     }
 }
 
@@ -2204,7 +2325,7 @@ fn city_identity_key(value: &str) -> String {
         .map(str::to_string)
         .collect::<Vec<_>>();
 
-    if let Some(index) = first_station_qualifier_index(&tokens) {
+    if let Some(index) = station_qualifier_start_index(&tokens) {
         if index > 0 {
             tokens.truncate(index);
         }
@@ -2232,6 +2353,32 @@ fn city_identity_key(value: &str) -> String {
         }
     }
 
+    loop {
+        let trimmed = if tokens.ends_with(&["arret".to_string(), "tcl".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["rond".to_string(), "point".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["la".to_string(), "poste".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["route".to_string(), "nationale".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.ends_with(&["route".to_string(), "principale".to_string()]) {
+            Some(tokens.len() - 2)
+        } else if tokens.last().is_some_and(|token| is_locality_suffix_token(token)) {
+            Some(tokens.len() - 1)
+        } else {
+            None
+        };
+
+        let Some(new_len) = trimmed else {
+            break;
+        };
+        if new_len == 0 {
+            break;
+        }
+        tokens.truncate(new_len);
+    }
+
     if tokens.is_empty() {
         normalized
     } else {
@@ -2244,15 +2391,23 @@ fn is_station_qualified_city_name(value: &str) -> bool {
         .split_whitespace()
         .map(str::to_string)
         .collect::<Vec<_>>();
-    tokens.len() > 1 && first_station_qualifier_index(&tokens).is_some()
+    tokens.len() > 1 && station_qualifier_start_index(&tokens).is_some()
 }
 
-fn first_station_qualifier_index(tokens: &[String]) -> Option<usize> {
+fn station_qualifier_start_index(tokens: &[String]) -> Option<usize> {
     tokens
         .iter()
         .enumerate()
         .skip(1)
-        .find_map(|(index, token)| is_station_token(token).then_some(index))
+        .find_map(|(index, token)| {
+            if !is_station_token(token) {
+                return None;
+            }
+            if index > 0 && is_station_prefix_token(&tokens[index - 1]) {
+                return Some(index - 1);
+            }
+            Some(index)
+        })
 }
 
 fn is_station_token(token: &str) -> bool {
@@ -2263,12 +2418,15 @@ fn is_station_token(token: &str) -> bool {
             | "bahn"
             | "bahnhof"
             | "bahnhst"
+            | "bf"
             | "bhf"
             | "busbahnhof"
             | "busstation"
             | "centrale"
             | "gare"
             | "gareroutiere"
+            | "halt"
+            | "haltepunkt"
             | "hbf"
             | "hauptbahnhof"
             | "hb"
@@ -2277,6 +2435,30 @@ fn is_station_token(token: &str) -> bool {
             | "station"
             | "tgv"
             | "zob"
+    )
+}
+
+fn is_station_prefix_token(token: &str) -> bool {
+    matches!(token, "s" | "u")
+}
+
+fn is_locality_suffix_token(token: &str) -> bool {
+    matches!(
+        token,
+        "centre"
+            | "mairie"
+            | "eglise"
+            | "pharmacie"
+            | "lycee"
+            | "village"
+            | "cimetiere"
+            | "stade"
+            | "archives"
+            | "charite"
+            | "monument"
+            | "poste"
+            | "republique"
+            | "hopital"
     )
 }
 
@@ -2852,6 +3034,180 @@ mod tests {
             Some(&berlin.city_id),
             "interior station tokens should collapse station-shaped Berlin variants"
         );
+    }
+
+    #[test]
+    fn aggregate_city_merge_strips_s_bahn_and_bf_qualifiers() {
+        let bad_vigaun = City {
+            city_id: CityId::new("bad-vigaun-at-base").expect("valid city id"),
+            slug: "bad-vigaun".to_string(),
+            display_name: "Bad Vigaun".to_string(),
+            country_code: "AT".to_string(),
+            location: GeoPoint {
+                lat: 47.665,
+                lon: 13.138,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-bad-vigaun").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let bad_vigaun_s_bahn = City {
+            city_id: CityId::new("bad-vigaun-s-bahn-at-2a0f189b").expect("valid city id"),
+            slug: "bad-vigaun-s-bahn".to_string(),
+            display_name: "Bad Vigaun S Bahn".to_string(),
+            country_code: "AT".to_string(),
+            location: GeoPoint {
+                lat: 47.6652,
+                lon: 13.1381,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-bad-vigaun-s").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let bad_oeynhausen = City {
+            city_id: CityId::new("bad-oeynhausen-de-base").expect("valid city id"),
+            slug: "bad-oeynhausen".to_string(),
+            display_name: "Bad Oeynhausen".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint {
+                lat: 52.206,
+                lon: 8.803,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-bad-oeynhausen").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let bad_oeynhausen_bf = City {
+            city_id: CityId::new("bad-oeynhausen-bf-zob-de-6b4b910f").expect("valid city id"),
+            slug: "bad-oeynhausen-bf-zob".to_string(),
+            display_name: "Bad Oeynhausen Bf Zob".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint {
+                lat: 52.2059,
+                lon: 8.8029,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-bad-oeynhausen-bf").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+
+        let mut issues = Vec::new();
+        let remap = build_aggregate_city_id_remap(
+            vec![&bad_vigaun, &bad_vigaun_s_bahn, &bad_oeynhausen, &bad_oeynhausen_bf],
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(remap.get(&bad_vigaun_s_bahn.city_id), Some(&bad_vigaun.city_id));
+        assert_eq!(remap.get(&bad_oeynhausen_bf.city_id), Some(&bad_oeynhausen.city_id));
+    }
+
+    #[test]
+    fn aggregate_city_merge_strips_locality_suffixes_for_zz_rows() {
+        let adamswiller = City {
+            city_id: CityId::new("adamswiller-fr-base").expect("valid city id"),
+            slug: "adamswiller".to_string(),
+            display_name: "Adamswiller".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.883,
+                lon: 7.227,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-adamswiller").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let adamswiller_mairie = City {
+            city_id: CityId::new("adamswiller-mairie-zz-0985a88a").expect("valid city id"),
+            slug: "adamswiller-mairie".to_string(),
+            display_name: "Adamswiller Mairie".to_string(),
+            country_code: "ZZ".to_string(),
+            location: GeoPoint {
+                lat: 48.8831,
+                lon: 7.2271,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-adamswiller-mairie").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+
+        let mut issues = Vec::new();
+        let remap = build_aggregate_city_id_remap(
+            vec![&adamswiller, &adamswiller_mairie],
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(remap.get(&adamswiller_mairie.city_id), Some(&adamswiller.city_id));
+    }
+
+    #[test]
+    fn canonicalize_aggregate_city_names_trims_station_and_locality_singletons() {
+        let mut cities = vec![
+            City {
+                city_id: CityId::new("bad-oeynhausen-bf-zob-de-6b4b910f").expect("valid city id"),
+                slug: "bad-oeynhausen-bf-zob".to_string(),
+                display_name: "Bad Oeynhausen Bf Zob".to_string(),
+                country_code: "DE".to_string(),
+                location: GeoPoint { lat: 52.206, lon: 8.803 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-bad-oeynhausen-bf").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("adamswiller-mairie-zz-0985a88a").expect("valid city id"),
+                slug: "adamswiller-mairie".to_string(),
+                display_name: "Adamswiller Mairie".to_string(),
+                country_code: "ZZ".to_string(),
+                location: GeoPoint { lat: 48.883, lon: 7.227 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-adamswiller-mairie").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+        ];
+        let mut issues = Vec::new();
+
+        canonicalize_aggregate_city_names(cities.iter_mut(), "europe-aggregate", &mut issues);
+
+        assert_eq!(cities[0].display_name, "Bad Oeynhausen");
+        assert_eq!(cities[0].slug, "bad-oeynhausen");
+        assert!(cities[0].aliases.iter().any(|alias| alias == "Bad Oeynhausen Bf Zob"));
+        assert_eq!(cities[1].display_name, "Adamswiller");
+        assert_eq!(cities[1].slug, "adamswiller");
+        assert!(cities[1].aliases.iter().any(|alias| alias == "Adamswiller Mairie"));
+        assert_eq!(issues.len(), 2);
+    }
+
+    #[test]
+    fn infer_country_code_from_uic_station_ids_works_for_foreign_sncf_rows() {
+        let berlin = vec![StationId::new("station-uic-80077990").expect("valid station id")];
+        let bruxelles = vec![StationId::new("station-uic-88140010").expect("valid station id")];
+        let barcelone = vec![StationId::new("station-uic-71718010").expect("valid station id")];
+        let mixed = vec![
+            StationId::new("station-uic-80077990").expect("valid station id"),
+            StationId::new("station-uic-88140010").expect("valid station id"),
+        ];
+
+        assert_eq!(infer_country_code_from_station_ids(&berlin).as_deref(), Some("DE"));
+        assert_eq!(infer_country_code_from_station_ids(&bruxelles).as_deref(), Some("BE"));
+        assert_eq!(infer_country_code_from_station_ids(&barcelone).as_deref(), Some("ES"));
+        assert_eq!(infer_country_code_from_station_ids(&mixed), None);
     }
 
     #[test]
