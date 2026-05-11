@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration. Tells the git-integrated build where
+# the production artifact lives so the deploy serves `dist/`, not the
+# source tree (which contains .ts files Pages then serves as
+# `video/mp2t`, breaking ESM imports).
+#
+# Without this file Pages defaulted to serving the repo root, which
+# exposed the dev-mode index.html referencing /src/main.ts.
+
+name = "aetrain"
+compatibility_date = "2026-05-01"
+pages_build_output_dir = "apps/web/dist"

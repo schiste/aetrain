@@ -1,0 +1,10 @@
+{
+  "name": "aetrain-workspace",
+  "private": true,
+  "description": "Aetrain monorepo root. Hosts CI + Cloudflare Pages build entry points; the actual web app lives in apps/web.",
+  "scripts": {
+    "build": "cd apps/web && npm ci && npm run build",
+    "test": "cd apps/web && npm test",
+    "typecheck": "cd apps/web && npm run typecheck"
+  }
+}

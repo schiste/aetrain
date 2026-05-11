@@ -1,0 +1,28 @@
+# Cloudflare Pages headers for the production build.
+#
+# Defensive MIME overrides: if a .ts URL ever leaks into the deployed
+# tree (e.g. a misconfigured build that copies src/ alongside dist/),
+# force it to be served as JavaScript so the browser will execute it
+# instead of refusing on the MPEG-2 Transport Stream MIME.
+/*.ts
+  Content-Type: text/javascript; charset=utf-8
+
+# Long-cache fingerprinted assets — vite emits hashed filenames that
+# never change content, so they're safe to cache indefinitely.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Versioned dataset chunks. The runtime artifact's filename doesn't
+# carry the version itself but the dataset_version field in meta.json
+# does; the service worker prunes by version. A short TTL keeps client
+# caches reasonably fresh without forcing a revalidate on every load.
+/data/production/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+# Index always-fresh: every deploy serves a different /assets/*.js
+# fingerprint, so the HTML is the only thing that needs to be never
+# cached aggressively at the edge.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
