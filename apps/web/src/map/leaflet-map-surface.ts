@@ -1656,28 +1656,42 @@ export function createLeafletMapSurface({
   function updateHover(point: MapPoint): void {
     lastPointerPoint = point;
     const hit = hitTestSpatialGrid(hitGrid, point);
-    surfaceRoot.style.cursor = pointerState?.moved
-      ? "grabbing"
-      : hit
-        ? "pointer"
-        : "grab";
-
-    if (!hit) {
-      hideTooltip();
+    // City hover takes priority over segment hover. Tooltip + cursor
+    // resolve to the city if the pointer is over one; otherwise we
+    // fall through to the route-segment hit-test.
+    if (hit) {
+      surfaceRoot.style.cursor = pointerState?.moved ? "grabbing" : "pointer";
+      setTooltipHtml(tooltip, buildTooltipHtml(
+        hit,
+        currentState,
+        escapeHtml,
+        formatMinutes,
+        formatPopulation
+      ));
+      tooltip.style.display = "block";
+      tooltip.style.left = `${Math.round(point.x)}px`;
+      tooltip.style.top = `${Math.round(point.y - 12)}px`;
+      tooltip.style.transform = "translate(-50%, -100%)";
       return;
     }
 
-    setTooltipHtml(tooltip, buildTooltipHtml(
-      hit,
-      currentState,
-      escapeHtml,
-      formatMinutes,
-      formatPopulation
-    ));
-    tooltip.style.display = "block";
-    tooltip.style.left = `${Math.round(point.x)}px`;
-    tooltip.style.top = `${Math.round(point.y - 12)}px`;
-    tooltip.style.transform = "translate(-50%, -100%)";
+    const segmentHit = hitTestRouteSegments(currentRouteSegments, point);
+    if (segmentHit) {
+      surfaceRoot.style.cursor = pointerState?.moved ? "grabbing" : "pointer";
+      setTooltipHtml(tooltip, buildSegmentTooltipHtml(
+        segmentHit,
+        escapeHtml,
+        formatMinutes
+      ));
+      tooltip.style.display = "block";
+      tooltip.style.left = `${Math.round(point.x)}px`;
+      tooltip.style.top = `${Math.round(point.y - 12)}px`;
+      tooltip.style.transform = "translate(-50%, -100%)";
+      return;
+    }
+
+    surfaceRoot.style.cursor = pointerState?.moved ? "grabbing" : "grab";
+    hideTooltip();
   }
 
   function hideTooltip(): void {
@@ -1773,6 +1787,72 @@ function labelPriority(visibleCity: VisibleCity, plannerState: MapPlannerState):
   }
 
   return visibleCity.city.interest * 10_000 + visibleCity.city.pop / 1000;
+}
+
+/** Pixel distance threshold for "the cursor is on this segment". Wide
+ *  enough to be forgiving on a dashed line, narrow enough that it
+ *  doesn't trigger when the cursor is just near an unrelated segment. */
+const SEGMENT_HIT_THRESHOLD_PX = 10;
+
+function hitTestRouteSegments(
+  segments: readonly RouteSegmentRender[],
+  point: MapPoint
+): RouteSegmentRender | null {
+  let bestSegment: RouteSegmentRender | null = null;
+  let bestDistance = SEGMENT_HIT_THRESHOLD_PX;
+  for (const segment of segments) {
+    const distance = distanceFromPointToPolyline(point, segment.points);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestSegment = segment;
+    }
+  }
+  return bestSegment;
+}
+
+function distanceFromPointToPolyline(p: MapPoint, points: readonly MapPoint[]): number {
+  if (points.length === 0) return Number.POSITIVE_INFINITY;
+  if (points.length === 1) {
+    const only = points[0];
+    return only ? Math.hypot(p.x - only.x, p.y - only.y) : Number.POSITIVE_INFINITY;
+  }
+  let min = Number.POSITIVE_INFINITY;
+  for (let index = 1; index < points.length; index += 1) {
+    const a = points[index - 1];
+    const b = points[index];
+    if (!a || !b) continue;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+    let t = 0;
+    if (lenSq > 0) {
+      t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
+      if (t < 0) t = 0;
+      else if (t > 1) t = 1;
+    }
+    const cx = a.x + t * dx;
+    const cy = a.y + t * dy;
+    const d = Math.hypot(p.x - cx, p.y - cy);
+    if (d < min) min = d;
+  }
+  return min;
+}
+
+function buildSegmentTooltipHtml(
+  segment: RouteSegmentRender,
+  escapeHtml: (value: unknown) => string,
+  formatMinutes: (minutes: number | null | undefined) => string
+): string {
+  const intermediates = Math.max(0, segment.points.length - 2);
+  // segment.index is 0-based; users count segments starting at 1.
+  const segmentLabel = `Segment ${segment.index + 1}`;
+  let body = `<b>${escapeHtml(segment.from)} → ${escapeHtml(segment.to)}</b>`;
+  body += `<br><span style="color:#94a3b8;font-size:10px">${escapeHtml(segmentLabel)}</span>`;
+  body += `<br><span style="color:#f59e0b;font-size:10px">🚂 ${escapeHtml(formatMinutes(segment.minutes))}</span>`;
+  if (intermediates > 0) {
+    body += `<br><span style="color:#94a3b8;font-size:10px">${intermediates} intermediate stop${intermediates === 1 ? "" : "s"}</span>`;
+  }
+  return body;
 }
 
 function buildTooltipHtml(
