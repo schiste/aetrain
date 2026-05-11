@@ -137,6 +137,23 @@ interface PointerState {
   moved: boolean;
 }
 
+/** A trip segment as rendered on the routes canvas. Cached after each
+ *  draw so the pointer-move hover hit-test can address segments
+ *  without re-projecting their geometry. */
+interface RouteSegmentRender {
+  /** Zero-based index in state.segments — segment i covers
+   *  trip[i] → trip[i+1]. */
+  index: number;
+  from: string;
+  to: string;
+  minutes: number;
+  /** Projected polyline in screen-space pixels. */
+  points: MapPoint[];
+  /** Arc-length midpoint of the polyline, used to anchor the duration
+   *  badge and as the tooltip anchor on hover. */
+  midpoint: MapPoint;
+}
+
 interface PreparedCity {
   city: PlannerCity;
   renderPriority: number;
@@ -444,6 +461,11 @@ export function createLeafletMapSurface({
   let isPanning = false;
   let panSettleTimeoutId = 0;
   let pointerState: PointerState | null = null;
+  // Last-rendered trip segments, keyed by index in state.segments.
+  // Refreshed every time drawRoutes runs. Pointer hover uses these to
+  // surface a segment tooltip — the entries already carry the
+  // projected polyline, so hover-tests don't re-walk geometry.
+  let currentRouteSegments: RouteSegmentRender[] = [];
   // Last observed pointer position inside the map (used by the Enter
   // keyboard shortcut to pick the hovered city). null until first hover.
   let lastPointerPoint: MapPoint | null = null;
@@ -1313,9 +1335,14 @@ export function createLeafletMapSurface({
     segments: (PlannerSegment | null)[] | undefined
   ): void {
     clearCanvas(routeContext, routeCanvas);
+    const nextSegments: RouteSegmentRender[] = [];
     let drawnSegments = 0;
+    const segmentList = segments || [];
 
-    for (const segment of segments || []) {
+    // First pass: project + draw polylines (glow + dashed line). Badges
+    // are deferred to a second pass so they sit on top of every segment.
+    for (let index = 0; index < segmentList.length; index += 1) {
+      const segment = segmentList[index];
       if (!segment) continue;
       if ((!segment.path || segment.path.length < 2) && (!segment.geometry || segment.geometry.length < 2)) {
         continue;
@@ -1356,13 +1383,73 @@ export function createLeafletMapSurface({
       routeContext.stroke();
       routeContext.restore();
 
+      const pathFirst = segment.path[0];
+      const pathLast = segment.path[segment.path.length - 1];
+      if (pathFirst && pathLast) {
+        nextSegments.push({
+          index,
+          from: pathFirst,
+          to: pathLast,
+          minutes: segment.time,
+          points,
+          midpoint: arcLengthMidpoint(points)
+        });
+      }
       drawnSegments += 1;
     }
 
+    // Second pass: duration badges on top, in screen-space pixels.
+    for (const segmentRender of nextSegments) {
+      drawSegmentDurationBadge(
+        routeContext,
+        segmentRender.midpoint,
+        formatMinutes(segmentRender.minutes)
+      );
+    }
+
+    currentRouteSegments = nextSegments;
     diagnostics.metric("route-layer-draw", drawnSegments, {
       drawn_segments: drawnSegments,
       zoom: frame.zoom
     });
+  }
+
+  function drawSegmentDurationBadge(
+    context: CanvasRenderingContext2D,
+    anchor: MapPoint,
+    text: string
+  ): void {
+    if (!text) return;
+    context.save();
+    context.font = "600 10px 'JetBrains Mono', ui-monospace, monospace";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    const padding = 5;
+    const metrics = context.measureText(text);
+    const width = Math.ceil(metrics.width) + padding * 2;
+    const height = 16;
+    const x = Math.round(anchor.x - width / 2);
+    const y = Math.round(anchor.y - height / 2);
+    // Pill background — accent orange so the badges feel of-a-piece
+    // with the route line.
+    context.beginPath();
+    const radius = height / 2;
+    context.moveTo(x + radius, y);
+    context.lineTo(x + width - radius, y);
+    context.arcTo(x + width, y, x + width, y + radius, radius);
+    context.lineTo(x + width, y + height - radius);
+    context.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+    context.lineTo(x + radius, y + height);
+    context.arcTo(x, y + height, x, y + height - radius, radius);
+    context.lineTo(x, y + radius);
+    context.arcTo(x, y, x + radius, y, radius);
+    context.closePath();
+    context.fillStyle = "#f59e0b";
+    context.fill();
+    // Black text on amber meets WCAG AA at this size.
+    context.fillStyle = "#0b0f19";
+    context.fillText(text, anchor.x, anchor.y + 0.5);
+    context.restore();
   }
 
   function drawCities(_frame: MapFrame, visibleCities: VisibleCity[]): void {
@@ -1824,6 +1911,42 @@ function clearCanvas(context: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.restore();
+}
+
+/** Return the point at half the cumulative arc-length of a polyline.
+ *  Used by drawRoutes to anchor the duration badge near the visual
+ *  centre of each trip segment. For 2-point segments this is the line
+ *  midpoint; for curved geometries it walks the polyline. Falls back
+ *  to the first point on degenerate input. */
+function arcLengthMidpoint(points: MapPoint[]): MapPoint {
+  if (points.length === 0) return { x: 0, y: 0 };
+  const first = points[0];
+  if (!first || points.length === 1) return first ?? { x: 0, y: 0 };
+  let totalLength = 0;
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    if (!previous || !current) continue;
+    totalLength += Math.hypot(current.x - previous.x, current.y - previous.y);
+  }
+  if (totalLength === 0) return first;
+  let remaining = totalLength / 2;
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    if (!previous || !current) continue;
+    const segmentLength = Math.hypot(current.x - previous.x, current.y - previous.y);
+    if (segmentLength === 0) continue;
+    if (remaining <= segmentLength) {
+      const t = remaining / segmentLength;
+      return {
+        x: previous.x + (current.x - previous.x) * t,
+        y: previous.y + (current.y - previous.y) * t
+      };
+    }
+    remaining -= segmentLength;
+  }
+  return points[points.length - 1] ?? first;
 }
 
 function tracePoints(context: CanvasRenderingContext2D, points: MapPoint[]): void {
