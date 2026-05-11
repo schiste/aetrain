@@ -67,6 +67,7 @@ pub struct SncfBuildOutput {
     pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
     pub edge_geometries: EdgeGeometryArtifact,
+    pub rejected_city_candidates: RejectedCityCandidateReport,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
@@ -91,6 +92,7 @@ pub struct BasicGtfsBuildOutput {
     pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
     pub edge_geometries: EdgeGeometryArtifact,
+    pub rejected_city_candidates: RejectedCityCandidateReport,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
@@ -125,6 +127,31 @@ pub struct StationMappingRecord {
 #[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct StationMappingReport {
     pub records: Vec<StationMappingRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RejectedCityCandidateResolution {
+    DemotedToParentCity,
+    UnresolvedStationOnly,
+    UnresolvedReferenceGap,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RejectedCityCandidateRecord {
+    pub cluster_key: String,
+    pub display_name: String,
+    pub country_code: String,
+    pub station_count: usize,
+    pub eligibility: String,
+    pub resolution: RejectedCityCandidateResolution,
+    pub derived_parent_key: Option<String>,
+    pub parent_cluster_key: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct RejectedCityCandidateReport {
+    pub records: Vec<RejectedCityCandidateRecord>,
 }
 
 #[derive(Clone, Debug)]
@@ -179,6 +206,12 @@ enum CityEligibility {
     Eligible,
     StationOnlyFeedStopLabel,
     RouteLikeLocalStop { parent_key: Option<String> },
+}
+
+#[derive(Clone, Debug, Default)]
+struct CityEligibilityResolution {
+    remap: HashMap<String, String>,
+    report: RejectedCityCandidateReport,
 }
 
 #[derive(Clone, Debug)]
@@ -289,6 +322,7 @@ pub fn build_sncf_dataset(
         cities,
         stations,
         station_mappings,
+        rejected_city_candidates,
         aliases,
         station_key_to_city,
         station_key_confidence,
@@ -346,6 +380,7 @@ pub fn build_sncf_dataset(
         station_mappings,
         edges,
         edge_geometries,
+        rejected_city_candidates,
         aliases,
         duplicates,
         issues,
@@ -387,8 +422,15 @@ pub fn build_gtfs_basic_dataset(
         .collect::<HashMap<_, _>>();
 
     let mut issues = Vec::new();
-    let (cities, stations, station_mappings, aliases, station_key_to_city, station_key_confidence) =
-        normalize_gtfs_only_stations(
+    let (
+        cities,
+        stations,
+        station_mappings,
+        rejected_city_candidates,
+        aliases,
+        station_key_to_city,
+        station_key_confidence,
+    ) = normalize_gtfs_only_stations(
             &gtfs_stations,
             gtfs_source_id,
             country_code,
@@ -435,6 +477,7 @@ pub fn build_gtfs_basic_dataset(
         station_mappings,
         edges,
         edge_geometries,
+        rejected_city_candidates,
         aliases,
         duplicates,
         issues,
@@ -563,6 +606,7 @@ fn normalize_stations(
     Vec<City>,
     Vec<Station>,
     StationMappingReport,
+    RejectedCityCandidateReport,
     Vec<AliasRecord>,
     HashMap<String, CityId>,
     HashMap<String, u8>,
@@ -735,17 +779,17 @@ fn normalize_stations(
         cluster.count += 1;
     }
 
-    let demoted_clusters =
+    let eligibility_resolution =
         resolve_gtfs_basic_ineligible_clusters(&clusters, gtfs_source_id, issues);
-    if !demoted_clusters.is_empty() {
+    if !eligibility_resolution.remap.is_empty() {
         for station in &mut pending_stations {
-            if let Some(parent_cluster_key) = demoted_clusters.get(&station.cluster_key) {
+            if let Some(parent_cluster_key) = eligibility_resolution.remap.get(&station.cluster_key) {
                 station.cluster_key = parent_cluster_key.clone();
             }
         }
 
         let mut merged_children = HashSet::new();
-        for (child_cluster_key, parent_cluster_key) in &demoted_clusters {
+        for (child_cluster_key, parent_cluster_key) in &eligibility_resolution.remap {
             if child_cluster_key == parent_cluster_key {
                 continue;
             }
@@ -902,6 +946,7 @@ fn normalize_stations(
         StationMappingReport {
             records: station_mappings,
         },
+        eligibility_resolution.report,
         aliases,
         station_key_to_city,
         station_key_confidence,
@@ -920,6 +965,7 @@ fn normalize_gtfs_only_stations(
     Vec<City>,
     Vec<Station>,
     StationMappingReport,
+    RejectedCityCandidateReport,
     Vec<AliasRecord>,
     HashMap<String, CityId>,
     HashMap<String, u8>,
@@ -1008,17 +1054,17 @@ fn normalize_gtfs_only_stations(
         cluster.count += 1;
     }
 
-    let demoted_clusters =
+    let eligibility_resolution =
         resolve_gtfs_basic_ineligible_clusters(&clusters, gtfs_source_id, issues);
-    if !demoted_clusters.is_empty() {
+    if !eligibility_resolution.remap.is_empty() {
         for station in &mut pending_stations {
-            if let Some(parent_cluster_key) = demoted_clusters.get(&station.cluster_key) {
+            if let Some(parent_cluster_key) = eligibility_resolution.remap.get(&station.cluster_key) {
                 station.cluster_key = parent_cluster_key.clone();
             }
         }
 
         let mut merged_children = HashSet::new();
-        for (child_cluster_key, parent_cluster_key) in &demoted_clusters {
+        for (child_cluster_key, parent_cluster_key) in &eligibility_resolution.remap {
             if child_cluster_key == parent_cluster_key {
                 continue;
             }
@@ -1175,6 +1221,7 @@ fn normalize_gtfs_only_stations(
         StationMappingReport {
             records: station_mappings,
         },
+        eligibility_resolution.report,
         aliases,
         station_key_to_city,
         station_key_confidence,
@@ -1875,7 +1922,7 @@ fn resolve_gtfs_basic_ineligible_clusters(
     clusters: &BTreeMap<String, CityCluster>,
     source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
-) -> HashMap<String, String> {
+) -> CityEligibilityResolution {
     let cluster_details = clusters
         .iter()
         .map(|(cluster_key, cluster)| {
@@ -1899,11 +1946,27 @@ fn resolve_gtfs_basic_ineligible_clusters(
         })
         .collect::<Vec<_>>();
 
-    let mut resolutions = HashMap::new();
+    let mut resolutions = CityEligibilityResolution::default();
     for (cluster_key, display_name, location, eligibility, _) in &cluster_details {
         match eligibility {
             CityEligibility::Eligible => {}
             CityEligibility::StationOnlyFeedStopLabel => {
+                resolutions.report.records.push(RejectedCityCandidateRecord {
+                    cluster_key: cluster_key.clone(),
+                    display_name: display_name.clone(),
+                    country_code: clusters
+                        .get(cluster_key)
+                        .map(|cluster| cluster.country_code.clone())
+                        .unwrap_or_else(|| "ZZ".to_string()),
+                    station_count: clusters
+                        .get(cluster_key)
+                        .map(|cluster| cluster.station_ids.len())
+                        .unwrap_or(0),
+                    eligibility: "station_only_feed_stop_label".to_string(),
+                    resolution: RejectedCityCandidateResolution::UnresolvedStationOnly,
+                    derived_parent_key: None,
+                    parent_cluster_key: None,
+                });
                 issues.push(NormalizationIssue {
                     severity: IssueSeverity::Warning,
                     source_id: source_id.to_string(),
@@ -1923,6 +1986,22 @@ fn resolve_gtfs_basic_ineligible_clusters(
                         &cluster_details,
                     )
                 }) else {
+                    resolutions.report.records.push(RejectedCityCandidateRecord {
+                        cluster_key: cluster_key.clone(),
+                        display_name: display_name.clone(),
+                        country_code: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.country_code.clone())
+                            .unwrap_or_else(|| "ZZ".to_string()),
+                        station_count: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.station_ids.len())
+                            .unwrap_or(0),
+                        eligibility: "route_like_local_stop".to_string(),
+                        resolution: RejectedCityCandidateResolution::UnresolvedReferenceGap,
+                        derived_parent_key: parent_key.clone(),
+                        parent_cluster_key: None,
+                    });
                     issues.push(NormalizationIssue {
                         severity: IssueSeverity::Warning,
                         source_id: source_id.to_string(),
@@ -1934,7 +2013,25 @@ fn resolve_gtfs_basic_ineligible_clusters(
                     });
                     continue;
                 };
-                resolutions.insert(cluster_key.clone(), parent_cluster_key.clone());
+                resolutions
+                    .remap
+                    .insert(cluster_key.clone(), parent_cluster_key.clone());
+                resolutions.report.records.push(RejectedCityCandidateRecord {
+                    cluster_key: cluster_key.clone(),
+                    display_name: display_name.clone(),
+                    country_code: clusters
+                        .get(cluster_key)
+                        .map(|cluster| cluster.country_code.clone())
+                        .unwrap_or_else(|| "ZZ".to_string()),
+                    station_count: clusters
+                        .get(cluster_key)
+                        .map(|cluster| cluster.station_ids.len())
+                        .unwrap_or(0),
+                    eligibility: "route_like_local_stop".to_string(),
+                    resolution: RejectedCityCandidateResolution::DemotedToParentCity,
+                    derived_parent_key: parent_key.clone(),
+                    parent_cluster_key: Some(parent_cluster_key.clone()),
+                });
                 let parent_display_name = cluster_details
                     .iter()
                     .find(|(candidate_cluster_key, _, _, _, _)| {
@@ -2515,7 +2612,7 @@ mod tests {
         };
         let mut issues = Vec::new();
 
-        let (cities, stations, station_mappings, _, _, _, _, _) = normalize_stations(
+        let (cities, stations, station_mappings, _, _, _, _, _, _) = normalize_stations(
             &gtfs_stations,
             &references,
             "sncf-fr-gtfs",

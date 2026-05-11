@@ -89,6 +89,7 @@ pub struct AdapterBuildArtifacts {
     pub canonical: DatasetBundle,
     pub edge_geometries: Option<EdgeGeometryArtifact>,
     pub station_mappings: Option<StationMappingReport>,
+    pub rejected_city_candidates: Option<crate::RejectedCityCandidateReport>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
     pub counters: BTreeMap<String, u64>,
@@ -548,6 +549,12 @@ fn export_canonical_bundle(
     )?;
     if let Some(station_mappings) = &artifacts.station_mappings {
         write_json(&output_dir.join("station-mappings.json"), station_mappings)?;
+    }
+    if let Some(rejected_city_candidates) = &artifacts.rejected_city_candidates {
+        write_json(
+            &output_dir.join("rejected-city-candidates.json"),
+            rejected_city_candidates,
+        )?;
     }
     write_json(&output_dir.join("issues.json"), &artifacts.issues)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
@@ -1317,6 +1324,7 @@ struct AggregateTargetInput {
     canonical: DatasetBundle,
     edge_geometries: EdgeGeometryArtifact,
     station_mappings: Option<StationMappingReport>,
+    rejected_city_candidates: Option<crate::RejectedCityCandidateReport>,
     issues: Vec<NormalizationIssue>,
 }
 
@@ -1344,6 +1352,14 @@ fn load_aggregate_target_input(
     } else {
         None
     };
+    let rejected_city_candidates_path = canonical_dir.join("rejected-city-candidates.json");
+    let rejected_city_candidates = if rejected_city_candidates_path.exists() {
+        Some(read_json::<crate::RejectedCityCandidateReport>(
+            &rejected_city_candidates_path,
+        )?)
+    } else {
+        None
+    };
     let _duplicates =
         read_json::<DuplicateCityReport>(&canonical_dir.join("duplicate-candidates.json"))?;
     let issues = read_json::<Vec<NormalizationIssue>>(&canonical_dir.join("issues.json"))?;
@@ -1354,6 +1370,7 @@ fn load_aggregate_target_input(
         canonical,
         edge_geometries,
         station_mappings,
+        rejected_city_candidates,
         issues,
     })
 }
@@ -1381,6 +1398,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
 
     let source_snapshots = merge_source_snapshots(&dependency_inputs);
     let source_artifacts = merge_source_artifacts(&dependency_inputs);
+    let rejected_city_candidates = merge_rejected_city_candidates(&dependency_inputs);
     let notes = vec![format!(
         "Aggregated canonical outputs from {} validated targets.",
         dependency_inputs.len()
@@ -1393,6 +1411,51 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         (
             "dependency_source_count".to_string(),
             source_snapshots.len() as u64,
+        ),
+        (
+            "source_rejected_city_candidate_count".to_string(),
+            dependency_inputs
+                .iter()
+                .map(|input| {
+                    input
+                        .manifest
+                        .summary
+                        .counters
+                        .get("source_rejected_city_candidate_count")
+                        .copied()
+                        .unwrap_or(0)
+                })
+                .sum(),
+        ),
+        (
+            "source_demoted_city_candidate_count".to_string(),
+            dependency_inputs
+                .iter()
+                .map(|input| {
+                    input
+                        .manifest
+                        .summary
+                        .counters
+                        .get("source_demoted_city_candidate_count")
+                        .copied()
+                        .unwrap_or(0)
+                })
+                .sum(),
+        ),
+        (
+            "source_unresolved_city_candidate_count".to_string(),
+            dependency_inputs
+                .iter()
+                .map(|input| {
+                    input
+                        .manifest
+                        .summary
+                        .counters
+                        .get("source_unresolved_city_candidate_count")
+                        .copied()
+                        .unwrap_or(0)
+                })
+                .sum(),
         ),
     ]);
 
@@ -1498,6 +1561,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         canonical,
         edge_geometries: Some(edge_geometries),
         station_mappings: Some(station_mappings),
+        rejected_city_candidates: Some(rejected_city_candidates),
         duplicates,
         issues,
         counters,
@@ -1540,6 +1604,18 @@ fn merge_source_artifacts(inputs: &[AggregateTargetInput]) -> Vec<PipelineSource
         }
     }
     deduped.into_values().collect()
+}
+
+fn merge_rejected_city_candidates(
+    inputs: &[AggregateTargetInput],
+) -> crate::RejectedCityCandidateReport {
+    let mut records = Vec::new();
+    for input in inputs {
+        if let Some(report) = &input.rejected_city_candidates {
+            records.extend(report.records.clone());
+        }
+    }
+    crate::RejectedCityCandidateReport { records }
 }
 
 fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> MergedCityOutput {
@@ -2978,12 +3054,41 @@ impl PipelineAdapter for SncfAdapter {
                 "unmatched_station_count".to_string(),
                 output.summary.unmatched_station_count as u64,
             ),
+            (
+                "source_rejected_city_candidate_count".to_string(),
+                output.rejected_city_candidates.records.len() as u64,
+            ),
+            (
+                "source_demoted_city_candidate_count".to_string(),
+                output
+                    .rejected_city_candidates
+                    .records
+                    .iter()
+                    .filter(|record| {
+                        record.resolution
+                            == crate::RejectedCityCandidateResolution::DemotedToParentCity
+                    })
+                    .count() as u64,
+            ),
+            (
+                "source_unresolved_city_candidate_count".to_string(),
+                output
+                    .rejected_city_candidates
+                    .records
+                    .iter()
+                    .filter(|record| {
+                        record.resolution
+                            != crate::RejectedCityCandidateResolution::DemotedToParentCity
+                    })
+                    .count() as u64,
+            ),
         ]);
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_output(&output),
             edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
+            rejected_city_candidates: Some(output.rejected_city_candidates),
             duplicates: output.duplicates,
             issues: output.issues,
             counters,
@@ -3017,12 +3122,38 @@ impl PipelineAdapter for GtfsBasicAdapter {
         let counters = BTreeMap::from([(
             "gtfs_station_count".to_string(),
             output.summary.gtfs_station_count as u64,
+        ),(
+            "source_rejected_city_candidate_count".to_string(),
+            output.rejected_city_candidates.records.len() as u64,
+        ),(
+            "source_demoted_city_candidate_count".to_string(),
+            output
+                .rejected_city_candidates
+                .records
+                .iter()
+                .filter(|record| {
+                    record.resolution
+                        == crate::RejectedCityCandidateResolution::DemotedToParentCity
+                })
+                .count() as u64,
+        ),(
+            "source_unresolved_city_candidate_count".to_string(),
+            output
+                .rejected_city_candidates
+                .records
+                .iter()
+                .filter(|record| {
+                    record.resolution
+                        != crate::RejectedCityCandidateResolution::DemotedToParentCity
+                })
+                .count() as u64,
         )]);
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_basic_output(&output),
             edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
+            rejected_city_candidates: Some(output.rejected_city_candidates),
             duplicates: output.duplicates,
             issues: output.issues,
             counters,
@@ -3307,6 +3438,7 @@ mod tests {
                 geometries: Vec::new(),
             },
             station_mappings: None,
+            rejected_city_candidates: None,
             issues: Vec::new(),
         };
         let merged = merge_cities(&[aggregate_input], "europe-aggregate");
@@ -3372,6 +3504,7 @@ mod tests {
                 geometries: Vec::new(),
             },
             station_mappings: None,
+            rejected_city_candidates: None,
             issues: Vec::new(),
         };
         let remap = BTreeMap::from([(paris_ch, paris_fr.clone())]);
