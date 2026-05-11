@@ -137,8 +137,14 @@ ae-app, ae-sidebar { display: contents; }
 .ts.drag-over-before::before { top: -1px; }
 .ts.drag-over-after::after { bottom: -1px; }
 .tn { width: 24px; height: 24px; border-radius: 50%; background: var(--ae-accent); color: var(--ae-bg); font-family: var(--ae-font-mono); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.tn.drag-handle { cursor: grab; }
-.tn.drag-handle:active { cursor: grabbing; }
+/* Drag cursor on the whole stop, not just the number — the entire
+   item is the drag target. Buttons inside (×) override back to
+   pointer so the affordance is unambiguous. */
+.ts[draggable="true"] { cursor: grab; }
+.ts[draggable="true"]:active { cursor: grabbing; }
+.ts.dragging { cursor: grabbing; }
+.ts[draggable="true"] .tx,
+.ts[draggable="true"] button { cursor: pointer; }
 .ti { flex: 1; min-width: 0; }
 .ti .cn { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ti .cc { font-size: 10px; color: var(--ae-fg-dim); }
@@ -253,7 +259,19 @@ ae-debug-toggles {
 .leaflet-control-layers { background: var(--ae-bg-2) !important; border: 1px solid var(--ae-border) !important; border-radius: var(--ae-radius-md) !important; color: var(--ae-fg) !important; font-size: 11px !important; }
 .leaflet-control-layers-toggle { background-color: var(--ae-bg-2) !important; border: 1px solid var(--ae-border) !important; border-radius: var(--ae-radius-md) !important; width: 30px !important; height: 30px !important; }
 .leaflet-control-layers label { color: var(--ae-fg) !important; }
-.leaflet-tooltip { font-family: var(--ae-font-display) !important; }
+.leaflet-tooltip {
+  font-family: var(--ae-font-display) !important;
+  background: rgba(11, 15, 25, .92);
+  color: var(--ae-fg);
+  border: 1px solid var(--ae-border);
+  border-radius: var(--ae-radius-md);
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
+  backdrop-filter: blur(4px);
+}
 .city-lbl { background: transparent !important; border: none !important; box-shadow: none !important; color: var(--ae-fg-muted) !important; font-size: 10px !important; font-family: var(--ae-font-display) !important; white-space: nowrap !important; padding: 0 !important; pointer-events: none !important; }
 .city-lbl.top { color: var(--ae-fg-strong) !important; font-weight: 500 !important; font-size: 11px !important; }
 .city-lbl.trip-lbl { color: var(--ae-accent) !important; font-weight: 600 !important; font-size: 12px !important; font-family: var(--ae-font-mono) !important; text-shadow: 0 0 6px rgba(0, 0, 0, .8), 0 0 3px rgba(0, 0, 0, .9) !important; }
