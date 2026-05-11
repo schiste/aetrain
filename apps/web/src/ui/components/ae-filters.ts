@@ -52,6 +52,21 @@ defineComponent("ae-filters", (host) => ({
       ctx.store.setLegRange({ min: state.legMin, max: target.value });
     };
 
+    // Defaults mirror the seed state in createSeedState — the only
+    // place these numbers also live is the store; keeping them inline
+    // here means tweaking the seed and the reset stays a single edit.
+    const isAtDefaults =
+      state.filterInterest === 5
+      && state.filterPop === 100
+      && state.legMin === 0
+      && state.legMax === state.legDynMax;
+    const onReset = (event: Event) => {
+      event.preventDefault();
+      ctx.store.setFilterInterest(5);
+      ctx.store.setFilterPop(100);
+      ctx.store.setLegRange({ min: 0, max: state.legDynMax });
+    };
+
     const reachableInfo =
       showLegFilter
         ? `Reachable in ${formatLeg(state.legMin)} - ${formatLeg(state.legMax)}: ${visibility.reachable} cities`
@@ -65,7 +80,16 @@ defineComponent("ae-filters", (host) => ({
 
     return html`
       <details class="filters" ?open=${isOpen} ontoggle=${onToggle}>
-        <summary>Map Filters</summary>
+        <summary>
+          <span>Map Filters</span>
+          <button
+            type="button"
+            class="filters-reset"
+            ?hidden=${isAtDefaults}
+            aria-label="Reset filters to defaults"
+            onclick=${onReset}
+          >Reset</button>
+        </summary>
         <div class="fc">
           <div class="fg">
             <label for="f-int">Interest</label>
@@ -113,7 +137,7 @@ defineComponent("ae-filters", (host) => ({
             </div>
 
             <div class="fg">
-              <label for="f-leg-min">Leg</label>
+              <label for="f-leg-min">Duration</label>
               <div class="dual-range">
                 <input
                   type="range"

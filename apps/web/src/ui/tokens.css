@@ -84,6 +84,11 @@ ae-app, ae-sidebar { display: contents; }
 .filters summary { font-size: 11px; color: var(--ae-fg-muted); cursor: pointer; font-weight: 500; letter-spacing: .5px; text-transform: uppercase; list-style: none; display: flex; align-items: center; gap: 6px; user-select: none; }
 .filters summary::before { content: '▸'; font-size: 9px; transition: transform .2s; }
 .filters[open] summary::before { transform: rotate(90deg); }
+.filters summary > span:first-of-type { flex: 1; }
+.filters-reset { margin-left: auto; background: transparent; border: 1px solid var(--ae-border); color: var(--ae-fg-soft); font-family: inherit; font-size: 9px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: var(--ae-radius-pill); cursor: pointer; }
+.filters-reset:hover { background: var(--ae-bg-2); color: var(--ae-fg); }
+.filters-reset:focus-visible { outline: 2px solid var(--ae-accent); outline-offset: 2px; }
+.filters-reset[hidden] { display: none; }
 .fc { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 .fg { display: flex; align-items: center; gap: 10px; }
 .fg label { font-size: 10px; color: var(--ae-fg-muted); width: 56px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .3px; }
