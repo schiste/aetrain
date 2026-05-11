@@ -227,7 +227,11 @@ async function fetchJsonFromBasePath(
   // preload hints in index.html, defeating the cold-load overlap.
   // Dataset URLs are stable; meta.json carries the version; the
   // service worker invalidates the data cache by dataset_version.
-  const response = await fetch(new URL(fileName, basePath));
+  // credentials: "omit" matches the `crossorigin="anonymous"` on the
+  // preload links in index.html. Mismatched credentials make the browser
+  // treat the preload as unused and trigger a console warning even
+  // though both requests target the same same-origin URL.
+  const response = await fetch(new URL(fileName, basePath), { credentials: "omit" });
   if (!response.ok) {
     const error: FetchAssetError = new Error(`HTTP ${response.status}`);
     error.artifactStatus = response.status;

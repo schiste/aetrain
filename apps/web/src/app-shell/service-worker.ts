@@ -29,7 +29,26 @@ export async function ensureServiceWorker(): Promise<void> {
   }
 
   if (!isProductionBuild()) {
+    // Critical: a SW that controls the current page KEEPS controlling
+    // until the page reloads, even after registration.unregister(). If
+    // the user previously visited the prod build on this origin, that
+    // SW is now intercepting dev-mode fetches and can serve stale
+    // assets with wrong MIME types (e.g. cached .ts responses).
+    // Force a one-time reload after unregistration so the next document
+    // load is clean.
+    const wasControlled = Boolean(navigator.serviceWorker.controller);
     await unregisterAllServiceWorkers("dev-mode-cleanup");
+    if (wasControlled && typeof window !== "undefined") {
+      diagnostics.warn(
+        "stale service worker detected in dev mode; reloading once to clear it",
+        { controller_script_url: navigator.serviceWorker.controller?.scriptURL || null }
+      );
+      // Defer the reload to the next tick so the warn event lands in
+      // the diagnostics buffer before navigation. The dev-mode-cleanup
+      // unregister + this reload together guarantee that dev sessions
+      // never inherit a prod SW.
+      window.setTimeout(() => window.location.reload(), 0);
+    }
     return;
   }
 

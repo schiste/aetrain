@@ -353,7 +353,10 @@ async function fetchJsonFromBasePath(
   });
   // See worker counterpart: no cache: "no-store" so the document-level
   // preload hints can satisfy these requests without a second round-trip.
-  const response = await fetch(new URL(fileName, basePath));
+  // credentials: "omit" matches the preload link's `crossorigin="anonymous"`
+  // so the browser can serve this fetch from the preload cache instead of
+  // refusing to dedupe (and emitting a console warning).
+  const response = await fetch(new URL(fileName, basePath), { credentials: "omit" });
   if (!response.ok) {
     const error: FetchAssetError = new Error(`HTTP ${response.status}`);
     error.artifactStatus = response.status;

@@ -15,10 +15,15 @@ export async function bootstrapWebApp(): Promise<void> {
       throw new Error("Expected #app root element");
     }
 
-    // Fire-and-forget: registration runs in parallel with the rest of the
-    // boot. ensureServiceWorker self-gates on import.meta.env.PROD and
-    // unregisters leftover registrations in dev so HMR isn't poisoned.
-    void ensureServiceWorker();
+    // Await SW cleanup BEFORE mounting the shell. In dev mode, a stale
+    // prod-mode SW that controls this page would intercept the worker's
+    // dataset fetches and serve cached responses with wrong MIME types
+    // (e.g. a cached .ts response from a previous prod build), breaking
+    // boot before any error UI can render. ensureServiceWorker triggers
+    // a one-shot reload in that case, so awaiting it here either yields
+    // quickly (no SW interference) or never returns (we're reloading).
+    // In prod mode the registration is fast (~5ms) and harmless to await.
+    await ensureServiceWorker();
 
     // The perf HUD overlay is owned by ae-debug-toggles inside the shell —
     // it reads the same ?perf=1 / localStorage flag and lazy-loads the HUD
