@@ -158,6 +158,18 @@ pub struct PipelineAbbreviationCandidateRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineRouteLikeResidualRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub country_code: String,
+    pub normalized_name: String,
+    pub mapping_strategy: Option<String>,
+    pub classification: String,
+    pub suggested_action: String,
+    pub derived_parent_key: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -166,6 +178,7 @@ pub struct PipelineQualityReport {
     pub zz_cities: Vec<PipelineCityQualityRecord>,
     pub abbreviation_candidates: Vec<PipelineAbbreviationCandidateRecord>,
     pub route_like_candidates: Vec<PipelineAbbreviationCandidateRecord>,
+    pub route_like_residuals: Vec<PipelineRouteLikeResidualRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -420,6 +433,7 @@ fn export_pipeline_target(
 
     let quality_report = build_quality_report(
         &artifacts.canonical.cities,
+        artifacts.station_mappings.as_ref(),
         &artifacts.counters,
         artifacts.duplicates.candidates.len(),
     );
@@ -501,6 +515,10 @@ fn export_pipeline_target(
         &quality_dir.join("route-like-candidates.json"),
         &quality_report.route_like_candidates,
     )?;
+    write_json(
+        &quality_dir.join("route-like-residuals.json"),
+        &quality_report.route_like_residuals,
+    )?;
     Ok(artifact_manifest)
 }
 
@@ -538,6 +556,7 @@ fn export_canonical_bundle(
 
 fn build_quality_report(
     cities: &[aetrain_domain::City],
+    station_mappings: Option<&StationMappingReport>,
     counters: &BTreeMap<String, u64>,
     duplicate_count: usize,
 ) -> PipelineQualityReport {
@@ -602,6 +621,10 @@ fn build_quality_report(
     ) = low_signal_candidates
         .into_iter()
         .partition(|record| record.reason == "digit_or_route_like_name");
+    let route_like_residuals = build_route_like_residual_records(
+        &route_like_candidates,
+        station_mappings,
+    );
 
     let gate_results = vec![
         quality_gate_equals(
@@ -644,6 +667,7 @@ fn build_quality_report(
         zz_cities,
         abbreviation_candidates,
         route_like_candidates,
+        route_like_residuals,
     }
 }
 
@@ -745,6 +769,95 @@ fn route_like_candidate_record(
 ) -> Option<PipelineAbbreviationCandidateRecord> {
     let record = abbreviation_candidate_record(city)?;
     (record.reason == "digit_or_route_like_name").then_some(record)
+}
+
+fn build_route_like_residual_records(
+    route_like_candidates: &[PipelineAbbreviationCandidateRecord],
+    station_mappings: Option<&StationMappingReport>,
+) -> Vec<PipelineRouteLikeResidualRecord> {
+    let mapping_strategies = station_mappings
+        .map(|report| {
+            report
+                .records
+                .iter()
+                .map(|record| {
+                    (
+                        record.city_id.as_str().to_string(),
+                        station_mapping_strategy_label(&record.mapping_strategy).to_string(),
+                    )
+                })
+                .collect::<HashMap<_, _>>()
+        })
+        .unwrap_or_default();
+
+    route_like_candidates
+        .iter()
+        .map(|candidate| {
+            let mapping_strategy = mapping_strategies
+                .get(candidate.city_id.as_str())
+                .cloned();
+            let (classification, suggested_action) =
+                classify_route_like_residual(candidate, mapping_strategy.as_deref());
+            let derived_parent_key = if classification == "station_only_feed_stop_label" {
+                None
+            } else {
+                route_like_primary_parent_key(&candidate.display_name)
+            };
+            PipelineRouteLikeResidualRecord {
+                city_id: candidate.city_id.clone(),
+                display_name: candidate.display_name.clone(),
+                country_code: candidate.country_code.clone(),
+                normalized_name: candidate.normalized_name.clone(),
+                mapping_strategy,
+                classification: classification.to_string(),
+                suggested_action: suggested_action.to_string(),
+                derived_parent_key,
+            }
+        })
+        .collect()
+}
+
+fn classify_route_like_residual(
+    candidate: &PipelineAbbreviationCandidateRecord,
+    mapping_strategy: Option<&str>,
+) -> (&'static str, &'static str) {
+    let normalized = candidate.normalized_name.as_str();
+    if normalized.starts_with("bus")
+        || normalized == "g23"
+        || normalized.chars().all(|ch| ch.is_ascii_alphanumeric())
+            && normalized.chars().any(|ch| ch.is_ascii_digit())
+            && normalized.split_whitespace().count() <= 2
+    {
+        return (
+            "station_only_feed_stop_label",
+            "keep as station only and require stronger parent-city authority before demotion",
+        );
+    }
+
+    match mapping_strategy {
+        Some("fallback_reference_gap") => (
+            "reference_gap_parent_city_missing",
+            "expand registry or reference-city coverage for the derived parent locality",
+        ),
+        Some("gtfs_stem_cluster") => (
+            "feed_cluster_leak_without_parent_match",
+            "tighten feed clustering or add authority-backed parent-city matching",
+        ),
+        _ => (
+            "unresolved_route_like_local_stop",
+            "keep unresolved until stronger authority or matching evidence exists",
+        ),
+    }
+}
+
+fn station_mapping_strategy_label(strategy: &crate::sncf::StationMappingStrategy) -> &'static str {
+    match strategy {
+        crate::sncf::StationMappingStrategy::ManualOverride => "manual_override",
+        crate::sncf::StationMappingStrategy::ReferenceUic => "reference_uic",
+        crate::sncf::StationMappingStrategy::ReferenceName => "reference_name",
+        crate::sncf::StationMappingStrategy::FallbackReferenceGap => "fallback_reference_gap",
+        crate::sncf::StationMappingStrategy::GtfsStemCluster => "gtfs_stem_cluster",
+    }
 }
 
 fn city_id_has_registry_qid(city: &aetrain_domain::City) -> bool {
@@ -2337,10 +2450,26 @@ fn route_like_parent_match_score(
 }
 
 fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
+    let Some(base_name) = route_like_primary_parent_key(display_name) else {
+        return BTreeSet::new();
+    };
+    let mut keys = BTreeSet::new();
+    keys.insert(base_name.clone());
+    let expanded = base_name
+        .split_whitespace()
+        .map(expand_abbreviated_place_token)
+        .collect::<Vec<_>>()
+        .join(" ");
+    keys.insert(comparable_place_key(&expanded));
+    keys.retain(|key| !key.is_empty());
+    keys
+}
+
+fn route_like_primary_parent_key(display_name: &str) -> Option<String> {
     let normalized = normalize_name(display_name);
     let tokens = normalized.split_whitespace().collect::<Vec<_>>();
     if tokens.is_empty() {
-        return BTreeSet::new();
+        return None;
     }
 
     let marker_index = tokens
@@ -2356,21 +2485,9 @@ fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
         prefix.pop();
     }
     if prefix.is_empty() {
-        return BTreeSet::new();
+        return None;
     }
-
-    let mut keys = BTreeSet::new();
-    let prefix_string = prefix.join(" ");
-    keys.insert(comparable_place_key(&prefix_string));
-
-    let expanded = prefix
-        .into_iter()
-        .map(expand_abbreviated_place_token)
-        .collect::<Vec<_>>()
-        .join(" ");
-    keys.insert(comparable_place_key(&expanded));
-    keys.retain(|key| !key.is_empty());
-    keys
+    Some(comparable_place_key(&prefix.join(" ")))
 }
 
 fn parent_city_match_keys(city: &aetrain_domain::City) -> BTreeSet<String> {
@@ -3999,7 +4116,7 @@ mod tests {
             ("residual_zz_city_count".to_string(), 360),
         ]);
 
-        let report = build_quality_report(&cities, &counters, 0);
+        let report = build_quality_report(&cities, None, &counters, 0);
 
         assert_eq!(report.registry_match_report.authoritative_city_count, 0);
         assert_eq!(report.station_like_cities.len(), 1);
@@ -4144,7 +4261,7 @@ mod tests {
         };
         let counters = BTreeMap::new();
 
-        let report = build_quality_report(&[route_like, abbrev], &counters, 0);
+        let report = build_quality_report(&[route_like, abbrev], None, &counters, 0);
 
         assert_eq!(report.route_like_candidates.len(), 1);
         assert_eq!(report.route_like_candidates[0].reason, "digit_or_route_like_name");
@@ -4217,5 +4334,65 @@ mod tests {
             Some(&CityId::new("munster-fr-68226").expect("valid city id"))
         );
         assert_eq!(issues.len(), 1);
+    }
+
+    #[test]
+    fn route_like_residuals_capture_mapping_strategy_and_classification() {
+        let candidates = vec![
+            PipelineAbbreviationCandidateRecord {
+                city_id: CityId::new("bus-x30-ostfriedh-at-05066955").expect("valid city id"),
+                display_name: "Bus X30 Ostfriedh".to_string(),
+                country_code: "AT".to_string(),
+                normalized_name: "bus x30 ostfriedh".to_string(),
+                reason: "digit_or_route_like_name".to_string(),
+            },
+            PipelineAbbreviationCandidateRecord {
+                city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d").expect("valid city id"),
+                display_name: "Wimmenau D 919 Rue De La".to_string(),
+                country_code: "FR".to_string(),
+                normalized_name: "wimmenau d 919 rue de la".to_string(),
+                reason: "digit_or_route_like_name".to_string(),
+            },
+        ];
+        let station_mappings = StationMappingReport {
+            records: vec![
+                crate::StationMappingRecord {
+                    station_key: "at:bus-x30".to_string(),
+                    station_id: StationId::new("station-at-bus-x30").expect("valid station id"),
+                    city_id: CityId::new("bus-x30-ostfriedh-at-05066955").expect("valid city id"),
+                    city_cluster_key: "cluster-a".to_string(),
+                    station_display_name: "Bus X30 Ostfriedh".to_string(),
+                    mapping_strategy: crate::sncf::StationMappingStrategy::GtfsStemCluster,
+                    confidence: 60,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+                crate::StationMappingRecord {
+                    station_key: "fr:wimmenau".to_string(),
+                    station_id: StationId::new("station-uic-87642348").expect("valid station id"),
+                    city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d")
+                        .expect("valid city id"),
+                    city_cluster_key: "cluster-b".to_string(),
+                    station_display_name: "Wimmenau D.919 - Rue de la Gare".to_string(),
+                    mapping_strategy: crate::sncf::StationMappingStrategy::FallbackReferenceGap,
+                    confidence: 50,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+            ],
+        };
+
+        let residuals = build_route_like_residual_records(&candidates, Some(&station_mappings));
+
+        assert_eq!(residuals.len(), 2);
+        assert_eq!(residuals[0].classification, "station_only_feed_stop_label");
+        assert_eq!(residuals[0].mapping_strategy.as_deref(), Some("gtfs_stem_cluster"));
+        assert_eq!(residuals[1].classification, "reference_gap_parent_city_missing");
+        assert_eq!(residuals[1].mapping_strategy.as_deref(), Some("fallback_reference_gap"));
+        assert_eq!(residuals[1].derived_parent_key.as_deref(), Some("wimmenau"));
     }
 }
