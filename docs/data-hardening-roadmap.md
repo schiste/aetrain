@@ -138,6 +138,7 @@ Minimum tracked classes:
 - station rescue
 - station-like city residual
 - unresolved `ZZ` residual
+- unresolved route-like pseudo-city residual
 - duplicate candidate
 - suspicious abbreviation candidate
 
@@ -185,6 +186,7 @@ Initial gating targets:
 - `duplicate_count == 0`
 - `residual_station_like_city_count < 100`
 - `residual_zz_city_count < 250`
+- `route_like_city_unresolved_count < 10`
 - no decrease in registry-authoritative city coverage for already-covered
   countries
 

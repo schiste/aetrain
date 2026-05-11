@@ -201,6 +201,7 @@ pub struct PipelineArtifactManifest {
 
 const QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES: u64 = 100;
 const QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES: u64 = 250;
+const QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES: u64 = 10;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineAttributionFile {
@@ -626,6 +627,12 @@ fn build_quality_report(
             "residual_zz_city_count",
             counter_value(counters, "residual_zz_city_count"),
             QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES,
+        ),
+        quality_gate_less_than(
+            "route_like_city_unresolved_count",
+            "route_like_city_unresolved_count",
+            counter_value(counters, "route_like_city_unresolved_count"),
+            QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES,
         ),
     ];
 
@@ -3998,7 +4005,7 @@ mod tests {
         assert_eq!(report.station_like_cities.len(), 1);
         assert_eq!(report.zz_cities.len(), 1);
         assert_eq!(report.route_like_candidates.len(), 0);
-        assert_eq!(report.gate_results.len(), 4);
+        assert_eq!(report.gate_results.len(), 5);
         assert_eq!(
             report
                 .gate_results
@@ -4025,6 +4032,15 @@ mod tests {
                 .expect("zz gate")
                 .status,
             "fail"
+        );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "route_like_city_unresolved_count")
+                .expect("route-like gate")
+                .status,
+            "pass"
         );
     }
 
