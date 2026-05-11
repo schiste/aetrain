@@ -724,6 +724,13 @@ fn abbreviation_candidate_record(
     })
 }
 
+fn route_like_candidate_record(
+    city: &aetrain_domain::City,
+) -> Option<PipelineAbbreviationCandidateRecord> {
+    let record = abbreviation_candidate_record(city)?;
+    (record.reason == "digit_or_route_like_name").then_some(record)
+}
+
 fn city_id_has_registry_qid(city: &aetrain_domain::City) -> bool {
     let Some(qid) = city.wikidata_qid.as_deref() else {
         return false;
@@ -1448,8 +1455,51 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
         aggregate_source_id,
         &mut issues,
     );
+    let mut merged = collapse_cities_by_remap(merged_by_input_id.into_values(), &city_id_remap);
+
+    for city in merged.values_mut() {
+        city.aliases.sort();
+        city.aliases.dedup();
+        city.station_ids
+            .sort_by(|left, right| left.as_str().cmp(right.as_str()));
+        city.station_ids
+            .dedup_by(|left, right| left.as_str() == right.as_str());
+        if city.country_code == "ZZ" {
+            if let Some(inferred_country_code) = infer_country_code_from_station_ids(&city.station_ids) {
+                city.country_code = inferred_country_code;
+            }
+        }
+    }
+    canonicalize_aggregate_city_names(merged.values_mut(), aggregate_source_id, &mut issues);
+    let second_stage_remap = build_aggregate_city_id_remap(
+        merged.values().collect(),
+        aggregate_source_id,
+        &mut issues,
+    );
+    let mut city_id_remap = city_id_remap;
+    if !second_stage_remap.is_empty() {
+        for (from_city_id, to_city_id) in &second_stage_remap {
+            rebind_city_id_remap(&mut city_id_remap, from_city_id, to_city_id);
+        }
+        merged = collapse_cities_by_remap(merged.into_values(), &second_stage_remap);
+    }
+    let merged_cities = merged.into_values().collect::<Vec<_>>();
+    let aliases = rebuild_alias_records(&merged_cities);
+
+    MergedCityOutput {
+        cities: merged_cities,
+        aliases,
+        city_id_remap,
+        issues,
+    }
+}
+
+fn collapse_cities_by_remap(
+    cities: impl Iterator<Item = aetrain_domain::City>,
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) -> BTreeMap<aetrain_domain::CityId, aetrain_domain::City> {
     let mut merged = BTreeMap::<aetrain_domain::CityId, aetrain_domain::City>::new();
-    for city in merged_by_input_id.into_values() {
+    for city in cities {
         let canonical_city_id = city_id_remap
             .get(&city.city_id)
             .cloned()
@@ -1501,30 +1551,7 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
                 canonical_city
             });
     }
-
-    for city in merged.values_mut() {
-        city.aliases.sort();
-        city.aliases.dedup();
-        city.station_ids
-            .sort_by(|left, right| left.as_str().cmp(right.as_str()));
-        city.station_ids
-            .dedup_by(|left, right| left.as_str() == right.as_str());
-        if city.country_code == "ZZ" {
-            if let Some(inferred_country_code) = infer_country_code_from_station_ids(&city.station_ids) {
-                city.country_code = inferred_country_code;
-            }
-        }
-    }
-    canonicalize_aggregate_city_names(merged.values_mut(), aggregate_source_id, &mut issues);
-    let merged_cities = merged.into_values().collect::<Vec<_>>();
-    let aliases = rebuild_alias_records(&merged_cities);
-
-    MergedCityOutput {
-        cities: merged_cities,
-        aliases,
-        city_id_remap,
-        issues,
-    }
+    merged
 }
 
 fn canonicalize_aggregate_city_names<'a>(
@@ -1544,7 +1571,11 @@ fn canonicalize_aggregate_city_names<'a>(
         if !is_plausible_aggregate_city_name(&base_identity_key) {
             continue;
         }
-        if !(is_station_qualified_city_name(&city.display_name) || city.country_code == "ZZ") {
+        let is_route_like = route_like_candidate_record(city).is_some();
+        if !(is_station_qualified_city_name(&city.display_name)
+            || city.country_code == "ZZ"
+            || is_route_like)
+        {
             continue;
         }
 
@@ -2405,6 +2436,36 @@ fn city_identity_key(value: &str) -> String {
         tokens.truncate(new_len);
     }
 
+    loop {
+        let trimmed = if tokens.len() >= 2
+            && tokens
+                .last()
+                .is_some_and(|token| is_street_suffix_token(token))
+        {
+            Some(tokens.len() - 2)
+        } else if tokens
+            .last()
+            .is_some_and(|token| token.chars().any(|ch| ch.is_ascii_digit()))
+        {
+            Some(tokens.len() - 1)
+        } else if tokens
+            .last()
+            .is_some_and(|token| is_route_designator_token(token))
+        {
+            Some(tokens.len() - 1)
+        } else {
+            None
+        };
+
+        let Some(new_len) = trimmed else {
+            break;
+        };
+        if new_len == 0 {
+            break;
+        }
+        tokens.truncate(new_len);
+    }
+
     if tokens.is_empty() {
         normalized
     } else {
@@ -2486,6 +2547,14 @@ fn is_locality_suffix_token(token: &str) -> bool {
             | "republique"
             | "hopital"
     )
+}
+
+fn is_route_designator_token(token: &str) -> bool {
+    matches!(token, "a" | "b" | "d" | "k" | "l" | "rd" | "rn")
+}
+
+fn is_street_suffix_token(token: &str) -> bool {
+    matches!(token, "allee" | "avenue" | "chaussee" | "road" | "route" | "rue" | "strasse")
 }
 
 fn geo_distance_meters(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> f64 {
@@ -3206,6 +3275,18 @@ mod tests {
                 station_ids: vec![StationId::new("station-adamswiller-mairie").expect("valid station id")],
                 aliases: Vec::new(),
             },
+            City {
+                city_id: CityId::new("kilstett-13-route-nationale-fr-3f58b216").expect("valid city id"),
+                slug: "kilstett-13-route-nationale".to_string(),
+                display_name: "Kilstett 13 Route Nationale".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint { lat: 48.676, lon: 7.857 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-kilstett-13-route-nationale").expect("valid station id")],
+                aliases: Vec::new(),
+            },
         ];
         let mut issues = Vec::new();
 
@@ -3217,7 +3298,10 @@ mod tests {
         assert_eq!(cities[1].display_name, "Adamswiller");
         assert_eq!(cities[1].slug, "adamswiller");
         assert!(cities[1].aliases.iter().any(|alias| alias == "Adamswiller Mairie"));
-        assert_eq!(issues.len(), 2);
+        assert_eq!(cities[2].display_name, "Kilstett");
+        assert_eq!(cities[2].slug, "kilstett");
+        assert!(cities[2].aliases.iter().any(|alias| alias == "Kilstett 13 Route Nationale"));
+        assert_eq!(issues.len(), 3);
     }
 
     #[test]
