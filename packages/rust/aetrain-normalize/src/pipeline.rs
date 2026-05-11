@@ -227,12 +227,14 @@ struct ChunkedEdgeGeometryManifestChunk {
 
 const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
 const AGGREGATE_CITY_MERGE_DISTANCE_METERS: u32 = 20_000;
+const ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS: u32 = 5_000;
 
 struct MergedCityOutput {
     cities: Vec<aetrain_domain::City>,
     aliases: Vec<aetrain_dataset::AliasRecord>,
     city_id_remap: BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
     issues: Vec<NormalizationIssue>,
+    route_like_demotion_stats: RouteLikeDemotionStats,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -242,6 +244,13 @@ struct RegistryOverlayStats {
     ambiguous_count: u64,
     country_corrected_count: u64,
     station_promoted_count: u64,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct RouteLikeDemotionStats {
+    demoted_count: u64,
+    unresolved_count: u64,
+    ambiguous_count: u64,
 }
 
 pub fn build_pipeline_target(
@@ -1268,6 +1277,18 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     ]);
 
     let mut merged_cities = merge_cities(&dependency_inputs, request.target.id.as_str());
+    counters.insert(
+        "route_like_city_demoted_count".to_string(),
+        merged_cities.route_like_demotion_stats.demoted_count,
+    );
+    counters.insert(
+        "route_like_city_unresolved_count".to_string(),
+        merged_cities.route_like_demotion_stats.unresolved_count,
+    );
+    counters.insert(
+        "route_like_city_ambiguous_count".to_string(),
+        merged_cities.route_like_demotion_stats.ambiguous_count,
+    );
     if let Some(registry_overlay_path) = request.target.registry_overlay_path.as_deref() {
         let overlay_path =
             resolve_manifest_relative_path(request.manifest_dir, registry_overlay_path);
@@ -1483,7 +1504,13 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
         }
         merged = collapse_cities_by_remap(merged.into_values(), &second_stage_remap);
     }
-    let merged_cities = merged.into_values().collect::<Vec<_>>();
+    let mut merged_cities = merged.into_values().collect::<Vec<_>>();
+    let route_like_demotion_stats = demote_route_like_pseudo_cities(
+        &mut merged_cities,
+        &mut city_id_remap,
+        aggregate_source_id,
+        &mut issues,
+    );
     let aliases = rebuild_alias_records(&merged_cities);
 
     MergedCityOutput {
@@ -1491,6 +1518,7 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
         aliases,
         city_id_remap,
         issues,
+        route_like_demotion_stats,
     }
 }
 
@@ -1552,6 +1580,83 @@ fn collapse_cities_by_remap(
             });
     }
     merged
+}
+
+fn demote_route_like_pseudo_cities(
+    cities: &mut Vec<aetrain_domain::City>,
+    city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> RouteLikeDemotionStats {
+    let mut stats = RouteLikeDemotionStats::default();
+    let mut demotion_remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
+
+    for city in cities.iter() {
+        if route_like_candidate_record(city).is_none() || city.wikidata_qid.is_some() {
+            continue;
+        }
+        let candidates = cities
+            .iter()
+            .filter(|parent| parent.city_id != city.city_id)
+            .filter_map(|parent| {
+                route_like_parent_match_score(city, parent).map(|score| (parent, score))
+            })
+            .collect::<Vec<_>>();
+        let Some(best_score) = candidates.iter().map(|(_, score)| *score).max() else {
+            stats.unresolved_count += 1;
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Warning,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "route-like pseudo-city {} had no deterministic parent-city match",
+                    city.display_name
+                ),
+            });
+            continue;
+        };
+        let best_candidates = candidates
+            .into_iter()
+            .filter(|(_, score)| *score == best_score)
+            .collect::<Vec<_>>();
+        if best_candidates.len() > 1 {
+            stats.ambiguous_count += 1;
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Warning,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "route-like pseudo-city {} matched multiple parent cities equally",
+                    city.display_name
+                ),
+            });
+            continue;
+        }
+        let parent = best_candidates[0].0;
+        demotion_remap.insert(city.city_id.clone(), parent.city_id.clone());
+        stats.demoted_count += 1;
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Info,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: city.city_id.to_string(),
+            message: format!(
+                "demoted route-like pseudo-city {} into parent city {}",
+                city.display_name, parent.display_name
+            ),
+        });
+    }
+
+    if demotion_remap.is_empty() {
+        return stats;
+    }
+
+    for (from_city_id, to_city_id) in &demotion_remap {
+        rebind_city_id_remap(city_id_remap, from_city_id, to_city_id);
+    }
+    *cities = collapse_cities_by_remap(cities.drain(..), &demotion_remap)
+        .into_values()
+        .collect();
+    stats
 }
 
 fn canonicalize_aggregate_city_names<'a>(
@@ -2180,6 +2285,125 @@ fn compute_city_interest_score(city: &aetrain_domain::City, degree: usize) -> u8
     }
 
     score.min(10)
+}
+
+fn route_like_parent_match_score(
+    route_like_city: &aetrain_domain::City,
+    parent_city: &aetrain_domain::City,
+) -> Option<(u8, u8, std::cmp::Reverse<u32>, usize)> {
+    if route_like_city.country_code != parent_city.country_code
+        || route_like_candidate_record(parent_city).is_some()
+        || is_station_qualified_city_name(&parent_city.display_name)
+    {
+        return None;
+    }
+
+    let distance_meters =
+        geo_distance_meters(route_like_city.location, parent_city.location).round() as u32;
+    if distance_meters > ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS {
+        return None;
+    }
+
+    let route_keys = route_like_parent_keys(&route_like_city.display_name);
+    if route_keys.is_empty() {
+        return None;
+    }
+    let mut parent_keys = parent_city_match_keys(parent_city);
+    parent_keys.retain(|key| !key.is_empty());
+    if !route_keys.iter().any(|key| parent_keys.contains(key)) {
+        return None;
+    }
+
+    let authority_rank = if city_id_has_registry_qid(parent_city) {
+        3
+    } else if parent_city.wikidata_qid.is_some() {
+        2
+    } else {
+        city_identity_quality(parent_city)
+    };
+    Some((
+        authority_rank,
+        parent_city.station_ids.len() as u8,
+        std::cmp::Reverse(distance_meters),
+        parent_city.aliases.len(),
+    ))
+}
+
+fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
+    let normalized = normalize_name(display_name);
+    let tokens = normalized.split_whitespace().collect::<Vec<_>>();
+    if tokens.is_empty() {
+        return BTreeSet::new();
+    }
+
+    let marker_index = tokens
+        .iter()
+        .position(|token| {
+            token.chars().any(|ch| ch.is_ascii_digit())
+                || is_route_designator_token(token)
+                || is_street_suffix_token(token)
+        })
+        .unwrap_or(tokens.len());
+    let mut prefix = tokens[..marker_index].to_vec();
+    while prefix.last().is_some_and(|token| is_route_locality_token(token)) {
+        prefix.pop();
+    }
+    if prefix.is_empty() {
+        return BTreeSet::new();
+    }
+
+    let mut keys = BTreeSet::new();
+    let prefix_string = prefix.join(" ");
+    keys.insert(comparable_place_key(&prefix_string));
+
+    let expanded = prefix
+        .into_iter()
+        .map(expand_abbreviated_place_token)
+        .collect::<Vec<_>>()
+        .join(" ");
+    keys.insert(comparable_place_key(&expanded));
+    keys.retain(|key| !key.is_empty());
+    keys
+}
+
+fn parent_city_match_keys(city: &aetrain_domain::City) -> BTreeSet<String> {
+    let mut keys = BTreeSet::new();
+    let mut names = city.aliases.clone();
+    names.push(city.display_name.clone());
+    for name in names {
+        keys.insert(comparable_place_key(&city_identity_key(&name)));
+        keys.insert(comparable_place_key(&normalize_name(&name)));
+    }
+    keys.retain(|key| !key.is_empty());
+    keys
+}
+
+fn comparable_place_key(value: &str) -> String {
+    normalize_name(value)
+        .split_whitespace()
+        .map(expand_abbreviated_place_token)
+        .filter(|token| !is_place_connector_token(token))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn expand_abbreviated_place_token(token: &str) -> String {
+    match token {
+        "st" => "saint".to_string(),
+        "ste" => "sainte".to_string(),
+        _ => token.to_string(),
+    }
+}
+
+fn is_place_connector_token(token: &str) -> bool {
+    matches!(
+        token,
+        "d" | "de" | "des" | "du" | "en" | "l" | "la" | "le" | "les" | "pres" | "sur" | "sous"
+    )
+}
+
+fn is_route_locality_token(token: &str) -> bool {
+    matches!(token, "abri" | "bourg" | "carrefour" | "centre" | "cte" | "inter")
 }
 
 fn recompute_duplicates(
@@ -3910,5 +4134,72 @@ mod tests {
         assert_eq!(report.route_like_candidates[0].reason, "digit_or_route_like_name");
         assert_eq!(report.abbreviation_candidates.len(), 1);
         assert_eq!(report.abbreviation_candidates[0].reason, "single_token_too_short");
+    }
+
+    #[test]
+    fn demote_route_like_pseudo_cities_collapses_deterministic_parent_match() {
+        let mut cities = vec![
+            City {
+                city_id: CityId::new("munster-fr-68226").expect("valid city id"),
+                slug: "munster".to_string(),
+                display_name: "Munster".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint { lat: 48.0400, lon: 7.1380 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: Some(4),
+                station_ids: vec![StationId::new("station-munster").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("munster-inter-d417-badischhof-zz-c6570f7f")
+                    .expect("valid city id"),
+                slug: "munster-inter-d417-badischhof".to_string(),
+                display_name: "Munster Inter D417 Badischhof".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint { lat: 48.0410, lon: 7.1400 },
+                wikidata_qid: None,
+                population: None,
+                interest_score: Some(1),
+                station_ids: vec![
+                    StationId::new("station-munster-inter-d417-badischhof")
+                        .expect("valid station id"),
+                ],
+                aliases: Vec::new(),
+            },
+        ];
+        let mut city_id_remap = BTreeMap::new();
+        let mut issues = Vec::new();
+
+        let stats = demote_route_like_pseudo_cities(
+            &mut cities,
+            &mut city_id_remap,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(
+            stats,
+            RouteLikeDemotionStats {
+                demoted_count: 1,
+                unresolved_count: 0,
+                ambiguous_count: 0,
+            }
+        );
+        assert_eq!(cities.len(), 1);
+        assert_eq!(cities[0].display_name, "Munster");
+        assert!(
+            cities[0]
+                .aliases
+                .iter()
+                .any(|alias| alias == "Munster Inter D417 Badischhof")
+        );
+        assert_eq!(
+            city_id_remap.get(
+                &CityId::new("munster-inter-d417-badischhof-zz-c6570f7f").expect("valid city id")
+            ),
+            Some(&CityId::new("munster-fr-68226").expect("valid city id"))
+        );
+        assert_eq!(issues.len(), 1);
     }
 }
