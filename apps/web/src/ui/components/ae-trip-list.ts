@@ -22,6 +22,97 @@ defineComponent("ae-trip-list", (host) => {
     host.dataset.revealed = "true";
   });
 
+  // Drag-reorder state, kept across renders so the dragstart →
+  // dragover → drop sequence survives any reactive re-render that
+  // might fire mid-gesture.
+  let dragFromIndex: number | null = null;
+
+  function tripStopAt(target: EventTarget | null): HTMLElement | null {
+    if (!(target instanceof Element)) return null;
+    const stop = target.closest<HTMLElement>(".ts[data-trip-index]");
+    return stop;
+  }
+
+  function setDropTarget(stop: HTMLElement | null, position: "before" | "after" | null): void {
+    // Clear any previous drop indicator before applying a new one.
+    host.querySelectorAll<HTMLElement>(".ts.drag-over-before, .ts.drag-over-after").forEach((node) => {
+      node.classList.remove("drag-over-before", "drag-over-after");
+    });
+    if (!stop || !position) return;
+    stop.classList.add(`drag-over-${position}`);
+  }
+
+  host.addEventListener("dragstart", (event) => {
+    const stop = tripStopAt(event.target);
+    if (!stop || !event.dataTransfer) return;
+    const indexAttr = stop.dataset.tripIndex;
+    if (indexAttr === undefined) return;
+    dragFromIndex = Number.parseInt(indexAttr, 10);
+    if (!Number.isFinite(dragFromIndex)) {
+      dragFromIndex = null;
+      return;
+    }
+    event.dataTransfer.effectAllowed = "move";
+    // Firefox requires setData() to actually start a drag; the payload
+    // itself is unused (we read dragFromIndex from closure).
+    event.dataTransfer.setData("text/plain", indexAttr);
+    stop.classList.add("dragging");
+    diagnostics.debug("drag start", { from_index: dragFromIndex });
+  });
+
+  host.addEventListener("dragover", (event) => {
+    if (dragFromIndex === null) return;
+    const stop = tripStopAt(event.target);
+    if (!stop) {
+      setDropTarget(null, null);
+      return;
+    }
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    // Show the drop indicator above or below the hovered stop based on
+    // the pointer's vertical position within the stop's bounding box.
+    const rect = stop.getBoundingClientRect();
+    const above = event.clientY < rect.top + rect.height / 2;
+    setDropTarget(stop, above ? "before" : "after");
+  });
+
+  host.addEventListener("dragleave", (event) => {
+    // dragleave fires when the pointer enters a child element; only
+    // clear if it's actually leaving the trip list root.
+    if (event.relatedTarget instanceof Node && host.contains(event.relatedTarget)) return;
+    setDropTarget(null, null);
+  });
+
+  host.addEventListener("drop", (event) => {
+    if (dragFromIndex === null) return;
+    const stop = tripStopAt(event.target);
+    if (!stop) return;
+    event.preventDefault();
+    const indexAttr = stop.dataset.tripIndex;
+    if (indexAttr === undefined) return;
+    const overIndex = Number.parseInt(indexAttr, 10);
+    if (!Number.isFinite(overIndex)) return;
+    const rect = stop.getBoundingClientRect();
+    const above = event.clientY < rect.top + rect.height / 2;
+    const toIndex = above ? overIndex : overIndex + 1;
+    const fromIndex = dragFromIndex;
+    setDropTarget(null, null);
+    dragFromIndex = null;
+    if (fromIndex === toIndex || fromIndex + 1 === toIndex) return;
+    const ctx = tryUseAppContext();
+    if (!ctx) return;
+    diagnostics.info("reorder requested", { from_index: fromIndex, to_index: toIndex });
+    void ctx.store.reorderTrip(fromIndex, toIndex).catch((error: unknown) => {
+      diagnostics.error("reorderTrip failed", { error: summarizeError(error) });
+    });
+  });
+
+  host.addEventListener("dragend", () => {
+    setDropTarget(null, null);
+    host.querySelectorAll<HTMLElement>(".ts.dragging").forEach((node) => node.classList.remove("dragging"));
+    dragFromIndex = null;
+  });
+
   return {
   render() {
     const ctx = tryUseAppContext();
@@ -75,9 +166,19 @@ defineComponent("ae-trip-list", (host) => {
         : `Stop ${index + 1}: ${cityName}`;
 
       items.push(html`
-        <div class="ts" role="listitem" aria-label=${tripStopAriaLabel}>
+        <div
+          class="ts"
+          role="listitem"
+          aria-label=${tripStopAriaLabel}
+          draggable="true"
+          data-trip-index=${String(index)}
+        >
           ${index > 0 ? html`<div class="tcon"></div>` : null}
-          <div class="tn" aria-hidden="true">${String(index + 1)}</div>
+          <div
+            class="tn drag-handle"
+            aria-hidden="true"
+            title="Drag to reorder"
+          >${String(index + 1)}</div>
           <div class="ti">
             <div class="cn">
               ${cityName}

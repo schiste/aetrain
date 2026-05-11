@@ -52,6 +52,7 @@ export interface PlannerStore {
   toggleCity(name: string): Promise<boolean>;
   removeStop(index: number): Promise<boolean>;
   addStopAfter(index: number, name: string): Promise<boolean>;
+  reorderTrip(fromIndex: number, toIndex: number): Promise<boolean>;
   clearTrip(): Promise<boolean>;
   setSearchQuery(value: string): Promise<boolean>;
   setFilterInterest(value: number | string): void;
@@ -312,6 +313,18 @@ export function createPlannerStore({
     addStopAfter(index: number, name: string): Promise<boolean> {
       return mutateTrip((trip) => {
         trip.splice(index + 1, 0, name);
+      });
+    },
+    reorderTrip(fromIndex: number, toIndex: number): Promise<boolean> {
+      return mutateTrip((trip) => {
+        if (fromIndex === toIndex) return;
+        if (fromIndex < 0 || fromIndex >= trip.length) return;
+        if (toIndex < 0 || toIndex > trip.length) return;
+        const moved = trip.splice(fromIndex, 1)[0];
+        if (moved === undefined) return;
+        // Adjust the target index if we removed an item before it.
+        const target = toIndex > fromIndex ? toIndex - 1 : toIndex;
+        trip.splice(target, 0, moved);
       });
     },
     clearTrip(): Promise<boolean> {

@@ -119,7 +119,26 @@ ae-app, ae-sidebar { display: contents; }
 #tl { flex: 1 1 auto; min-height: 0; padding: 4px 0; }
 .ts { display: flex; align-items: flex-start; padding: 8px 22px; gap: 10px; position: relative; }
 .ts:hover { background: rgba(245, 158, 11, .03); }
+.ts.dragging { opacity: .35; }
+/* Drop indicators: thin amber bar above (drag-over-before) or below
+   (drag-over-after) the hovered stop, anchored just inside its
+   padding. ::before/::after are unused elsewhere on .ts. */
+.ts.drag-over-before::before,
+.ts.drag-over-after::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: var(--ae-accent);
+  box-shadow: 0 0 6px rgba(245, 158, 11, .6);
+  pointer-events: none;
+}
+.ts.drag-over-before::before { top: -1px; }
+.ts.drag-over-after::after { bottom: -1px; }
 .tn { width: 24px; height: 24px; border-radius: 50%; background: var(--ae-accent); color: var(--ae-bg); font-family: var(--ae-font-mono); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tn.drag-handle { cursor: grab; }
+.tn.drag-handle:active { cursor: grabbing; }
 .ti { flex: 1; min-width: 0; }
 .ti .cn { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ti .cc { font-size: 10px; color: var(--ae-fg-dim); }
