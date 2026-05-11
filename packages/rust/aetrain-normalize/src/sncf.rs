@@ -2057,7 +2057,17 @@ fn resolve_gtfs_basic_ineligible_clusters(
 
 fn classify_gtfs_basic_city_eligibility(display_name: &str) -> CityEligibility {
     let normalized = normalize_name(display_name);
-    if normalized.starts_with("bus")
+    let tokens = normalized.split_whitespace().collect::<Vec<_>>();
+    let first_token = tokens.first().copied().unwrap_or_default();
+    let is_station_only_bus_label =
+        normalized == "bus"
+            || normalized == "busbahnhof"
+            || normalized.starts_with("bus ")
+            || normalized.starts_with("bussteige ")
+            || first_token
+                .strip_prefix("bus")
+                .is_some_and(|suffix| !suffix.is_empty() && suffix.chars().all(|ch| ch.is_ascii_digit()));
+    if is_station_only_bus_label
         || (normalized.chars().all(|ch| ch.is_ascii_alphanumeric())
             && normalized.chars().any(|ch| ch.is_ascii_digit())
             && normalized.split_whitespace().count() <= 2)
@@ -2208,11 +2218,21 @@ fn gtfs_basic_route_like_parent_key(display_name: &str) -> Option<String> {
         .iter()
         .position(|token| {
             token.chars().any(|ch| ch.is_ascii_digit())
-                || matches!(*token, "a" | "b" | "d" | "k" | "l" | "rd" | "rn")
-                || matches!(*token, "allee" | "avenue" | "chaussee" | "road" | "route" | "rue" | "strasse")
+                || matches!(
+                    *token,
+                    "allee" | "avenue" | "chaussee" | "road" | "route" | "rue" | "strasse"
+                )
         })
         .unwrap_or(tokens.len());
     let mut prefix = tokens[..marker_index].to_vec();
+    while prefix.last().is_some_and(|token| {
+        matches!(
+            *token,
+            "a" | "b" | "d" | "k" | "l" | "rd" | "rn" | "bahnhof" | "bahnhst" | "bhf" | "hbf"
+        )
+    }) {
+        prefix.pop();
+    }
     while prefix
         .last()
         .is_some_and(|token| matches!(*token, "abri" | "bourg" | "carrefour" | "centre" | "cte" | "inter"))
@@ -2226,17 +2246,42 @@ fn gtfs_basic_route_like_parent_key(display_name: &str) -> Option<String> {
 }
 
 fn comparable_gtfs_basic_place_key(value: &str) -> String {
-    normalize_name(value)
+    let mut tokens = normalize_name(value)
         .split_whitespace()
         .map(|token| match token {
             "st" => "saint".to_string(),
             "ste" => "sainte".to_string(),
             _ => token.to_string(),
         })
+        .collect::<Vec<_>>();
+    while tokens.last().is_some_and(|token| {
+        matches!(
+            token.as_str(),
+            "bahnhof" | "bahnhst" | "bhf" | "hbf" | "hauptbahnhof" | "station" | "gare"
+        )
+    }) {
+        tokens.pop();
+    }
+    tokens
+        .into_iter()
         .filter(|token| {
             !matches!(
                 token.as_str(),
-                "d" | "de" | "des" | "du" | "en" | "l" | "la" | "le" | "les" | "pres" | "sur" | "sous"
+                "a"
+                    | "b"
+                    | "d"
+                    | "de"
+                    | "des"
+                    | "du"
+                    | "en"
+                    | "k"
+                    | "l"
+                    | "la"
+                    | "le"
+                    | "les"
+                    | "pres"
+                    | "sur"
+                    | "sous"
             )
         })
         .collect::<Vec<_>>()
@@ -2955,6 +3000,26 @@ T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
             CityEligibility::StationOnlyFeedStopLabel
         );
         assert_eq!(
+            classify_gtfs_basic_city_eligibility("Busigny"),
+            CityEligibility::Eligible
+        );
+        assert_eq!(
+            classify_gtfs_basic_city_eligibility("Busenberg"),
+            CityEligibility::Eligible
+        );
+        assert_eq!(
+            classify_gtfs_basic_city_eligibility("Buschow"),
+            CityEligibility::Eligible
+        );
+        assert_eq!(
+            classify_gtfs_basic_city_eligibility("Buseck Grossen Buseck"),
+            CityEligibility::Eligible
+        );
+        assert_eq!(
+            classify_gtfs_basic_city_eligibility("Bussigny"),
+            CityEligibility::Eligible
+        );
+        assert_eq!(
             classify_gtfs_basic_city_eligibility("G23"),
             CityEligibility::StationOnlyFeedStopLabel
         );
@@ -2967,6 +3032,22 @@ T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
         assert_eq!(
             classify_gtfs_basic_city_eligibility("Munster"),
             CityEligibility::Eligible
+        );
+    }
+
+    #[test]
+    fn gtfs_basic_parent_key_strips_station_suffixes_and_platform_tokens() {
+        assert_eq!(
+            gtfs_basic_route_like_parent_key("Bruck Mur Bahnhof 1"),
+            Some("bruck mur".to_string())
+        );
+        assert_eq!(
+            gtfs_basic_route_like_parent_key("Hart B Graz Bahnhof 1"),
+            Some("hart graz".to_string())
+        );
+        assert_eq!(
+            comparable_gtfs_basic_place_key("Bruck Mur Bahnhof"),
+            "bruck mur".to_string()
         );
     }
 
