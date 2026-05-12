@@ -46,9 +46,75 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
 ae-app, ae-sidebar { display: contents; }
 
 #side { width: auto; min-width: 0; min-height: 0; background: var(--ae-bg-2); border-right: 1px solid var(--ae-border); display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; z-index: 1000; }
-.side-main { min-height: 0; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--ae-border-soft) transparent; }
-.side-main::-webkit-scrollbar { width: 3px; }
-.side-main::-webkit-scrollbar-thumb { background: var(--ae-border-soft); border-radius: 3px; }
+.side-main {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* Reserve the scrollbar gutter at all times so the content width
+     doesn't shift when the thumb fades in. `stable` keeps a single
+     gutter at the end (left in RTL, right in LTR). */
+  scrollbar-gutter: stable;
+  /* Firefox: thin scrollbar, transparent at rest. Firefox doesn't
+     animate scrollbar-color, so the hover swap is instant — still
+     cleaner than a permanently visible bar. */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 200ms ease;
+}
+.side-main:hover, .side-main:focus-within {
+  scrollbar-color: rgba(148, 163, 184, .35) transparent;
+}
+/* Webkit / Blink: render a 6px thumb that sits inset by 1px from the
+   right edge with a 2px border (transparent, clipped via background-clip)
+   to fake margin and round the thumb cleanly. Track stays invisible. */
+.side-main::-webkit-scrollbar { width: 8px; }
+.side-main::-webkit-scrollbar-track { background: transparent; }
+.side-main::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  transition: background-color 200ms ease;
+}
+.side-main:hover::-webkit-scrollbar-thumb,
+.side-main:focus-within::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, .35);
+}
+.side-main::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, .55);
+}
+.side-main::-webkit-scrollbar-thumb:active {
+  background-color: rgba(245, 158, 11, .65);
+}
+@media (prefers-reduced-motion: reduce) {
+  .side-main, .side-main::-webkit-scrollbar-thumb { transition: none; }
+}
+
+/* Apply the same hover-reveal pattern to the search results dropdown
+   so the two scrollables in the sidebar feel consistent. */
+#sr {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 200ms ease;
+}
+#sr:hover, #sr:focus-within { scrollbar-color: rgba(148, 163, 184, .35) transparent; }
+#sr::-webkit-scrollbar { width: 8px; }
+#sr::-webkit-scrollbar-track { background: transparent; }
+#sr::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  transition: background-color 200ms ease;
+}
+#sr:hover::-webkit-scrollbar-thumb,
+#sr:focus-within::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, .35);
+}
+#sr::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, .55); }
+#sr::-webkit-scrollbar-thumb:active { background-color: rgba(245, 158, 11, .65); }
 
 .sh { padding: 1.125rem 1.375rem .875rem; border-bottom: 1px solid var(--ae-border); }
 .sh h1 { font-family: var(--ae-font-mono); font-size: 15px; font-weight: 600; color: var(--ae-accent); letter-spacing: 2px; text-transform: uppercase; }
