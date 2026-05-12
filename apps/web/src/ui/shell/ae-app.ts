@@ -82,10 +82,21 @@ function ensureShellMarkup(host: HTMLElement): void {
   host.replaceChildren(
     html`
       <ae-sidebar></ae-sidebar>
+      <!--
+        role="region" rather than "application" so screen readers keep
+        their usual heading / landmark shortcuts working when the map
+        has focus. The keyboard pan/zoom handler is bound to the
+        element directly and fires regardless of role; the only thing
+        "application" bought us was forwarding *every* key to JS, which
+        we don't actually need (we capture specific keys explicitly).
+        aria-keyshortcuts surfaces the bindings to assistive tech that
+        can read them.
+      -->
       <div
         id="map"
-        role="application"
-        aria-label="European rail network map. Use arrow keys to pan and plus or minus to zoom."
+        role="region"
+        aria-label="European rail network map"
+        aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Plus Minus Enter"
         tabindex="0"
       ></div>
       <ae-debug-toggles></ae-debug-toggles>

@@ -322,17 +322,19 @@ export function createLeafletMapSurface({
   mapRoot.style.background = OCEAN_FILL_COLOR;
   mapRoot.style.touchAction = "none";
   mapRoot.style.userSelect = "none";
-  // A11y: announce the surface as an interactive application so screen
-  // readers stop intercepting arrow-key navigation. Keyboard shortcuts:
+  // A11y contract: the caller is responsible for providing a #map host
+  // element that already declares role / aria-label / aria-keyshortcuts
+  // / tabindex (see ae-app.ts ensureShellMarkup). The surface used to
+  // setAttribute these here too, which silently overrode the shell's
+  // intent — keep the runtime fallback minimal: only fill tabindex when
+  // it's missing entirely, so an embedder without a shell still gets a
+  // focusable map. Roles + labels are now the shell's job.
+  //
+  // Keyboard shortcuts wired below:
   //   Arrow keys  → pan the camera
   //   + / =       → zoom in
   //   - / _       → zoom out
   //   Enter       → select the city under the pointer (if any)
-  mapRoot.setAttribute("role", "application");
-  mapRoot.setAttribute(
-    "aria-label",
-    "Interactive European rail map. Use arrow keys to pan, plus and minus to zoom, Enter to select the hovered city."
-  );
   if (!mapRoot.hasAttribute("tabindex")) {
     mapRoot.tabIndex = 0;
   }
