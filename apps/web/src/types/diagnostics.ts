@@ -25,6 +25,11 @@ export interface DiagnosticsStore {
   maxEvents: number;
   nextIndex: number;
   events: DiagnosticsEvent[];
+  /** Optional sink fired on every logEvent. Workers install this in
+   *  their scope to forward events to the main thread; the main thread
+   *  doesn't set it. See installRelayHook / ingestRelayedEvent in
+   *  app-shell/diagnostics.ts. */
+  relayHook?: (event: DiagnosticsEvent) => void;
   clear(): void;
   dump(): DiagnosticsEvent[];
   setConsoleLevel(level: DiagnosticsLevel): void;

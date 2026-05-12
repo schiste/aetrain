@@ -1,4 +1,8 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import {
+  createDiagnostics,
+  installRelayHook,
+  summarizeError
+} from "../app-shell/diagnostics.ts";
 import {
   fetchEdgeGeometryArtifact,
   type EdgeGeometryManifest
@@ -36,6 +40,12 @@ interface SerializedError {
 }
 
 const diagnostics = createDiagnostics("web/worker/runtime-data");
+// Mirror every diagnostics event to the main thread so artifact-fetch
+// timings + warn/error envelopes appear in the unified HUD. See the
+// equivalent hook in planner.worker.ts.
+installRelayHook((event) => {
+  self.postMessage({ __aetrain_diag: event });
+});
 
 self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
   const message: IncomingMessage = event.data || {};

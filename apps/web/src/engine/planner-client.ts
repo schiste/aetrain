@@ -1,5 +1,10 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import {
+  createDiagnostics,
+  ingestRelayedEvent,
+  summarizeError
+} from "../app-shell/diagnostics.ts";
 import { createPlannerModel } from "./planner-core.ts";
+import type { DiagnosticsEvent } from "../types/diagnostics.ts";
 import type {
   PlannerArtifacts,
   PlannerCity,
@@ -20,6 +25,30 @@ import {
 } from "./planner-protocol.ts";
 
 const diagnostics = createDiagnostics("web/engine/planner-client");
+const WORKER_DIAG_SCOPE_PREFIX = "worker:planner";
+
+/**
+ * Recognize the worker-diagnostics envelope and forward it into the
+ * main-thread store. Returns true if the message was a diagnostics relay
+ * (caller should bail before running protocol handling), false otherwise.
+ *
+ * Defined as a free function so it can be attached to both the prewarmed
+ * worker (events flowing during INITIALIZE wait) and the post-attach
+ * handler — without this, the prewarm-window wasm prewarm metric would
+ * be lost.
+ */
+function tryIngestWorkerDiagnostic(message: unknown): boolean {
+  if (!message || typeof message !== "object") {
+    return false;
+  }
+  const envelope = message as { __aetrain_diag?: DiagnosticsEvent };
+  const event = envelope.__aetrain_diag;
+  if (!event) {
+    return false;
+  }
+  ingestRelayedEvent(event, WORKER_DIAG_SCOPE_PREFIX);
+  return true;
+}
 
 interface PendingRequest {
   type: PlannerWorkerMessageType;
@@ -80,6 +109,14 @@ export function prewarmPlannerClient(): PrewarmedPlannerClient {
     new URL("../workers/planner.worker.ts", import.meta.url),
     { type: "module" }
   );
+  // Capture diag envelopes that may arrive during the prewarm window
+  // (wasm-prewarm metric, early init logs) before attachPlannerClient
+  // installs its own listener. The listener stays installed afterwards —
+  // multiple addEventListener("message", ...) handlers all fire, and our
+  // protocol handler bails on `__aetrain_diag` envelopes.
+  worker.addEventListener("message", (event: MessageEvent<unknown>) => {
+    tryIngestWorkerDiagnostic(event.data);
+  });
   diagnostics.info("pre-warmed planner worker spawned", {
     started_at: startedAt
   });
@@ -126,6 +163,11 @@ export async function createPlannerClient(
     const worker = new Worker(new URL("../workers/planner.worker.ts", import.meta.url), {
       type: "module"
     });
+    // Same diag-relay shape as the prewarm path; see comment in
+    // prewarmPlannerClient.
+    worker.addEventListener("message", (event: MessageEvent<unknown>) => {
+      tryIngestWorkerDiagnostic(event.data);
+    });
     diagnostics.debug("spawned planner worker");
     return attachPlannerClient(worker, cities, routeData, plannerArtifacts);
   }, {
@@ -146,6 +188,12 @@ async function attachPlannerClient(
   worker.addEventListener("message", (event: MessageEvent<PlannerWorkerResponse>) => {
     const message = event.data;
     if (!message || typeof message !== "object") {
+      return;
+    }
+    // Diag relay envelopes are caught by a sibling listener installed
+    // when the worker is spawned; bail here so we don't treat them as
+    // protocol messages.
+    if ((message as { __aetrain_diag?: unknown }).__aetrain_diag) {
       return;
     }
     const resolver = pending.get(message.requestId);

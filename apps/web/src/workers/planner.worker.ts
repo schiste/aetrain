@@ -1,4 +1,8 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import {
+  createDiagnostics,
+  installRelayHook,
+  summarizeError
+} from "../app-shell/diagnostics.ts";
 import { createPlannerModel } from "../engine/planner-core.ts";
 import { createWasmPlannerModel } from "../engine/planner-wasm-adapter.ts";
 import { prewarmWasm } from "../../../../packages/ts/web-bindings/src/index.ts";
@@ -48,6 +52,17 @@ interface IncomingMessage {
 }
 
 const diagnostics = createDiagnostics("web/worker/planner");
+// Relay every event emitted in this worker's diagnostics store to the
+// main thread, where the perf HUD reads. Without this hook, worker
+// events (wasm init time, derive-trip detail, engine-kind decisions)
+// would only land in the worker's own globalThis.__AETRAIN_DIAGNOSTICS__,
+// invisible to the page. The envelope key `__aetrain_diag` is what
+// planner-client filters on before passing through to its protocol
+// handlers.
+installRelayHook((event) => {
+  self.postMessage({ __aetrain_diag: event });
+});
+
 let model: PlannerModel | null = null;
 let activeEngineKind: PlannerEngineKind = "js-fallback";
 

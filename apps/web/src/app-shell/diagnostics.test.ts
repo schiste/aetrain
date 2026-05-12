@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createDiagnostics } from "./diagnostics.ts";
+import {
+  createDiagnostics,
+  ingestRelayedEvent,
+  installRelayHook
+} from "./diagnostics.ts";
+import type { DiagnosticsEvent } from "../types/diagnostics.ts";
 
 test("diagnostics buffer keeps debug events even when console output is filtered", () => {
   const restore = installConsoleSpies();
@@ -41,6 +46,71 @@ test("diagnostics store exposes runtime tuning for console level and max events"
     assert.equal(store.events.length, 2);
     assert.deepEqual(store.events.map((event: { message: string }) => event.message), ["second", "third"]);
     assert.equal(restore.calls.debug.length >= 1, true);
+  } finally {
+    delete globalThis.__AETRAIN_DIAGNOSTICS__;
+    delete globalThis.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__;
+    restore.restore();
+  }
+});
+
+test("installRelayHook fires on every logged event and is reversible", () => {
+  const restore = installConsoleSpies();
+  delete globalThis.__AETRAIN_DIAGNOSTICS__;
+  globalThis.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__ = "silent";
+
+  try {
+    const diagnostics = createDiagnostics("test/relay");
+    const captured: DiagnosticsEvent[] = [];
+    const uninstall = installRelayHook((event) => {
+      captured.push(event);
+    });
+
+    diagnostics.info("one");
+    diagnostics.warn("two");
+    assert.equal(captured.length, 2);
+    assert.deepEqual(
+      captured.map((event) => event.message),
+      ["one", "two"]
+    );
+
+    uninstall();
+    diagnostics.info("three");
+    assert.equal(captured.length, 2);
+  } finally {
+    delete globalThis.__AETRAIN_DIAGNOSTICS__;
+    delete globalThis.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__;
+    restore.restore();
+  }
+});
+
+test("ingestRelayedEvent appends foreign events under a scope prefix", () => {
+  const restore = installConsoleSpies();
+  delete globalThis.__AETRAIN_DIAGNOSTICS__;
+  globalThis.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__ = "silent";
+
+  try {
+    createDiagnostics("test/relay-host");
+
+    const foreign: DiagnosticsEvent = {
+      index: 42,
+      iso: "2026-05-12T00:00:00.000Z",
+      elapsedMs: 123.4,
+      level: "info",
+      scope: "web/worker/planner",
+      message: "worker say hi",
+      data: { value: 9 }
+    };
+    ingestRelayedEvent(foreign, "worker:planner");
+
+    const store = globalThis.__AETRAIN_DIAGNOSTICS__!;
+    const last = store.events.at(-1)!;
+    assert.equal(last.scope, "worker:planner:web/worker/planner");
+    assert.equal(last.message, "worker say hi");
+    // index is re-stamped to the host store's counter — the foreign one
+    // is discarded.
+    assert.notEqual(last.index, 42);
+    // Original timing metadata is preserved verbatim.
+    assert.equal(last.elapsedMs, 123.4);
   } finally {
     delete globalThis.__AETRAIN_DIAGNOSTICS__;
     delete globalThis.__AETRAIN_DIAGNOSTICS_CONSOLE_LEVEL__;

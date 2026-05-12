@@ -64,6 +64,53 @@ export function createDiagnostics(scope: string): Diagnostics {
   };
 }
 
+/**
+ * Register a callback fired on every event logged into the diagnostics
+ * store. Used by the worker entry points to forward their events to the
+ * main thread (see ingestRelayedEvent below), so a single HUD reads
+ * worker + main events in one timeline.
+ *
+ * Calling this twice replaces the previous hook — there's exactly one
+ * relay per scope. Returns an unsubscribe function for symmetry.
+ */
+export function installRelayHook(
+  hook: (event: DiagnosticsEvent) => void
+): () => void {
+  const store = ensureDiagnosticsStore();
+  store.relayHook = hook;
+  return () => {
+    if (store.relayHook === hook) {
+      store.relayHook = undefined;
+    }
+  };
+}
+
+/**
+ * Append a foreign event into this scope's diagnostics store. The
+ * worker-to-main relay calls this on each `__aetrain_diag` postMessage
+ * envelope. The event keeps its original elapsedMs (worker timeline
+ * clock) but is re-indexed and scope-prefixed so the HUD can tell it
+ * apart from main-thread events.
+ */
+export function ingestRelayedEvent(
+  event: DiagnosticsEvent,
+  scopePrefix: string
+): void {
+  const store = ensureDiagnosticsStore();
+  const normalized: DiagnosticsEvent = {
+    index: store.nextIndex,
+    iso: event.iso,
+    elapsedMs: event.elapsedMs,
+    level: event.level,
+    scope: `${scopePrefix}:${event.scope}`,
+    message: event.message,
+    data: event.data
+  };
+  store.nextIndex += 1;
+  store.events.push(normalized);
+  trimEvents(store);
+}
+
 export function summarizeError(error: unknown): SummarizedError {
   if (!error || typeof error !== "object") {
     return { name: "Error", message: error == null ? "Unknown error" : String(error) };
@@ -215,6 +262,11 @@ function logEvent(
 
   store.events.push(event);
   trimEvents(store);
+  // Fire the relay hook synchronously so workers can postMessage the
+  // event before any subsequent logEvent calls. Throwing inside the
+  // hook is the caller's problem — we don't try/catch because a broken
+  // relay should fail loud.
+  store.relayHook?.(event);
 
   const prefix = `[aetrain][${scope}][${level}] ${message}`;
   if (!shouldEmitToConsole(store, level)) {

@@ -1,4 +1,9 @@
-import { createDiagnostics, summarizeError } from "../app-shell/diagnostics.ts";
+import {
+  createDiagnostics,
+  ingestRelayedEvent,
+  summarizeError
+} from "../app-shell/diagnostics.ts";
+import type { DiagnosticsEvent } from "../types/diagnostics.ts";
 import type {
   PlannerDataset,
   ProductionArtifactBundle,
@@ -22,6 +27,26 @@ const PRODUCTION_BASE_PATHS: readonly string[] = [
   new URL("/data/production/", window.location.origin).href
 ];
 const diagnostics = createDiagnostics("web/data/runtime");
+const WORKER_DIAG_SCOPE_PREFIX = "worker:runtime-data";
+
+/**
+ * Intercept the worker's diagnostic relay envelopes and forward them
+ * into the main-thread store. Returns true when the message was a relay
+ * (caller should bail), false otherwise. Matches the pattern used in
+ * planner-client.ts.
+ */
+function tryIngestWorkerDiagnostic(message: unknown): boolean {
+  if (!message || typeof message !== "object") {
+    return false;
+  }
+  const envelope = message as { __aetrain_diag?: DiagnosticsEvent };
+  const event = envelope.__aetrain_diag;
+  if (!event) {
+    return false;
+  }
+  ingestRelayedEvent(event, WORKER_DIAG_SCOPE_PREFIX);
+  return true;
+}
 
 interface FetchAssetError extends Error {
   artifactStatus?: number;
@@ -174,6 +199,12 @@ async function loadProductionDataSourceFromWorker(): Promise<PlannerDataset> {
     const worker = new Worker(new URL("../workers/runtime-data.worker.ts", import.meta.url), {
       type: "module"
     });
+    // Forward worker-side diagnostics into the main store. Installed
+    // before the protocol listener so events emitted before INITIALIZE
+    // (none today, but cheap insurance) are still captured.
+    worker.addEventListener("message", (event: MessageEvent<unknown>) => {
+      tryIngestWorkerDiagnostic(event.data);
+    });
     diagnostics.debug("spawned runtime data worker");
 
     return new Promise<PlannerDataset>((resolve, reject) => {
@@ -188,6 +219,12 @@ async function loadProductionDataSourceFromWorker(): Promise<PlannerDataset> {
 
       worker.addEventListener("message", (event: MessageEvent<WorkerLoadDatasetResponse>) => {
         const message: WorkerLoadDatasetResponse = event.data || {};
+        // Diagnostics envelopes share the message channel; the sibling
+        // relay listener handles them. Bail before treating one as a
+        // protocol response.
+        if ((message as unknown as { __aetrain_diag?: unknown }).__aetrain_diag) {
+          return;
+        }
         if (message.requestId !== requestId) {
           return;
         }
@@ -236,6 +273,9 @@ async function loadEdgeGeometriesFromWorker(
     const worker = new Worker(new URL("../workers/runtime-data.worker.ts", import.meta.url), {
       type: "module"
     });
+    worker.addEventListener("message", (event: MessageEvent<unknown>) => {
+      tryIngestWorkerDiagnostic(event.data);
+    });
     diagnostics.debug("spawned runtime data worker for geometry");
 
     return new Promise<LoadEdgeGeometriesResult>((resolve, reject) => {
@@ -250,6 +290,9 @@ async function loadEdgeGeometriesFromWorker(
 
       worker.addEventListener("message", (event: MessageEvent<WorkerLoadGeometriesResponse>) => {
         const message: WorkerLoadGeometriesResponse = event.data || {};
+        if ((message as unknown as { __aetrain_diag?: unknown }).__aetrain_diag) {
+          return;
+        }
         if (message.requestId !== requestId) {
           return;
         }
