@@ -39,6 +39,15 @@ export interface AppContext {
     isOpen: Signal<boolean>;
     setOpen(open: boolean): void;
     onSelectResult(name: string): void;
+    /**
+     * When non-null, the next search result will be inserted at this
+     * trip index instead of appended/toggled. Set by the trip-list
+     * "+ insert between" affordance and the map route-segment click
+     * handler; cleared automatically inside onSelectResult and when
+     * the search panel closes.
+     */
+    pendingInsertAt: Signal<number | null>;
+    requestInsertAt(index: number): void;
   };
   onShareTrip(): Promise<void>;
   onClearTrip(): void;

@@ -206,6 +206,14 @@ export interface CreateLeafletMapSurfaceOptions {
   graph: PlannerModelMetadata;
   labelThreshold: LabelThresholdFn;
   onCitySelect?: (name: string) => void;
+  /**
+   * Fired when the user clicks an existing trip segment on the routes
+   * layer (segments only exist for trip.length >= 2). The shell uses
+   * this to trigger the "insert between" UX, with `segmentIndex` being
+   * the zero-based index in state.segments; the inserted stop lands at
+   * trip index segmentIndex + 1.
+   */
+  onSegmentSelect?: (segmentIndex: number) => void;
   onRenderStatsChange?: (stats: RenderStats) => void;
 }
 
@@ -294,6 +302,7 @@ export function createLeafletMapSurface({
   graph,
   labelThreshold,
   onCitySelect,
+  onSegmentSelect,
   onRenderStatsChange
 }: CreateLeafletMapSurfaceOptions): LeafletMapSurface {
   diagnostics.info("creating canvas map surface", {
@@ -746,16 +755,29 @@ export function createLeafletMapSurface({
 
     updateHover(point);
     const hit = hitTestSpatialGrid(hitGrid, point);
-    if (!hit) {
+    if (hit) {
+      diagnostics.info("map hit city", {
+        city_name: hit.city.name,
+        x: point.x,
+        y: point.y
+      });
+      onCitySelect?.(hit.city.name);
       return;
     }
 
-    diagnostics.info("map hit city", {
-      city_name: hit.city.name,
-      x: point.x,
-      y: point.y
-    });
-    onCitySelect?.(hit.city.name);
+    // No city hit — fall through to route-segment hit-test. A segment
+    // click on an existing trip route opens the insert-between UX; we
+    // intentionally check this AFTER cities so a click that lands on
+    // both a city marker and a segment polyline picks the city.
+    const segmentHit = hitTestRouteSegments(currentRouteSegments, point);
+    if (segmentHit && onSegmentSelect) {
+      diagnostics.info("map hit route segment", {
+        segment_index: segmentHit.index,
+        from: segmentHit.from,
+        to: segmentHit.to
+      });
+      onSegmentSelect(segmentHit.index);
+    }
   }
 
   function onPointerCancel(event: PointerEvent): void {
@@ -1941,6 +1963,7 @@ function buildSegmentTooltipHtml(
   if (intermediates > 0) {
     body += `<br><span style="color:#94a3b8;font-size:10px">${intermediates} intermediate stop${intermediates === 1 ? "" : "s"}</span>`;
   }
+  body += `<br><span style="color:#818cf8;font-size:10px">Click to insert a stop here</span>`;
   return body;
 }
 

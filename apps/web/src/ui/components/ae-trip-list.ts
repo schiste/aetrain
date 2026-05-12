@@ -158,6 +158,10 @@ defineComponent("ae-trip-list", (host) => {
         diagnostics.error("addStopAfter failed", { error: summarizeError(error) });
       });
     };
+    const onInsertBetween = (insertAt: number) => () => {
+      diagnostics.info("insert between stops requested", { insert_at: insertAt });
+      ctx.search.requestInsertAt(insertAt);
+    };
 
     const items: DocumentFragment[] = [];
     for (let index = 0; index < state.trip.length; index += 1) {
@@ -218,6 +222,32 @@ defineComponent("ae-trip-list", (host) => {
           >×</button>
         </div>
       `);
+
+      // Inserter affordance between this stop and the next (skip after
+       // the last stop — appending a new final stop is the job of
+       // search / clicking on a city on the map). Slotting it between
+       // the trip stop and the AI-driven suggestions keeps the visual
+       // order: stop → "+ Insert stop" → suggested cities for this gap.
+      if (index < state.trip.length - 1) {
+        const insertAt = index + 1;
+        const nextStop = state.trip[insertAt] ?? "";
+        const insertLabel = `Insert a stop between ${cityName} and ${nextStop}`;
+        items.push(html`
+          <div
+            class="insert-gap"
+            role="button"
+            tabindex="0"
+            data-insert-at=${String(insertAt)}
+            aria-label=${insertLabel}
+            onclick=${onInsertBetween(insertAt)}
+            onkeydown=${onSuggestionKeydown(onInsertBetween(insertAt))}
+          >
+            <span class="rail" aria-hidden="true"></span>
+            <span class="label"><span aria-hidden="true">＋</span> Insert stop here</span>
+            <span class="rail" aria-hidden="true"></span>
+          </div>
+        `);
+      }
 
       const segmentSuggestions = suggestions
         .filter((suggestion: PlannerSuggestion) => suggestion.afterStop === index)

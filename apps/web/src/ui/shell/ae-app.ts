@@ -108,6 +108,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     const copyButtonLabel = signal("Copy Summary");
     const datasetMeta = signal<string>("Loading dataset…");
     const searchOpen = signal<boolean>(false);
+    const pendingInsertAt = signal<number | null>(null);
 
     // Pre-warm the planner worker in parallel with the dataset fetch. This
     // overlaps worker module resolution + WASM compile cost (typically
@@ -195,6 +196,17 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
           diagnostics.error("toggleCity failed", { error: summarizeError(error) });
         });
       },
+      onSegmentSelect(segmentIndex) {
+        // segment i bridges trip[i] → trip[i+1], so the insertion target
+        // is trip index segmentIndex + 1.
+        const insertAt = segmentIndex + 1;
+        diagnostics.info("segment-click insert requested", {
+          segment_index: segmentIndex,
+          insert_at: insertAt
+        });
+        pendingInsertAt.set(insertAt);
+        searchOpen.set(true);
+      },
       onRenderStatsChange(stats) {
         visibility.set({
           shown: stats.shown,
@@ -227,16 +239,44 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
         isOpen: searchOpen,
         setOpen(open: boolean) {
           searchOpen.set(open);
+          // Closing the panel without picking anything also cancels the
+          // pending insert target — otherwise a later toggleCity call
+          // would unexpectedly insert at a stale index.
+          if (!open) {
+            pendingInsertAt.set(null);
+          }
         },
         onSelectResult(name: string) {
-          void plannerStore.toggleCity(name).catch((error: unknown) => {
-            diagnostics.error("toggleCity failed", { error: summarizeError(error) });
-          });
+          const insertIndex = pendingInsertAt.peek();
+          if (insertIndex !== null) {
+            diagnostics.info("inserting search result at gap", {
+              insert_at: insertIndex,
+              city_name: name
+            });
+            void plannerStore
+              .insertStop(insertIndex, name)
+              .catch((error: unknown) => {
+                diagnostics.error("insertStop failed", {
+                  error: summarizeError(error)
+                });
+              });
+            pendingInsertAt.set(null);
+          } else {
+            void plannerStore.toggleCity(name).catch((error: unknown) => {
+              diagnostics.error("toggleCity failed", { error: summarizeError(error) });
+            });
+          }
           searchOpen.set(false);
           void plannerStore.setSearchQuery("").catch((error: unknown) => {
             diagnostics.error("setSearchQuery failed", { error: summarizeError(error) });
           });
           mapSurface.flyToCity(name);
+        },
+        pendingInsertAt,
+        requestInsertAt(index: number) {
+          diagnostics.info("insert-between requested", { index });
+          pendingInsertAt.set(index);
+          searchOpen.set(true);
         }
       },
       copyButtonLabel,
