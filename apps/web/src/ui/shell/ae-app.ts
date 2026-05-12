@@ -96,7 +96,7 @@ function ensureShellMarkup(host: HTMLElement): void {
         id="map"
         role="region"
         aria-label="European rail network map"
-        aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Plus Minus Enter"
+        aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Plus Minus Enter Slash Escape"
         tabindex="0"
       ></div>
       <ae-debug-toggles></ae-debug-toggles>

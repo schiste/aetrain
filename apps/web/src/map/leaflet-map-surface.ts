@@ -486,6 +486,17 @@ export function createLeafletMapSurface({
     total: cities.length
   };
   let hitGrid: SpatialGrid<VisibleCity> = createSpatialGrid<VisibleCity>([]);
+  // Last-rendered visible-city array, kept so the keyboard-navigation
+  // path can pick its next target without recomputing the render plan.
+  // Refreshed every flushRender() pass that touches the cities layer.
+  let lastVisibleCities: VisibleCity[] = [];
+  // Keyboard-navigation state. When active, arrow keys move focus
+  // between visible cities (nearest in the requested direction) instead
+  // of panning the camera; Enter selects; Escape exits and restores
+  // pan/zoom binding. Tracked by city *name* because the underlying
+  // VisibleCity object is recreated each render.
+  let keyboardNavActive = false;
+  let keyboardFocusedCityName: string | null = null;
   const viewChangeListeners = new Set<ViewChangeListener>();
   const labelPool: HTMLDivElement[] = [];
   let scheduledFrameId = 0;
@@ -564,6 +575,14 @@ export function createLeafletMapSurface({
   // Keyboard a11y: arrows to pan, +/- to zoom, Enter to select the
   // hovered city (the most recent pointer position is tracked below).
   mapRoot.addEventListener("keydown", onKeyDown);
+  // When focus leaves the map (Tab to next control, click into the
+  // sidebar, etc.), exit any in-flight keyboard-nav so the focus ring
+  // doesn't linger on a city the user can no longer interact with.
+  mapRoot.addEventListener("blur", () => {
+    if (keyboardNavActive) {
+      exitKeyboardNav();
+    }
+  });
   zoomControls.zoomIn.addEventListener("click", () => {
     zoomByDelta(BUTTON_ZOOM_DELTA);
   });
@@ -862,11 +881,58 @@ export function createLeafletMapSurface({
     }
 
     // 1.4.13 "dismissable" — Escape clears the tooltip first, before
-    // the pan/zoom shortcuts get a chance. Handled before the switch so
-    // we don't have to thread it through every case.
-    if (event.key === "Escape" && dismissTooltipForEscape()) {
+    // any other shortcut gets a chance. If keyboard-nav mode is active,
+    // Escape exits that mode as well (no need to dismiss tooltip
+    // separately — exitKeyboardNav() hides it).
+    if (event.key === "Escape") {
+      if (keyboardNavActive) {
+        event.preventDefault();
+        exitKeyboardNav();
+        return;
+      }
+      if (dismissTooltipForEscape()) {
+        event.preventDefault();
+        return;
+      }
+    }
+
+    // "/" enters keyboard-navigation mode — discoverable via
+    // aria-keyshortcuts on #map. Once active, the arrow keys move
+    // focus between visible cities; Enter selects; Escape exits.
+    if (event.key === "/" && !keyboardNavActive) {
       event.preventDefault();
+      enterKeyboardNav();
       return;
+    }
+
+    // While in keyboard-nav mode, intercept the navigation keys instead
+    // of letting them pan the camera. Enter routes through the same
+    // onCitySelect that map clicks use, so this composes with the
+    // existing add-to-trip flow without a new code path.
+    if (keyboardNavActive) {
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault();
+          stepKeyboardNav(0, -1);
+          return;
+        case "ArrowDown":
+          event.preventDefault();
+          stepKeyboardNav(0, 1);
+          return;
+        case "ArrowLeft":
+          event.preventDefault();
+          stepKeyboardNav(-1, 0);
+          return;
+        case "ArrowRight":
+          event.preventDefault();
+          stepKeyboardNav(1, 0);
+          return;
+        case "Enter":
+          if (selectKeyboardFocusedCity()) {
+            event.preventDefault();
+          }
+          return;
+      }
     }
 
     const panStep = Math.max(24, Math.round(Math.min(currentSize.x, currentSize.y) * 0.1));
@@ -1275,6 +1341,23 @@ export function createLeafletMapSurface({
       }
       hitGrid = plan.hitGrid;
       lastRenderStats = plan.stats;
+      lastVisibleCities = plan.visibleCities;
+      // If keyboard nav is active, re-anchor the tooltip and ring to
+      // the focused city's fresh screen-space position after the
+      // re-render. Camera pan / zoom / filter change otherwise leaves
+      // the indicator stale at the previous frame's coords.
+      if (keyboardNavActive && keyboardFocusedCityName) {
+        const target = plan.visibleCities.find(
+          (entry) => entry.city.name === keyboardFocusedCityName
+        );
+        if (target) {
+          renderKeyboardFocus(target);
+        } else {
+          // Focused city scrolled out of view; pick a fresh nearest
+          // city or exit nav mode rather than leaving a stale ring.
+          exitKeyboardNav();
+        }
+      }
     }
 
     onRenderStatsChange?.(lastRenderStats);
@@ -1615,6 +1698,31 @@ export function createLeafletMapSurface({
 
     drawArrivalPulse(visibleCities);
     drawSeedPulse(visibleCities);
+    drawKeyboardFocusRing(visibleCities);
+  }
+
+  function drawKeyboardFocusRing(visibleCities: VisibleCity[]): void {
+    if (!keyboardNavActive || !keyboardFocusedCityName) return;
+    const target = visibleCities.find(
+      (entry) => entry.city.name === keyboardFocusedCityName
+    );
+    if (!target) return;
+    // A solid accent-amber ring 4px outside the marker. Two strokes
+    // (outer white-ish glow + inner amber) so the ring stays legible
+    // on both dark-water and bright-marker backgrounds.
+    const radius = target.style.radius + 6;
+    cityContext.save();
+    cityContext.beginPath();
+    cityContext.arc(target.x, target.y, radius + 1.5, 0, Math.PI * 2);
+    cityContext.lineWidth = 3;
+    cityContext.strokeStyle = "rgba(15, 23, 41, .85)";
+    cityContext.stroke();
+    cityContext.beginPath();
+    cityContext.arc(target.x, target.y, radius, 0, Math.PI * 2);
+    cityContext.lineWidth = 2;
+    cityContext.strokeStyle = "rgba(245, 158, 11, .95)";
+    cityContext.stroke();
+    cityContext.restore();
   }
 
   function drawSeedPulse(visibleCities: VisibleCity[]): void {
@@ -1932,6 +2040,135 @@ export function createLeafletMapSurface({
     tooltipDismissed = true;
     pointerOverTooltip = false;
     hideTooltip();
+    return true;
+  }
+
+  /**
+   * Enter keyboard-navigation mode, picking an initial focus target.
+   * Strategy: prefer a city near the viewport center so the visual
+   * indicator lands somewhere the user is already looking; fall back to
+   * the highest-interest visible city when nothing is reasonably
+   * centered.
+   */
+  function enterKeyboardNav(): void {
+    if (lastVisibleCities.length === 0) {
+      diagnostics.debug("keyboard-nav requested with no visible cities");
+      return;
+    }
+    keyboardNavActive = true;
+    const cx = currentSize.x / 2;
+    const cy = currentSize.y / 2;
+    let best: VisibleCity | null = null;
+    let bestDist = Infinity;
+    for (const entry of lastVisibleCities) {
+      const dx = entry.x - cx;
+      const dy = entry.y - cy;
+      const dist = Math.hypot(dx, dy);
+      // Bias by interest so two cities at similar distance pick the
+      // more notable one (Berlin over a suburb in the same view).
+      const score = dist - entry.city.interest * 8;
+      if (score < bestDist) {
+        bestDist = score;
+        best = entry;
+      }
+    }
+    if (!best) return;
+    keyboardFocusedCityName = best.city.name;
+    diagnostics.info("keyboard-nav entered", {
+      city_name: best.city.name,
+      candidate_count: lastVisibleCities.length
+    });
+    renderKeyboardFocus(best);
+  }
+
+  function exitKeyboardNav(): void {
+    if (!keyboardNavActive) return;
+    keyboardNavActive = false;
+    keyboardFocusedCityName = null;
+    hideTooltip();
+    // Trigger a city-layer redraw so the focus ring clears.
+    invalidateAnimationFrame("keyboard-nav-exit");
+    diagnostics.info("keyboard-nav exited");
+  }
+
+  /**
+   * Move keyboard focus to the visible city that's nearest in the
+   * requested screen-space direction (dx, dy in normalized -1..1).
+   * Candidates outside a ±60° cone from the direction are rejected to
+   * avoid "leaping sideways" — distance ties within the cone go to the
+   * geometrically closer city.
+   */
+  function stepKeyboardNav(dx: number, dy: number): void {
+    if (!keyboardNavActive || !keyboardFocusedCityName) return;
+    const current = lastVisibleCities.find(
+      (entry) => entry.city.name === keyboardFocusedCityName
+    );
+    if (!current) return;
+    const minDot = 0.5; // ~cos(60°)
+    let best: VisibleCity | null = null;
+    let bestDist = Infinity;
+    for (const entry of lastVisibleCities) {
+      if (entry === current) continue;
+      const vx = entry.x - current.x;
+      const vy = entry.y - current.y;
+      const dist = Math.hypot(vx, vy);
+      if (dist === 0) continue;
+      const dot = (vx * dx + vy * dy) / dist;
+      if (dot < minDot) continue;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = entry;
+      }
+    }
+    if (!best) {
+      diagnostics.debug("keyboard-nav step: no candidate", { dx, dy });
+      return;
+    }
+    keyboardFocusedCityName = best.city.name;
+    diagnostics.info("keyboard-nav stepped", {
+      city_name: best.city.name,
+      dx,
+      dy
+    });
+    renderKeyboardFocus(best);
+  }
+
+  /**
+   * Draw the focus ring around `target` and re-anchor the live tooltip
+   * to its position. Reuses the cities canvas via invalidateAnimation-
+   * Frame so we only repaint the cheap layer. The tooltip swap is what
+   * actually announces the focused city to screen readers (aria-live
+   * polite + aria-atomic).
+   */
+  function renderKeyboardFocus(target: VisibleCity): void {
+    // Take ownership of the tooltip's "dismissed-by-Escape" state so a
+    // prior pointer-hover Escape doesn't silently re-dismiss the
+    // keyboard-driven tooltip on the next pointermove. Seeding
+    // lastTooltipHitKey makes updateHover see "same hit, nothing
+    // changed" and skip its reset logic too.
+    tooltipDismissed = false;
+    lastTooltipHitKey = `city:${target.city.name}`;
+    setTooltipHtml(
+      tooltip,
+      buildTooltipHtml(target, currentState, escapeHtml, formatMinutes, formatPopulation)
+    );
+    tooltip.style.display = "block";
+    tooltip.style.left = `${Math.round(target.x)}px`;
+    tooltip.style.top = `${Math.round(target.y - 12)}px`;
+    tooltip.style.transform = "translate(-50%, -100%)";
+    invalidateAnimationFrame("keyboard-nav-focus");
+  }
+
+  function selectKeyboardFocusedCity(): boolean {
+    if (!keyboardNavActive || !keyboardFocusedCityName) return false;
+    const name = keyboardFocusedCityName;
+    diagnostics.info("keyboard-nav selected city", { city_name: name });
+    onCitySelect?.(name);
+    // Exit nav mode after the selection commits. The city is now a
+    // trip stop and the existing arrival pulse becomes the visual
+    // confirmation; leaving nav mode active would let any subsequent
+    // pointermove silently overwrite the focus tooltip via updateHover.
+    exitKeyboardNav();
     return true;
   }
 
