@@ -1,19 +1,19 @@
 {
   "version": 1,
-  "total_geometry_count": 27209,
+  "total_geometry_count": 27170,
   "chunk_target_bytes": 20971520,
   "chunks": [
     {
       "file": "edge-geometries/chunk-0000.json",
-      "geometry_count": 11522
+      "geometry_count": 11513
     },
     {
       "file": "edge-geometries/chunk-0001.json",
-      "geometry_count": 7570
+      "geometry_count": 7660
     },
     {
       "file": "edge-geometries/chunk-0002.json",
-      "geometry_count": 8117
+      "geometry_count": 7997
     }
   ]
 }

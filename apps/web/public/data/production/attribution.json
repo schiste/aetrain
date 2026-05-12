@@ -1,43 +1,43 @@
 {
   "dataset_id": "stage1-europe-gtfs",
   "target_id": "europe-validated",
-  "dataset_version": "20260512-144452.284119",
-  "generated_at": "2026-05-12T14:44:52.284119Z",
+  "dataset_version": "20260512-160527.548605",
+  "generated_at": "2026-05-12T16:05:27.548605Z",
   "sources": [
     {
       "source_id": "at-oebb-gtfs",
-      "local_path": "data/cache/europe/raw/at-oebb-gtfs/at-oebb-gtfs.zip",
-      "fetched_at": "2026-05-09T05:03:42Z",
+      "local_path": "data/cache/raw/at-oebb-gtfs/at-oebb-gtfs.zip",
+      "fetched_at": "2026-05-12T15:51:00.088877+00:00",
       "sha256": "a1ace21ca33ff5d6c740a1467252a44f7b9bece2692ca9d96e167f639d5ab633",
       "version_hint": "Fri, 12 Dec 2025 09:02:01 GMT"
     },
     {
       "source_id": "ch-gtfs",
-      "local_path": "data/cache/europe/raw/ch-gtfs/ch-gtfs.zip",
-      "fetched_at": "2026-05-09T05:25:00Z",
+      "local_path": "data/cache/raw/ch-gtfs/ch-gtfs.zip",
+      "fetched_at": "2026-05-12T16:01:12.135643Z",
       "sha256": "471b8059db6d4f725b0c0e2eee9468e6af1cf00868fb5f572faafd4d82b8550d",
-      "version_hint": "gtfs_fp2026_20260425.zip"
+      "version_hint": "https://data.opentransportdata.swiss/dataset/3d2c18f9-9ef1-463f-a249-5c67604efd74/resource/f92859bf-9652-47fa-b40e-e1ba04c68d64/download/gtfs_fp2026_20260425.zip"
     },
     {
       "source_id": "de-delfi-gtfs",
-      "local_path": "data/cache/europe/raw/de-delfi-gtfs/de-delfi-gtfs.zip",
-      "fetched_at": "2026-05-09T05:03:47Z",
+      "local_path": "data/cache/raw/de-delfi-gtfs/de-delfi-gtfs.zip",
+      "fetched_at": "2026-05-12T16:00:51.952171Z",
       "sha256": "89d1808a8a6f28d3fb1decb55596f7cca1d8e3c29e368263f971cac67c66d3f2",
       "version_hint": "20251229_fahrplaene_gesamtdeutschland_gtfs.zip"
     },
     {
       "source_id": "es-renfe-cercanias-gtfs",
-      "local_path": "data/cache/europe/raw/es-renfe-cercanias-gtfs/es-renfe-cercanias-gtfs.zip",
-      "fetched_at": "2026-05-09T00:00:00Z",
-      "sha256": "32606dabdd60e3ee75cb5f4f69f654a668ead511c30e71a893e47ecf101b12a4",
-      "version_hint": null
+      "local_path": "data/cache/raw/es-renfe-cercanias-gtfs/es-renfe-cercanias-gtfs.zip",
+      "fetched_at": "2026-05-12T16:05:26.266808Z",
+      "sha256": "474e6689b3e46af6d4c12f96ea3c2304c884091b2efed689bd11c30509dbd85f",
+      "version_hint": "\"6a028c0d-eefe0a\""
     },
     {
       "source_id": "es-renfe-mainline-gtfs",
-      "local_path": "data/cache/europe/raw/es-renfe-mainline-gtfs/es-renfe-mainline-gtfs.zip",
-      "fetched_at": "2026-05-09T00:00:00Z",
-      "sha256": "8686781a866cd4a28935f4d3b4a6980af1585968b3f748672fb6d133de52b5d6",
-      "version_hint": null
+      "local_path": "data/cache/raw/es-renfe-mainline-gtfs/es-renfe-mainline-gtfs.zip",
+      "fetched_at": "2026-05-12T16:05:11.053218Z",
+      "sha256": "c30d6dc541725591d8e1f5fdbe7513074b68b10308d03259c493b78543c70202",
+      "version_hint": "\"6a02616a-c67ee\""
     },
     {
       "source_id": "lu-atp-gtfs",
@@ -49,23 +49,23 @@
     {
       "source_id": "sncf-fr-gtfs",
       "local_path": "data/cache/raw/sncf-fr-gtfs/sncf-fr-gtfs.zip",
-      "fetched_at": "2026-05-08T18:37:55.454867Z",
-      "sha256": "8693bc9645db5e71043fbf54c375763d231daf9ed15a1f40626863ed5e011bb3",
-      "version_hint": "\"69fcf0c5-5455dc\""
+      "fetched_at": "2026-05-12T15:14:56.659668Z",
+      "sha256": "36d96b4f2da04facdb1283067588bbc1848abbc130f731150c322cb6ca851620",
+      "version_hint": "\"6a02366f-5298f6\""
     },
     {
       "source_id": "sncf-fr-rfn-lines",
       "local_path": "data/cache/raw/sncf-fr-rfn-lines/sncf-fr-rfn-lines.geojson",
-      "fetched_at": "2026-05-08T18:38:00.181474Z",
+      "fetched_at": "2026-05-12T15:14:59.252202Z",
       "sha256": "872afbb93b45de996b9515a1275a34834a58b05b516df1234d5c9f3e700a2a20",
       "version_hint": "2022-03-24T10:14:03+00:00"
     },
     {
       "source_id": "sncf-fr-stations",
       "local_path": "data/cache/raw/sncf-fr-stations/sncf-fr-stations.csv",
-      "fetched_at": "2026-05-08T18:37:57.530961Z",
-      "sha256": "f8417b48550a633b3c99b5f0a756c350bfc06e2156a3a0f3b36ea34e53e663dd",
-      "version_hint": "2026-05-08T12:43:05+00:00"
+      "fetched_at": "2026-05-12T15:14:57.60246Z",
+      "sha256": "1f910dbc90b3694456238d413559a479f6fc55618d12c81f62079f95ccb187de",
+      "version_hint": "2026-05-12T12:43:06+00:00"
     }
   ]
 }

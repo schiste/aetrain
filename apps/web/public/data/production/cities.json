@@ -785,24 +785,41 @@
     "aliases": []
   },
   {
-    "city_id": "aeroport-charles-de-gaulle-2-tgv-fr-93073",
+    "city_id": "aeroport-charles-de-gaulle-tgv-ch-1a02ffe0",
     "slug": "aeroport-charles-de-gaulle",
     "display_name": "Aeroport Charles De Gaulle",
     "country_code": "FR",
     "location": {
-      "lat": 49.00383217,
-      "lon": 2.57097153
+      "lat": 49.00404634,
+      "lon": 2.57113106
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-8727149",
+      "station-uic-8727149"
+    ],
+    "aliases": [
+      "Aeroport Charles De Gaulle Tgv"
+    ]
+  },
+  {
+    "city_id": "aeroport-charles-gaulle-fr-93073",
+    "slug": "aeroport-charles-gaulle",
+    "display_name": "Aeroport Charles Gaulle",
+    "country_code": "FR",
+    "location": {
+      "lat": 49.003618,
+      "lon": 2.570812
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
       "station-uic-87271494"
     ],
     "aliases": [
-      "Aeroport Charles De Gaulle Tgv",
-      "Aeroport Charles De Gaulle 2 Tgv"
+      "Aéroport Charles de Gaulle 2 TGV"
     ]
   },
   {
@@ -2233,23 +2250,6 @@
     "aliases": []
   },
   {
-    "city_id": "aldaia-es-53ea2e79",
-    "slug": "aldaia",
-    "display_name": "Aldaia",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4611179,
-      "lon": -0.4632476
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5615c9d7"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "aldealengua-es-14c90ba3",
     "slug": "aldealengua",
     "display_name": "Aldealengua",
@@ -2495,23 +2495,6 @@
     "aliases": [
       "Algermissen Bahnhof"
     ]
-  },
-  {
-    "city_id": "algimia-ciudad-es-56efbffa",
-    "slug": "algimia-ciudad",
-    "display_name": "Algimia Ciudad",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.7529934,
-      "lon": -0.3657542
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5c854391"
-    ],
-    "aliases": []
   },
   {
     "city_id": "alhama-de-aragon-es-3514f914",
@@ -4937,21 +4920,25 @@
     "aliases": []
   },
   {
-    "city_id": "annecy-ch-ea7f0bc1",
+    "city_id": "annecy-fr-74010",
     "slug": "annecy",
     "display_name": "Annecy",
     "country_code": "FR",
     "location": {
-      "lat": 45.90212168,
-      "lon": 6.12163239
+      "lat": 45.920782,
+      "lon": 6.122582
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-8774600"
+      "station-uic-8774600",
+      "station-uic-87746008",
+      "station-uic-87746206"
     ],
-    "aliases": []
+    "aliases": [
+      "Pringy"
+    ]
   },
   {
     "city_id": "annemasse-fr-74012",
@@ -10721,7 +10708,7 @@
     "aliases": []
   },
   {
-    "city_id": "balsieges-arret-rn88-zz-c66d50a1",
+    "city_id": "balsieges-arret-zz-c66d50a1",
     "slug": "balsieges-arret",
     "display_name": "Balsieges Arret",
     "country_code": "FR",
@@ -10736,7 +10723,7 @@
       "station-uic-87640656"
     ],
     "aliases": [
-      "Balsieges Arret Rn88"
+      "Balsièges Arrêt RN88"
     ]
   },
   {
@@ -14341,8 +14328,8 @@
     "display_name": "Berlin",
     "country_code": "DE",
     "location": {
-      "lat": 52.52403945188988,
-      "lon": 13.358725278630951
+      "lat": 52.52607408805433,
+      "lon": 13.360889366642304
     },
     "wikidata_qid": null,
     "population": null,
@@ -14352,12 +14339,17 @@
       "station-uic-900003200",
       "station-uic-900003201",
       "station-uic-900058101",
+      "station-uic-900001201",
       "station-uic-900003102",
       "station-uic-900003103",
+      "station-uic-900007102",
       "station-uic-900007104",
       "station-uic-900008101",
+      "station-uic-900009104",
       "station-uic-900012101",
+      "station-uic-900020201",
       "station-uic-900020202",
+      "station-uic-900023201",
       "station-uic-900024102",
       "station-uic-900024203",
       "station-uic-900025321",
@@ -14367,6 +14359,8 @@
       "station-uic-900030202",
       "station-uic-900040101",
       "station-uic-900044101",
+      "station-uic-900044202",
+      "station-uic-900045102",
       "station-uic-900048101",
       "station-uic-900049201",
       "station-uic-900049202",
@@ -14375,14 +14369,17 @@
       "station-uic-900052201",
       "station-uic-900053301",
       "station-uic-900054104",
+      "station-uic-900054105",
       "station-uic-900057104",
       "station-uic-900058102",
       "station-uic-900060101",
+      "station-uic-900062202",
       "station-uic-900063101",
       "station-uic-900063452",
       "station-uic-900064256",
       "station-uic-900066102",
       "station-uic-900067221",
+      "station-uic-900068201",
       "station-uic-900068301",
       "station-uic-900072101",
       "station-uic-900073101",
@@ -14390,6 +14387,8 @@
       "station-uic-900074202",
       "station-uic-900077106",
       "station-uic-900077155",
+      "station-uic-900078201",
+      "station-uic-900079221",
       "station-uic-900084101",
       "station-uic-900085105",
       "station-uic-900085201",
@@ -14399,16 +14398,27 @@
       "station-uic-900092201",
       "station-uic-900093201",
       "station-uic-900094101",
+      "station-uic-900096101",
       "station-uic-900096405",
+      "station-uic-900096458",
+      "station-uic-900100001",
       "station-uic-900100002",
+      "station-uic-900100003",
+      "station-uic-900100004",
       "station-uic-900100007",
+      "station-uic-900100020",
+      "station-uic-900100025",
+      "station-uic-900110001",
       "station-uic-900110002",
       "station-uic-900110003",
       "station-uic-900110004",
       "station-uic-900110011",
       "station-uic-900110012",
+      "station-uic-900120001",
       "station-uic-900120003",
+      "station-uic-900120004",
       "station-uic-900130001",
+      "station-uic-900130002",
       "station-uic-900130003",
       "station-uic-900135001",
       "station-uic-900142001",
@@ -14419,6 +14429,7 @@
       "station-uic-900160001",
       "station-uic-900160002",
       "station-uic-900160003",
+      "station-uic-900160004",
       "station-uic-900162001",
       "station-uic-900170001",
       "station-uic-900170002",
@@ -14428,6 +14439,7 @@
       "station-uic-900171001",
       "station-uic-900171002",
       "station-uic-900171003",
+      "station-uic-900175001",
       "station-uic-900175002",
       "station-uic-900176001",
       "station-uic-900180001",
@@ -14606,7 +14618,32 @@
       "S Zehlendorf (Berlin)",
       "S Zepernick",
       "S Zeuthen",
-      "S+U Berlin Hauptbahnhof"
+      "S+U Alexanderplatz Bhf (Berlin)",
+      "S+U Berlin Hauptbahnhof",
+      "S+U Brandenburger Tor (Berlin)",
+      "S+U Bundesplatz (Berlin)",
+      "S+U Frankfurter Allee (Berlin)",
+      "S+U Friedrichstr. Bhf (Berlin)",
+      "S+U Gesundbrunnen Bhf (Berlin)",
+      "S+U Heidelberger Platz (Berlin)",
+      "S+U Hermannstr. (Berlin)",
+      "S+U Innsbrucker Platz (Berlin)",
+      "S+U Jannowitzbrücke (Berlin)",
+      "S+U Jungfernheide Bhf (Berlin)",
+      "S+U Karl-Bonhoeffer-Nervenklinik (Berlin)",
+      "S+U Lichtenberg Bhf (Berlin)",
+      "S+U Neukölln (Berlin)",
+      "S+U Pankow (Berlin)",
+      "S+U Potsdamer Platz Bhf (Berlin)",
+      "S+U Rathaus Steglitz (Berlin)",
+      "S+U Schönhauser Allee (Berlin)",
+      "S+U Tempelhof (Berlin)",
+      "S+U Warschauer Str. (Berlin)",
+      "S+U Wedding (Berlin)",
+      "S+U Westhafen (Berlin)",
+      "S+U Wittenau (Berlin)",
+      "S+U Wuhletal (Berlin)",
+      "S+U Zoologischer Garten Bhf (Berlin)"
     ]
   },
   {
@@ -22357,23 +22394,6 @@
     ]
   },
   {
-    "city_id": "bunol-es-d4c11cc0",
-    "slug": "bunol",
-    "display_name": "Bunol",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.427139,
-      "lon": -0.7873638
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-81dce349"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "burela-es-77a36797",
     "slug": "burela",
     "display_name": "Burela",
@@ -25781,23 +25801,6 @@
     "aliases": []
   },
   {
-    "city_id": "caudiel-es-44a78476",
-    "slug": "caudiel",
-    "display_name": "Caudiel",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.9473696,
-      "lon": -0.5720537
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-030d9d84"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "caudrot-fr-33111",
     "slug": "caudrot",
     "display_name": "Caudrot",
@@ -27055,7 +27058,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 7,
     "station_ids": [
       "station-uic-8774100",
       "station-uic-87741009"
@@ -28764,23 +28767,6 @@
     "aliases": []
   },
   {
-    "city_id": "cheste-es-4838fed1",
-    "slug": "cheste",
-    "display_name": "Cheste",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.490903,
-      "lon": -0.6862639
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-6bc9f7a5"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "chevaigne-fr-35079",
     "slug": "chevaigne",
     "display_name": "Chevaigne",
@@ -29036,23 +29022,6 @@
     "station_ids": [
       "station-uic-8757484",
       "station-uic-87574848"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "chiva-es-9e591023",
-    "slug": "chiva",
-    "display_name": "Chiva",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4711268,
-      "lon": -0.7229414
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-163e7a84"
     ],
     "aliases": []
   },
@@ -30888,6 +30857,25 @@
       "station-uic-87716696"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "corcieux-zz-b14cbfe6",
+    "slug": "corcieux",
+    "display_name": "Corcieux",
+    "country_code": "FR",
+    "location": {
+      "lat": 48.178166,
+      "lon": 6.88387
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-uic-87772806"
+    ],
+    "aliases": [
+      "Corcieux 36 Rue de la Gare"
+    ]
   },
   {
     "city_id": "corcos-aguilarejo-es-58a5db38",
@@ -34507,9 +34495,9 @@
     "aliases": []
   },
   {
-    "city_id": "devant-fouday-abri-rn-420-zz-f68b3653",
-    "slug": "devant-fouday-abri",
-    "display_name": "Devant Fouday Abri",
+    "city_id": "devant-fouday-zz-f68b3653",
+    "slug": "devant-fouday",
+    "display_name": "Devant Fouday",
     "country_code": "FR",
     "location": {
       "lat": 48.4214,
@@ -34522,7 +34510,7 @@
       "station-uic-87660795"
     ],
     "aliases": [
-      "Devant Fouday Abri Rn 420"
+      "Devant Fouday Abri RN 420"
     ]
   },
   {
@@ -35829,25 +35817,21 @@
     "aliases": []
   },
   {
-    "city_id": "dombasle-sur-meurthe-fr-54159",
+    "city_id": "dombasle-sur-meurthe-ch-660274ba",
     "slug": "dombasle-sur-meurthe",
     "display_name": "Dombasle Sur Meurthe",
     "country_code": "FR",
     "location": {
-      "lat": 48.614386499999995,
-      "lon": 6.3470984999999995
+      "lat": 48.62331584,
+      "lon": 6.34332762
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-8714111",
-      "station-uic-87141119",
-      "station-uic-87141127"
+      "station-uic-8714111"
     ],
-    "aliases": [
-      "Rosières-aux-Salines"
-    ]
+    "aliases": []
   },
   {
     "city_id": "domblans-voiteur-fr-39199",
@@ -39581,23 +39565,6 @@
     "aliases": []
   },
   {
-    "city_id": "el-rebollar-es-4c9fed72",
-    "slug": "el-rebollar",
-    "display_name": "El Rebollar",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4773604,
-      "lon": -1.0116025
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-2ec04284"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "el-remedio-es-164a6770",
     "slug": "el-remedio",
     "display_name": "El Remedio",
@@ -42364,23 +42331,6 @@
     "aliases": []
   },
   {
-    "city_id": "estivella-albalat-dels-tarongers-es-daed835a",
-    "slug": "estivella-albalat-dels-tarongers",
-    "display_name": "Estivella Albalat Dels Tarongers",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.706408,
-      "lon": -0.348324
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-28025984"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "estrees-saint-denis-fr-60223",
     "slug": "estrees-saint-denis",
     "display_name": "Estrees Saint Denis",
@@ -44947,7 +44897,7 @@
     "aliases": []
   },
   {
-    "city_id": "fix-saint-geneys-rn102-bourg-zz-798f45a5",
+    "city_id": "fix-saint-geneys-zz-798f45a5",
     "slug": "fix-saint-geneys",
     "display_name": "Fix Saint Geneys",
     "country_code": "FR",
@@ -44962,7 +44912,7 @@
       "station-uic-87680728"
     ],
     "aliases": [
-      "Fix Saint Geneys Rn102 Bourg"
+      "Fix Saint-Geneys Rn102 Bourg"
     ]
   },
   {
@@ -45071,25 +45021,21 @@
     "aliases": []
   },
   {
-    "city_id": "flaxlanden-fr-68384",
+    "city_id": "flaxlanden-ch-c211c997",
     "slug": "flaxlanden",
     "display_name": "Flaxlanden",
     "country_code": "FR",
     "location": {
-      "lat": 47.696503,
-      "lon": 7.299307000000001
+      "lat": 47.698828,
+      "lon": 7.30463277
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-8718104",
-      "station-uic-87181040",
-      "station-uic-87182196"
+      "station-uic-8718104"
     ],
-    "aliases": [
-      "Zillisheim"
-    ]
+    "aliases": []
   },
   {
     "city_id": "flehingen-de-d31e75c1",
@@ -45198,25 +45144,6 @@
     "aliases": []
   },
   {
-    "city_id": "fleurieux-rn7-zz-ff37aa48",
-    "slug": "fleurieux",
-    "display_name": "Fleurieux",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.840513,
-      "lon": 4.653622
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87698282"
-    ],
-    "aliases": [
-      "Fleurieux Rn7"
-    ]
-  },
-  {
     "city_id": "fleurieux-sur-l-arbresle-fr-69086",
     "slug": "fleurieux-sur-l-arbresle",
     "display_name": "Fleurieux Sur L Arbresle",
@@ -45233,6 +45160,25 @@
       "station-uic-87721563"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "fleurieux-zz-ff37aa48",
+    "slug": "fleurieux",
+    "display_name": "Fleurieux",
+    "country_code": "FR",
+    "location": {
+      "lat": 45.840513,
+      "lon": 4.653622
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-uic-87698282"
+    ],
+    "aliases": [
+      "Fleurieux RN7"
+    ]
   },
   {
     "city_id": "fleurville-pont-de-vaux-fr-71591",
@@ -50781,23 +50727,6 @@
     "aliases": []
   },
   {
-    "city_id": "gilet-es-c00733dd",
-    "slug": "gilet",
-    "display_name": "Gilet",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.6793985,
-      "lon": -0.3206548
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-a592e261"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "gilley-fr-25271",
     "slug": "gilley",
     "display_name": "Gilley",
@@ -55092,25 +55021,6 @@
     "aliases": []
   },
   {
-    "city_id": "gunsbach-d417-zz-7bfc5668",
-    "slug": "gunsbach",
-    "display_name": "Gunsbach",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.042642,
-      "lon": 7.17419
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87665471"
-    ],
-    "aliases": [
-      "Gunsbach D417"
-    ]
-  },
-  {
     "city_id": "gunsbach-griesbach-fr-68109",
     "slug": "gunsbach-griesbach",
     "display_name": "Gunsbach Griesbach",
@@ -55127,6 +55037,25 @@
       "station-uic-87182386"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "gunsbach-zz-7bfc5668",
+    "slug": "gunsbach",
+    "display_name": "Gunsbach",
+    "country_code": "FR",
+    "location": {
+      "lat": 48.042642,
+      "lon": 7.17419
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-uic-87665471"
+    ],
+    "aliases": [
+      "Gunsbach D417"
+    ]
   },
   {
     "city_id": "gunskirchen-at-08e60eac",
@@ -63394,7 +63323,7 @@
     "aliases": []
   },
   {
-    "city_id": "illfurth-croisement-gare-cd68-zz-b4013148",
+    "city_id": "illfurth-croisement-zz-b4013148",
     "slug": "illfurth-croisement",
     "display_name": "Illfurth Croisement",
     "country_code": "FR",
@@ -63409,7 +63338,7 @@
       "station-uic-87654558"
     ],
     "aliases": [
-      "Illfurth Croisement Gare Cd68"
+      "Illfurth Croisement Gare-CD68"
     ]
   },
   {
@@ -65302,23 +65231,6 @@
       "Jerez Aeropuerto",
       "Jerez De La Frontera"
     ]
-  },
-  {
-    "city_id": "jerica-viver-es-a209dec2",
-    "slug": "jerica-viver",
-    "display_name": "Jerica Viver",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.9149777,
-      "lon": -0.5693896
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-988f8b2b"
-    ],
-    "aliases": []
   },
   {
     "city_id": "jerice-de-af9c79ea",
@@ -76303,25 +76215,6 @@
     "aliases": []
   },
   {
-    "city_id": "la-vavrette-tossiat-rd1075-zz-4b2da104",
-    "slug": "la-vavrette-tossiat",
-    "display_name": "La Vavrette Tossiat",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.134616,
-      "lon": 5.290295
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87743104"
-    ],
-    "aliases": [
-      "La Vavrette Tossiat Rd1075"
-    ]
-  },
-  {
     "city_id": "la-vecilla-es-48829f4d",
     "slug": "la-vecilla",
     "display_name": "La Vecilla",
@@ -81402,15 +81295,14 @@
     "display_name": "Le Teil",
     "country_code": "FR",
     "location": {
-      "lat": 44.552632005,
-      "lon": 4.6860218499999995
+      "lat": 44.55266801,
+      "lon": 4.6860527
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-8776447",
-      "station-uic-87764472"
+      "station-uic-8776447"
     ],
     "aliases": []
   },
@@ -83167,21 +83059,19 @@
     "display_name": "Les Echets",
     "country_code": "FR",
     "location": {
-      "lat": 45.836422999999996,
-      "lon": 4.943279
+      "lat": 45.848383,
+      "lon": 4.932368
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-87723528",
       "station-uic-8772371",
-      "station-uic-87723718",
-      "station-uic-87698571"
+      "station-uic-87723718"
     ],
     "aliases": [
-      "Miribel",
-      "Miribel Rd1084 Elysee"
+      "Miribel"
     ]
   },
   {
@@ -83917,25 +83807,6 @@
       "station-uic-87486449"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "les-salelles-embranchement-rn-88-zz-251b5987",
-    "slug": "les-salelles-embranchement",
-    "display_name": "Les Salelles Embranchement",
-    "country_code": "FR",
-    "location": {
-      "lat": 44.483291,
-      "lon": 3.278319
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87640672"
-    ],
-    "aliases": [
-      "Les Salelles Embranchement Rn 88"
-    ]
   },
   {
     "city_id": "les-salelles-fr-48185",
@@ -85785,9 +85656,9 @@
     "aliases": []
   },
   {
-    "city_id": "lissieu-le-bois-dieu-rd306-zz-0215b3c6",
-    "slug": "lissieu-le-bois-dieu",
-    "display_name": "Lissieu Le Bois Dieu",
+    "city_id": "lissieu-bois-dieu-zz-0215b3c6",
+    "slug": "lissieu-bois-dieu",
+    "display_name": "Lissieu Bois Dieu",
     "country_code": "FR",
     "location": {
       "lat": 45.840796,
@@ -85800,7 +85671,7 @@
       "station-uic-87697227"
     ],
     "aliases": [
-      "Lissieu Le Bois Dieu Rd306"
+      "Lissieu-Le Bois Dieu RD306"
     ]
   },
   {
@@ -87044,23 +86915,6 @@
     "station_ids": [
       "station-uic-8747600",
       "station-uic-87476002"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "loriguilla-reva-es-55317706",
-    "slug": "loriguilla-reva",
-    "display_name": "Loriguilla Reva",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4857771,
-      "lon": -0.5673983
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-3ca85490"
     ],
     "aliases": []
   },
@@ -96127,16 +95981,19 @@
     "display_name": "Miribel",
     "country_code": "FR",
     "location": {
-      "lat": 45.82202295,
-      "lon": 4.95406506
+      "lat": 45.823242975,
+      "lon": 4.954127529999999
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
+      "station-uic-87698571",
       "station-uic-8772352"
     ],
-    "aliases": []
+    "aliases": [
+      "Miribel-RD1084-Élysée"
+    ]
   },
   {
     "city_id": "miribilla-es-d1bfd249",
@@ -97112,23 +96969,6 @@
     "aliases": []
   },
   {
-    "city_id": "monnaie-jean-baptiste-moreau-zz-b6f7129e",
-    "slug": "monnaie-jean-baptiste-moreau",
-    "display_name": "Monnaie Jean Baptiste Moreau",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.502397,
-      "lon": 0.79079
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87427393"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "monnerville-fr-91414",
     "slug": "monnerville",
     "display_name": "Monnerville",
@@ -97840,20 +97680,17 @@
     "display_name": "Montelimar",
     "country_code": "FR",
     "location": {
-      "lat": 44.5591875,
-      "lon": 4.7449165
+      "lat": 44.558936,
+      "lon": 4.744726
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 7,
     "station_ids": [
-      "station-uic-87556522",
       "station-uic-8776400",
       "station-uic-87764001"
     ],
-    "aliases": [
-      "Montelimar Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "montemar-alto-es-59b70709",
@@ -101981,23 +101818,6 @@
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-ee40088d",
       "station-es-renfe-mainline-gtfs-ee40088d"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "navajas-es-7a025473",
-    "slug": "navajas",
-    "display_name": "Navajas",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.8744166,
-      "lon": -0.5059546
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-def74a6d"
     ],
     "aliases": []
   },
@@ -117194,26 +117014,6 @@
     "aliases": []
   },
   {
-    "city_id": "pringy-fr-74010",
-    "slug": "pringy",
-    "display_name": "Pringy",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.920782,
-      "lon": 6.122582
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-uic-87746008",
-      "station-uic-87746206"
-    ],
-    "aliases": [
-      "Annecy"
-    ]
-  },
-  {
     "city_id": "pringy-haute-savoie-ch-352fdd2c",
     "slug": "pringy-haute-savoie",
     "display_name": "Pringy Haute Savoie",
@@ -120914,23 +120714,6 @@
     "aliases": []
   },
   {
-    "city_id": "requena-es-d233819d",
-    "slug": "requena",
-    "display_name": "Requena",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4912708,
-      "lon": -1.1046578
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-7ab21f80"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "requena-utiel-es-7c8fff91",
     "slug": "requena-utiel",
     "display_name": "Requena Utiel",
@@ -121065,25 +120848,6 @@
     "aliases": []
   },
   {
-    "city_id": "reugny-rn144-zz-204aaf44",
-    "slug": "reugny",
-    "display_name": "Reugny",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.462027,
-      "lon": 2.615508
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87408971"
-    ],
-    "aliases": [
-      "Reugny Rn144"
-    ]
-  },
-  {
     "city_id": "reugny-rue-de-la-bascul-zz-6e74726d",
     "slug": "reugny-rue-de-la-bascul",
     "display_name": "Reugny Rue De La Bascul",
@@ -121099,6 +120863,25 @@
       "station-uic-87589804"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "reugny-zz-204aaf44",
+    "slug": "reugny",
+    "display_name": "Reugny",
+    "country_code": "FR",
+    "location": {
+      "lat": 46.462027,
+      "lon": 2.615508
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-uic-87408971"
+    ],
+    "aliases": [
+      "Reugny RN144"
+    ]
   },
   {
     "city_id": "reuilly-fr-36171",
@@ -124237,21 +124020,25 @@
     "aliases": []
   },
   {
-    "city_id": "rosieres-aux-salines-ch-89fa79f9",
+    "city_id": "rosieres-aux-salines-fr-54159",
     "slug": "rosieres-aux-salines",
     "display_name": "Rosieres Aux Salines",
     "country_code": "FR",
     "location": {
-      "lat": 48.60534449,
-      "lon": 6.35045126
+      "lat": 48.614386499999995,
+      "lon": 6.3470984999999995
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-8714112"
+      "station-uic-87141119",
+      "station-uic-8714112",
+      "station-uic-87141127"
     ],
-    "aliases": []
+    "aliases": [
+      "Dombasle-sur-Meurthe"
+    ]
   },
   {
     "city_id": "rosieres-fr-80680",
@@ -126549,7 +126336,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-ada1863e"
     ],
@@ -130428,6 +130215,25 @@
     "aliases": []
   },
   {
+    "city_id": "salelles-embranchement-zz-251b5987",
+    "slug": "salelles-embranchement",
+    "display_name": "Salelles Embranchement",
+    "country_code": "FR",
+    "location": {
+      "lat": 44.483291,
+      "lon": 3.278319
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-uic-87640672"
+    ],
+    "aliases": [
+      "Les Salelles Embranchement RN 88"
+    ]
+  },
+  {
     "city_id": "salem-ch-e9815666",
     "slug": "salem",
     "display_name": "Salem",
@@ -130914,23 +130720,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8503286"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "san-antonio-de-requena-es-3ff56361",
-    "slug": "san-antonio-de-requena",
-    "display_name": "San Antonio De Requena",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.5222997,
-      "lon": -1.150367
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-70a7719b"
     ],
     "aliases": []
   },
@@ -136587,26 +136376,38 @@
     "aliases": []
   },
   {
+    "city_id": "segorbe-ciudad-es-13451362",
+    "slug": "segorbe-ciudad",
+    "display_name": "Segorbe Ciudad",
+    "country_code": "ES",
+    "location": {
+      "lat": 39.8471755,
+      "lon": -0.4823544
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 4,
+    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-a38142f4"
+    ],
+    "aliases": []
+  },
+  {
     "city_id": "segorbe-es-dc992e57",
     "slug": "segorbe",
     "display_name": "Segorbe",
     "country_code": "ES",
     "location": {
-      "lat": 39.849020875,
-      "lon": -0.48523155
+      "lat": 39.8471755,
+      "lon": -0.4823544
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-3c84eef8",
-      "station-es-renfe-cercanias-gtfs-a38142f4",
       "station-es-renfe-mainline-gtfs-a38142f4"
     ],
-    "aliases": [
-      "Segorbe-Arrabal",
-      "Segorbe-Ciudad"
-    ]
+    "aliases": []
   },
   {
     "city_id": "segovia-es-6e7c8c44",
@@ -138103,23 +137904,6 @@
     ]
   },
   {
-    "city_id": "siete-aguas-es-df808c57",
-    "slug": "siete-aguas",
-    "display_name": "Siete Aguas",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4572264,
-      "lon": -0.9025067
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-b4e2a0f0"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "siggenthal-wurenlingen-ch-347c80d2",
     "slug": "siggenthal-wurenlingen",
     "display_name": "Siggenthal Wurenlingen",
@@ -138682,7 +138466,7 @@
     "aliases": []
   },
   {
-    "city_id": "siradan-d825-zz-39f0a50d",
+    "city_id": "siradan-zz-39f0a50d",
     "slug": "siradan",
     "display_name": "Siradan",
     "country_code": "FR",
@@ -139565,23 +139349,6 @@
       "station-de-delfi-gtfs-1462842f",
       "station-de-delfi-gtfs-28a58a81",
       "station-de-delfi-gtfs-6cf470a1"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "soneja-es-d4326ae9",
-    "slug": "soneja",
-    "display_name": "Soneja",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.8126015,
-      "lon": -0.4318206
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-b34014b4"
     ],
     "aliases": []
   },
@@ -151874,23 +151641,6 @@
     "aliases": []
   },
   {
-    "city_id": "utiel-es-bf6bb90c",
-    "slug": "utiel",
-    "display_name": "Utiel",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.5707742,
-      "lon": -1.2024215
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-9ec7c356"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "utrecht-centraal-de-2d5b9d2e",
     "slug": "utrecht-centraal",
     "display_name": "Utrecht Centraal",
@@ -153521,6 +153271,25 @@
       "station-uic-8769146"
     ],
     "aliases": []
+  },
+  {
+    "city_id": "vavrette-tossiat-zz-4b2da104",
+    "slug": "vavrette-tossiat",
+    "display_name": "Vavrette Tossiat",
+    "country_code": "FR",
+    "location": {
+      "lat": 46.134616,
+      "lon": 5.290295
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-uic-87743104"
+    ],
+    "aliases": [
+      "La Vavrette Tossiat RD1075"
+    ]
   },
   {
     "city_id": "vayrac-fr-46330",
@@ -158844,9 +158613,9 @@
     ]
   },
   {
-    "city_id": "walbach-la-forge-abri-d-417-zz-2670494b",
-    "slug": "walbach-la-forge-abri",
-    "display_name": "Walbach La Forge Abri",
+    "city_id": "walbach-forge-zz-2670494b",
+    "slug": "walbach-forge",
+    "display_name": "Walbach Forge",
     "country_code": "FR",
     "location": {
       "lat": 48.059876,
@@ -162113,7 +161882,7 @@
     "aliases": []
   },
   {
-    "city_id": "wimmenau-d-919-rue-de-la-zz-af0f2d0d",
+    "city_id": "wimmenau-zz-af0f2d0d",
     "slug": "wimmenau",
     "display_name": "Wimmenau",
     "country_code": "FR",
@@ -162128,8 +161897,7 @@
       "station-uic-87642348"
     ],
     "aliases": [
-      "Wimmenau D.919 - Rue de la Gare",
-      "Wimmenau D 919 Rue De La"
+      "Wimmenau D.919 - Rue de la Gare"
     ]
   },
   {
@@ -163752,23 +163520,6 @@
     "aliases": []
   },
   {
-    "city_id": "xirivella-alqueries-es-16b01645",
-    "slug": "xirivella-alqueries",
-    "display_name": "Xirivella Alqueries",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.4626294,
-      "lon": -0.432216
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-203d6320"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "xivares-es-f6b55dcd",
     "slug": "xivares",
     "display_name": "Xivares",
@@ -165040,21 +164791,25 @@
     "aliases": []
   },
   {
-    "city_id": "zillisheim-ch-4c29503b",
+    "city_id": "zillisheim-fr-68384",
     "slug": "zillisheim",
     "display_name": "Zillisheim",
     "country_code": "FR",
     "location": {
-      "lat": 47.694505,
-      "lon": 7.29447282
+      "lat": 47.696503,
+      "lon": 7.299307000000001
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-8718219"
+      "station-uic-87181040",
+      "station-uic-8718219",
+      "station-uic-87182196"
     ],
-    "aliases": []
+    "aliases": [
+      "Flaxlanden"
+    ]
   },
   {
     "city_id": "zimeysa-ch-865745d0",
