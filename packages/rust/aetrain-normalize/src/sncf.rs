@@ -215,6 +215,7 @@ enum CityEligibility {
 struct CityEligibilityResolution {
     remap: HashMap<String, String>,
     rename_display_name: HashMap<String, String>,
+    drop_cluster_keys: HashSet<String>,
     report: RejectedCityCandidateReport,
 }
 
@@ -829,6 +830,17 @@ fn normalize_stations(
         }
     }
 
+    if !eligibility_resolution.drop_cluster_keys.is_empty() {
+        pending_stations.retain(|station| {
+            !eligibility_resolution
+                .drop_cluster_keys
+                .contains(&station.cluster_key)
+        });
+        for cluster_key in &eligibility_resolution.drop_cluster_keys {
+            clusters.remove(cluster_key);
+        }
+    }
+
     for (cluster_key, display_name) in &eligibility_resolution.rename_display_name {
         let Some(cluster) = clusters.get_mut(cluster_key) else {
             continue;
@@ -1119,6 +1131,17 @@ fn normalize_gtfs_only_stations(
         }
         for child_cluster_key in merged_children {
             clusters.remove(&child_cluster_key);
+        }
+    }
+
+    if !eligibility_resolution.drop_cluster_keys.is_empty() {
+        pending_stations.retain(|station| {
+            !eligibility_resolution
+                .drop_cluster_keys
+                .contains(&station.cluster_key)
+        });
+        for cluster_key in &eligibility_resolution.drop_cluster_keys {
+            clusters.remove(cluster_key);
         }
     }
 
@@ -2028,6 +2051,7 @@ fn resolve_gtfs_basic_ineligible_clusters(
         match eligibility {
             CityEligibility::Eligible => {}
             CityEligibility::StationOnlyFeedStopLabel => {
+                resolutions.drop_cluster_keys.insert(cluster_key.clone());
                 resolutions
                     .report
                     .records
@@ -3310,6 +3334,67 @@ T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
                 .all(|station| station.display_name != "Bus"),
             "placeholder Bus stop areas should be filtered out before normalization"
         );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn gtfs_basic_dataset_drops_unresolved_station_only_city_candidates() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-station-only-drop-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:BUSONLY,Busbahnhof,48.2100,16.3700,1,\n\
+StopArea:WIENHBF,Wien Hbf,48.1850,16.3740,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:BUSONLY,1\n\
+T1,08:20:00,08:25:00,StopArea:WIENHBF,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "at-oebb-gtfs",
+            "AT",
+            "test-version",
+            "2026-05-12T11:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert!(
+            output.cities.iter().all(|city| city.display_name != "Busbahnhof"),
+            "station-only stop labels should not materialize as canonical cities"
+        );
+        assert!(
+            output
+                .stations
+                .iter()
+                .all(|station| station.display_name != "Busbahnhof"),
+            "station-only stop labels should be dropped from canonical stations"
+        );
+        assert!(
+            output
+                .station_mappings
+                .records
+                .iter()
+                .all(|record| record.station_display_name != "Busbahnhof"),
+            "station-only stop labels should not survive into station mappings"
+        );
+        assert!(output.rejected_city_candidates.records.iter().any(|record| {
+            record.display_name == "Busbahnhof"
+                && record.resolution == RejectedCityCandidateResolution::UnresolvedStationOnly
+        }));
 
         let _ = fs::remove_file(zip_path);
     }
