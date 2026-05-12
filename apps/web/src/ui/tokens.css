@@ -55,19 +55,14 @@ ae-app, ae-sidebar { display: contents; }
      doesn't shift when the thumb fades in. `stable` keeps a single
      gutter at the end (left in RTL, right in LTR). */
   scrollbar-gutter: stable;
-  /* Firefox: thin scrollbar, transparent at rest. Firefox doesn't
-     animate scrollbar-color, so the hover swap is instant — still
-     cleaner than a permanently visible bar. */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 200ms ease;
 }
-.side-main:hover, .side-main:focus-within {
-  scrollbar-color: rgba(148, 163, 184, .35) transparent;
-}
-/* Webkit / Blink: render a 6px thumb that sits inset by 1px from the
-   right edge with a 2px border (transparent, clipped via background-clip)
-   to fake margin and round the thumb cleanly. Track stays invisible. */
+/* Chromium / WebKit path. Important nuance: in Chrome 121+ setting any
+   non-auto `scrollbar-width` or `scrollbar-color` on the element
+   switches Chrome to the standard renderer and `::-webkit-scrollbar`
+   rules are silently ignored. So we deliberately leave those properties
+   unset on the host element here — Firefox gets its own scoped block
+   below via @supports. The result on Chrome is a thin, transparent-by-
+   default pill thumb that fades in on hover. */
 .side-main::-webkit-scrollbar { width: 8px; }
 .side-main::-webkit-scrollbar-track { background: transparent; }
 .side-main::-webkit-scrollbar-thumb {
@@ -88,18 +83,13 @@ ae-app, ae-sidebar { display: contents; }
   background-color: rgba(245, 158, 11, .65);
 }
 @media (prefers-reduced-motion: reduce) {
-  .side-main, .side-main::-webkit-scrollbar-thumb { transition: none; }
+  .side-main::-webkit-scrollbar-thumb { transition: none; }
 }
 
 /* Apply the same hover-reveal pattern to the search results dropdown
-   so the two scrollables in the sidebar feel consistent. */
-#sr {
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 200ms ease;
-}
-#sr:hover, #sr:focus-within { scrollbar-color: rgba(148, 163, 184, .35) transparent; }
+   so the two scrollables in the sidebar feel consistent. Same Chromium
+   caveat applies — no scrollbar-color / scrollbar-width on the host. */
+#sr { scrollbar-gutter: stable; }
 #sr::-webkit-scrollbar { width: 8px; }
 #sr::-webkit-scrollbar-track { background: transparent; }
 #sr::-webkit-scrollbar-thumb {
@@ -115,6 +105,26 @@ ae-app, ae-sidebar { display: contents; }
 }
 #sr::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, .55); }
 #sr::-webkit-scrollbar-thumb:active { background-color: rgba(245, 158, 11, .65); }
+
+/* Firefox path. @supports selector(::-webkit-scrollbar) is true on
+   Chromium/WebKit and false on Firefox — so this block applies only
+   on Firefox, where ::-webkit-scrollbar isn't a real selector and we
+   have to fall back to the standard scrollbar-* properties. Firefox
+   doesn't animate scrollbar-color, so the hover swap is instant. */
+@supports not selector(::-webkit-scrollbar) {
+  .side-main, #sr {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 200ms ease;
+  }
+  .side-main:hover, .side-main:focus-within,
+  #sr:hover, #sr:focus-within {
+    scrollbar-color: rgba(148, 163, 184, .55) transparent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .side-main, #sr { transition: none; }
+  }
+}
 
 .sh { padding: 1.125rem 1.375rem .875rem; border-bottom: 1px solid var(--ae-border); }
 .sh h1 { font-family: var(--ae-font-mono); font-size: 15px; font-weight: 600; color: var(--ae-accent); letter-spacing: 2px; text-transform: uppercase; }
