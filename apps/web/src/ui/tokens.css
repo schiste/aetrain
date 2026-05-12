@@ -142,6 +142,7 @@ ae-app, ae-sidebar { display: contents; }
    pointer so the affordance is unambiguous. */
 .ts[draggable="true"] { cursor: grab; }
 .ts[draggable="true"]:active { cursor: grabbing; }
+.ts:focus-visible { outline: 2px solid var(--ae-accent); outline-offset: -2px; background: rgba(245, 158, 11, .06); }
 .ts.dragging { cursor: grabbing; }
 .ts[draggable="true"] .tx,
 .ts[draggable="true"] button { cursor: pointer; }

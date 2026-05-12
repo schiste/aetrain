@@ -113,6 +113,62 @@ defineComponent("ae-trip-list", (host) => {
     dragFromIndex = null;
   });
 
+  // Keyboard-driven reorder. Mirrors the drag-reorder gesture: the user
+  // tabs to a trip stop (tabindex=0 on the row), then presses
+  // Alt+ArrowUp / Alt+ArrowDown to swap with its neighbour. Plain Up/Down
+  // is left alone so users can still tab through the list normally;
+  // requiring Alt is the same shortcut convention as Trello/Notion's
+  // keyboard reorder. After the reorder we re-focus the row at its new
+  // index so chained keystrokes "carry" the stop along the list.
+  host.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (!event.altKey) return;
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+    const stop = tripStopAt(event.target);
+    if (!stop) return;
+    const indexAttr = stop.dataset.tripIndex;
+    if (indexAttr === undefined) return;
+    const fromIndex = Number.parseInt(indexAttr, 10);
+    if (!Number.isFinite(fromIndex)) return;
+    const ctx = tryUseAppContext();
+    if (!ctx) return;
+
+    const tripLen = ctx.state().trip.length;
+    const direction = event.key === "ArrowUp" ? -1 : 1;
+    const targetSlot = fromIndex + direction;
+    if (targetSlot < 0 || targetSlot >= tripLen) return;
+    event.preventDefault();
+
+    // reorderTrip uses splice-then-insert semantics; targetSlot is the
+    // final position we want the stop to occupy. Translate to the
+    // splice-target index (the index BEFORE the removal). For a swap
+    // with the next neighbour we want to land on (targetSlot + 1) so
+    // that after the splice-removal of fromIndex the moved element ends
+    // up at targetSlot.
+    const spliceTarget = direction === 1 ? targetSlot + 1 : targetSlot;
+    diagnostics.info("keyboard reorder requested", {
+      from_index: fromIndex,
+      to_index: spliceTarget,
+      direction: direction === -1 ? "up" : "down"
+    });
+    void ctx.store
+      .reorderTrip(fromIndex, spliceTarget)
+      .then((changed) => {
+        if (!changed) return;
+        // After re-render, re-focus the row at its new index so the
+        // user can keep nudging without re-finding it. queueMicrotask
+        // gives the signal-driven render a chance to flush.
+        queueMicrotask(() => {
+          const moved = host.querySelector<HTMLElement>(
+            `.ts[data-trip-index="${String(targetSlot)}"]`
+          );
+          moved?.focus();
+        });
+      })
+      .catch((error: unknown) => {
+        diagnostics.error("reorderTrip failed", { error: summarizeError(error) });
+      });
+  });
+
   return {
   render() {
     const ctx = tryUseAppContext();
@@ -192,6 +248,8 @@ defineComponent("ae-trip-list", (host) => {
           class="ts"
           role="listitem"
           aria-label=${tripStopAriaLabel}
+          aria-description="Use Alt+Up or Alt+Down to reorder"
+          tabindex="0"
           draggable="true"
           data-trip-index=${String(index)}
         >
