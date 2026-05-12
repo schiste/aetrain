@@ -1706,7 +1706,7 @@
     "city_id": "alai-ch-a1b9faf7",
     "slug": "alai",
     "display_name": "Alai",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.75174474,
       "lon": 4.7715274
@@ -1825,7 +1825,7 @@
     "city_id": "albbruck-ch-a5b90158",
     "slug": "albbruck",
     "display_name": "Albbruck",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.59223263,
       "lon": 8.13177453
@@ -1972,7 +1972,7 @@
     "city_id": "albizzate-solbiate-arno-ch-afdeea29",
     "slug": "albizzate-solbiate-arno",
     "display_name": "Albizzate Solbiate Arno",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.72330511,
       "lon": 8.80628355
@@ -1989,7 +1989,7 @@
     "city_id": "albstadt-ebingen-ch-2c0fc974",
     "slug": "albstadt-ebingen",
     "display_name": "Albstadt Ebingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.21028896,
       "lon": 9.02696368
@@ -2800,7 +2800,7 @@
     "city_id": "allerheiligenhofe-de-88509c02",
     "slug": "allerheiligenhofe",
     "display_name": "Allerheiligenhofe",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.26903,
       "lon": 11.352969
@@ -2904,7 +2904,7 @@
     "city_id": "allmendingen-d-ch-1c71610f",
     "slug": "allmendingen-d",
     "display_name": "Allmendingen D",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.32773211,
       "lon": 9.72243039
@@ -3737,7 +3737,7 @@
     "city_id": "altenstadt-feldkirch-ch-8c381f83",
     "slug": "altenstadt-feldkirch",
     "display_name": "Altenstadt Feldkirch",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.25609539,
       "lon": 9.6155668
@@ -3936,7 +3936,7 @@
     "city_id": "altshausen-ch-59f60c31",
     "slug": "altshausen",
     "display_name": "Altshausen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.93070893,
       "lon": 9.55148099
@@ -4105,7 +4105,7 @@
     "city_id": "amberieu-ch-a8ae4303",
     "slug": "amberieu",
     "display_name": "Amberieu",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.95381421,
       "lon": 5.34149048
@@ -4317,7 +4317,7 @@
     "city_id": "amsterdam-centraal-ch-fb2bbd5f",
     "slug": "amsterdam-centraal",
     "display_name": "Amsterdam Centraal",
-    "country_code": "CH",
+    "country_code": "NL",
     "location": {
       "lat": 52.37913403,
       "lon": 4.900117475
@@ -4802,7 +4802,7 @@
     "city_id": "angers-st-laud-ch-4cfccf19",
     "slug": "angers-st-laud",
     "display_name": "Angers St Laud",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.46408321,
       "lon": -0.55852753
@@ -4940,7 +4940,7 @@
     "city_id": "annecy-ch-ea7f0bc1",
     "slug": "annecy",
     "display_name": "Annecy",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.90212168,
       "lon": 6.12163239
@@ -5110,7 +5110,7 @@
     "city_id": "antibes-ch-03373d16",
     "slug": "antibes",
     "display_name": "Antibes",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.58567684,
       "lon": 7.11946304
@@ -5302,7 +5302,7 @@
     "city_id": "appenweier-ch-5e490a7b",
     "slug": "appenweier",
     "display_name": "Appenweier",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.541680310000004,
       "lon": 7.9733429749999996
@@ -5736,7 +5736,7 @@
     "city_id": "arcisate-ch-ae752bc8",
     "slug": "arcisate",
     "display_name": "Arcisate",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.85810168,
       "lon": 8.86259893
@@ -6016,7 +6016,7 @@
     "city_id": "argentiere-haute-savoie-ch-79a7115e",
     "slug": "argentiere-haute-savoie",
     "display_name": "Argentiere Haute Savoie",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.98217993,
       "lon": 6.9278434
@@ -7555,7 +7555,7 @@
     "city_id": "auggen-ch-92a5238a",
     "slug": "auggen",
     "display_name": "Auggen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.78995079,
       "lon": 7.58678462
@@ -8056,7 +8056,7 @@
     "city_id": "avesnes-ch-f06aaba8",
     "slug": "avesnes",
     "display_name": "Avesnes",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 50.1268726,
       "lon": 3.93313872
@@ -8340,9 +8340,9 @@
   },
   {
     "city_id": "ay-f-ch-d601457b",
-    "slug": "ay-f",
-    "display_name": "Ay F",
-    "country_code": "CH",
+    "slug": "ay",
+    "display_name": "Ay",
+    "country_code": "FR",
     "location": {
       "lat": 49.04873057,
       "lon": 4.00159933
@@ -8353,7 +8353,9 @@
     "station_ids": [
       "station-uic-8717156"
     ],
-    "aliases": []
+    "aliases": [
+      "Ay F"
+    ]
   },
   {
     "city_id": "ayerbe-es-184f3fb2",
@@ -8526,7 +8528,7 @@
     "city_id": "baar-ch-de-5692c6d5",
     "slug": "baar-ch",
     "display_name": "Baar Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.195364,
       "lon": 8.523272
@@ -8702,7 +8704,7 @@
     "city_id": "bad-bellingen-ch-8a44569a",
     "slug": "bad-bellingen",
     "display_name": "Bad Bellingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.73080106,
       "lon": 7.55759835
@@ -9324,7 +9326,7 @@
     "city_id": "bad-niedernau-ch-253d2857",
     "slug": "bad-niedernau",
     "display_name": "Bad Niedernau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.46076549,
       "lon": 8.89653728
@@ -9525,7 +9527,7 @@
     "city_id": "bad-sackingen-ch-a0f74e1f",
     "slug": "bad-sackingen",
     "display_name": "Bad Sackingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.55585831,
       "lon": 7.94862601
@@ -9561,7 +9563,7 @@
     "city_id": "bad-saulgau-ch-24bf5b9b",
     "slug": "bad-saulgau",
     "display_name": "Bad Saulgau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.01359587,
       "lon": 9.5010855
@@ -9679,7 +9681,7 @@
     "city_id": "bad-vigaun-de-af2e9cdb",
     "slug": "bad-vigaun",
     "display_name": "Bad Vigaun",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.66415866,
       "lon": 13.12404897
@@ -9962,7 +9964,7 @@
     "city_id": "baden-ch-de-7b4f9598",
     "slug": "baden-ch",
     "display_name": "Baden Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.476424,
       "lon": 8.307709
@@ -10156,7 +10158,7 @@
     "city_id": "bahnhofplatz-at-25f2ab90",
     "slug": "bahnhofplatz",
     "display_name": "Bahnhofplatz",
-    "country_code": "AT",
+    "country_code": "CH",
     "location": {
       "lat": 47.3774219,
       "lon": 8.53978933
@@ -10564,7 +10566,7 @@
     "city_id": "balingen-ch-4df61959",
     "slug": "balingen",
     "display_name": "Balingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.27370485,
       "lon": 8.8483247
@@ -11702,7 +11704,7 @@
     "city_id": "basel-sbb-de-35df7b8f",
     "slug": "basel-sbb",
     "display_name": "Basel Sbb",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.547402500000004,
       "lon": 7.5895554999999995
@@ -12759,7 +12761,7 @@
     "city_id": "belfort-ch-79a8bca7",
     "slug": "belfort",
     "display_name": "Belfort",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.63336416,
       "lon": 6.8536246
@@ -12942,7 +12944,7 @@
     "city_id": "bellegarde-sur-valserine-ch-908a4f39",
     "slug": "bellegarde-sur-valserine",
     "display_name": "Bellegarde Sur Valserine",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.11091951,
       "lon": 5.82596089
@@ -13955,7 +13957,7 @@
     "city_id": "berg-ch-de-c19fb3cf",
     "slug": "berg-ch",
     "display_name": "Berg Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.582489,
       "lon": 9.173922
@@ -14044,7 +14046,7 @@
     "city_id": "bergenweiler-ch-c774cdb4",
     "slug": "bergenweiler",
     "display_name": "Bergenweiler",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.5762953,
       "lon": 10.27288206
@@ -14339,8 +14341,8 @@
     "display_name": "Berlin",
     "country_code": "DE",
     "location": {
-      "lat": 52.500593695,
-      "lon": 13.367233389999999
+      "lat": 52.52403945188988,
+      "lon": 13.358725278630951
     },
     "wikidata_qid": null,
     "population": null,
@@ -14349,12 +14351,261 @@
       "station-uic-80659698",
       "station-uic-900003200",
       "station-uic-900003201",
-      "station-uic-900058101"
+      "station-uic-900058101",
+      "station-uic-900003102",
+      "station-uic-900003103",
+      "station-uic-900007104",
+      "station-uic-900008101",
+      "station-uic-900012101",
+      "station-uic-900020202",
+      "station-uic-900024102",
+      "station-uic-900024203",
+      "station-uic-900025321",
+      "station-uic-900025424",
+      "station-uic-900026105",
+      "station-uic-900026207",
+      "station-uic-900030202",
+      "station-uic-900040101",
+      "station-uic-900044101",
+      "station-uic-900048101",
+      "station-uic-900049201",
+      "station-uic-900049202",
+      "station-uic-900050301",
+      "station-uic-900050355",
+      "station-uic-900052201",
+      "station-uic-900053301",
+      "station-uic-900054104",
+      "station-uic-900057104",
+      "station-uic-900058102",
+      "station-uic-900060101",
+      "station-uic-900063101",
+      "station-uic-900063452",
+      "station-uic-900064256",
+      "station-uic-900066102",
+      "station-uic-900067221",
+      "station-uic-900068301",
+      "station-uic-900072101",
+      "station-uic-900073101",
+      "station-uic-900074201",
+      "station-uic-900074202",
+      "station-uic-900077106",
+      "station-uic-900077155",
+      "station-uic-900084101",
+      "station-uic-900085105",
+      "station-uic-900085201",
+      "station-uic-900089303",
+      "station-uic-900091203",
+      "station-uic-900091205",
+      "station-uic-900092201",
+      "station-uic-900093201",
+      "station-uic-900094101",
+      "station-uic-900096405",
+      "station-uic-900100002",
+      "station-uic-900100007",
+      "station-uic-900110002",
+      "station-uic-900110003",
+      "station-uic-900110004",
+      "station-uic-900110011",
+      "station-uic-900110012",
+      "station-uic-900120003",
+      "station-uic-900130001",
+      "station-uic-900130003",
+      "station-uic-900135001",
+      "station-uic-900142001",
+      "station-uic-900143001",
+      "station-uic-900151001",
+      "station-uic-900152001",
+      "station-uic-900152002",
+      "station-uic-900160001",
+      "station-uic-900160002",
+      "station-uic-900160003",
+      "station-uic-900162001",
+      "station-uic-900170001",
+      "station-uic-900170002",
+      "station-uic-900170003",
+      "station-uic-900170004",
+      "station-uic-900170005",
+      "station-uic-900171001",
+      "station-uic-900171002",
+      "station-uic-900171003",
+      "station-uic-900175002",
+      "station-uic-900176001",
+      "station-uic-900180001",
+      "station-uic-900180002",
+      "station-uic-900180003",
+      "station-uic-900182001",
+      "station-uic-900182002",
+      "station-uic-900183001",
+      "station-uic-900183002",
+      "station-uic-900186001",
+      "station-uic-900190001",
+      "station-uic-900191001",
+      "station-uic-900191002",
+      "station-uic-900192001",
+      "station-uic-900192002",
+      "station-uic-900193001",
+      "station-uic-900193002",
+      "station-uic-900195510",
+      "station-uic-900196001",
+      "station-uic-900200000",
+      "station-uic-900200005",
+      "station-uic-900200006",
+      "station-uic-900200007",
+      "station-uic-900200008",
+      "station-uic-900200009",
+      "station-uic-900200011",
+      "station-uic-900200012",
+      "station-uic-900200013",
+      "station-uic-900220114",
+      "station-uic-900230000",
+      "station-uic-900230003",
+      "station-uic-900230999",
+      "station-uic-900245027",
+      "station-uic-900245028",
+      "station-uic-900260002",
+      "station-uic-900260003",
+      "station-uic-900260004",
+      "station-uic-900260005",
+      "station-uic-900260080",
+      "station-uic-900310004",
+      "station-uic-900320003",
+      "station-uic-900320005",
+      "station-uic-900320006",
+      "station-uic-900320007",
+      "station-uic-900320008",
+      "station-uic-900320026",
+      "station-uic-900350162",
+      "station-uic-900350163"
     ],
     "aliases": [
       "Berlin Hauptbahnhof",
       "Berlin Hbf Lehrter Bahnhof Nord",
+      "S",
+      "S Adlershof (Berlin)",
+      "S Ahrensfelde Bhf (Berlin)",
+      "S Alt-Reinickendorf (Berlin)",
+      "S Altglienicke (Berlin)",
+      "S Anhalter Bahnhof (Berlin)",
+      "S Attilastr. (Berlin)",
+      "S Babelsberg",
       "S Bahn Unten",
+      "S Baumschulenweg (Berlin)",
+      "S Bellevue (Berlin)",
+      "S Bergfelde",
+      "S Betriebsbahnhof Rummelsburg (Berlin)",
+      "S Beusselstr. (Berlin)",
+      "S Biesdorf (Berlin)",
+      "S Birkenstein",
+      "S Birkenwerder Bhf",
+      "S Blankenburg (Berlin)",
+      "S Blankenfelde (TF) Bhf",
+      "S Borgsdorf",
+      "S Bornholmer Str. (Berlin)",
+      "S Botanischer Garten (Berlin)",
+      "S Buch (Berlin)",
+      "S Buckower Chaussee (Berlin)",
+      "S Eichborndamm (Berlin)",
+      "S Eichwalde",
+      "S Erkner Bhf",
+      "S Feuerbachstr. (Berlin)",
+      "S Fredersdorf",
+      "S Friedenau (Berlin)",
+      "S Friedrichsfelde Ost (Berlin)",
+      "S Friedrichshagen (Berlin)",
+      "S Frohnau (Berlin)",
+      "S Gehrenseestr. (Berlin)",
+      "S Greifswalder Str. (Berlin)",
+      "S Griebnitzsee Bhf",
+      "S Grunewald (Berlin)",
+      "S Grünau (Berlin)",
+      "S Grünbergallee (Berlin)",
+      "S Hackescher Markt (Berlin)",
+      "S Halensee (Berlin)",
+      "S Heerstr. (Berlin)",
+      "S Hegermühle",
+      "S Heiligensee (Berlin)",
+      "S Hennigsdorf Bhf",
+      "S Hermsdorf (Berlin)",
+      "S Hirschgarten (Berlin)",
+      "S Hohen Neuendorf",
+      "S Hohenschönhausen Bhf (Berlin)",
+      "S Hohenzollerndamm (Berlin)",
+      "S Hoppegarten",
+      "S Humboldthain (Berlin)",
+      "S Johannisthal (Berlin)",
+      "S Julius-Leber-Brücke (Berlin)",
+      "S Karlshorst (Berlin)",
+      "S Karow Bhf (Berlin)",
+      "S Kaulsdorf (Berlin)",
+      "S Köllnische Heide (Berlin)",
+      "S Köpenick (Berlin)",
+      "S Landsberger Allee (Berlin)",
+      "S Lankwitz (Berlin)",
+      "S Lehnitz",
+      "S Lichtenrade (Berlin)",
+      "S Mahlow",
+      "S Mahlsdorf Bhf (Berlin)",
+      "S Marienfelde (Berlin)",
+      "S Marzahn (Berlin)",
+      "S Mehrower Allee (Berlin)",
+      "S Mexikoplatz (Berlin)",
+      "S Mühlenbeck-Mönchmühle",
+      "S Neuenhagen (b Berlin)",
+      "S Nikolassee (Berlin)",
+      "S Nordbahnhof (Berlin)",
+      "S Nöldnerplatz (Berlin)",
+      "S Oberspree (Berlin)",
+      "S Olympiastadion (Berlin)",
+      "S Oranienburg Bhf",
+      "S Oranienburger Str. (Berlin)",
+      "S Osdorfer Str. (Berlin)",
+      "S Ostkreuz Bhf (Berlin)",
+      "S Pankow-Heinersdorf (Berlin)",
+      "S Petershagen Nord",
+      "S Pichelsberg (Berlin)",
+      "S Plänterwald (Berlin)",
+      "S Poelchaustr. (Berlin)",
+      "S Potsdam Hauptbahnhof",
+      "S Prenzlauer Allee (Berlin)",
+      "S Priesterweg (Berlin)",
+      "S Rahnsdorf (Berlin)",
+      "S Raoul-Wallenberg-Str. (Berlin)",
+      "S Rummelsburg (Berlin)",
+      "S Röntgental",
+      "S Savignyplatz (Berlin)",
+      "S Schichauweg (Berlin)",
+      "S Schlachtensee (Berlin)",
+      "S Schulzendorf (Berlin)",
+      "S Schöneberg (Berlin)",
+      "S Schönefeld (bei Berlin)",
+      "S Schöneweide Bhf (Berlin)",
+      "S Schönfließ",
+      "S Schönholz (Berlin)",
+      "S Sonnenallee (Berlin)",
+      "S Spindlersfeld (Berlin)",
+      "S Springpfuhl (Berlin)",
+      "S Storkower Str. (Berlin)",
+      "S Stresow (Berlin)",
+      "S Sundgauer Str. (Berlin)",
+      "S Südende (Berlin)",
+      "S Tegel (Berlin)",
+      "S Teltow Stadt",
+      "S Tiergarten (Berlin)",
+      "S Treptower Park (Berlin)",
+      "S Waidmannslust (Berlin)",
+      "S Wannsee Bhf (Berlin)",
+      "S Wartenberg (Berlin)",
+      "S Waßmannsdorf",
+      "S Westend (Berlin)",
+      "S Westkreuz (Berlin)",
+      "S Wildau",
+      "S Wilhelmshagen (Berlin)",
+      "S Wilhelmsruh (Berlin)",
+      "S Wollankstr. (Berlin)",
+      "S Wuhlheide (Berlin)",
+      "S Zehlendorf (Berlin)",
+      "S Zepernick",
+      "S Zeuthen",
       "S+U Berlin Hauptbahnhof"
     ]
   },
@@ -14379,7 +14630,7 @@
     "city_id": "berlin-ostbahnhof-ch-61ea755b",
     "slug": "berlin-ostbahnhof",
     "display_name": "Berlin Ostbahnhof",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 52.51059838,
       "lon": 13.43499678
@@ -14447,7 +14698,7 @@
     "city_id": "berlingen-ch-de-ab1a9416",
     "slug": "berlingen-ch",
     "display_name": "Berlingen Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.673214,
       "lon": 9.022023
@@ -14464,7 +14715,7 @@
     "city_id": "bermatingen-ahausen-ch-f545eae0",
     "slug": "bermatingen-ahausen",
     "display_name": "Bermatingen Ahausen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.73048686,
       "lon": 9.34515594
@@ -14837,7 +15088,7 @@
     "city_id": "besnate-ch-feac5d84",
     "slug": "besnate",
     "display_name": "Besnate",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.69615609,
       "lon": 8.76057726
@@ -14854,7 +15105,7 @@
     "city_id": "besozzo-ch-10c559d0",
     "slug": "besozzo",
     "display_name": "Besozzo",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.84256535,
       "lon": 8.66326277
@@ -15075,7 +15326,7 @@
     "city_id": "beuggen-ch-9644c8d0",
     "slug": "beuggen",
     "display_name": "Beuggen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.58190833,
       "lon": 7.81091428
@@ -15109,7 +15360,7 @@
     "city_id": "beuron-ch-f06e3267",
     "slug": "beuron",
     "display_name": "Beuron",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.04879244,
       "lon": 8.97188797
@@ -15412,7 +15663,7 @@
     "city_id": "biberach-riss-ch-84744946",
     "slug": "biberach-riss",
     "display_name": "Biberach Riss",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.094432325,
       "lon": 9.798180825
@@ -15506,7 +15757,7 @@
     "city_id": "bichlbach-de-8b276f64",
     "slug": "bichlbach",
     "display_name": "Bichlbach",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.4244935,
       "lon": 10.7850455
@@ -15692,7 +15943,7 @@
     "city_id": "bieringen-b-horb-ch-8fd3e714",
     "slug": "bieringen-b-horb",
     "display_name": "Bieringen B Horb",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.4490288,
       "lon": 8.86091908
@@ -16415,7 +16666,7 @@
     "city_id": "bisingen-ch-5e5dd8a8",
     "slug": "bisingen",
     "display_name": "Bisingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.3127685,
       "lon": 8.92103434
@@ -16767,7 +17018,7 @@
     "city_id": "blaubeuren-ch-6cb919c9",
     "slug": "blaubeuren",
     "display_name": "Blaubeuren",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.40381422,
       "lon": 9.79197796
@@ -16784,7 +17035,7 @@
     "city_id": "blaustein-ch-65d81262",
     "slug": "blaustein",
     "display_name": "Blaustein",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.41459546,
       "lon": 9.91932313
@@ -17456,7 +17707,7 @@
     "city_id": "bohringen-rickelshausen-ch-1f2f208e",
     "slug": "bohringen-rickelshausen",
     "display_name": "Bohringen Rickelshausen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.74894867,
       "lon": 8.92576846
@@ -17733,7 +17984,7 @@
     "city_id": "bologna-centrale-ch-506dd8ee",
     "slug": "bologna",
     "display_name": "Bologna",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 44.506343990000005,
       "lon": 11.342307847499999
@@ -17807,7 +18058,7 @@
     "city_id": "bolzano-bozen-de-4b5fd7bf",
     "slug": "bolzano-bozen",
     "display_name": "Bolzano Bozen",
-    "country_code": "DE",
+    "country_code": "IT",
     "location": {
       "lat": 46.496377,
       "lon": 11.358791
@@ -18241,7 +18492,7 @@
     "city_id": "bordeaux-st-jean-ch-5755fe03",
     "slug": "bordeaux-st-jean",
     "display_name": "Bordeaux St Jean",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.82648285,
       "lon": -0.55592241
@@ -18888,7 +19139,7 @@
     "city_id": "boutheon-ch-2b460a44",
     "slug": "boutheon",
     "display_name": "Boutheon",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.52462772,
       "lon": 4.27772348
@@ -19181,7 +19432,7 @@
     "city_id": "brassac-les-mines-ste-florine-ch-6f92df98",
     "slug": "brassac-les-mines-ste-florine",
     "display_name": "Brassac Les Mines Ste Florine",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.41409147,
       "lon": 3.33016256
@@ -19532,7 +19783,7 @@
     "city_id": "breitenbach-f-ch-8cb40b20",
     "slug": "breitenbach-f",
     "display_name": "Breitenbach F",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.02852085,
       "lon": 7.10409286
@@ -19870,7 +20121,7 @@
     "city_id": "brennero-brenner-de-e51a5f33",
     "slug": "brennero-brenner",
     "display_name": "Brennero Brenner",
-    "country_code": "DE",
+    "country_code": "IT",
     "location": {
       "lat": 47.002342,
       "lon": 11.505426
@@ -19904,7 +20155,7 @@
     "city_id": "bressanone-brixen-de-59d5979d",
     "slug": "bressanone-brixen",
     "display_name": "Bressanone Brixen",
-    "country_code": "DE",
+    "country_code": "IT",
     "location": {
       "lat": 46.709896,
       "lon": 11.649764
@@ -19921,7 +20172,7 @@
     "city_id": "bressanone-stazione-di-bressanone-at-f1e8cf07",
     "slug": "bressanone",
     "display_name": "Bressanone",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.70999082,
       "lon": 11.64966701
@@ -19957,7 +20208,7 @@
     "city_id": "brest-f-ch-e8e421ac",
     "slug": "brest-f",
     "display_name": "Brest F",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.38780512,
       "lon": -4.47981747
@@ -20372,7 +20623,7 @@
     "city_id": "brigachtal-ch-16d02685",
     "slug": "brigachtal",
     "display_name": "Brigachtal",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.0107337125,
       "lon": 8.466754117499999
@@ -20899,7 +21150,7 @@
     "city_id": "bruchhausen-b-ettl-ch-29b7811d",
     "slug": "bruchhausen-b-ettl",
     "display_name": "Bruchhausen B Ettl",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.92399051,
       "lon": 8.3739783
@@ -21017,7 +21268,7 @@
     "city_id": "bruck-fusch-de-bc74f662",
     "slug": "bruck-fusch",
     "display_name": "Bruck Fusch",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.284615,
       "lon": 12.828808
@@ -21143,7 +21394,7 @@
     "city_id": "brumath-ch-ade1c0ee",
     "slug": "brumath",
     "display_name": "Brumath",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.73179901,
       "lon": 7.7044408099999995
@@ -21180,7 +21431,7 @@
     "city_id": "brunico-stazione-di-brunico-nord-at-442d245c",
     "slug": "brunico",
     "display_name": "Brunico",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.80062807,
       "lon": 11.93645417
@@ -21664,7 +21915,7 @@
     "city_id": "buchs-at-d79c75d7",
     "slug": "buchs",
     "display_name": "Buchs",
-    "country_code": "AT",
+    "country_code": "CH",
     "location": {
       "lat": 47.16901262,
       "lon": 9.47851982
@@ -21865,7 +22116,7 @@
     "city_id": "buggingen-ch-80eae878",
     "slug": "buggingen",
     "display_name": "Buggingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.8552543,
       "lon": 7.62816102
@@ -21899,7 +22150,7 @@
     "city_id": "buhl-baden-ch-e92a244c",
     "slug": "buhl-baden",
     "display_name": "Buhl Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.696684965,
       "lon": 8.129398590000001
@@ -22602,7 +22853,7 @@
     "city_id": "busto-arsizio-ch-1baad786",
     "slug": "busto-arsizio",
     "display_name": "Busto Arsizio",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.610664605,
       "lon": 8.85900567
@@ -23330,7 +23581,7 @@
     "city_id": "calde-ch-c407eb9b",
     "slug": "calde",
     "display_name": "Calde",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.94568206,
       "lon": 8.66346938
@@ -23702,7 +23953,7 @@
     "city_id": "camnago-lentate-ch-9144dc89",
     "slug": "camnago-lentate",
     "display_name": "Camnago Lentate",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.66620035,
       "lon": 9.13328828
@@ -23771,7 +24022,7 @@
     "city_id": "campagnac-st-geniez-ch-0cda7a73",
     "slug": "campagnac-st-geniez",
     "display_name": "Campagnac St Geniez",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.42195764,
       "lon": 3.06639922
@@ -24163,7 +24414,7 @@
     "city_id": "cannes-ch-07b379b0",
     "slug": "cannes",
     "display_name": "Cannes",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.55419476,
       "lon": 7.02032496
@@ -24238,7 +24489,7 @@
     "city_id": "cantello-gaggiolo-ch-3934785a",
     "slug": "cantello-gaggiolo",
     "display_name": "Cantello Gaggiolo",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.83782788,
       "lon": 8.90741588
@@ -24289,7 +24540,7 @@
     "city_id": "cantu-cermenate-ch-66829e74",
     "slug": "cantu-cermenate",
     "display_name": "Cantu Cermenate",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.71342058,
       "lon": 9.09837076
@@ -24620,7 +24871,7 @@
     "city_id": "carimate-ch-780dcfda",
     "slug": "carimate",
     "display_name": "Carimate",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.69446198,
       "lon": 9.10754256
@@ -24962,7 +25213,7 @@
     "city_id": "casino-lacroix-laval-ch-66bf9192",
     "slug": "casino-lacroix-laval",
     "display_name": "Casino Lacroix Laval",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.78788153,
       "lon": 4.73080676
@@ -25065,7 +25316,7 @@
     "city_id": "casteldarne-stazione-di-casteldarne-at-d7f28be3",
     "slug": "casteldarne",
     "display_name": "Casteldarne",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.79769477,
       "lon": 11.84406244
@@ -25358,7 +25609,7 @@
     "city_id": "castronno-ch-4a396ba2",
     "slug": "castronno",
     "display_name": "Castronno",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.75764904,
       "lon": 8.83814679
@@ -25686,7 +25937,7 @@
     "city_id": "cavaria-oggiona-ierago-ch-01b8c430",
     "slug": "cavaria-oggiona-ierago",
     "display_name": "Cavaria Oggiona Ierago",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.67574801,
       "lon": 8.76675767
@@ -27140,7 +27391,7 @@
     "city_id": "champagnole-paul-emile-victor-ch-bab829b1",
     "slug": "champagnole-paul-emile-victor",
     "display_name": "Champagnole Paul Emile Victor",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.74249794,
       "lon": 5.91987077
@@ -27212,7 +27463,7 @@
     "city_id": "champigny-sur-yonne-ch-cb1c915d",
     "slug": "champigny-sur-yonne",
     "display_name": "Champigny Sur Yonne",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.32374224,
       "lon": 3.13056588
@@ -27246,7 +27497,7 @@
     "city_id": "champs-st-bris-ch-0b2935ce",
     "slug": "champs-st-bris",
     "display_name": "Champs St Bris",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.73881844,
       "lon": 3.60348396
@@ -28044,7 +28295,7 @@
     "city_id": "chaudfontaine-de-56ba3065",
     "slug": "chaudfontaine",
     "display_name": "Chaudfontaine",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.586944,
       "lon": 5.643611
@@ -28360,7 +28611,7 @@
     "city_id": "chenee-de-e0fbee2a",
     "slug": "chenee",
     "display_name": "Chenee",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.60792,
       "lon": 5.616429
@@ -29517,7 +29768,7 @@
     "city_id": "clermont-ferrand-ch-e1334193",
     "slug": "clermont-ferrand",
     "display_name": "Clermont Ferrand",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.77867254,
       "lon": 3.10102029
@@ -29557,7 +29808,7 @@
     "city_id": "clermont-la-ch-72ea8150",
     "slug": "clermont-la",
     "display_name": "Clermont La",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.767550805,
       "lon": 3.1125905950000003
@@ -29666,7 +29917,7 @@
     "city_id": "cluses-haute-savoie-ch-c4b696b1",
     "slug": "cluses-haute-savoie",
     "display_name": "Cluses Haute Savoie",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.06129978,
       "lon": 6.58298915
@@ -30255,7 +30506,7 @@
     "city_id": "como-ch-fa23520c",
     "slug": "como",
     "display_name": "Como",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.796730655000005,
       "lon": 9.076115
@@ -32299,7 +32550,7 @@
     "city_id": "cucciago-ch-32486640",
     "slug": "cucciago",
     "display_name": "Cucciago",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.73831045,
       "lon": 9.08344974
@@ -32656,33 +32907,6 @@
       "station-de-delfi-gtfs-bdfd8e39"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "d-de-d6d09cb7",
-    "slug": "d",
-    "display_name": "D",
-    "country_code": "DE",
-    "location": {
-      "lat": 51.2133554,
-      "lon": 6.7755882
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
-    "station_ids": [
-      "station-de-delfi-gtfs-405ced36",
-      "station-de-delfi-gtfs-78f04096",
-      "station-de-delfi-gtfs-84125836",
-      "station-de-delfi-gtfs-d18197f8",
-      "station-de-delfi-gtfs-d1b190d7"
-    ],
-    "aliases": [
-      "D-Bilk S",
-      "D-Flingern S",
-      "D-Friedrichstadt S",
-      "D-Hamm S",
-      "D-Völklinger Straße S"
-    ]
   },
   {
     "city_id": "d-derendorf-s-de-305a7cd3",
@@ -33259,7 +33483,7 @@
     "city_id": "danjoutin-ch-a205e81e",
     "slug": "danjoutin",
     "display_name": "Danjoutin",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.62055339,
       "lon": 6.86611118
@@ -33812,7 +34036,7 @@
     "city_id": "deisslingen-mitte-ch-ddc2ceb2",
     "slug": "deisslingen-mitte",
     "display_name": "Deisslingen Mitte",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.10837172,
       "lon": 8.61158269
@@ -34116,7 +34340,7 @@
     "city_id": "desio-ch-cd62320e",
     "slug": "desio",
     "display_name": "Desio",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.61783442,
       "lon": 9.21791856
@@ -34817,7 +35041,7 @@
     "city_id": "dijon-porte-neuve-ch-b3ca1ddf",
     "slug": "dijon-porte-neuve",
     "display_name": "Dijon Porte Neuve",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.32277968,
       "lon": 5.05518841
@@ -35118,7 +35342,7 @@
     "city_id": "dobbiaco-stazione-di-dobbiaco-at-e2d54b54",
     "slug": "dobbiaco",
     "display_name": "Dobbiaco",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.72496291,
       "lon": 12.22534338
@@ -35313,7 +35537,7 @@
     "city_id": "dogern-ch-ef89a23b",
     "slug": "dogern",
     "display_name": "Dogern",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.60888414,
       "lon": 8.1673568
@@ -35435,7 +35659,7 @@
     "city_id": "dolhain-gileppe-de-58c80054",
     "slug": "dolhain-gileppe",
     "display_name": "Dolhain Gileppe",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.616371,
       "lon": 5.936716
@@ -35787,7 +36011,7 @@
     "city_id": "domodossola-i-ch-dbf7387c",
     "slug": "domodossola-i",
     "display_name": "Domodossola I",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 46.11529118,
       "lon": 8.29623809
@@ -37371,13 +37595,23 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 10,
     "station_ids": [
+      "station-de-delfi-gtfs-405ced36",
+      "station-de-delfi-gtfs-78f04096",
+      "station-de-delfi-gtfs-84125836",
+      "station-de-delfi-gtfs-d18197f8",
+      "station-de-delfi-gtfs-d1b190d7",
       "station-de-delfi-gtfs-3577be6e",
       "station-de-delfi-gtfs-f68d1f5d",
       "station-de-delfi-gtfs-f8b8fcb1"
     ],
     "aliases": [
+      "D-Bilk S",
+      "D-Flingern S",
+      "D-Friedrichstadt S",
+      "D-Hamm S",
+      "D-Völklinger Straße S",
       "Düsseldorf Hbf"
     ]
   },
@@ -37385,7 +37619,7 @@
     "city_id": "dusslingen-ch-54184598",
     "slug": "dusslingen",
     "display_name": "Dusslingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.4524071,
       "lon": 9.05844065
@@ -37551,7 +37785,7 @@
     "city_id": "eberfingen-ch-21f1637e",
     "slug": "eberfingen",
     "display_name": "Eberfingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.72059478,
       "lon": 8.42988944
@@ -37713,7 +37947,7 @@
     "city_id": "ebringen-ch-e8592c1d",
     "slug": "ebringen",
     "display_name": "Ebringen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.96036191,
       "lon": 7.76818142
@@ -37885,7 +38119,7 @@
     "city_id": "ecully-la-demi-lune-ch-1b7bb2ad",
     "slug": "ecully-la-demi-lune",
     "display_name": "Ecully La Demi Lune",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.76569593,
       "lon": 4.77915409
@@ -38010,7 +38244,7 @@
     "city_id": "efringen-kirchen-ch-b9e2dced",
     "slug": "efringen-kirchen",
     "display_name": "Efringen Kirchen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.65561813,
       "lon": 7.56392249
@@ -38142,7 +38376,7 @@
     "city_id": "eggingen-ch-9839b70f",
     "slug": "eggingen",
     "display_name": "Eggingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.69373105,
       "lon": 8.39665178
@@ -38282,7 +38516,7 @@
     "city_id": "ehingen-donau-ch-deac2bf1",
     "slug": "ehingen-donau",
     "display_name": "Ehingen Donau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.28567949,
       "lon": 9.7243438
@@ -38659,7 +38893,7 @@
     "city_id": "eimeldingen-ch-df54279f",
     "slug": "eimeldingen",
     "display_name": "Eimeldingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.627946,
       "lon": 7.59559709
@@ -38693,7 +38927,7 @@
     "city_id": "eingang-sud-at-87640674",
     "slug": "eingang-sud",
     "display_name": "Eingang Sud",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 48.36517861,
       "lon": 10.88693446
@@ -39704,7 +39938,7 @@
     "city_id": "elsbethen-de-5db83d61",
     "slug": "elsbethen",
     "display_name": "Elsbethen",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.76092703,
       "lon": 13.08036496
@@ -39962,7 +40196,7 @@
     "city_id": "emmendingen-ch-70f53aa3",
     "slug": "emmendingen",
     "display_name": "Emmendingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.11945531,
       "lon": 7.84751164
@@ -40495,7 +40729,7 @@
     "city_id": "enzisweiler-ch-63ae72ea",
     "slug": "enzisweiler",
     "display_name": "Enzisweiler",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.56413899,
       "lon": 9.66543228
@@ -40653,7 +40887,7 @@
     "city_id": "epierre-st-leger-ch-4e383158",
     "slug": "epierre-st-leger",
     "display_name": "Epierre St Leger",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.45705034,
       "lon": 6.29237517
@@ -40801,7 +41035,7 @@
     "city_id": "erbach-wurtt-ch-caf72372",
     "slug": "erbach-wurtt",
     "display_name": "Erbach Wurtt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.32589848,
       "lon": 9.89495184
@@ -40945,7 +41179,7 @@
     "city_id": "eriskirch-ch-fbd3360a",
     "slug": "eriskirch",
     "display_name": "Eriskirch",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.62840005,
       "lon": 9.52666952
@@ -41961,7 +42195,7 @@
     "city_id": "esslingen-neckar-ch-08cd34f8",
     "slug": "esslingen-neckar",
     "display_name": "Esslingen Neckar",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.738806295,
       "lon": 9.300089235000002
@@ -42537,7 +42771,7 @@
     "city_id": "ettlingen-west-ch-a2595feb",
     "slug": "ettlingen-west",
     "display_name": "Ettlingen West",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.94775999,
       "lon": 8.38829744
@@ -42659,7 +42893,7 @@
     "city_id": "eugendorf-de-bf1ddbbb",
     "slug": "eugendorf",
     "display_name": "Eugendorf",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.87333773,
       "lon": 13.116740295
@@ -42830,7 +43064,7 @@
     "city_id": "eyach-ch-2819a0e3",
     "slug": "eyach",
     "display_name": "Eyach",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.44628786,
       "lon": 8.78309803
@@ -43269,8 +43503,8 @@
   },
   {
     "city_id": "fds-de-82819313",
-    "slug": "fds",
-    "display_name": "Fds",
+    "slug": "freudenstadt",
+    "display_name": "Freudenstadt",
     "country_code": "DE",
     "location": {
       "lat": 48.46467916666666,
@@ -43291,7 +43525,8 @@
       "FDS Hbf.",
       "FDS Industriegebiet/Schmid",
       "FDS Schulzentrum",
-      "FDS Stadtbahnhof"
+      "FDS Stadtbahnhof",
+      "Fds"
     ]
   },
   {
@@ -43633,7 +43868,7 @@
     "city_id": "fellering-ch-c0c4b333",
     "slug": "fellering",
     "display_name": "Fellering",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.897082825,
       "lon": 6.986372275
@@ -43745,7 +43980,7 @@
     "city_id": "ferno-lonate-pozzolo-ch-eb1b04b7",
     "slug": "ferno-lonate-pozzolo",
     "display_name": "Ferno Lonate Pozzolo",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.60837115,
       "lon": 8.75872673
@@ -44133,7 +44368,7 @@
     "city_id": "feyzin-ch-9f967737",
     "slug": "feyzin",
     "display_name": "Feyzin",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.66592413,
       "lon": 4.85299561
@@ -44557,7 +44792,7 @@
     "city_id": "firenze-s-m-n-ch-21778f92",
     "slug": "firenze-s-m-n",
     "display_name": "Firenze S M N",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 43.77681175,
       "lon": 11.24780567
@@ -44713,8 +44948,8 @@
   },
   {
     "city_id": "fix-saint-geneys-rn102-bourg-zz-798f45a5",
-    "slug": "fix-saint-geneys-rn102-bourg",
-    "display_name": "Fix Saint Geneys Rn102 Bourg",
+    "slug": "fix-saint-geneys",
+    "display_name": "Fix Saint Geneys",
     "country_code": "FR",
     "location": {
       "lat": 45.142783,
@@ -44726,7 +44961,9 @@
     "station_ids": [
       "station-uic-87680728"
     ],
-    "aliases": []
+    "aliases": [
+      "Fix Saint Geneys Rn102 Bourg"
+    ]
   },
   {
     "city_id": "flaca-es-2927c4b5",
@@ -45019,7 +45256,7 @@
     "city_id": "fleury-les-aubrais-ch-af3b0727",
     "slug": "fleury-les-aubrais",
     "display_name": "Fleury Les Aubrais",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.92672421,
       "lon": 1.90628792
@@ -45417,7 +45654,7 @@
     "city_id": "fons-st-mamert-ch-c3cd2ffa",
     "slug": "fons-st-mamert",
     "display_name": "Fons St Mamert",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.9073205,
       "lon": 4.20667573
@@ -45787,7 +46024,7 @@
     "city_id": "forst-fl-hilti-ch-eb367323",
     "slug": "forst-fl-hilti",
     "display_name": "Forst Fl Hilti",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.18090791,
       "lon": 9.52070471
@@ -45804,7 +46041,7 @@
     "city_id": "fortezza-franzensfeste-de-b40fa2ed",
     "slug": "fortezza-franzensfeste",
     "display_name": "Fortezza Franzensfeste",
-    "country_code": "DE",
+    "country_code": "IT",
     "location": {
       "lat": 46.788721,
       "lon": 11.610083
@@ -45821,7 +46058,7 @@
     "city_id": "fortezza-stazione-di-fortezza-at-2c015b1e",
     "slug": "fortezza",
     "display_name": "Fortezza",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.78885084,
       "lon": 11.61012318
@@ -46031,7 +46268,7 @@
     "city_id": "fraipont-de-088871d9",
     "slug": "fraipont",
     "display_name": "Fraipont",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.565058,
       "lon": 5.724187
@@ -46083,7 +46320,7 @@
     "city_id": "franchet-d-esperey-ch-d1f063ba",
     "slug": "franchet-d-esperey",
     "display_name": "Franchet D Esperey",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 49.24251649,
       "lon": 4.01379845
@@ -46638,7 +46875,7 @@
     "city_id": "freiburg-breisgau-ch-305067ca",
     "slug": "freiburg-breisgau",
     "display_name": "Freiburg Breisgau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.99967402875,
       "lon": 7.8406605025000005
@@ -47034,7 +47271,7 @@
     "city_id": "frickenhausen-ch-f63ed356",
     "slug": "frickenhausen",
     "display_name": "Frickenhausen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.59536109,
       "lon": 9.358078415
@@ -47069,7 +47306,7 @@
     "city_id": "frickenhausen-kelterstrasse-ch-ad19e99e",
     "slug": "frickenhausen-kelterstrasse",
     "display_name": "Frickenhausen Kelterstrasse",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.59205488,
       "lon": 9.3644787
@@ -47086,7 +47323,7 @@
     "city_id": "fridingen-b-tuttlingen-ch-b9a1dd26",
     "slug": "fridingen-b-tuttlingen",
     "display_name": "Fridingen B Tuttlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.03182492,
       "lon": 8.93606316
@@ -47238,7 +47475,7 @@
     "city_id": "friedrichshafen-ch-a2fd222a",
     "slug": "friedrichshafen",
     "display_name": "Friedrichshafen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.662604075714285,
       "lon": 9.452396812857144
@@ -47369,7 +47606,7 @@
     "city_id": "friesenheim-baden-ch-6fed20ce",
     "slug": "friesenheim-baden",
     "display_name": "Friesenheim Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.3816781,
       "lon": 7.86333098
@@ -48199,7 +48436,7 @@
     "city_id": "gaillac-ch-4ca21022",
     "slug": "gaillac",
     "display_name": "Gaillac",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.90602608,
       "lon": 1.89480745
@@ -48342,7 +48579,7 @@
     "city_id": "gallarate-ch-3d32a5e6",
     "slug": "gallarate",
     "display_name": "Gallarate",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.65975272,
       "lon": 8.79854007
@@ -49110,7 +49347,7 @@
     "city_id": "gazzada-schianno-morazzone-ch-ac749830",
     "slug": "gazzada-schianno-morazzone",
     "display_name": "Gazzada Schianno Morazzone",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.77924892,
       "lon": 8.83741017
@@ -49125,8 +49362,8 @@
   },
   {
     "city_id": "gd-de-c0b2ec09",
-    "slug": "gd",
-    "display_name": "Gd",
+    "slug": "schwabisch-gmund",
+    "display_name": "Schwabisch Gmund",
     "country_code": "DE",
     "location": {
       "lat": 48.800287,
@@ -49139,7 +49376,8 @@
       "station-de-delfi-gtfs-509194c0"
     ],
     "aliases": [
-      "GD, Bahnhof"
+      "GD, Bahnhof",
+      "Gd"
     ]
   },
   {
@@ -49297,7 +49535,7 @@
     "city_id": "geisingen-ch-759e3eac",
     "slug": "geisingen",
     "display_name": "Geisingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.92134256,
       "lon": 8.65394724
@@ -49314,7 +49552,7 @@
     "city_id": "geispolsheim-ch-09565903",
     "slug": "geispolsheim",
     "display_name": "Geispolsheim",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.5191167,
       "lon": 7.68415301
@@ -49833,7 +50071,7 @@
     "city_id": "gerhausen-ch-3af171ba",
     "slug": "gerhausen",
     "display_name": "Gerhausen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.39972296,
       "lon": 9.80622524
@@ -50368,7 +50606,7 @@
     "city_id": "giengen-brenz-ch-c71f456b",
     "slug": "giengen-brenz",
     "display_name": "Giengen Brenz",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.62002019,
       "lon": 10.23699437
@@ -50443,7 +50681,7 @@
     "city_id": "giessenbach-in-tirol-de-8f61a808",
     "slug": "giessenbach-in-tirol",
     "display_name": "Giessenbach In Tirol",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.374382,
       "lon": 11.236703
@@ -50460,7 +50698,7 @@
     "city_id": "gievres-ch-3b7e5573",
     "slug": "gievres",
     "display_name": "Gievres",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.27889962,
       "lon": 1.66791097
@@ -50726,7 +50964,7 @@
     "city_id": "gisingen-feldkirch-ch-64541cdc",
     "slug": "gisingen-feldkirch",
     "display_name": "Gisingen Feldkirch",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.25569299,
       "lon": 9.59786101
@@ -50812,7 +51050,7 @@
     "city_id": "givors-canal-ch-0fc681c0",
     "slug": "givors-canal",
     "display_name": "Givors Canal",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.59597725,
       "lon": 4.77229096
@@ -53102,7 +53340,7 @@
     "city_id": "grenzach-ch-a2490b35",
     "slug": "grenzach",
     "display_name": "Grenzach",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.55089898,
       "lon": 7.65950324
@@ -53222,7 +53460,7 @@
     "city_id": "gresy-sur-ch-7e19fdc2",
     "slug": "gresy-sur",
     "display_name": "Gresy Sur",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.65950457,
       "lon": 6.09046534
@@ -53260,7 +53498,7 @@
     "city_id": "gretz-armainvilliers-ch-2aa11126",
     "slug": "gretz-armainvilliers",
     "display_name": "Gretz Armainvilliers",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.74544739,
       "lon": 2.72854284
@@ -53368,7 +53606,7 @@
     "city_id": "griessen-baden-ch-94d8e162",
     "slug": "griessen-baden",
     "display_name": "Griessen Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.62843032,
       "lon": 8.39600499
@@ -54786,7 +55024,7 @@
     "city_id": "gundelfingen-breisgau-ch-28f746e8",
     "slug": "gundelfingen-breisgau",
     "display_name": "Gundelfingen Breisgau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.04402408,
       "lon": 7.87418262
@@ -55595,7 +55833,7 @@
     "city_id": "haguenau-ch-d404922f",
     "slug": "haguenau",
     "display_name": "Haguenau",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.81336223,
       "lon": 7.78216819
@@ -55940,7 +56178,7 @@
     "city_id": "hallwang-elixhausen-de-220bc71a",
     "slug": "hallwang-elixhausen",
     "display_name": "Hallwang Elixhausen",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.8578049,
       "lon": 13.0915821
@@ -56066,7 +56304,7 @@
     "city_id": "haltingen-ch-60758008",
     "slug": "haltingen",
     "display_name": "Haltingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.61082818,
       "lon": 7.61365323
@@ -56117,7 +56355,7 @@
     "city_id": "hamburg-altona-ch-7efc648d",
     "slug": "hamburg-altona",
     "display_name": "Hamburg Altona",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 53.5525982,
       "lon": 9.93480111
@@ -58008,7 +58246,7 @@
     "city_id": "haubersbronn-ch-96d2a587",
     "slug": "haubersbronn",
     "display_name": "Haubersbronn",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.825957505000005,
       "lon": 9.5498439775
@@ -58163,7 +58401,7 @@
     "city_id": "hausach-ch-74377112",
     "slug": "hausach",
     "display_name": "Hausach",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.28492632,
       "lon": 8.18166696
@@ -58180,7 +58418,7 @@
     "city_id": "hausen-im-tal-ch-9b4d0dac",
     "slug": "hausen-im-tal",
     "display_name": "Hausen Im Tal",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.0804062,
       "lon": 9.02757453
@@ -58448,7 +58686,7 @@
     "city_id": "hechingen-ch-63751e79",
     "slug": "hechingen",
     "display_name": "Hechingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.35964576,
       "lon": 8.9685103
@@ -58678,7 +58916,7 @@
     "city_id": "heidenheim-ch-543886f0",
     "slug": "heidenheim",
     "display_name": "Heidenheim",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.68597672666667,
       "lon": 10.157158093333337
@@ -58908,7 +59146,7 @@
     "city_id": "heimerdingen-ch-a6c77fb4",
     "slug": "heimerdingen",
     "display_name": "Heimerdingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.85153517,
       "lon": 8.98575328
@@ -59018,7 +59256,7 @@
     "city_id": "heitersheim-ch-db6bd005",
     "slug": "heitersheim",
     "display_name": "Heitersheim",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.87985975,
       "lon": 7.6461902
@@ -59143,7 +59381,7 @@
     "city_id": "hemmingen-ch-0837ec21",
     "slug": "hemmingen",
     "display_name": "Hemmingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.867847065,
       "lon": 9.031863900000001
@@ -59439,7 +59677,7 @@
     "city_id": "herbertingen-ch-8a97de0a",
     "slug": "herbertingen",
     "display_name": "Herbertingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.06362319,
       "lon": 9.41380519
@@ -59456,7 +59694,7 @@
     "city_id": "herbertingen-ort-ch-b60230d2",
     "slug": "herbertingen-ort",
     "display_name": "Herbertingen Ort",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.05357237,
       "lon": 9.43339745
@@ -59491,7 +59729,7 @@
     "city_id": "herbolzheim-breisgau-ch-5613ba71",
     "slug": "herbolzheim-breisgau",
     "display_name": "Herbolzheim Breisgau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.22386423,
       "lon": 7.76764243
@@ -59508,7 +59746,7 @@
     "city_id": "herbrechtingen-ch-3fc8b01a",
     "slug": "herbrechtingen",
     "display_name": "Herbrechtingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.62563158,
       "lon": 10.17033039
@@ -59602,7 +59840,7 @@
     "city_id": "hergenrath-de-f0f50800",
     "slug": "hergenrath",
     "display_name": "Hergenrath",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.709047,
       "lon": 6.043218
@@ -59728,7 +59966,7 @@
     "city_id": "hermaringen-ch-da29ddd8",
     "slug": "hermaringen",
     "display_name": "Hermaringen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.59458594,
       "lon": 10.25832935
@@ -59990,7 +60228,7 @@
     "city_id": "herrlingen-ch-c63fa3da",
     "slug": "herrlingen",
     "display_name": "Herrlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.4177316,
       "lon": 9.89772763
@@ -60080,7 +60318,7 @@
     "city_id": "herten-baden-ch-8d1053a5",
     "slug": "herten-baden",
     "display_name": "Herten Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.54950446,
       "lon": 7.73965991
@@ -61032,7 +61270,7 @@
     "city_id": "hoelschloch-ch-220a1955",
     "slug": "hoelschloch",
     "display_name": "Hoelschloch",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.91625768,
       "lon": 7.83114434
@@ -61582,7 +61820,7 @@
     "city_id": "holzgerlingen-ch-6374c6da",
     "slug": "holzgerlingen",
     "display_name": "Holzgerlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.63618516,
       "lon": 9.013366038333334
@@ -61759,7 +61997,7 @@
     "city_id": "hopfgarten-im-brixental-de-34576157",
     "slug": "hopfgarten-im-brixental",
     "display_name": "Hopfgarten Im Brixental",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.455351,
       "lon": 12.14918
@@ -61938,7 +62176,7 @@
     "city_id": "horn-bodensee-de-a3fa979b",
     "slug": "horn-bodensee",
     "display_name": "Horn Bodensee",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.49318,
       "lon": 9.463388
@@ -61972,7 +62210,7 @@
     "city_id": "hornberg-schwarzw-ch-8dc72ca9",
     "slug": "hornberg-schwarzw",
     "display_name": "Hornberg Schwarzw",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.21189328,
       "lon": 8.2329428
@@ -62196,7 +62434,7 @@
     "city_id": "hotting-de-dd1ad320",
     "slug": "hotting",
     "display_name": "Hotting",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.26077,
       "lon": 11.374001
@@ -62621,7 +62859,7 @@
     "city_id": "hundling-ch-937b462a",
     "slug": "hundling",
     "display_name": "Hundling",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 49.10655544,
       "lon": 6.97770889
@@ -63247,7 +63485,7 @@
     "city_id": "immendingen-ch-3512ff06",
     "slug": "immendingen",
     "display_name": "Immendingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.93600535,
       "lon": 8.72954047
@@ -63264,7 +63502,7 @@
     "city_id": "immendingen-zimmern-ch-1ea8bfd8",
     "slug": "immendingen-zimmern",
     "display_name": "Immendingen Zimmern",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.93287571,
       "lon": 8.71405352
@@ -63409,7 +63647,7 @@
     "city_id": "induno-olona-ch-154692df",
     "slug": "induno-olona",
     "display_name": "Induno Olona",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.84671422,
       "lon": 8.83784136
@@ -63552,7 +63790,7 @@
     "city_id": "ingolstadt-at-a962eb30",
     "slug": "ingolstadt",
     "display_name": "Ingolstadt",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 48.74458030125,
       "lon": 11.43734572125
@@ -63877,7 +64115,7 @@
     "city_id": "irigny-ch-2cb6402d",
     "slug": "irigny",
     "display_name": "Irigny",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.67638823,
       "lon": 4.83139113
@@ -64213,7 +64451,7 @@
     "city_id": "istein-ch-d10c4b3e",
     "slug": "istein",
     "display_name": "Istein",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.66088821,
       "lon": 7.54294683
@@ -64371,7 +64609,7 @@
     "city_id": "itzelberg-ch-e5520de0",
     "slug": "itzelberg",
     "display_name": "Itzelberg",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.73068376,
       "lon": 10.13630221
@@ -65209,7 +65447,7 @@
     "city_id": "jestetten-de-15710e18",
     "slug": "jestetten",
     "display_name": "Jestetten",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.654795,
       "lon": 8.574464
@@ -66451,7 +66689,7 @@
     "city_id": "kaltenbrunnen-im-montafon-de-32effd59",
     "slug": "kaltenbrunnen-im-montafon",
     "display_name": "Kaltenbrunnen Im Montafon",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.085384,
       "lon": 9.888115
@@ -67952,7 +68190,7 @@
     "city_id": "kenzingen-ch-acb86946",
     "slug": "kenzingen",
     "display_name": "Kenzingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.19445259,
       "lon": 7.76409409
@@ -68152,7 +68390,7 @@
     "city_id": "kiebingen-ch-c8d2632a",
     "slug": "kiebingen",
     "display_name": "Kiebingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.47937182,
       "lon": 8.97374748
@@ -68372,7 +68610,7 @@
     "city_id": "kirchberg-in-tirol-de-c5e096a2",
     "slug": "kirchberg-in-tirol",
     "display_name": "Kirchberg In Tirol",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.448918,
       "lon": 12.309101
@@ -68856,7 +69094,7 @@
     "city_id": "klaus-in-vorarlberg-de-f7f25781",
     "slug": "klaus-in-vorarlberg",
     "display_name": "Klaus In Vorarlberg",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.308944,
       "lon": 9.624272
@@ -69035,7 +69273,7 @@
     "city_id": "kleinkems-ch-ce809cab",
     "slug": "kleinkems",
     "display_name": "Kleinkems",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.68613004,
       "lon": 7.52466611
@@ -69463,7 +69701,7 @@
     "city_id": "koblenz-de-1b9b881f",
     "slug": "koblenz",
     "display_name": "Koblenz",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.604862,
       "lon": 8.233607
@@ -69751,7 +69989,7 @@
     "city_id": "kollmarsreute-ch-9c801ac5",
     "slug": "kollmarsreute",
     "display_name": "Kollmarsreute",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.09826964,
       "lon": 7.88707345
@@ -70322,7 +70560,7 @@
     "city_id": "kondringen-ch-d2542128",
     "slug": "kondringen",
     "display_name": "Kondringen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.13745507,
       "lon": 7.80292826
@@ -70377,7 +70615,7 @@
     "city_id": "konigsbronn-ch-83bdcb37",
     "slug": "konigsbronn",
     "display_name": "Konigsbronn",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.73951758,
       "lon": 10.11613503
@@ -70694,7 +70932,7 @@
     "city_id": "korntal-gymnasium-ch-88362b62",
     "slug": "korntal-gymnasium",
     "display_name": "Korntal Gymnasium",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.830659190000006,
       "lon": 9.112388775
@@ -70833,7 +71071,7 @@
     "city_id": "kostendorf-weng-de-bf1272a5",
     "slug": "kostendorf-weng",
     "display_name": "Kostendorf Weng",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.936504565,
       "lon": 13.175174185
@@ -71364,7 +71602,7 @@
     "city_id": "kressbronn-ch-4c8ca918",
     "slug": "kressbronn",
     "display_name": "Kressbronn",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.59423787,
       "lon": 9.59885814
@@ -72690,7 +72928,7 @@
     "city_id": "l-estaque-ch-24587408",
     "slug": "l-estaque",
     "display_name": "L Estaque",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.36384653,
       "lon": 5.32150296
@@ -72967,7 +73205,7 @@
     "city_id": "la-bastide-st-laurent-l-bains-ch-5cd50b78",
     "slug": "la-bastide-st-laurent-l-bains",
     "display_name": "La Bastide St Laurent L Bains",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.59270169,
       "lon": 3.90397941
@@ -74647,7 +74885,7 @@
     "city_id": "la-joux-f-ch-9e687e2b",
     "slug": "la-joux-f",
     "display_name": "La Joux F",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.96571671,
       "lon": 6.91014659
@@ -74698,7 +74936,7 @@
     "city_id": "la-levade-ch-3a1cc2ee",
     "slug": "la-levade",
     "display_name": "La Levade",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.23820977,
       "lon": 3.99145735
@@ -75625,7 +75863,7 @@
     "city_id": "la-rochelle-ville-ch-f91c09f7",
     "slug": "la-rochelle-ville",
     "display_name": "La Rochelle Ville",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.15242395,
       "lon": -1.14511843
@@ -76816,7 +77054,7 @@
     "city_id": "lahr-schwarzw-ch-84dfa91d",
     "slug": "lahr-schwarzw",
     "display_name": "Lahr Schwarzw",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.340779870000006,
       "lon": 7.835436515
@@ -77316,7 +77554,7 @@
     "city_id": "lancey-ch-dd2749f3",
     "slug": "lancey",
     "display_name": "Lancey",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.23454068,
       "lon": 5.88081203
@@ -77841,7 +78079,7 @@
     "city_id": "langen-am-arlberg-de-b3f03a09",
     "slug": "langen-am-arlberg",
     "display_name": "Langen Am Arlberg",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.13172,
       "lon": 10.120375
@@ -77879,7 +78117,7 @@
     "city_id": "langenargen-ch-f25d4a4d",
     "slug": "langenargen",
     "display_name": "Langenargen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.59948992,
       "lon": 9.54483346
@@ -77896,7 +78134,7 @@
     "city_id": "langenau-wurtt-ch-2f28c3ec",
     "slug": "langenau-wurtt",
     "display_name": "Langenau Wurtt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.493334,
       "lon": 10.12598955
@@ -79109,7 +79347,7 @@
     "city_id": "lauchringen-ch-aa5d0062",
     "slug": "lauchringen",
     "display_name": "Lauchringen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.62909021,
       "lon": 8.32219042
@@ -79126,7 +79364,7 @@
     "city_id": "lauchringen-west-ch-b3cf71ca",
     "slug": "lauchringen-west",
     "display_name": "Lauchringen West",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.63277696,
       "lon": 8.30810484
@@ -79331,7 +79569,7 @@
     "city_id": "laupheim-west-ch-9ad19e57",
     "slug": "laupheim-west",
     "display_name": "Laupheim West",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.23111128,
       "lon": 9.84824843
@@ -79429,7 +79667,7 @@
     "city_id": "lauterach-unterfeld-ch-d95d50f0",
     "slug": "lauterach-unterfeld",
     "display_name": "Lauterach Unterfeld",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.48077546,
       "lon": 9.71474979
@@ -79569,7 +79807,7 @@
     "city_id": "laveno-mombello-ch-fed598c3",
     "slug": "laveno-mombello",
     "display_name": "Laveno Mombello",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.90314063,
       "lon": 8.62452741
@@ -80194,7 +80432,7 @@
     "city_id": "le-creusot-montceau-montchani-ch-f9e1a6e5",
     "slug": "le-creusot-montceau-montchani",
     "display_name": "Le Creusot Montceau Montchani",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.76536863,
       "lon": 4.5000655
@@ -80817,7 +81055,7 @@
     "city_id": "le-poirier-ch-8609836d",
     "slug": "le-poirier",
     "display_name": "Le Poirier",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 50.32967664,
       "lon": 3.50272892
@@ -80974,7 +81212,7 @@
     "city_id": "le-quesnoy-nord-ch-c5f00328",
     "slug": "le-quesnoy-nord",
     "display_name": "Le Quesnoy Nord",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 50.25040476,
       "lon": 3.64565088
@@ -81162,7 +81400,7 @@
     "city_id": "le-teil-ch-7c1327e4",
     "slug": "le-teil",
     "display_name": "Le Teil",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.552632005,
       "lon": 4.6860218499999995
@@ -81283,7 +81521,7 @@
     "city_id": "le-valdahon-camp-militaire-ch-fd084266",
     "slug": "le-valdahon-camp-militaire",
     "display_name": "Le Valdahon Camp Militaire",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.15104253,
       "lon": 6.31486
@@ -81895,7 +82133,7 @@
     "city_id": "leithen-b-seefeld-de-8ecda4f1",
     "slug": "leithen-b-seefeld",
     "display_name": "Leithen B Seefeld",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.290788,
       "lon": 11.221932
@@ -82079,7 +82317,7 @@
     "city_id": "lentilly-charpenay-ch-443ea935",
     "slug": "lentilly-charpenay",
     "display_name": "Lentilly Charpenay",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.81640095,
       "lon": 4.68239655
@@ -82366,7 +82604,7 @@
     "city_id": "lermoos-de-c60f7728",
     "slug": "lermoos",
     "display_name": "Lermoos",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.405423,
       "lon": 10.87857
@@ -82436,7 +82674,7 @@
     "city_id": "les-arcs-ch-c9fdc115",
     "slug": "les-arcs",
     "display_name": "Les Arcs",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.45558086,
       "lon": 6.48247665
@@ -82611,7 +82849,7 @@
     "city_id": "les-bossons-ch-d3962b69",
     "slug": "les-bossons",
     "display_name": "Les Bossons",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.90699745,
       "lon": 6.83937732
@@ -83035,7 +83273,7 @@
     "city_id": "les-flacheres-ch-462408dd",
     "slug": "les-flacheres",
     "display_name": "Les Flacheres",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.7774007,
       "lon": 4.75408211
@@ -83177,7 +83415,7 @@
     "city_id": "les-houches-ch-4f4c383e",
     "slug": "les-houches",
     "display_name": "Les Houches",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.89393194,
       "lon": 6.79758769
@@ -83319,7 +83557,7 @@
     "city_id": "les-moussoux-ch-34f7beb9",
     "slug": "les-moussoux",
     "display_name": "Les Moussoux",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.9165852,
       "lon": 6.85886177
@@ -83404,7 +83642,7 @@
     "city_id": "les-pelerins-ch-efc76dc1",
     "slug": "les-pelerins",
     "display_name": "Les Pelerins",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.91259154,
       "lon": 6.84740825
@@ -83544,7 +83782,7 @@
     "city_id": "les-praz-de-chamonix-ch-5bf798be",
     "slug": "les-praz-de-chamonix",
     "display_name": "Les Praz De Chamonix",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.93970398,
       "lon": 6.88864991
@@ -83754,7 +83992,7 @@
     "city_id": "les-tines-ch-ea6c7a0b",
     "slug": "les-tines",
     "display_name": "Les Tines",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.95095997,
       "lon": 6.89914223
@@ -84650,7 +84888,7 @@
     "city_id": "liege-de-d686b6c3",
     "slug": "liege",
     "display_name": "Liege",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.631057,
       "lon": 5.574673250000001
@@ -84968,7 +85206,7 @@
     "city_id": "limoges-benedictins-ch-1f6731f8",
     "slug": "limoges-benedictins",
     "display_name": "Limoges Benedictins",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.8364197,
       "lon": 1.26724439
@@ -85134,7 +85372,7 @@
     "city_id": "lindau-at-acae6e93",
     "slug": "lindau",
     "display_name": "Lindau",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 47.54987376375,
       "lon": 9.692553765833335
@@ -85239,7 +85477,7 @@
     "city_id": "lingolsheim-ch-089df180",
     "slug": "lingolsheim",
     "display_name": "Lingolsheim",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.55931795,
       "lon": 7.67793667
@@ -85300,7 +85538,7 @@
     "city_id": "linsenhofen-ch-7d45c5b8",
     "slug": "linsenhofen",
     "display_name": "Linsenhofen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.579831595,
       "lon": 9.371557235000001
@@ -85388,7 +85626,7 @@
     "city_id": "linz-de-697fbd60",
     "slug": "linz",
     "display_name": "Linz",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 48.26166733333333,
       "lon": 14.339737333333332
@@ -85569,7 +85807,7 @@
     "city_id": "lissone-muggio-ch-f1025742",
     "slug": "lissone-muggio",
     "display_name": "Lissone Muggio",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.60603964,
       "lon": 9.23533689
@@ -85953,20 +86191,27 @@
     "display_name": "Locarno",
     "country_code": "CH",
     "location": {
-      "lat": 46.17125982333332,
-      "lon": 8.797300393333332
+      "lat": 46.157377004999994,
+      "lon": 8.771496286666666
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 9,
     "station_ids": [
       "station-uic-8505400",
       "station-uic-8505470",
-      "station-uic-8505471"
+      "station-uic-8505471",
+      "station-uic-8505407",
+      "station-uic-8505415",
+      "station-uic-8505581"
     ],
     "aliases": [
       "Locarno FART",
-      "Locarno S. Antonio"
+      "Locarno S. Antonio",
+      "S",
+      "S. Antonino",
+      "S. Maria Maggiore",
+      "S. Nazzaro"
     ]
   },
   {
@@ -86124,7 +86369,7 @@
     "city_id": "logelbach-ch-5c137138",
     "slug": "logelbach",
     "display_name": "Logelbach",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.08727149,
       "lon": 7.32107194
@@ -86570,7 +86815,7 @@
     "city_id": "longueville-seine-et-marne-ch-acbbb857",
     "slug": "longueville-seine-et-marne",
     "display_name": "Longueville Seine Et Marne",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.51376126,
       "lon": 3.25005978
@@ -86841,7 +87086,7 @@
     "city_id": "lorrach-ch-d4c5a4ac",
     "slug": "lorrach",
     "display_name": "Lorrach",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.61566480690476,
       "lon": 7.667974563571429
@@ -87477,7 +87722,7 @@
     "city_id": "lowental-ch-9eed8be8",
     "slug": "lowental",
     "display_name": "Lowental",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.66143274,
       "lon": 9.49938769
@@ -87800,7 +88045,7 @@
     "city_id": "luc-lozere-ch-16b217b2",
     "slug": "luc-lozere",
     "display_name": "Luc Lozere",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.65413197,
       "lon": 3.89148385
@@ -88113,7 +88358,7 @@
     "city_id": "ludwigshafen-bodensee-ch-116e053d",
     "slug": "ludwigshafen-bodensee",
     "display_name": "Ludwigshafen Bodensee",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.81561274,
       "lon": 9.05305075
@@ -88364,7 +88609,7 @@
     "city_id": "luino-i-ch-918466e8",
     "slug": "luino-i",
     "display_name": "Luino I",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.9967037,
       "lon": 8.73740073
@@ -88941,7 +89186,7 @@
     "city_id": "lutterbach-ch-c62dd0fc",
     "slug": "lutterbach",
     "display_name": "Lutterbach",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.758159325,
       "lon": 7.276929920000001
@@ -89232,7 +89477,7 @@
     "city_id": "luzy-nievre-ch-32fda807",
     "slug": "luzy-nievre",
     "display_name": "Luzy Nievre",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.79427546,
       "lon": 3.96939473
@@ -89317,7 +89562,7 @@
     "city_id": "lyon-part-dieu-de-cfdacf42",
     "slug": "lyon-part-dieu",
     "display_name": "Lyon Part Dieu",
-    "country_code": "DE",
+    "country_code": "FR",
     "location": {
       "lat": 45.760743250000004,
       "lon": 4.861439750000001
@@ -89357,7 +89602,7 @@
     "city_id": "lyon-saint-ch-766bd2e4",
     "slug": "lyon-saint",
     "display_name": "Lyon Saint",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.74345305999999,
       "lon": 4.9513791000000005
@@ -89496,27 +89741,6 @@
       "station-uic-8508004"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "ma-de-87433b5b",
-    "slug": "ma",
-    "display_name": "Ma",
-    "country_code": "DE",
-    "location": {
-      "lat": 49.4630165,
-      "lon": 8.519263
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-de-delfi-gtfs-5f3c69c3",
-      "station-de-delfi-gtfs-ae5a94aa"
-    ],
-    "aliases": [
-      "MA-Käfertal, DB-Bahnhof",
-      "MA-Rheinau, Bahnhof"
-    ]
   },
   {
     "city_id": "ma-friedrichsfeld-sudbahnhof-de-b8e128ed",
@@ -89685,7 +89909,7 @@
     "city_id": "macon-loche-tgv-ch-a1b387bc",
     "slug": "macon-loche",
     "display_name": "Macon Loche",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.28279059,
       "lon": 4.77859714
@@ -90695,7 +90919,7 @@
     "city_id": "malpensa-aeroporto-ch-570b7f5c",
     "slug": "malpensa-aeroporto",
     "display_name": "Malpensa Aeroporto",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.638705220000006,
       "lon": 8.715499805
@@ -90716,7 +90940,7 @@
     "city_id": "malsch-ch-f3974ae8",
     "slug": "malsch",
     "display_name": "Malsch",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.8895082,
       "lon": 8.32358281
@@ -90862,7 +91086,7 @@
     "city_id": "mammern-bodensee-de-47da7b3d",
     "slug": "mammern-bodensee",
     "display_name": "Mammern Bodensee",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.64416,
       "lon": 8.914001
@@ -91011,6 +91235,8 @@
     "population": null,
     "interest_score": 10,
     "station_ids": [
+      "station-de-delfi-gtfs-5f3c69c3",
+      "station-de-delfi-gtfs-ae5a94aa",
       "station-de-delfi-gtfs-12d11b14",
       "station-de-delfi-gtfs-8801bf70",
       "station-de-delfi-gtfs-b943b53c",
@@ -91020,6 +91246,8 @@
       "station-uic-8014010"
     ],
     "aliases": [
+      "MA-Käfertal, DB-Bahnhof",
+      "MA-Rheinau, Bahnhof",
       "Mannheim Hbf",
       "Mannheim Hgbf",
       "Mannheim, Handelshf./Jungbusch",
@@ -91712,7 +91940,7 @@
     "city_id": "markdorf-baden-ch-42a10dd8",
     "slug": "markdorf-baden",
     "display_name": "Markdorf Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.71665434,
       "lon": 9.38876914
@@ -92190,7 +92418,7 @@
     "city_id": "marsac-creuse-ch-afbfadf1",
     "slug": "marsac-creuse",
     "display_name": "Marsac Creuse",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.09412084,
       "lon": 1.58560733
@@ -93469,8 +93697,8 @@
   },
   {
     "city_id": "me-de-7fea7895",
-    "slug": "me",
-    "display_name": "Me",
+    "slug": "mettmann",
+    "display_name": "Mettmann",
     "country_code": "DE",
     "location": {
       "lat": 51.24249833333334,
@@ -93478,7 +93706,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 7,
     "station_ids": [
       "station-de-delfi-gtfs-24a364f9",
       "station-de-delfi-gtfs-539fe17f",
@@ -93487,7 +93715,8 @@
     "aliases": [
       "ME-Neanderthal S",
       "ME-Stadtwald S",
-      "ME-Zentrum S"
+      "ME-Zentrum S",
+      "Me"
     ]
   },
   {
@@ -93513,7 +93742,7 @@
     "city_id": "meckenbeuren-ch-1c76e578",
     "slug": "meckenbeuren",
     "display_name": "Meckenbeuren",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.69975906,
       "lon": 9.55838903
@@ -94147,7 +94376,7 @@
     "city_id": "mengen-ch-19b6ffe7",
     "slug": "mengen",
     "display_name": "Mengen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.05351233,
       "lon": 9.33662194
@@ -94515,7 +94744,7 @@
     "city_id": "meroux-ch-e0f52fbc",
     "slug": "meroux",
     "display_name": "Meroux",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.58600436,
       "lon": 6.89802832
@@ -95110,8 +95339,8 @@
   },
   {
     "city_id": "mg-de-21b01806",
-    "slug": "mg",
-    "display_name": "Mg",
+    "slug": "monchengladbach",
+    "display_name": "Monchengladbach",
     "country_code": "DE",
     "location": {
       "lat": 51.1801875,
@@ -95126,7 +95355,8 @@
     ],
     "aliases": [
       "MG Hbf /Europaplatz",
-      "MG Rheydt Hbf"
+      "MG Rheydt Hbf",
+      "Mg"
     ]
   },
   {
@@ -95169,7 +95399,7 @@
     "city_id": "michelau-wurtt-ch-3ccb8b7d",
     "slug": "michelau-wurtt",
     "display_name": "Michelau Wurtt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.8617102,
       "lon": 9.53557183
@@ -95461,7 +95691,7 @@
     "city_id": "milano-ch-a61e97ba",
     "slug": "milano",
     "display_name": "Milano",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.49207149,
       "lon": 9.194208115999999
@@ -95895,7 +96125,7 @@
     "city_id": "miribel-ch-65436a14",
     "slug": "miribel",
     "display_name": "Miribel",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.82202295,
       "lon": 4.95406506
@@ -96037,7 +96267,7 @@
     "city_id": "mittenwald-at-cafa68ec",
     "slug": "mittenwald",
     "display_name": "Mittenwald",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 47.43962715,
       "lon": 11.2654398
@@ -96473,7 +96703,7 @@
     "city_id": "mohon-ch-99a0126f",
     "slug": "mohon",
     "display_name": "Mohon",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 49.75269142,
       "lon": 4.73326815
@@ -96511,7 +96741,7 @@
     "city_id": "moirans-la-galifette-ch-f99182ea",
     "slug": "moirans-la-galifette",
     "display_name": "Moirans La Galifette",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.31943526,
       "lon": 5.5653237
@@ -96650,7 +96880,7 @@
     "city_id": "molsheim-ch-6f1dfd15",
     "slug": "molsheim",
     "display_name": "Molsheim",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.53763025,
       "lon": 7.50060923
@@ -96831,7 +97061,7 @@
     "city_id": "monguelfo-stazione-di-monguelfo-casies-at-9ac52a14",
     "slug": "monguelfo",
     "display_name": "Monguelfo",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.7527651,
       "lon": 12.1074395
@@ -97506,7 +97736,7 @@
     "city_id": "montdauphin-guillestre-ch-bb6c98fa",
     "slug": "montdauphin-guillestre",
     "display_name": "Montdauphin Guillestre",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.67459002,
       "lon": 6.61551715
@@ -97853,7 +98083,7 @@
     "city_id": "montherme-ch-1de537e0",
     "slug": "montherme",
     "display_name": "Montherme",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 49.86563139,
       "lon": 4.74068823
@@ -97962,7 +98192,7 @@
     "city_id": "montlucon-ch-2bcff66c",
     "slug": "montlucon",
     "display_name": "Montlucon",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.33791075,
       "lon": 2.59639168
@@ -97996,7 +98226,7 @@
     "city_id": "montlucon-rimard-ch-3396c37a",
     "slug": "montlucon-rimard",
     "display_name": "Montlucon Rimard",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.33559115,
       "lon": 2.61151033
@@ -98353,7 +98583,7 @@
     "city_id": "montroc-le-planet-ch-4a6b8213",
     "slug": "montroc-le-planet",
     "display_name": "Montroc Le Planet",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.99666625,
       "lon": 6.93423043
@@ -98439,7 +98669,7 @@
     "city_id": "monza-ch-c22375e7",
     "slug": "monza",
     "display_name": "Monza",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.57482211,
       "lon": 9.27368597
@@ -98986,7 +99216,7 @@
     "city_id": "mornago-cimbro-ch-4f9762a6",
     "slug": "mornago-cimbro",
     "display_name": "Mornago Cimbro",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.72994608,
       "lon": 8.73420273
@@ -99253,7 +99483,7 @@
     "city_id": "mossingen-ch-ab1f2cf4",
     "slug": "mossingen",
     "display_name": "Mossingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.40403488,
       "lon": 9.04639424
@@ -99616,7 +99846,7 @@
     "city_id": "moutiers-salins-brides-les-bai-ch-531f34c0",
     "slug": "moutiers-salins-brides-les-bai",
     "display_name": "Moutiers Salins Brides Les Bai",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.48668958,
       "lon": 6.5314528
@@ -99932,7 +100162,7 @@
     "city_id": "muhlen-b-horb-ch-f4606f43",
     "slug": "muhlen-b-horb",
     "display_name": "Muhlen B Horb",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.44994043,
       "lon": 8.72680061
@@ -99949,7 +100179,7 @@
     "city_id": "muhlhausen-b-engen-ch-81fa9938",
     "slug": "muhlhausen-b-engen",
     "display_name": "Muhlhausen B Engen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.81362806,
       "lon": 8.80425335
@@ -99985,7 +100215,7 @@
     "city_id": "muhlheim-b-tuttlingen-ch-7c714d0c",
     "slug": "muhlheim-b-tuttlingen",
     "display_name": "Muhlheim B Tuttlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.02921172,
       "lon": 8.88564072
@@ -100191,7 +100421,7 @@
     "city_id": "mulhouse-dornach-ch-6d27f035",
     "slug": "mulhouse-dornach",
     "display_name": "Mulhouse Dornach",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.74682251,
       "lon": 7.30821705
@@ -100286,7 +100516,7 @@
     "city_id": "mullheim-im-markgraflerland-ch-ad742185",
     "slug": "mullheim-im-markgraflerland",
     "display_name": "Mullheim Im Markgraflerland",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.80974293,
       "lon": 7.59933408
@@ -100463,7 +100693,7 @@
     "city_id": "munchingen-ch-73d496eb",
     "slug": "munchingen",
     "display_name": "Munchingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.85542176,
       "lon": 9.0957074
@@ -100481,7 +100711,7 @@
     "city_id": "munchingen-ruhrberg-ch-49e1baf8",
     "slug": "munchingen-ruhrberg",
     "display_name": "Munchingen Ruhrberg",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.849794785,
       "lon": 9.09581524
@@ -100539,7 +100769,7 @@
     "city_id": "munderkingen-ch-4e115547",
     "slug": "munderkingen",
     "display_name": "Munderkingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.23787266,
       "lon": 9.64566935
@@ -100627,7 +100857,7 @@
     "city_id": "munster-badischhof-ch-054777e7",
     "slug": "munster-badischhof",
     "display_name": "Munster Badischhof",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.03909311,
       "lon": 7.15289833
@@ -100939,7 +101169,7 @@
     "city_id": "murg-baden-ch-225ad18a",
     "slug": "murg-baden",
     "display_name": "Murg Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.55345146,
       "lon": 8.01872155
@@ -102361,7 +102591,7 @@
     "city_id": "nendingen-b-tuttlingen-ch-ef70a350",
     "slug": "nendingen-b-tuttlingen",
     "display_name": "Nendingen B Tuttlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.00942523,
       "lon": 8.85391222
@@ -102504,7 +102734,7 @@
     "city_id": "nessonvaux-de-07496a3e",
     "slug": "nessonvaux",
     "display_name": "Nessonvaux",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.571963,
       "lon": 5.742088
@@ -102804,7 +103034,7 @@
     "city_id": "neuenburg-baden-ch-82558f8f",
     "slug": "neuenburg-baden",
     "display_name": "Neuenburg Baden",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.811490205,
       "lon": 7.56277734
@@ -102973,7 +103203,7 @@
     "city_id": "neuffen-ch-2bbc0b9f",
     "slug": "neuffen",
     "display_name": "Neuffen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.558452965,
       "lon": 9.374081845
@@ -103064,7 +103294,7 @@
     "city_id": "neuhausen-de-f4d599bd",
     "slug": "neuhausen",
     "display_name": "Neuhausen",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.681850999999995,
       "lon": 8.618022333333334
@@ -103936,7 +104166,7 @@
     "city_id": "nevers-le-banlay-ch-a886e0a6",
     "slug": "nevers-le-banlay",
     "display_name": "Nevers Le Banlay",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.00692205,
       "lon": 3.16368677
@@ -104012,7 +104242,7 @@
     "city_id": "nice-ville-ch-d53df463",
     "slug": "nice-ville",
     "display_name": "Nice Ville",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.70482356,
       "lon": 7.26176516
@@ -104493,7 +104723,7 @@
     "city_id": "niederstotzingen-ch-79e6027b",
     "slug": "niederstotzingen",
     "display_name": "Niederstotzingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.53260394,
       "lon": 10.23646436
@@ -105133,7 +105363,7 @@
     "city_id": "nonnenhorn-ch-fa066c46",
     "slug": "nonnenhorn",
     "display_name": "Nonnenhorn",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.57511524,
       "lon": 9.61267423
@@ -105269,7 +105499,7 @@
     "city_id": "norsingen-ch-c786c99d",
     "slug": "norsingen",
     "display_name": "Norsingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.93906258,
       "lon": 7.7260684
@@ -106064,7 +106294,7 @@
     "city_id": "nurtingen-ch-07a06328",
     "slug": "nurtingen",
     "display_name": "Nurtingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.618987274999995,
       "lon": 9.342872618333335
@@ -106665,7 +106895,7 @@
     "city_id": "oberelchingen-ch-a2bac49d",
     "slug": "oberelchingen",
     "display_name": "Oberelchingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.44757493,
       "lon": 10.08302313
@@ -106887,7 +107117,7 @@
     "city_id": "oberkochen-ch-b1e3ff86",
     "slug": "oberkochen",
     "display_name": "Oberkochen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.78236118,
       "lon": 10.10765493
@@ -109177,7 +109407,7 @@
     "city_id": "orschweier-ch-84f90df6",
     "slug": "orschweier",
     "display_name": "Orschweier",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.27418936,
       "lon": 7.79027998
@@ -111531,7 +111761,7 @@
     "city_id": "pavia-ch-6052d1f9",
     "slug": "pavia",
     "display_name": "Pavia",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.18896895,
       "lon": 9.14481366
@@ -112015,7 +112245,7 @@
     "city_id": "pepinster-de-160b9491",
     "slug": "pepinster",
     "display_name": "Pepinster",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.568285,
       "lon": 5.80617
@@ -112049,7 +112279,7 @@
     "city_id": "perca-stazione-di-perca-plan-de-corones-at-d809c914",
     "slug": "perca",
     "display_name": "Perca",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.79051764,
       "lon": 11.9781899
@@ -114942,7 +115172,7 @@
     "city_id": "pont-ch-251faeb8",
     "slug": "pont",
     "display_name": "Pont",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.815668079999995,
       "lon": 3.36405599
@@ -115093,7 +115323,7 @@
     "city_id": "pont-de-claix-l-etoile-ch-ff76f54e",
     "slug": "pont-de-claix-l-etoile",
     "display_name": "Pont De Claix L Etoile",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.13748974,
       "lon": 5.70253822
@@ -115180,7 +115410,7 @@
     "city_id": "pont-de-rungis-aeroport-d-orly-ch-d2bd1755",
     "slug": "pont-de-rungis",
     "display_name": "Pont De Rungis",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.74805368,
       "lon": 2.37277406
@@ -115447,7 +115677,7 @@
     "city_id": "pontcharra-sur-breda-allevard-ch-83ac0369",
     "slug": "pontcharra-sur-breda-allevard",
     "display_name": "Pontcharra Sur Breda Allevard",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.4341283,
       "lon": 6.00765414
@@ -116080,7 +116310,7 @@
     "city_id": "porto-valtravaglia-ch-a720bf65",
     "slug": "porto-valtravaglia",
     "display_name": "Porto Valtravaglia",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.95814212,
       "lon": 8.67372814
@@ -116987,7 +117217,7 @@
     "city_id": "pringy-haute-savoie-ch-352fdd2c",
     "slug": "pringy-haute-savoie",
     "display_name": "Pringy Haute Savoie",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.93958529,
       "lon": 6.12336614
@@ -118199,7 +118429,7 @@
     "city_id": "quincieux-ch-6fa58698",
     "slug": "quincieux",
     "display_name": "Quincieux",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.9070412,
       "lon": 4.77807611
@@ -118823,7 +119053,7 @@
     "city_id": "ramingdorf-haidershofen-de-8948a11e",
     "slug": "ramingdorf-haidershofen",
     "display_name": "Ramingdorf Haidershofen",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 48.067695,
       "lon": 14.459461
@@ -118858,7 +119088,7 @@
     "city_id": "rammingen-wurtt-ch-76b27305",
     "slug": "rammingen-wurtt",
     "display_name": "Rammingen Wurtt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.51238661,
       "lon": 10.19085689
@@ -119176,7 +119406,7 @@
     "city_id": "rastatt-ch-810a9a4a",
     "slug": "rastatt",
     "display_name": "Rastatt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.86070247,
       "lon": 8.21566814
@@ -119481,7 +119711,7 @@
     "city_id": "reaumont-st-cassien-ch-e0d0e7c3",
     "slug": "reaumont-st-cassien",
     "display_name": "Reaumont St Cassien",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.36918139,
       "lon": 5.53488878
@@ -119534,7 +119764,7 @@
     "city_id": "rechtenstein-ch-29244174",
     "slug": "rechtenstein",
     "display_name": "Rechtenstein",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.2400086,
       "lon": 9.55131031
@@ -120267,7 +120497,7 @@
     "city_id": "reith-b-seefeld-de-935440e9",
     "slug": "reith-b-seefeld",
     "display_name": "Reith B Seefeld",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.300848,
       "lon": 11.200652
@@ -120511,7 +120741,7 @@
     "city_id": "renchen-d-ch-fb37a0b1",
     "slug": "renchen-d",
     "display_name": "Renchen D",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.59266092,
       "lon": 8.00714227
@@ -120943,7 +121173,7 @@
     "city_id": "reutlingen-hbf-d-ch-e58919f9",
     "slug": "reutlingen",
     "display_name": "Reutlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.49607835,
       "lon": 9.20911507
@@ -120962,7 +121192,7 @@
     "city_id": "reutte-de-53553390",
     "slug": "reutte",
     "display_name": "Reutte",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.491416,
       "lon": 10.7234045
@@ -121204,7 +121434,7 @@
     "city_id": "rheinfelden-ch-de-2dc09653",
     "slug": "rheinfelden-ch",
     "display_name": "Rheinfelden Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.551214,
       "lon": 7.792169
@@ -121240,7 +121470,7 @@
     "city_id": "rheinweiler-ch-eb3ffeec",
     "slug": "rheinweiler",
     "display_name": "Rheinweiler",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.70953421,
       "lon": 7.53164602
@@ -121318,7 +121548,7 @@
     "city_id": "rho-ch-f0751d25",
     "slug": "rho",
     "display_name": "Rho",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.52396059,
       "lon": 9.04389692
@@ -121335,7 +121565,7 @@
     "city_id": "rho-fiera-milano-ch-a5ad7608",
     "slug": "rho-fiera-milano",
     "display_name": "Rho Fiera Milano",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.52112836,
       "lon": 9.08857014
@@ -121717,7 +121947,7 @@
     "city_id": "riedlingen-ch-96bc2ed4",
     "slug": "riedlingen",
     "display_name": "Riedlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.14957526,
       "lon": 9.48497871
@@ -121811,7 +122041,7 @@
     "city_id": "riegel-malterdingen-ch-35a138e3",
     "slug": "riegel-malterdingen",
     "display_name": "Riegel Malterdingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.1519666,
       "lon": 7.77084942
@@ -121955,7 +122185,7 @@
     "city_id": "rietheim-ch-de-4a9f1881",
     "slug": "rietheim-ch",
     "display_name": "Rietheim Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.60075,
       "lon": 8.277328
@@ -122225,7 +122455,7 @@
     "city_id": "ringsheim-europa-park-ch-668a0d91",
     "slug": "ringsheim-europa-park",
     "display_name": "Ringsheim Europa Park",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.24869796,
       "lon": 7.773005155
@@ -122329,7 +122559,7 @@
     "city_id": "rio-di-pusteria-stazione-di-rio-di-pusteria-at-2707cd58",
     "slug": "rio-di-pusteria",
     "display_name": "Rio Di Pusteria",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.79719049,
       "lon": 11.66992402
@@ -123375,7 +123605,7 @@
     "city_id": "roma-stazione-di-roma-tiburtina-at-cbac6263",
     "slug": "roma",
     "display_name": "Roma",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 41.91110706,
       "lon": 12.53119279
@@ -123411,7 +123641,7 @@
     "city_id": "romaneche-thorins-ch-356088ff",
     "slug": "romaneche-thorins",
     "display_name": "Romaneche Thorins",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.17629024,
       "lon": 4.74212554
@@ -123845,7 +124075,7 @@
     "city_id": "rorschach-hafen-de-e967c31f",
     "slug": "rorschach-hafen",
     "display_name": "Rorschach Hafen",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.47859,
       "lon": 9.492923
@@ -124010,7 +124240,7 @@
     "city_id": "rosieres-aux-salines-ch-89fa79f9",
     "slug": "rosieres-aux-salines",
     "display_name": "Rosieres Aux Salines",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.60534449,
       "lon": 6.35045126
@@ -124571,7 +124801,7 @@
     "city_id": "rottenacker-ch-6772de97",
     "slug": "rottenacker",
     "display_name": "Rottenacker",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.23484511,
       "lon": 9.69436702
@@ -124588,7 +124818,7 @@
     "city_id": "rottenburg-neckar-ch-c66c9c4a",
     "slug": "rottenburg-neckar",
     "display_name": "Rottenburg Neckar",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.472428,
       "lon": 8.93555112
@@ -124992,7 +125222,7 @@
     "city_id": "rudersberg-ch-068b0878",
     "slug": "rudersberg",
     "display_name": "Rudersberg",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.88447536666666,
       "lon": 9.533257171666666
@@ -125718,29 +125948,6 @@
     ]
   },
   {
-    "city_id": "s-ch-5d2361f5",
-    "slug": "s",
-    "display_name": "S",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.143494186666665,
-      "lon": 8.74569218
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
-    "station_ids": [
-      "station-uic-8505407",
-      "station-uic-8505415",
-      "station-uic-8505581"
-    ],
-    "aliases": [
-      "S. Antonino",
-      "S. Maria Maggiore",
-      "S. Nazzaro"
-    ]
-  },
-  {
     "city_id": "s-chanf-ch-4d6cd7f9",
     "slug": "s-chanf",
     "display_name": "S Chanf",
@@ -125777,271 +125984,6 @@
     ],
     "aliases": [
       "S Charlottenburg Bhf Berlin"
-    ]
-  },
-  {
-    "city_id": "s-de-2feb1983",
-    "slug": "s",
-    "display_name": "S",
-    "country_code": "DE",
-    "location": {
-      "lat": 52.54748520877976,
-      "lon": 13.350217167261903
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 10,
-    "station_ids": [
-      "station-uic-900003102",
-      "station-uic-900003103",
-      "station-uic-900007104",
-      "station-uic-900008101",
-      "station-uic-900012101",
-      "station-uic-900020202",
-      "station-uic-900024102",
-      "station-uic-900024203",
-      "station-uic-900025321",
-      "station-uic-900025424",
-      "station-uic-900026105",
-      "station-uic-900026207",
-      "station-uic-900030202",
-      "station-uic-900040101",
-      "station-uic-900044101",
-      "station-uic-900048101",
-      "station-uic-900049201",
-      "station-uic-900049202",
-      "station-uic-900050301",
-      "station-uic-900050355",
-      "station-uic-900052201",
-      "station-uic-900053301",
-      "station-uic-900054104",
-      "station-uic-900057104",
-      "station-uic-900058102",
-      "station-uic-900060101",
-      "station-uic-900063101",
-      "station-uic-900063452",
-      "station-uic-900064256",
-      "station-uic-900066102",
-      "station-uic-900067221",
-      "station-uic-900068301",
-      "station-uic-900072101",
-      "station-uic-900073101",
-      "station-uic-900074201",
-      "station-uic-900074202",
-      "station-uic-900077106",
-      "station-uic-900077155",
-      "station-uic-900084101",
-      "station-uic-900085105",
-      "station-uic-900085201",
-      "station-uic-900089303",
-      "station-uic-900091203",
-      "station-uic-900091205",
-      "station-uic-900092201",
-      "station-uic-900093201",
-      "station-uic-900094101",
-      "station-uic-900096405",
-      "station-uic-900100002",
-      "station-uic-900100007",
-      "station-uic-900110002",
-      "station-uic-900110003",
-      "station-uic-900110004",
-      "station-uic-900110011",
-      "station-uic-900110012",
-      "station-uic-900120003",
-      "station-uic-900130001",
-      "station-uic-900130003",
-      "station-uic-900135001",
-      "station-uic-900142001",
-      "station-uic-900143001",
-      "station-uic-900151001",
-      "station-uic-900152001",
-      "station-uic-900152002",
-      "station-uic-900160001",
-      "station-uic-900160002",
-      "station-uic-900160003",
-      "station-uic-900162001",
-      "station-uic-900170001",
-      "station-uic-900170002",
-      "station-uic-900170003",
-      "station-uic-900170004",
-      "station-uic-900170005",
-      "station-uic-900171001",
-      "station-uic-900171002",
-      "station-uic-900171003",
-      "station-uic-900175002",
-      "station-uic-900176001",
-      "station-uic-900180001",
-      "station-uic-900180002",
-      "station-uic-900180003",
-      "station-uic-900182001",
-      "station-uic-900182002",
-      "station-uic-900183001",
-      "station-uic-900183002",
-      "station-uic-900186001",
-      "station-uic-900190001",
-      "station-uic-900191001",
-      "station-uic-900191002",
-      "station-uic-900192001",
-      "station-uic-900192002",
-      "station-uic-900193001",
-      "station-uic-900193002",
-      "station-uic-900195510",
-      "station-uic-900196001",
-      "station-uic-900200000",
-      "station-uic-900200005",
-      "station-uic-900200006",
-      "station-uic-900200007",
-      "station-uic-900200008",
-      "station-uic-900200009",
-      "station-uic-900200011",
-      "station-uic-900200012",
-      "station-uic-900200013",
-      "station-uic-900220114",
-      "station-uic-900230000",
-      "station-uic-900230003",
-      "station-uic-900230999",
-      "station-uic-900245027",
-      "station-uic-900245028",
-      "station-uic-900260002",
-      "station-uic-900260003",
-      "station-uic-900260004",
-      "station-uic-900260005",
-      "station-uic-900260080",
-      "station-uic-900310004",
-      "station-uic-900320003",
-      "station-uic-900320005",
-      "station-uic-900320006",
-      "station-uic-900320007",
-      "station-uic-900320008",
-      "station-uic-900320026",
-      "station-uic-900350162",
-      "station-uic-900350163"
-    ],
-    "aliases": [
-      "S Adlershof (Berlin)",
-      "S Ahrensfelde Bhf (Berlin)",
-      "S Alt-Reinickendorf (Berlin)",
-      "S Altglienicke (Berlin)",
-      "S Anhalter Bahnhof (Berlin)",
-      "S Attilastr. (Berlin)",
-      "S Babelsberg",
-      "S Baumschulenweg (Berlin)",
-      "S Bellevue (Berlin)",
-      "S Bergfelde",
-      "S Betriebsbahnhof Rummelsburg (Berlin)",
-      "S Beusselstr. (Berlin)",
-      "S Biesdorf (Berlin)",
-      "S Birkenstein",
-      "S Birkenwerder Bhf",
-      "S Blankenburg (Berlin)",
-      "S Blankenfelde (TF) Bhf",
-      "S Borgsdorf",
-      "S Bornholmer Str. (Berlin)",
-      "S Botanischer Garten (Berlin)",
-      "S Buch (Berlin)",
-      "S Buckower Chaussee (Berlin)",
-      "S Eichborndamm (Berlin)",
-      "S Eichwalde",
-      "S Erkner Bhf",
-      "S Feuerbachstr. (Berlin)",
-      "S Fredersdorf",
-      "S Friedenau (Berlin)",
-      "S Friedrichsfelde Ost (Berlin)",
-      "S Friedrichshagen (Berlin)",
-      "S Frohnau (Berlin)",
-      "S Gehrenseestr. (Berlin)",
-      "S Greifswalder Str. (Berlin)",
-      "S Griebnitzsee Bhf",
-      "S Grunewald (Berlin)",
-      "S Grünau (Berlin)",
-      "S Grünbergallee (Berlin)",
-      "S Hackescher Markt (Berlin)",
-      "S Halensee (Berlin)",
-      "S Heerstr. (Berlin)",
-      "S Hegermühle",
-      "S Heiligensee (Berlin)",
-      "S Hennigsdorf Bhf",
-      "S Hermsdorf (Berlin)",
-      "S Hirschgarten (Berlin)",
-      "S Hohen Neuendorf",
-      "S Hohenschönhausen Bhf (Berlin)",
-      "S Hohenzollerndamm (Berlin)",
-      "S Hoppegarten",
-      "S Humboldthain (Berlin)",
-      "S Johannisthal (Berlin)",
-      "S Julius-Leber-Brücke (Berlin)",
-      "S Karlshorst (Berlin)",
-      "S Karow Bhf (Berlin)",
-      "S Kaulsdorf (Berlin)",
-      "S Köllnische Heide (Berlin)",
-      "S Köpenick (Berlin)",
-      "S Landsberger Allee (Berlin)",
-      "S Lankwitz (Berlin)",
-      "S Lehnitz",
-      "S Lichtenrade (Berlin)",
-      "S Mahlow",
-      "S Mahlsdorf Bhf (Berlin)",
-      "S Marienfelde (Berlin)",
-      "S Marzahn (Berlin)",
-      "S Mehrower Allee (Berlin)",
-      "S Mexikoplatz (Berlin)",
-      "S Mühlenbeck-Mönchmühle",
-      "S Neuenhagen (b Berlin)",
-      "S Nikolassee (Berlin)",
-      "S Nordbahnhof (Berlin)",
-      "S Nöldnerplatz (Berlin)",
-      "S Oberspree (Berlin)",
-      "S Olympiastadion (Berlin)",
-      "S Oranienburg Bhf",
-      "S Oranienburger Str. (Berlin)",
-      "S Osdorfer Str. (Berlin)",
-      "S Ostkreuz Bhf (Berlin)",
-      "S Pankow-Heinersdorf (Berlin)",
-      "S Petershagen Nord",
-      "S Pichelsberg (Berlin)",
-      "S Plänterwald (Berlin)",
-      "S Poelchaustr. (Berlin)",
-      "S Potsdam Hauptbahnhof",
-      "S Prenzlauer Allee (Berlin)",
-      "S Priesterweg (Berlin)",
-      "S Rahnsdorf (Berlin)",
-      "S Raoul-Wallenberg-Str. (Berlin)",
-      "S Rummelsburg (Berlin)",
-      "S Röntgental",
-      "S Savignyplatz (Berlin)",
-      "S Schichauweg (Berlin)",
-      "S Schlachtensee (Berlin)",
-      "S Schulzendorf (Berlin)",
-      "S Schöneberg (Berlin)",
-      "S Schönefeld (bei Berlin)",
-      "S Schöneweide Bhf (Berlin)",
-      "S Schönfließ",
-      "S Schönholz (Berlin)",
-      "S Sonnenallee (Berlin)",
-      "S Spindlersfeld (Berlin)",
-      "S Springpfuhl (Berlin)",
-      "S Storkower Str. (Berlin)",
-      "S Stresow (Berlin)",
-      "S Sundgauer Str. (Berlin)",
-      "S Südende (Berlin)",
-      "S Tegel (Berlin)",
-      "S Teltow Stadt",
-      "S Tiergarten (Berlin)",
-      "S Treptower Park (Berlin)",
-      "S Waidmannslust (Berlin)",
-      "S Wannsee Bhf (Berlin)",
-      "S Wartenberg (Berlin)",
-      "S Waßmannsdorf",
-      "S Westend (Berlin)",
-      "S Westkreuz (Berlin)",
-      "S Wildau",
-      "S Wilhelmshagen (Berlin)",
-      "S Wilhelmsruh (Berlin)",
-      "S Wollankstr. (Berlin)",
-      "S Wuhlheide (Berlin)",
-      "S Zehlendorf (Berlin)",
-      "S Zepernick",
-      "S Zeuthen"
     ]
   },
   {
@@ -127241,7 +127183,7 @@
     "city_id": "saint-blaise-la-roche-poutay-ch-98e5c59e",
     "slug": "saint-blaise-la-roche-poutay",
     "display_name": "Saint Blaise La Roche Poutay",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.407607,
       "lon": 7.16546576
@@ -128100,7 +128042,7 @@
     "city_id": "saint-gervais-les-bains-ch-3659d8d0",
     "slug": "saint-gervais-les-bains",
     "display_name": "Saint Gervais Les Bains",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.906475564999994,
       "lon": 6.701065835
@@ -128277,7 +128219,7 @@
     "city_id": "saint-hilaire-st-nazaire-ch-fb9361d4",
     "slug": "saint-hilaire-st-nazaire",
     "display_name": "Saint Hilaire St Nazaire",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.07148903,
       "lon": 5.24445446
@@ -129059,23 +129001,6 @@
     "aliases": []
   },
   {
-    "city_id": "saint-maurice-de-beynost-ch-71ea3309",
-    "slug": "saint-maurice-de-beynost",
-    "display_name": "Saint Maurice De Beynost",
-    "country_code": "CH",
-    "location": {
-      "lat": 45.82743782,
-      "lon": 4.97737634
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-8772353"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "saint-medard-d-eyrans-fr-33448",
     "slug": "saint-medard-d-eyrans",
     "display_name": "Saint Medard D Eyrans",
@@ -129321,7 +129246,7 @@
     "city_id": "saint-peray-ch-1f0c7e6f",
     "slug": "saint-peray",
     "display_name": "Saint Peray",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.94781015,
       "lon": 4.85054321
@@ -130506,7 +130431,7 @@
     "city_id": "salem-ch-e9815666",
     "slug": "salem",
     "display_name": "Salem",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.75779666,
       "lon": 9.29726675
@@ -130627,7 +130552,7 @@
     "city_id": "salles-courbatiers-ch-0640c153",
     "slug": "salles-courbatiers",
     "display_name": "Salles Courbatiers",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.47520383,
       "lon": 2.07874648
@@ -131047,7 +130972,7 @@
     "city_id": "san-candido-stazione-di-san-candido-at-96a669f9",
     "slug": "san-candido",
     "display_name": "San Candido",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.73255514,
       "lon": 12.27244205
@@ -131384,7 +131309,7 @@
     "city_id": "san-lorenzo-di-sebato-stazione-di-san-lorenzo-at-431b758e",
     "slug": "san-lorenzo-di-sebato",
     "display_name": "San Lorenzo Di Sebato",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.7815249,
       "lon": 11.90311769
@@ -131922,7 +131847,7 @@
     "city_id": "sangiano-ch-ac3deeb8",
     "slug": "sangiano",
     "display_name": "Sangiano",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.87436544,
       "lon": 8.63081562
@@ -132900,7 +132825,7 @@
     "city_id": "sargans-at-46c92be3",
     "slug": "sargans",
     "display_name": "Sargans",
-    "country_code": "AT",
+    "country_code": "CH",
     "location": {
       "lat": 47.04490645,
       "lon": 9.445908070000002
@@ -133401,7 +133326,7 @@
     "city_id": "saumur-rive-droite-ch-df0acc7d",
     "slug": "saumur-rive-droite",
     "display_name": "Saumur Rive Droite",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.26886112,
       "lon": -0.0715598
@@ -133701,7 +133626,7 @@
     "city_id": "schaan-vaduz-ch-53caa905",
     "slug": "schaan-vaduz",
     "display_name": "Schaan Vaduz",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.16829199,
       "lon": 9.50779592
@@ -133846,7 +133771,7 @@
     "city_id": "schallstadt-ch-fd75b370",
     "slug": "schallstadt",
     "display_name": "Schallstadt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.95594633,
       "lon": 7.75388922
@@ -134087,7 +134012,7 @@
     "city_id": "schelklingen-ch-174a2a59",
     "slug": "schelklingen",
     "display_name": "Schelklingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.37170148,
       "lon": 9.73526731
@@ -134495,7 +134420,7 @@
     "city_id": "schlatt-tg-ch-de-72283ab7",
     "slug": "schlatt-tg-ch",
     "display_name": "Schlatt Tg Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.6795,
       "lon": 8.687511
@@ -134530,7 +134455,7 @@
     "city_id": "schlechtbach-d-ch-e52febf7",
     "slug": "schlechtbach-d",
     "display_name": "Schlechtbach D",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.872388145,
       "lon": 9.52634602
@@ -134586,7 +134511,7 @@
     "city_id": "schliengen-ch-395b897d",
     "slug": "schliengen",
     "display_name": "Schliengen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.76159509,
       "lon": 7.56893509
@@ -134696,7 +134621,7 @@
     "city_id": "schlins-beschling-ch-d8f98903",
     "slug": "schlins-beschling",
     "display_name": "Schlins Beschling",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.194893635,
       "lon": 9.690520115
@@ -134824,7 +134749,7 @@
     "city_id": "schmiechen-ch-40862dd8",
     "slug": "schmiechen",
     "display_name": "Schmiechen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.36271964,
       "lon": 9.72075952
@@ -135289,7 +135214,7 @@
     "city_id": "schorndorf-hammerschlag-ch-a91d9bea",
     "slug": "schorndorf-hammerschlag",
     "display_name": "Schorndorf Hammerschlag",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.807621045000005,
       "lon": 9.534799355
@@ -136012,7 +135937,7 @@
     "city_id": "schwenningen-neckar-ch-3303dd7c",
     "slug": "schwenningen-neckar",
     "display_name": "Schwenningen Neckar",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.05976881,
       "lon": 8.5358637
@@ -136108,7 +136033,7 @@
     "city_id": "schwieberdingen-ch-9a94d20b",
     "slug": "schwieberdingen",
     "display_name": "Schwieberdingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.87056553,
       "lon": 9.071295675
@@ -136161,7 +136086,7 @@
     "city_id": "schworstadt-ch-34308cfc",
     "slug": "schworstadt",
     "display_name": "Schworstadt",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.59102096,
       "lon": 7.87032885
@@ -136519,7 +136444,7 @@
     "city_id": "seefeld-in-tirol-de-4fb0edfd",
     "slug": "seefeld-in-tirol",
     "display_name": "Seefeld In Tirol",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.328732,
       "lon": 11.189483
@@ -137317,7 +137242,7 @@
     "city_id": "seregno-ch-d2b7f353",
     "slug": "seregno",
     "display_name": "Seregno",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.64451904,
       "lon": 9.20212618
@@ -137493,7 +137418,7 @@
     "city_id": "servoz-ch-f338848f",
     "slug": "servoz",
     "display_name": "Servoz",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.92430294,
       "lon": 6.76382002
@@ -137545,7 +137470,7 @@
     "city_id": "sesto-s-giovanni-ch-f6ff1ada",
     "slug": "sesto-s-giovanni",
     "display_name": "Sesto S Giovanni",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.5410328,
       "lon": 9.23935236
@@ -137632,7 +137557,7 @@
     "city_id": "sev-at-0c605598",
     "slug": "sev",
     "display_name": "Sev",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 51.95725889,
       "lon": 7.63420668
@@ -137649,7 +137574,7 @@
     "city_id": "sev-at-2fb0f977",
     "slug": "sev",
     "display_name": "Sev",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.50611628,
       "lon": 13.60747331
@@ -138216,7 +138141,7 @@
     "city_id": "sigmaringen-ch-40e38496",
     "slug": "sigmaringen",
     "display_name": "Sigmaringen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.08698345,
       "lon": 9.22185318
@@ -138233,7 +138158,7 @@
     "city_id": "sigmaringendorf-ch-72901b1f",
     "slug": "sigmaringendorf",
     "display_name": "Sigmaringendorf",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.06889998,
       "lon": 9.26072328
@@ -138482,7 +138407,7 @@
     "city_id": "simbach-inn-at-e2fc1800",
     "slug": "simbach-inn",
     "display_name": "Simbach Inn",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 48.26297772,
       "lon": 13.02305634
@@ -138572,7 +138497,7 @@
     "city_id": "singen-hohentwiel-ch-39c422eb",
     "slug": "singen-hohentwiel",
     "display_name": "Singen Hohentwiel",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.75887764,
       "lon": 8.84127293
@@ -138589,7 +138514,7 @@
     "city_id": "singen-htw-ch-aa7188e2",
     "slug": "singen-htw",
     "display_name": "Singen Htw",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.75956506,
       "lon": 8.845464885
@@ -138743,7 +138668,7 @@
     "city_id": "sipplingen-ch-d9880812",
     "slug": "sipplingen",
     "display_name": "Sipplingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.79558749,
       "lon": 9.0955231
@@ -139683,7 +139608,7 @@
     "city_id": "sontheim-brenz-ch-ab87ef3b",
     "slug": "sontheim-brenz",
     "display_name": "Sontheim Brenz",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.55932389,
       "lon": 10.28486559
@@ -140609,7 +140534,7 @@
     "city_id": "st-aignan-noyers-ch-efb1779e",
     "slug": "st-aignan-noyers",
     "display_name": "St Aignan Noyers",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.28689492,
       "lon": 1.38392656
@@ -140626,7 +140551,7 @@
     "city_id": "st-amand-montrond-ch-152fcdc9",
     "slug": "st-amand-montrond",
     "display_name": "St Amand Montrond",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.72610828,
       "lon": 2.50750339
@@ -140700,7 +140625,7 @@
     "city_id": "st-andre-le-gaz-ch-5f96dda7",
     "slug": "st-andre-le-gaz",
     "display_name": "St Andre Le Gaz",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.54479516,
       "lon": 5.52419882
@@ -140736,7 +140661,7 @@
     "city_id": "st-anton-am-arlberg-de-21828451",
     "slug": "st-anton-am-arlberg",
     "display_name": "St Anton Am Arlberg",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.127331,
       "lon": 10.267088
@@ -140818,7 +140743,7 @@
     "city_id": "st-chamas-ch-34714e8d",
     "slug": "st-chamas",
     "display_name": "St Chamas",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.55115437,
       "lon": 5.04013265
@@ -140835,7 +140760,7 @@
     "city_id": "st-chely-d-apcher-ch-c6690315",
     "slug": "st-chely-d-apcher",
     "display_name": "St Chely D Apcher",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.80173795,
       "lon": 3.27069408
@@ -140852,7 +140777,7 @@
     "city_id": "st-cyr-en-val-la-source-ch-cb50d177",
     "slug": "st-cyr-en-val-la-source",
     "display_name": "St Cyr En Val La Source",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.81930441,
       "lon": 1.94735889
@@ -140869,7 +140794,7 @@
     "city_id": "st-denis-pres-martel-ch-b1d243d9",
     "slug": "st-denis-pres-martel",
     "display_name": "St Denis Pres Martel",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.94580104,
       "lon": 1.66623112
@@ -140983,7 +140908,7 @@
     "city_id": "st-gallen-ch-de-f6c0c12e",
     "slug": "st-gallen-ch",
     "display_name": "St Gallen Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.4288595,
       "lon": 9.3816705
@@ -141003,7 +140928,7 @@
     "city_id": "st-genies-de-malgoires-ch-05433e71",
     "slug": "st-genies-de-malgoires",
     "display_name": "St Genies De Malgoires",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.95016282,
       "lon": 4.21494023
@@ -141136,7 +141061,7 @@
     "city_id": "st-georgen-schwarzw-ch-e947af45",
     "slug": "st-georgen-schwarzw",
     "display_name": "St Georgen Schwarzw",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.12381493,
       "lon": 8.34195336
@@ -141153,7 +141078,7 @@
     "city_id": "st-georges-de-commiers-ch-e3c41a6a",
     "slug": "st-georges-de-commiers",
     "display_name": "St Georges De Commiers",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.04399336,
       "lon": 5.70201135
@@ -141170,7 +141095,7 @@
     "city_id": "st-georges-de-luzencon-ch-9df9ce1f",
     "slug": "st-georges-de-luzencon",
     "display_name": "St Georges De Luzencon",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.0665711,
       "lon": 2.98359252
@@ -141187,7 +141112,7 @@
     "city_id": "st-germain-du-puy-ch-81a02e51",
     "slug": "st-germain-du-puy",
     "display_name": "St Germain Du Puy",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.0964292,
       "lon": 2.48460533
@@ -141204,7 +141129,7 @@
     "city_id": "st-gervais-les-bains-le-fayet-ch-7fba9566",
     "slug": "st-gervais-les-bains-le-fayet",
     "display_name": "St Gervais Les Bains Le Fayet",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.90642238,
       "lon": 6.70107269
@@ -141388,7 +141313,7 @@
     "city_id": "st-johann-im-pongau-de-468d9b16",
     "slug": "st-johann-im-pongau",
     "display_name": "St Johann Im Pongau",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.348379,
       "lon": 13.194961
@@ -141424,7 +141349,7 @@
     "city_id": "st-johann-in-tirol-de-fabb5ebd",
     "slug": "st-johann-in-tirol",
     "display_name": "St Johann In Tirol",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.519618,
       "lon": 12.430775
@@ -141533,7 +141458,7 @@
     "city_id": "st-marcellin-isere-ch-4862ac39",
     "slug": "st-marcellin-isere",
     "display_name": "St Marcellin Isere",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.15074816,
       "lon": 5.32373977
@@ -141587,7 +141512,7 @@
     "city_id": "st-martin-de-crau-ch-a75cb82e",
     "slug": "st-martin-de-crau",
     "display_name": "St Martin De Crau",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.62233852,
       "lon": 4.80018365
@@ -141604,7 +141529,7 @@
     "city_id": "st-martin-du-mont-ch-c8a49674",
     "slug": "st-martin-du-mont",
     "display_name": "St Martin Du Mont",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.09597723,
       "lon": 5.3031414
@@ -141674,8 +141599,8 @@
   },
   {
     "city_id": "st-maurice-beynost-d1084-cte-fr-01376",
-    "slug": "st-maurice-beynost-d1084-cte",
-    "display_name": "St Maurice Beynost D1084 Cte",
+    "slug": "saint-maurice-de-beynost",
+    "display_name": "Saint Maurice De Beynost",
     "country_code": "FR",
     "location": {
       "lat": 45.828312,
@@ -141685,11 +141610,13 @@
     "population": null,
     "interest_score": 6,
     "station_ids": [
+      "station-uic-8772353",
       "station-uic-87698696",
       "station-uic-87723536"
     ],
     "aliases": [
-      "Saint-Maurice-de-Beynost"
+      "Saint-Maurice-de-Beynost",
+      "St Maurice Beynost D1084 Cte"
     ]
   },
   {
@@ -141896,7 +141823,7 @@
     "city_id": "st-pierre-des-corps-ch-36bc8ebd",
     "slug": "st-pierre-des-corps",
     "display_name": "St Pierre Des Corps",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.3855422,
       "lon": 0.72388941
@@ -141913,7 +141840,7 @@
     "city_id": "st-pierre-en-faucigny-ch-247395cc",
     "slug": "st-pierre-en-faucigny",
     "display_name": "St Pierre En Faucigny",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.05931132,
       "lon": 6.37571188
@@ -141976,7 +141903,7 @@
     "city_id": "st-rambert-en-bugey-ch-46707b90",
     "slug": "st-rambert-en-bugey",
     "display_name": "St Rambert En Bugey",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.94697504,
       "lon": 5.43823005
@@ -141993,7 +141920,7 @@
     "city_id": "st-raphael-valescure-ch-0caee328",
     "slug": "st-raphael-valescure",
     "display_name": "St Raphael Valescure",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.42277163,
       "lon": 6.77012619
@@ -142010,7 +141937,7 @@
     "city_id": "st-rome-de-cernon-ch-8104a7a1",
     "slug": "st-rome-de-cernon",
     "display_name": "St Rome De Cernon",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.01398081,
       "lon": 2.96736895
@@ -142099,7 +142026,7 @@
     "city_id": "st-sulpice-tarn-ch-4632ce12",
     "slug": "st-sulpice-tarn",
     "display_name": "St Sulpice Tarn",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 43.77521612,
       "lon": 1.68035264
@@ -142832,7 +142759,7 @@
     "city_id": "ste-cecile-d-andorge-ch-195c1dbe",
     "slug": "ste-cecile-d-andorge",
     "display_name": "Ste Cecile D Andorge",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.25543626,
       "lon": 3.97585362
@@ -143065,7 +142992,7 @@
     "city_id": "steinach-bodensee-de-6b725a7e",
     "slug": "steinach-bodensee",
     "display_name": "Steinach Bodensee",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.500956,
       "lon": 9.442003
@@ -143099,7 +143026,7 @@
     "city_id": "steinach-in-tirol-de-d5ad20ec",
     "slug": "steinach-in-tirol",
     "display_name": "Steinach In Tirol",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.08922,
       "lon": 11.46983
@@ -143225,7 +143152,7 @@
     "city_id": "steinebrunn-ch-de-d832c7b6",
     "slug": "steinebrunn-ch",
     "display_name": "Steinebrunn Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.531533,
       "lon": 9.349859
@@ -143720,7 +143647,7 @@
     "city_id": "stetten-donau-ch-7c18b4a7",
     "slug": "stetten-donau",
     "display_name": "Stetten Donau",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.02281334,
       "lon": 8.87235464
@@ -143977,7 +143904,7 @@
     "city_id": "storzingen-ch-6097aa6c",
     "slug": "storzingen",
     "display_name": "Storzingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.1348832,
       "lon": 9.12708092
@@ -144088,7 +144015,7 @@
     "city_id": "strassberg-winterlingen-ch-1bebb82a",
     "slug": "strassberg-winterlingen",
     "display_name": "Strassberg Winterlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.1787491,
       "lon": 9.08771674
@@ -144319,7 +144246,7 @@
     "city_id": "stuhlingen-ch-e4d86f73",
     "slug": "stuhlingen",
     "display_name": "Stuhlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.74312569,
       "lon": 8.44613098
@@ -144353,7 +144280,7 @@
     "city_id": "stuttgart-at-2886ec31",
     "slug": "stuttgart",
     "display_name": "Stuttgart",
-    "country_code": "AT",
+    "country_code": "DE",
     "location": {
       "lat": 48.784682155,
       "lon": 9.183343785
@@ -145240,7 +145167,7 @@
     "city_id": "taconnaz-ch-e12a2b3d",
     "slug": "taconnaz",
     "display_name": "Taconnaz",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.89920852,
       "lon": 6.8258936
@@ -145818,7 +145745,7 @@
     "city_id": "tassin-ch-93b8b8a9",
     "slug": "tassin",
     "display_name": "Tassin",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.76164756,
       "lon": 4.75862759
@@ -146334,7 +146261,7 @@
     "city_id": "teningen-mundingen-ch-49d88e70",
     "slug": "teningen-mundingen",
     "display_name": "Teningen Mundingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.12877976,
       "lon": 7.82440697
@@ -146407,7 +146334,7 @@
     "city_id": "ternate-varano-borghi-ch-0c5befec",
     "slug": "ternate-varano-borghi",
     "display_name": "Ternate Varano Borghi",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.78236258,
       "lon": 8.69994098
@@ -146750,7 +146677,7 @@
     "city_id": "thalfingen-b-ulm-ch-9df98cb7",
     "slug": "thalfingen-b-ulm",
     "display_name": "Thalfingen B Ulm",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.43298029,
       "lon": 10.04785408
@@ -147451,7 +147378,7 @@
     "city_id": "tiengen-hochrhein-ch-188c67b1",
     "slug": "tiengen-hochrhein",
     "display_name": "Tiengen Hochrhein",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.63547073,
       "lon": 8.27200155
@@ -147610,7 +147537,7 @@
     "city_id": "tisis-feldkirch-ch-0a9f03e6",
     "slug": "tisis-feldkirch",
     "display_name": "Tisis Feldkirch",
-    "country_code": "CH",
+    "country_code": "AT",
     "location": {
       "lat": 47.22725451,
       "lon": 9.57570855
@@ -148946,7 +148873,7 @@
     "city_id": "travedona-biandronno-ch-370aa1cb",
     "slug": "travedona-biandronno",
     "display_name": "Travedona Biandronno",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.79938123,
       "lon": 8.70052489
@@ -149184,7 +149111,7 @@
     "city_id": "trento-de-87dc8ad6",
     "slug": "trento",
     "display_name": "Trento",
-    "country_code": "DE",
+    "country_code": "IT",
     "location": {
       "lat": 46.072287,
       "lon": 11.1189
@@ -149307,7 +149234,7 @@
     "city_id": "triberg-ch-e46b94d9",
     "slug": "triberg",
     "display_name": "Triberg",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.14000282,
       "lon": 8.23680555
@@ -149409,7 +149336,7 @@
     "city_id": "trieste-centrale-at-62611876",
     "slug": "trieste",
     "display_name": "Trieste",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 45.65845305,
       "lon": 13.77115534
@@ -149514,7 +149441,7 @@
     "city_id": "trois-chenes-ch-572b98b4",
     "slug": "trois-chenes",
     "display_name": "Trois Chenes",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.64808419,
       "lon": 6.84627638
@@ -149647,7 +149574,7 @@
     "city_id": "trooz-de-c1145a78",
     "slug": "trooz",
     "display_name": "Trooz",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.573192,
       "lon": 5.688713
@@ -149664,7 +149591,7 @@
     "city_id": "trossingen-ch-08adbda5",
     "slug": "trossingen",
     "display_name": "Trossingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.08766153,
       "lon": 8.58515426
@@ -149883,7 +149810,7 @@
     "city_id": "tubingen-ch-4316d9cb",
     "slug": "tubingen",
     "display_name": "Tubingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.51564168,
       "lon": 9.05539536
@@ -150082,7 +150009,7 @@
     "city_id": "turckheim-ch-a9ae9c8f",
     "slug": "turckheim",
     "display_name": "Turckheim",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.08563326,
       "lon": 7.27954282
@@ -150272,7 +150199,7 @@
     "city_id": "tuttlingen-ch-516dd287",
     "slug": "tuttlingen",
     "display_name": "Tuttlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.983421013333334,
       "lon": 8.804636751666667
@@ -150349,7 +150276,7 @@
     "city_id": "uberlingen-ch-ddfd0b4b",
     "slug": "uberlingen",
     "display_name": "Uberlingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.76441058666666,
       "lon": 9.165546776666666
@@ -150470,7 +150397,7 @@
     "city_id": "udine-de-cc8958a1",
     "slug": "udine",
     "display_name": "Udine",
-    "country_code": "DE",
+    "country_code": "IT",
     "location": {
       "lat": 46.055837,
       "lon": 13.24213975
@@ -150626,7 +150553,7 @@
     "city_id": "uhldingen-muhlhofen-ch-ceee914d",
     "slug": "uhldingen-muhlhofen",
     "display_name": "Uhldingen Muhlhofen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.73699999,
       "lon": 9.24841636
@@ -150751,7 +150678,7 @@
     "city_id": "ulm-ch-2ea8ca49",
     "slug": "ulm",
     "display_name": "Ulm",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.398120241875,
       "lon": 9.979370127500001
@@ -151078,7 +151005,7 @@
     "city_id": "unterelchingen-ch-685f1aa1",
     "slug": "unterelchingen",
     "display_name": "Unterelchingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.45299098,
       "lon": 10.10018993
@@ -151210,7 +151137,7 @@
     "city_id": "unterkochen-ch-e04910fd",
     "slug": "unterkochen",
     "display_name": "Unterkochen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.81500672,
       "lon": 10.1264926
@@ -151653,7 +151580,7 @@
     "city_id": "urmatt-ch-f5c6dfd4",
     "slug": "urmatt",
     "display_name": "Urmatt",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.52567931,
       "lon": 7.33893943
@@ -152387,7 +152314,7 @@
     "city_id": "valdaora-stazione-di-valdaora-anterselva-at-318b76e2",
     "slug": "valdaora",
     "display_name": "Valdaora",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.76732536,
       "lon": 12.03026523
@@ -153137,7 +153064,7 @@
     "city_id": "vallorcine-f-ch-a58ecaf5",
     "slug": "vallorcine-f",
     "display_name": "Vallorcine F",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 46.03340493,
       "lon": 6.93398788
@@ -153260,7 +153187,7 @@
     "city_id": "vandoies-stazione-di-vandoies-at-038f8709",
     "slug": "vandoies",
     "display_name": "Vandoies",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.81492334,
       "lon": 11.72316717
@@ -153386,7 +153313,7 @@
     "city_id": "varese-ch-bed81f87",
     "slug": "varese",
     "display_name": "Varese",
-    "country_code": "CH",
+    "country_code": "IT",
     "location": {
       "lat": 45.81621312,
       "lon": 8.8332869
@@ -153480,7 +153407,7 @@
     "city_id": "vaudagne-ch-59fcc93f",
     "slug": "vaudagne",
     "display_name": "Vaudagne",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.90879762,
       "lon": 6.77270436
@@ -153582,7 +153509,7 @@
     "city_id": "vauzelles-ch-e9eb57f8",
     "slug": "vauzelles",
     "display_name": "Vauzelles",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.00148828,
       "lon": 3.13431186
@@ -154167,7 +154094,7 @@
     "city_id": "venezia-at-92b8bce5",
     "slug": "venezia",
     "display_name": "Venezia",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 45.46195806,
       "lon": 12.275958684999999
@@ -154692,7 +154619,7 @@
     "city_id": "versciaco-stazione-di-versciaco-elmo-at-fc5c14ab",
     "slug": "versciaco",
     "display_name": "Versciaco",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.73222881,
       "lon": 12.32804777
@@ -154815,7 +154742,7 @@
     "city_id": "verviers-de-8806a4d7",
     "slug": "verviers",
     "display_name": "Verviers",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.589535,
       "lon": 5.859639
@@ -155017,7 +154944,7 @@
     "city_id": "viaduc-ste-marie-ch-47a681d5",
     "slug": "viaduc-ste-marie",
     "display_name": "Viaduc Ste Marie",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.8971017,
       "lon": 6.78507416
@@ -155367,7 +155294,7 @@
     "city_id": "vienne-ch-66fb81d1",
     "slug": "vienne",
     "display_name": "Vienne",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 45.521145325,
       "lon": 4.87419723
@@ -155440,7 +155367,7 @@
     "city_id": "vierzon-forges-ch-1919c672",
     "slug": "vierzon-forges",
     "display_name": "Vierzon Forges",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.20994488,
       "lon": 2.09985689
@@ -155495,7 +155422,7 @@
     "city_id": "viescamp-sous-jalles-ch-95284cd7",
     "slug": "viescamp-sous-jalles",
     "display_name": "Viescamp Sous Jalles",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 44.91840401,
       "lon": 2.29012905
@@ -155939,7 +155866,7 @@
     "city_id": "villabassa-stazione-di-villabassa-braies-at-f239936b",
     "slug": "villabassa",
     "display_name": "Villabassa",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 46.73650169,
       "lon": 12.16688102
@@ -157297,7 +157224,7 @@
     "city_id": "villingen-sch-ch-a49757e0",
     "slug": "villingen-sch",
     "display_name": "Villingen Sch",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.05127993,
       "lon": 8.527156026666667
@@ -157320,7 +157247,7 @@
     "city_id": "villingen-sch-marbach-ch-28167598",
     "slug": "villingen-sch-marbach",
     "display_name": "Villingen Sch Marbach",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.032482685000005,
       "lon": 8.472518990000001
@@ -157341,7 +157268,7 @@
     "city_id": "villingen-schwarzw-ch-186da033",
     "slug": "villingen-schwarzw",
     "display_name": "Villingen Schwarzw",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.05802163,
       "lon": 8.4652651
@@ -158434,7 +158361,7 @@
     "city_id": "vorplatz-at-daa21f8c",
     "slug": "vorplatz",
     "display_name": "Vorplatz",
-    "country_code": "AT",
+    "country_code": "IT",
     "location": {
       "lat": 47.00292181,
       "lon": 11.50511012
@@ -158939,7 +158866,7 @@
     "city_id": "walbach-la-forge-ch-a1e9e5fd",
     "slug": "walbach-la-forge",
     "display_name": "Walbach La Forge",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.05807567,
       "lon": 7.23352213
@@ -159283,7 +159210,7 @@
     "city_id": "wallersee-de-d9964c1f",
     "slug": "wallersee",
     "display_name": "Wallersee",
-    "country_code": "DE",
+    "country_code": "AT",
     "location": {
       "lat": 47.919344305,
       "lon": 13.159342855
@@ -159354,7 +159281,7 @@
     "city_id": "walygator-parc-ch-90db4cce",
     "slug": "walygator-parc",
     "display_name": "Walygator Parc",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 49.22427968,
       "lon": 6.15970299
@@ -159794,7 +159721,7 @@
     "city_id": "wasserburg-bodensee-ch-0572355b",
     "slug": "wasserburg-bodensee",
     "display_name": "Wasserburg Bodensee",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.57190321,
       "lon": 9.63906673
@@ -159968,7 +159895,7 @@
     "city_id": "wehr-brennet-ch-913ca0c7",
     "slug": "wehr-brennet",
     "display_name": "Wehr Brennet",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.58092063,
       "lon": 7.91052846
@@ -160115,7 +160042,7 @@
     "city_id": "weil-im-schonbuch-ch-774ff04c",
     "slug": "weil-im-schonbuch",
     "display_name": "Weil Im Schonbuch",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 48.620536820000005,
       "lon": 9.051805093333334
@@ -160565,7 +160492,7 @@
     "city_id": "weizen-ch-9cdbf790",
     "slug": "weizen",
     "display_name": "Weizen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.7688349,
       "lon": 8.47651201
@@ -160582,7 +160509,7 @@
     "city_id": "welkenraedt-de-791c33ba",
     "slug": "welkenraedt",
     "display_name": "Welkenraedt",
-    "country_code": "DE",
+    "country_code": "BE",
     "location": {
       "lat": 50.659513,
       "lon": 5.975023
@@ -162187,8 +162114,8 @@
   },
   {
     "city_id": "wimmenau-d-919-rue-de-la-zz-af0f2d0d",
-    "slug": "wimmenau-d-919-rue-de-la",
-    "display_name": "Wimmenau D 919 Rue De La",
+    "slug": "wimmenau",
+    "display_name": "Wimmenau",
     "country_code": "FR",
     "location": {
       "lat": 48.910025,
@@ -162201,7 +162128,8 @@
       "station-uic-87642348"
     ],
     "aliases": [
-      "Wimmenau D.919 - Rue de la Gare"
+      "Wimmenau D.919 - Rue de la Gare",
+      "Wimmenau D 919 Rue De La"
     ]
   },
   {
@@ -162629,7 +162557,7 @@
     "city_id": "wisches-ch-0c1d8dff",
     "slug": "wisches",
     "display_name": "Wisches",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 48.508049959999994,
       "lon": 7.26953919
@@ -163706,7 +163634,7 @@
     "city_id": "wutoschingen-ch-fb618242",
     "slug": "wutoschingen",
     "display_name": "Wutoschingen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.66208616,
       "lon": 8.36365666
@@ -163723,7 +163651,7 @@
     "city_id": "wyhlen-ch-55c31c53",
     "slug": "wyhlen",
     "display_name": "Wyhlen",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.54632724,
       "lon": 7.69091732
@@ -164819,7 +164747,7 @@
     "city_id": "zell-wiesental-ch-0bb086c1",
     "slug": "zell-wiesental",
     "display_name": "Zell Wiesental",
-    "country_code": "CH",
+    "country_code": "DE",
     "location": {
       "lat": 47.70562316,
       "lon": 7.84914658
@@ -165115,7 +165043,7 @@
     "city_id": "zillisheim-ch-4c29503b",
     "slug": "zillisheim",
     "display_name": "Zillisheim",
-    "country_code": "CH",
+    "country_code": "FR",
     "location": {
       "lat": 47.694505,
       "lon": 7.29447282
@@ -165570,7 +165498,7 @@
     "city_id": "zug-ch-de-02aded18",
     "slug": "zug-ch",
     "display_name": "Zug Ch",
-    "country_code": "DE",
+    "country_code": "CH",
     "location": {
       "lat": 47.173707,
       "lon": 8.515049
@@ -165587,7 +165515,7 @@
     "city_id": "zugang-at-9f8e563c",
     "slug": "zugang",
     "display_name": "Zugang",
-    "country_code": "AT",
+    "country_code": "CH",
     "location": {
       "lat": 47.49999928,
       "lon": 8.72412363
@@ -165604,7 +165532,7 @@
     "city_id": "zugang-at-b9250142",
     "slug": "zugang",
     "display_name": "Zugang",
-    "country_code": "AT",
+    "country_code": "CH",
     "location": {
       "lat": 47.45327201,
       "lon": 9.63753959
@@ -165621,7 +165549,7 @@
     "city_id": "zugang-sudost-at-beb12fea",
     "slug": "zugang-sudost",
     "display_name": "Zugang Sudost",
-    "country_code": "AT",
+    "country_code": "BE",
     "location": {
       "lat": 50.83497238,
       "lon": 4.33701229

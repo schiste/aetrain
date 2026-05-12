@@ -30607,6 +30607,30 @@
   },
   {
     "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "brandenburg-de-ad542b99",
+    "duration_min": 17,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162316_102"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "cottbus-de-19c12f90",
+    "duration_min": 93,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:4439850_103"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
     "to_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
     "duration_min": 148,
     "service_kind": "rail",
@@ -30631,14 +30655,27 @@
   },
   {
     "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "dresden-de-ba2cc845",
-    "duration_min": 127,
+    "to_city_id": "doberlug-kirchhain-de-6479171b",
+    "duration_min": 52,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162299_102"
+      "de-delfi-gtfs:1449905_102"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "dresden-de-ba2cc845",
+    "duration_min": 92,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162299_102",
+      "de-delfi-gtfs:6627546_102"
     ]
   },
   {
@@ -30650,7 +30687,44 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:1449905_102",
       "de-delfi-gtfs:162292_101"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "elsterwerda-de-178d6b5d",
+    "duration_min": 74,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:1449905_102"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "flughafen-ber-de-41640b29",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7139384_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "frankfurt-oder-de-f69ac1a0",
+    "duration_min": 42,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162333_102"
     ]
   },
   {
@@ -30675,6 +30749,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162299_101"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "hannover-de-500deaa5",
+    "duration_min": 125,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162288_101"
     ]
   },
   {
@@ -30704,19 +30790,20 @@
   {
     "from_city_id": "berlin-de-687b4789",
     "to_city_id": "magdeburg-de-818833d4",
-    "duration_min": 75,
+    "duration_min": 62,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162290_101"
+      "de-delfi-gtfs:162290_101",
+      "de-delfi-gtfs:162316_102"
     ]
   },
   {
     "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-bernau-de-36398f5d",
-    "duration_min": 22,
+    "to_city_id": "neustrelitz-de-cceec693",
+    "duration_min": 33,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -30727,19 +30814,7 @@
   },
   {
     "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-charlottenburg-bhf-berlin-de-d61ae0a0",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3988765_102"
-    ]
-  },
-  {
-    "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-de-2feb1983",
+    "to_city_id": "s-bernau-de-36398f5d",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -30747,55 +30822,121 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:1449905_102",
-      "de-delfi-gtfs:162288_101",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S2:_D_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "s-charlottenburg-bhf-berlin-de-d61ae0a0",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:3988765_102",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S3:_109",
       "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
     ]
   },
   {
     "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-ostbahnhof-berlin-de-e9c558e0",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137720_101"
-    ]
-  },
-  {
-    "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-spandau-bhf-berlin-de-9dc6342d",
-    "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162290_101"
-    ]
-  },
-  {
-    "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-sudkreuz-bhf-berlin-de-30c80990",
+    "to_city_id": "s-konigs-wusterhausen-de-a8356d66",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:6627544_102"
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_D_109"
     ]
   },
   {
     "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "stendal-de-62273dbf",
-    "duration_min": 43,
+    "to_city_id": "s-lichterfelde-de-9f493406",
+    "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S26:_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "s-messe-de-e9b1b131",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "s-ostbahnhof-berlin-de-e9c558e0",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162301_101",
+      "de-delfi-gtfs:162316_102",
+      "de-delfi-gtfs:7137720_101"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "s-spandau-bhf-berlin-de-9dc6342d",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162290_101",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "s-strausberg-de-dc7570d2",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S5:_D_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "s-sudkreuz-bhf-berlin-de-30c80990",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:6627544_102",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_D_109"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "stendal-de-62273dbf",
+    "duration_min": 40,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162288_101",
       "de-delfi-gtfs:162289_101"
     ]
   },
@@ -32895,18 +33036,6 @@
   },
   {
     "from_city_id": "beynost-fr-01043",
-    "to_city_id": "saint-maurice-de-beynost-ch-71ea3309",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-C18-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "beynost-fr-01043",
     "to_city_id": "st-maurice-beynost-d1084-cte-fr-01376",
     "duration_min": 3,
     "service_kind": "rail",
@@ -32914,8 +33043,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6349C213-7B19-4078-BF2B-43CBECDA9545:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-C18-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::6349C213-7B19-4078-BF2B-43CBECDA9545:"
     ]
   },
   {
@@ -35668,7 +35798,8 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162288_101"
+      "de-delfi-gtfs:162288_101",
+      "de-delfi-gtfs:162300_101"
     ]
   },
   {
@@ -35789,18 +35920,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:de:nasa:15|S|MDSB_S8:DBRegio_109"
-    ]
-  },
-  {
-    "from_city_id": "bitterfeld-de-8ed77356",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 65,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162300_101"
     ]
   },
   {
@@ -41404,6 +41523,18 @@
   },
   {
     "from_city_id": "brandenburg-de-ad542b99",
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 17,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:162316_102"
+    ]
+  },
+  {
+    "from_city_id": "brandenburg-de-ad542b99",
     "to_city_id": "braunschweig-de-12564651",
     "duration_min": 87,
     "service_kind": "rail",
@@ -41418,18 +41549,6 @@
     "from_city_id": "brandenburg-de-ad542b99",
     "to_city_id": "magdeburg-de-818833d4",
     "duration_min": 37,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162316_102"
-    ]
-  },
-  {
-    "from_city_id": "brandenburg-de-ad542b99",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 17,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -49223,6 +49342,18 @@
   },
   {
     "from_city_id": "cadenazzo-ch-11de6e1c",
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-20-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "cadenazzo-ch-11de6e1c",
     "to_city_id": "luino-i-ch-918466e8",
     "duration_min": 26,
     "service_kind": "rail",
@@ -49255,18 +49386,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-20-C-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "cadenazzo-ch-11de6e1c",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-20-j26-1"
     ]
   },
   {
@@ -66726,6 +66845,18 @@
   },
   {
     "from_city_id": "cottbus-de-19c12f90",
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 94,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:4439850_103"
+    ]
+  },
+  {
+    "from_city_id": "cottbus-de-19c12f90",
     "to_city_id": "klinge-de-4649f663",
     "duration_min": 8,
     "service_kind": "rail",
@@ -66746,18 +66877,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162316_102"
-    ]
-  },
-  {
-    "from_city_id": "cottbus-de-19c12f90",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 94,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:4439850_103"
     ]
   },
   {
@@ -69934,42 +70053,6 @@
     ]
   },
   {
-    "from_city_id": "d-de-d6d09cb7",
-    "to_city_id": "d-gerresheim-s-de-ed25ea8e",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137847_109"
-    ]
-  },
-  {
-    "from_city_id": "d-de-d6d09cb7",
-    "to_city_id": "dusseldorf-de-4bfbc4aa",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162664_109"
-    ]
-  },
-  {
-    "from_city_id": "d-de-d6d09cb7",
-    "to_city_id": "neuss-de-3e1d3b0f",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162651_109"
-    ]
-  },
-  {
     "from_city_id": "d-derendorf-s-de-305a7cd3",
     "to_city_id": "d-rath-mitte-s-de-5a4759a8",
     "duration_min": 2,
@@ -70163,7 +70246,7 @@
   },
   {
     "from_city_id": "d-gerresheim-s-de-ed25ea8e",
-    "to_city_id": "d-de-d6d09cb7",
+    "to_city_id": "dusseldorf-de-4bfbc4aa",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -74910,8 +74993,8 @@
   },
   {
     "from_city_id": "doberlug-kirchhain-de-6479171b",
-    "to_city_id": "elsterwerda-de-178d6b5d",
-    "duration_min": 9,
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 54,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -74922,8 +75005,8 @@
   },
   {
     "from_city_id": "doberlug-kirchhain-de-6479171b",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 54,
+    "to_city_id": "elsterwerda-de-178d6b5d",
+    "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -78461,7 +78544,7 @@
   },
   {
     "from_city_id": "druogno-ch-7cb6b1e8",
-    "to_city_id": "s-ch-5d2361f5",
+    "to_city_id": "locarno-ch-8a68cfe3",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -79521,18 +79604,6 @@
   },
   {
     "from_city_id": "dusseldorf-de-4bfbc4aa",
-    "to_city_id": "d-de-d6d09cb7",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162664_109"
-    ]
-  },
-  {
-    "from_city_id": "dusseldorf-de-4bfbc4aa",
     "to_city_id": "d-eller-sud-s-de-b5a2252b",
     "duration_min": 5,
     "service_kind": "rail",
@@ -79553,6 +79624,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:1449907_102"
+    ]
+  },
+  {
+    "from_city_id": "dusseldorf-de-4bfbc4aa",
+    "to_city_id": "d-gerresheim-s-de-ed25ea8e",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7137847_109"
     ]
   },
   {
@@ -79726,13 +79809,14 @@
   {
     "from_city_id": "dusseldorf-de-4bfbc4aa",
     "to_city_id": "neuss-de-3e1d3b0f",
-    "duration_min": 11,
+    "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162288_101"
+      "de-delfi-gtfs:162288_101",
+      "de-delfi-gtfs:162651_109"
     ]
   },
   {
@@ -80162,6 +80246,7 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:1449905_102",
       "de-delfi-gtfs:162292_101"
     ]
   },
@@ -80199,18 +80284,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:5587180_101"
-    ]
-  },
-  {
-    "from_city_id": "eberswalde-de-face8b43",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 37,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102"
     ]
   },
   {
@@ -84026,6 +84099,18 @@
   },
   {
     "from_city_id": "elsterwerda-de-178d6b5d",
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 80,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:1449905_102"
+    ]
+  },
+  {
+    "from_city_id": "elsterwerda-de-178d6b5d",
     "to_city_id": "doberlug-kirchhain-de-6479171b",
     "duration_min": 8,
     "service_kind": "rail",
@@ -84082,18 +84167,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7137729_102"
-    ]
-  },
-  {
-    "from_city_id": "elsterwerda-de-178d6b5d",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 80,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102"
     ]
   },
   {
@@ -93794,6 +93867,18 @@
   },
   {
     "from_city_id": "flughafen-ber-de-41640b29",
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7139384_109"
+    ]
+  },
+  {
+    "from_city_id": "flughafen-ber-de-41640b29",
     "to_city_id": "dresden-de-ba2cc845",
     "duration_min": 81,
     "service_kind": "rail",
@@ -93826,18 +93911,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:1449905_102"
-    ]
-  },
-  {
-    "from_city_id": "flughafen-ber-de-41640b29",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7139384_109"
     ]
   },
   {
@@ -96521,8 +96594,8 @@
   },
   {
     "from_city_id": "frankfurt-oder-de-f69ac1a0",
-    "to_city_id": "rzepin-de-6da8c4b5",
-    "duration_min": 15,
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 51,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -96533,8 +96606,8 @@
   },
   {
     "from_city_id": "frankfurt-oder-de-f69ac1a0",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 51,
+    "to_city_id": "rzepin-de-6da8c4b5",
+    "duration_min": 15,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -103700,8 +103773,8 @@
   },
   {
     "from_city_id": "gerra-gambarogno-ch-a2f510c2",
-    "to_city_id": "ranzo-s-abbondio-ch-5f8ae199",
-    "duration_min": 1,
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -103712,8 +103785,8 @@
   },
   {
     "from_city_id": "gerra-gambarogno-ch-a2f510c2",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 4,
+    "to_city_id": "ranzo-s-abbondio-ch-5f8ae199",
+    "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -104928,6 +105001,18 @@
   },
   {
     "from_city_id": "giubiasco-ch-cfd39b9b",
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-20-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "giubiasco-ch-cfd39b9b",
     "to_city_id": "lugano-ch-caa010b9",
     "duration_min": 9,
     "service_kind": "rail",
@@ -104948,18 +105033,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-10-D-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "giubiasco-ch-cfd39b9b",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-20-j26-1"
     ]
   },
   {
@@ -114377,13 +114450,14 @@
   {
     "from_city_id": "halle-saale-de-9ed8eed6",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 82,
+    "duration_min": 80,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162290_101"
+      "de-delfi-gtfs:162290_101",
+      "de-delfi-gtfs:162301_101"
     ]
   },
   {
@@ -114553,18 +114627,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:de:nasa:15|S|MDSB_S9:DBRegio_109"
-    ]
-  },
-  {
-    "from_city_id": "halle-saale-de-9ed8eed6",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 80,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162301_101"
     ]
   },
   {
@@ -173288,8 +173350,92 @@
   },
   {
     "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "cadenazzo-ch-11de6e1c",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-20-C-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "druogno-ch-7cb6b1e8",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-72-A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "gerra-gambarogno-ch-a2f510c2",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-30-B-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "giubiasco-ch-cfd39b9b",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-20-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
     "to_city_id": "intragna-ch-bdc817dd",
     "duration_min": 17,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-72-A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "lugano-ch-caa010b9",
+    "duration_min": 11,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-CE-Y-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "magadino-vira-ch-efde30f3",
+    "duration_min": 5,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-30-B-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "malesco-ch-f142aa54",
+    "duration_min": 5,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -173308,6 +173454,30 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-5E-Y-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "prestinone-ch-e5e718d2",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-73-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "locarno-ch-8a68cfe3",
+    "to_city_id": "ranzo-s-abbondio-ch-5f8ae199",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-30-B-j26-1"
     ]
   },
   {
@@ -177683,6 +177853,18 @@
   },
   {
     "from_city_id": "lugano-ch-caa010b9",
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 12,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-80-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "lugano-ch-caa010b9",
     "to_city_id": "melide-ch-9bb10df1",
     "duration_min": 5,
     "service_kind": "rail",
@@ -177715,18 +177897,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-10-D-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "lugano-ch-caa010b9",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-80-j26-1"
     ]
   },
   {
@@ -181517,54 +181687,6 @@
     ]
   },
   {
-    "from_city_id": "ma-de-87433b5b",
-    "to_city_id": "mannheim-de-f3c50b2a",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137839_109"
-    ]
-  },
-  {
-    "from_city_id": "ma-de-87433b5b",
-    "to_city_id": "neckarau-de-db40f08b",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230861_109"
-    ]
-  },
-  {
-    "from_city_id": "ma-de-87433b5b",
-    "to_city_id": "schwetzingen-de-dae6006a",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230861_109"
-    ]
-  },
-  {
-    "from_city_id": "ma-de-87433b5b",
-    "to_city_id": "waldhof-de-873fd921",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137839_109"
-    ]
-  },
-  {
     "from_city_id": "ma-friedrichsfeld-sudbahnhof-de-b8e128ed",
     "to_city_id": "hd-pfaffengrund-wieblingen-de-7e614bc0",
     "duration_min": 3,
@@ -182802,8 +182924,8 @@
   },
   {
     "from_city_id": "magadino-vira-ch-efde30f3",
-    "to_city_id": "quartino-ch-c9c7453f",
-    "duration_min": 3,
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -182814,8 +182936,8 @@
   },
   {
     "from_city_id": "magadino-vira-ch-efde30f3",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 4,
+    "to_city_id": "quartino-ch-c9c7453f",
+    "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -182903,12 +183025,13 @@
   {
     "from_city_id": "magdeburg-de-818833d4",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 74,
+    "duration_min": 61,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:162316_102",
       "de-delfi-gtfs:7137720_101"
     ]
   },
@@ -183000,18 +183123,6 @@
     "from_city_id": "magdeburg-de-818833d4",
     "to_city_id": "riesa-busbf-de-c6895f11",
     "duration_min": 119,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162316_102"
-    ]
-  },
-  {
-    "from_city_id": "magdeburg-de-818833d4",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 61,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -184364,6 +184475,18 @@
   },
   {
     "from_city_id": "malesco-ch-f142aa54",
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-72-A-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "malesco-ch-f142aa54",
     "to_city_id": "re-ch-332a74bd",
     "duration_min": 5,
     "service_kind": "rail",
@@ -184372,18 +184495,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-73-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "malesco-ch-f142aa54",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-72-A-j26-1"
     ]
   },
   {
@@ -185305,18 +185416,6 @@
   },
   {
     "from_city_id": "mannheim-de-f3c50b2a",
-    "to_city_id": "ma-de-87433b5b",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7137839_109"
-    ]
-  },
-  {
-    "from_city_id": "mannheim-de-f3c50b2a",
     "to_city_id": "ma-friedrichsfeld-sudbahnhof-de-b8e128ed",
     "duration_min": 6,
     "service_kind": "rail",
@@ -185414,7 +185513,7 @@
   {
     "from_city_id": "mannheim-de-f3c50b2a",
     "to_city_id": "schwetzingen-de-dae6006a",
-    "duration_min": 8,
+    "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -185445,6 +185544,18 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162304_101"
+    ]
+  },
+  {
+    "from_city_id": "mannheim-de-f3c50b2a",
+    "to_city_id": "waldhof-de-873fd921",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:7137839_109"
     ]
   },
   {
@@ -195719,7 +195830,7 @@
   },
   {
     "from_city_id": "miribel-ch-65436a14",
-    "to_city_id": "saint-maurice-de-beynost-ch-71ea3309",
+    "to_city_id": "st-maurice-beynost-d1084-cte-fr-01376",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -208925,20 +209036,8 @@
   },
   {
     "from_city_id": "neckarau-de-db40f08b",
-    "to_city_id": "ma-de-87433b5b",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:2230861_109"
-    ]
-  },
-  {
-    "from_city_id": "neckarau-de-db40f08b",
     "to_city_id": "mannheim-de-f3c50b2a",
-    "duration_min": 4,
+    "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -211863,26 +211962,15 @@
   },
   {
     "from_city_id": "neuss-de-3e1d3b0f",
-    "to_city_id": "d-de-d6d09cb7",
+    "to_city_id": "dusseldorf-de-4bfbc4aa",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:162651_109",
       "de-delfi-gtfs:162664_109"
-    ]
-  },
-  {
-    "from_city_id": "neuss-de-3e1d3b0f",
-    "to_city_id": "dusseldorf-de-4bfbc4aa",
-    "duration_min": 16,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162651_109"
     ]
   },
   {
@@ -212181,7 +212269,7 @@
   },
   {
     "from_city_id": "neustrelitz-de-cceec693",
-    "to_city_id": "s-de-2feb1983",
+    "to_city_id": "berlin-de-687b4789",
     "duration_min": 33,
     "service_kind": "rail",
     "service_class": "regional",
@@ -239036,7 +239124,7 @@
   },
   {
     "from_city_id": "prestinone-ch-e5e718d2",
-    "to_city_id": "s-ch-5d2361f5",
+    "to_city_id": "locarno-ch-8a68cfe3",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -241021,8 +241109,8 @@
   },
   {
     "from_city_id": "quartino-ch-c9c7453f",
-    "to_city_id": "magadino-vira-ch-efde30f3",
-    "duration_min": 4,
+    "to_city_id": "locarno-ch-8a68cfe3",
+    "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -241033,8 +241121,8 @@
   },
   {
     "from_city_id": "quartino-ch-c9c7453f",
-    "to_city_id": "s-ch-5d2361f5",
-    "duration_min": 9,
+    "to_city_id": "magadino-vira-ch-efde30f3",
+    "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -255556,13 +255644,14 @@
   {
     "from_city_id": "s-bernau-de-36398f5d",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 26,
+    "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162300_101"
+      "de-delfi-gtfs:162300_101",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S2:_D_109"
     ]
   },
   {
@@ -255575,126 +255664,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:5587180_101"
-    ]
-  },
-  {
-    "from_city_id": "s-bernau-de-36398f5d",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S2:_D_109"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "cadenazzo-ch-11de6e1c",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-20-C-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "druogno-ch-7cb6b1e8",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-72-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "gerra-gambarogno-ch-a2f510c2",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-30-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "giubiasco-ch-cfd39b9b",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-20-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "lugano-ch-caa010b9",
-    "duration_min": 11,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-CE-Y-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "magadino-vira-ch-efde30f3",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-30-B-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "malesco-ch-f142aa54",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-72-A-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "prestinone-ch-e5e718d2",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-73-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-ch-5d2361f5",
-    "to_city_id": "ranzo-s-abbondio-ch-5f8ae199",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-30-B-j26-1"
     ]
   },
   {
@@ -255735,7 +255704,7 @@
   },
   {
     "from_city_id": "s-charlottenburg-bhf-berlin-de-d61ae0a0",
-    "to_city_id": "s-de-2feb1983",
+    "to_city_id": "berlin-de-687b4789",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -255756,274 +255725,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:3988765_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "berlin-de-687b4789",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102",
-      "de-delfi-gtfs:162316_102",
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "brandenburg-de-ad542b99",
-    "duration_min": 17,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162316_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "cottbus-de-19c12f90",
-    "duration_min": 93,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:4439850_103"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "doberlug-kirchhain-de-6479171b",
-    "duration_min": 52,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "dresden-de-ba2cc845",
-    "duration_min": 92,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:6627546_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "eberswalde-de-face8b43",
-    "duration_min": 37,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "elsterwerda-de-178d6b5d",
-    "duration_min": 74,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "flughafen-ber-de-41640b29",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:7139384_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "frankfurt-oder-de-f69ac1a0",
-    "duration_min": 42,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162333_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "hannover-de-500deaa5",
-    "duration_min": 125,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162288_101"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "magdeburg-de-818833d4",
-    "duration_min": 62,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162316_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "neustrelitz-de-cceec693",
-    "duration_min": 33,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:1449905_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-bernau-de-36398f5d",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S2:_D_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-charlottenburg-bhf-berlin-de-d61ae0a0",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S3:_109",
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-konigs-wusterhausen-de-a8356d66",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_D_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-lichterfelde-de-9f493406",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S26:_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-messe-de-e9b1b131",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-ostbahnhof-berlin-de-e9c558e0",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162301_101",
-      "de-delfi-gtfs:162316_102"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-spandau-bhf-berlin-de-9dc6342d",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-strausberg-de-dc7570d2",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S5:_D_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "s-sudkreuz-bhf-berlin-de-30c80990",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_D_109"
-    ]
-  },
-  {
-    "from_city_id": "s-de-2feb1983",
-    "to_city_id": "stendal-de-62273dbf",
-    "duration_min": 40,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162288_101"
     ]
   },
   {
@@ -256064,6 +255765,18 @@
   },
   {
     "from_city_id": "s-konigs-wusterhausen-de-a8356d66",
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_D_109"
+    ]
+  },
+  {
+    "from_city_id": "s-konigs-wusterhausen-de-a8356d66",
     "to_city_id": "lubben-de-0dd407f0",
     "duration_min": 22,
     "service_kind": "rail",
@@ -256075,20 +255788,8 @@
     ]
   },
   {
-    "from_city_id": "s-konigs-wusterhausen-de-a8356d66",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_D_109"
-    ]
-  },
-  {
     "from_city_id": "s-lichterfelde-de-9f493406",
-    "to_city_id": "s-de-2feb1983",
+    "to_city_id": "berlin-de-687b4789",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -256100,7 +255801,7 @@
   },
   {
     "from_city_id": "s-messe-de-e9b1b131",
-    "to_city_id": "s-de-2feb1983",
+    "to_city_id": "berlin-de-687b4789",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -256137,12 +255838,13 @@
   {
     "from_city_id": "s-ostbahnhof-berlin-de-e9c558e0",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 6,
+    "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
+      "de-delfi-gtfs:162333_102",
       "de-delfi-gtfs:6627544_102"
     ]
   },
@@ -256183,27 +255885,16 @@
     ]
   },
   {
-    "from_city_id": "s-ostbahnhof-berlin-de-e9c558e0",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162333_102"
-    ]
-  },
-  {
     "from_city_id": "s-spandau-bhf-berlin-de-9dc6342d",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 7,
+    "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:3108794_101"
+      "de-delfi-gtfs:3108794_101",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
     ]
   },
   {
@@ -256316,18 +256007,6 @@
   },
   {
     "from_city_id": "s-spandau-bhf-berlin-de-9dc6342d",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S9:_109"
-    ]
-  },
-  {
-    "from_city_id": "s-spandau-bhf-berlin-de-9dc6342d",
     "to_city_id": "salzwedel-de-b7de2564",
     "duration_min": 59,
     "service_kind": "rail",
@@ -256388,7 +256067,7 @@
   },
   {
     "from_city_id": "s-strausberg-de-dc7570d2",
-    "to_city_id": "s-de-2feb1983",
+    "to_city_id": "berlin-de-687b4789",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -256401,13 +256080,14 @@
   {
     "from_city_id": "s-sudkreuz-bhf-berlin-de-30c80990",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 4,
+    "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:162299_101"
+      "de-delfi-gtfs:162299_101",
+      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_109"
     ]
   },
   {
@@ -256504,18 +256184,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7137718_101"
-    ]
-  },
-  {
-    "from_city_id": "s-sudkreuz-bhf-berlin-de-30c80990",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:de:VBB:11000000|S-Bahn|S46:_D_109"
     ]
   },
   {
@@ -263431,30 +263099,6 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::022B77D9-D121-4DCB-B808-FB2F7931866B:",
       "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "saint-maurice-de-beynost-ch-71ea3309",
-    "to_city_id": "beynost-fr-01043",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-C18-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "saint-maurice-de-beynost-ch-71ea3309",
-    "to_city_id": "miribel-ch-65436a14",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "ch-gtfs:91-C18-j26-1"
     ]
   },
   {
@@ -277610,25 +277254,14 @@
   },
   {
     "from_city_id": "schwetzingen-de-dae6006a",
-    "to_city_id": "ma-de-87433b5b",
+    "to_city_id": "mannheim-de-f3c50b2a",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "de-delfi-gtfs:2230861_109"
-    ]
-  },
-  {
-    "from_city_id": "schwetzingen-de-dae6006a",
-    "to_city_id": "mannheim-de-f3c50b2a",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
+      "de-delfi-gtfs:2230861_109",
       "de-delfi-gtfs:7137835_109"
     ]
   },
@@ -288682,8 +288315,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6349C213-7B19-4078-BF2B-43CBECDA9545:",
-      "geometry:sncf-fr-rfn-lines"
+      "ch-gtfs:91-C18-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::6349C213-7B19-4078-BF2B-43CBECDA9545:"
     ]
   },
   {
@@ -288697,6 +288331,18 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::6349C213-7B19-4078-BF2B-43CBECDA9545:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "st-maurice-beynost-d1084-cte-fr-01376",
+    "to_city_id": "miribel-ch-65436a14",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "ch-gtfs:91-C18-j26-1"
     ]
   },
   {
@@ -292267,7 +291913,7 @@
   {
     "from_city_id": "stendal-de-62273dbf",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 51,
+    "duration_min": 49,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -292370,18 +292016,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:5587178_102"
-    ]
-  },
-  {
-    "from_city_id": "stendal-de-62273dbf",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 49,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162288_101"
     ]
   },
   {
@@ -324371,7 +324005,7 @@
   },
   {
     "from_city_id": "waldhof-de-873fd921",
-    "to_city_id": "ma-de-87433b5b",
+    "to_city_id": "mannheim-de-f3c50b2a",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -331810,7 +331444,7 @@
   {
     "from_city_id": "wolfsburg-de-b0faf9bc",
     "to_city_id": "berlin-de-687b4789",
-    "duration_min": 77,
+    "duration_min": 69,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -331853,18 +331487,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162290_101"
-    ]
-  },
-  {
-    "from_city_id": "wolfsburg-de-b0faf9bc",
-    "to_city_id": "s-de-2feb1983",
-    "duration_min": 69,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:162288_101"
     ]
   },
   {
