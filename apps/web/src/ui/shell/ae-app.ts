@@ -27,6 +27,7 @@ import type { PlannerDataset } from "../../types/planner-dataset.ts";
 
 import "../components/ae-sidebar.ts";
 import "../components/ae-debug-toggles.ts";
+import "../components/ae-undo-toast.ts";
 import { setAppContext, type AppContext } from "../runtime/context.ts";
 import { signal } from "../runtime/signal.ts";
 import {
@@ -86,6 +87,7 @@ function ensureShellMarkup(host: HTMLElement): void {
       <div id="citycount">
         Showing <b id="cc-n">0</b> / <b id="cc-t">0</b> cities
       </div>
+      <ae-undo-toast></ae-undo-toast>
     `
   );
 }

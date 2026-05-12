@@ -129,10 +129,28 @@ defineComponent("ae-trip-list", (host) => {
     const suggestions = ctx.suggestionsOf(state);
 
     const onRemove = (index: number) => () => {
-      diagnostics.info("remove stop requested", { index });
-      void ctx.store.removeStop(index).catch((error: unknown) => {
-        diagnostics.error("removeStop failed", { error: summarizeError(error) });
+      // Capture the city name BEFORE removing so the undo toast can
+      // restore the right stop — once removeStop resolves, ctx.state()
+      // has already shifted indexes.
+      const stateBeforeRemoval = ctx.state();
+      const removedName = stateBeforeRemoval.trip[index];
+      diagnostics.info("remove stop requested", {
+        index,
+        city_name: removedName ?? null
       });
+      void ctx.store
+        .removeStop(index)
+        .then((changed) => {
+          if (!changed || !removedName) return;
+          document.dispatchEvent(
+            new CustomEvent("aetrain:request-undo-toast", {
+              detail: { cityName: removedName, index }
+            })
+          );
+        })
+        .catch((error: unknown) => {
+          diagnostics.error("removeStop failed", { error: summarizeError(error) });
+        });
     };
     const onAddAfter = (index: number, name: string) => () => {
       diagnostics.info("add stop requested", { index, city_name: name });

@@ -52,6 +52,14 @@ export interface PlannerStore {
   toggleCity(name: string): Promise<boolean>;
   removeStop(index: number): Promise<boolean>;
   addStopAfter(index: number, name: string): Promise<boolean>;
+  /**
+   * Insert a city at an arbitrary index. Used by both the
+   * insert-between-stops UX (click a route segment) and the undo
+   * affordance after a removal — both want surgical control over the
+   * insertion index rather than the "always last+1" semantics of
+   * addStopAfter.
+   */
+  insertStop(index: number, name: string): Promise<boolean>;
   reorderTrip(fromIndex: number, toIndex: number): Promise<boolean>;
   clearTrip(): Promise<boolean>;
   setSearchQuery(value: string): Promise<boolean>;
@@ -313,6 +321,17 @@ export function createPlannerStore({
     addStopAfter(index: number, name: string): Promise<boolean> {
       return mutateTrip((trip) => {
         trip.splice(index + 1, 0, name);
+      });
+    },
+    insertStop(index: number, name: string): Promise<boolean> {
+      return mutateTrip((trip) => {
+        // Clamp out-of-bounds requests to the nearest valid insertion
+        // index rather than rejecting them. Undo restores at the
+        // original index, but the trip may have shrunk if other stops
+        // were removed during the 5s window — clamping keeps the
+        // operation idempotent rather than throwing.
+        const clamped = Math.max(0, Math.min(index, trip.length));
+        trip.splice(clamped, 0, name);
       });
     },
     reorderTrip(fromIndex: number, toIndex: number): Promise<boolean> {

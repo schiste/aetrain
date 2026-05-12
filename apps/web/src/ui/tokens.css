@@ -199,6 +199,67 @@ ae-trip-list[data-revealed="true"] .suggest { animation: ae-suggestion-reveal 12
 
 #map { width: 100%; height: 100%; min-width: 0; min-height: 0; background: var(--ae-bg); }
 
+/* Bottom-centered toast for the undo-stop-removal affordance. The host
+   is always in the DOM (single instance in the shell); only the inner
+   .undo-toast is rendered when there's a pending undo. data-visible
+   gates the slide-in animation so dismissing leaves the host invisible
+   but interactable to the next render. */
+ae-undo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 80;
+  pointer-events: none;
+}
+ae-undo-toast[data-visible="true"] { pointer-events: auto; }
+ae-undo-toast .undo-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .55rem .9rem .55rem 1rem;
+  background: rgba(15, 23, 41, .95);
+  border: 1px solid var(--ae-border);
+  border-radius: var(--ae-radius-md);
+  color: var(--ae-fg);
+  font-family: var(--ae-font-display);
+  font-size: 12px;
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, .55), 0 0 0 1px rgba(129, 140, 248, .12);
+  animation: ae-undo-toast-in 180ms ease-out;
+}
+ae-undo-toast .msg { color: var(--ae-fg-dim); }
+ae-undo-toast .undo-btn {
+  background: rgba(129, 140, 248, .15);
+  color: var(--ae-suggest);
+  border: 1px solid rgba(129, 140, 248, .3);
+  padding: .25rem .65rem;
+  border-radius: var(--ae-radius-sm, 6px);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+ae-undo-toast .undo-btn:hover { background: rgba(129, 140, 248, .25); }
+ae-undo-toast .undo-btn:focus-visible { outline: 2px solid var(--ae-suggest); outline-offset: 2px; }
+ae-undo-toast .dismiss-btn {
+  background: transparent;
+  color: var(--ae-fg-muted);
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  padding: .1rem .35rem;
+  cursor: pointer;
+}
+ae-undo-toast .dismiss-btn:hover { color: var(--ae-fg); }
+ae-undo-toast .dismiss-btn:focus-visible { outline: 2px solid var(--ae-fg-muted); outline-offset: 2px; }
+@keyframes ae-undo-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ae-undo-toast .undo-toast { animation: none; }
+}
+
 /* Top-right map debug controls. Sits inside the right grid column via
    absolute positioning relative to the #app grid. The perf HUD docks
    below it (see perf-hud.ts top offset). */
