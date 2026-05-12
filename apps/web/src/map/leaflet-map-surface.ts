@@ -364,10 +364,42 @@ export function createLeafletMapSurface({
   const tooltip = document.createElement("div");
   tooltip.className = "leaflet-tooltip";
   tooltip.style.position = "absolute";
-  tooltip.style.pointerEvents = "none";
+  // pointer-events: auto so users can move the pointer into the tooltip
+  // without it dismissing (WCAG 1.4.13, "hoverable"). The pointer-over-
+  // tooltip flag below gates updateHover so the tooltip doesn't flicker
+  // away when the cursor crosses the tooltip's bounding box.
+  tooltip.style.pointerEvents = "auto";
   tooltip.style.display = "none";
   tooltip.style.zIndex = "35";
+  // aria-live="polite" + aria-atomic so the tooltip's full text is
+  // announced on each swap rather than the diff. We DO NOT set
+  // role="tooltip": that role suppresses live-region announcement in
+  // most screen readers (NVDA, JAWS, VoiceOver) — they expect the role
+  // to be paired with aria-describedby on a triggering element, which
+  // we can't supply for canvas-drawn city markers. Plain live region
+  // is the well-supported pattern for swap-text-into-a-fixed-container.
+  tooltip.setAttribute("aria-live", "polite");
+  tooltip.setAttribute("aria-atomic", "true");
+  tooltip.id = "ae-map-tooltip";
   surfaceRoot.appendChild(tooltip);
+  // 1.4.13 "hoverable" state: when the pointer enters the tooltip, we
+  // freeze updateHover so it doesn't clear the tooltip; on leave we
+  // re-evaluate against the last known pointer position.
+  let pointerOverTooltip = false;
+  tooltip.addEventListener("mouseenter", () => {
+    pointerOverTooltip = true;
+  });
+  tooltip.addEventListener("mouseleave", () => {
+    pointerOverTooltip = false;
+    if (lastPointerPoint) {
+      updateHover(lastPointerPoint);
+    }
+  });
+  // 1.4.13 "dismissable" state: Escape clears the tooltip without
+  // moving the pointer. The dismissal is keyed to the current hit so
+  // re-hovering after a slight pointer move shows a fresh tooltip.
+  let tooltipDismissed = false;
+  let lastTooltipHitKey: string | null = null;
 
   const zoomControls = createZoomControls(surfaceRoot);
 
@@ -793,6 +825,16 @@ export function createLeafletMapSurface({
     if (pointerState) {
       return;
     }
+    // 1.4.13 "hoverable": if the pointer is currently over the tooltip
+    // (a child of surfaceRoot), pointerleave shouldn't run the hide
+    // path. In practice browsers don't fire pointerleave when the
+    // pointer crosses between siblings of a common parent, but the
+    // tooltip can occasionally sit outside surfaceRoot's bbox (the
+    // tooltip is positioned with translate(-50%, -100%) so it extends
+    // above the city), and on those crossings pointerleave does fire.
+    if (pointerOverTooltip) {
+      return;
+    }
 
     surfaceRoot.style.cursor = "grab";
     hideTooltip();
@@ -816,6 +858,14 @@ export function createLeafletMapSurface({
     // container today, but a future inline edit could change that).
     const target = event.target;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    // 1.4.13 "dismissable" — Escape clears the tooltip first, before
+    // the pan/zoom shortcuts get a chance. Handled before the switch so
+    // we don't have to thread it through every case.
+    if (event.key === "Escape" && dismissTooltipForEscape()) {
+      event.preventDefault();
       return;
     }
 
@@ -1798,12 +1848,39 @@ export function createLeafletMapSurface({
 
   function updateHover(point: MapPoint): void {
     lastPointerPoint = point;
+    // 1.4.13 "hoverable": when the pointer is over the tooltip itself
+    // we freeze state — neither hide the tooltip nor re-evaluate which
+    // city it's anchored to. The tooltip's mouseleave handler calls
+    // back into updateHover so flow resumes the moment the pointer
+    // exits the tooltip bbox.
+    if (pointerOverTooltip) {
+      return;
+    }
+
     const hit = hitTestSpatialGrid(hitGrid, point);
+    const segmentHit = hit ? null : hitTestRouteSegments(currentRouteSegments, point);
+    // Stable key for the current hit. We use this to detect "pointer
+    // is on a different thing than the last frame" so the Escape-
+    // dismissed state self-clears as soon as the user moves on.
+    const hitKey = hit
+      ? `city:${hit.city.name}`
+      : segmentHit
+        ? `seg:${segmentHit.index}`
+        : null;
+    if (hitKey !== lastTooltipHitKey) {
+      tooltipDismissed = false;
+      lastTooltipHitKey = hitKey;
+    }
+
     // City hover takes priority over segment hover. Tooltip + cursor
     // resolve to the city if the pointer is over one; otherwise we
     // fall through to the route-segment hit-test.
     if (hit) {
       surfaceRoot.style.cursor = pointerState?.moved ? "grabbing" : "pointer";
+      if (tooltipDismissed) {
+        hideTooltip();
+        return;
+      }
       setTooltipHtml(tooltip, buildTooltipHtml(
         hit,
         currentState,
@@ -1818,9 +1895,12 @@ export function createLeafletMapSurface({
       return;
     }
 
-    const segmentHit = hitTestRouteSegments(currentRouteSegments, point);
     if (segmentHit) {
       surfaceRoot.style.cursor = pointerState?.moved ? "grabbing" : "pointer";
+      if (tooltipDismissed) {
+        hideTooltip();
+        return;
+      }
       setTooltipHtml(tooltip, buildSegmentTooltipHtml(
         segmentHit,
         escapeHtml,
@@ -1839,6 +1919,20 @@ export function createLeafletMapSurface({
 
   function hideTooltip(): void {
     tooltip.style.display = "none";
+  }
+
+  // 1.4.13 "dismissable": Escape pressed while the tooltip is visible
+  // clears it without requiring pointer movement. Returns true if we
+  // actually consumed the keystroke, so the caller can short-circuit
+  // its own Escape handling.
+  function dismissTooltipForEscape(): boolean {
+    if (tooltip.style.display !== "block") {
+      return false;
+    }
+    tooltipDismissed = true;
+    pointerOverTooltip = false;
+    hideTooltip();
+    return true;
   }
 
   function setTooltipHtml(target: HTMLElement, html: string): void {
