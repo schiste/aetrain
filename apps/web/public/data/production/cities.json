@@ -14339,20 +14339,22 @@
     "display_name": "Berlin",
     "country_code": "DE",
     "location": {
-      "lat": 52.5251175,
-      "lon": 13.369323
+      "lat": 52.500593695,
+      "lon": 13.367233389999999
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 10,
     "station_ids": [
       "station-uic-80659698",
       "station-uic-900003200",
-      "station-uic-900003201"
+      "station-uic-900003201",
+      "station-uic-900058101"
     ],
     "aliases": [
       "Berlin Hauptbahnhof",
       "Berlin Hbf Lehrter Bahnhof Nord",
+      "S Bahn Unten",
       "S+U Berlin Hauptbahnhof"
     ]
   },
@@ -66013,23 +66015,6 @@
     ]
   },
   {
-    "city_id": "ka-hauptbahnhof-vorplatz-de-98d98592",
-    "slug": "ka-hauptbahnhof-vorplatz",
-    "display_name": "Ka Hauptbahnhof Vorplatz",
-    "country_code": "DE",
-    "location": {
-      "lat": 48.994346,
-      "lon": 8.399587
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 1,
-    "station_ids": [
-      "station-de-delfi-gtfs-d27d9101"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ka-hirtenweg-technologiepark-de-a007505e",
     "slug": "ka-hirtenweg-technologiepark",
     "display_name": "Ka Hirtenweg Technologiepark",
@@ -66916,6 +66901,7 @@
     "population": null,
     "interest_score": 10,
     "station_ids": [
+      "station-de-delfi-gtfs-d27d9101",
       "station-de-delfi-gtfs-0598ca52",
       "station-de-delfi-gtfs-07b9a17c",
       "station-de-delfi-gtfs-09900d90",
@@ -112156,14 +112142,14 @@
     "city_id": "perl-zz-66383162",
     "slug": "perl",
     "display_name": "Perl",
-    "country_code": "ZZ",
+    "country_code": "DE",
     "location": {
       "lat": 49.4731,
       "lon": 6.3693
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-80251967",
       "station-uic-87697839"
@@ -125707,23 +125693,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-000005100229"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "s-bahn-unten-at-3bca6a1e",
-    "slug": "s-bahn-unten",
-    "display_name": "S Bahn Unten",
-    "country_code": "AT",
-    "location": {
-      "lat": 52.47606989,
-      "lon": 13.36514378
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 1,
-    "station_ids": [
-      "station-uic-900058101"
     ],
     "aliases": []
   },

@@ -30607,6 +30607,18 @@
   },
   {
     "from_city_id": "berlin-de-687b4789",
+    "to_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
+    "duration_min": 148,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "at-oebb-gtfs:12-CZ3-j26-1"
+    ]
+  },
+  {
+    "from_city_id": "berlin-de-687b4789",
     "to_city_id": "dessau-de-46b5820d",
     "duration_min": 73,
     "service_kind": "rail",
@@ -30699,18 +30711,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162290_101"
-    ]
-  },
-  {
-    "from_city_id": "berlin-de-687b4789",
-    "to_city_id": "s-bahn-unten-at-3bca6a1e",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-CZ3-j26-1"
     ]
   },
   {
@@ -71911,8 +71911,8 @@
   },
   {
     "from_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
-    "to_city_id": "praha-de-979d6318",
-    "duration_min": 78,
+    "to_city_id": "berlin-de-687b4789",
+    "duration_min": 154,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -71923,8 +71923,8 @@
   },
   {
     "from_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
-    "to_city_id": "s-bahn-unten-at-3bca6a1e",
-    "duration_min": 154,
+    "to_city_id": "praha-de-979d6318",
+    "duration_min": 78,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
@@ -133337,18 +133337,6 @@
     ]
   },
   {
-    "from_city_id": "ka-hauptbahnhof-vorplatz-de-98d98592",
-    "to_city_id": "karlsruhe-de-36d8b6bc",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3709329_109"
-    ]
-  },
-  {
     "from_city_id": "ka-hirtenweg-technologiepark-de-a007505e",
     "to_city_id": "ka-durlacher-tor-kit-campus-sud-de-c9b8a5f8",
     "duration_min": 4,
@@ -134891,18 +134879,6 @@
   {
     "from_city_id": "karlsruhe-de-36d8b6bc",
     "to_city_id": "ka-ettlinger-tor-staatstheater-de-d353b1d4",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "de-delfi-gtfs:3709329_109"
-    ]
-  },
-  {
-    "from_city_id": "karlsruhe-de-36d8b6bc",
-    "to_city_id": "ka-hauptbahnhof-vorplatz-de-98d98592",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -255575,30 +255551,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:5717128_102"
-    ]
-  },
-  {
-    "from_city_id": "s-bahn-unten-at-3bca6a1e",
-    "to_city_id": "berlin-de-687b4789",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-CZ3-j26-1"
-    ]
-  },
-  {
-    "from_city_id": "s-bahn-unten-at-3bca6a1e",
-    "to_city_id": "decin-hlavni-nadrazi-at-aebd5f09",
-    "duration_min": 148,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "at-oebb-gtfs:12-CZ3-j26-1"
     ]
   },
   {

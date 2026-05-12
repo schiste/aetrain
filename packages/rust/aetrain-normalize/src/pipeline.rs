@@ -1530,6 +1530,16 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
             overlay_stats.station_promoted_count,
         );
     }
+    let pre_cleanup_station_mappings =
+        merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
+    cleanup_station_like_and_zz_residual_cities(
+        &mut merged_cities.cities,
+        &mut merged_cities.city_id_remap,
+        &pre_cleanup_station_mappings,
+        request.target.id.as_str(),
+        &mut merged_cities.issues,
+    );
+    merged_cities.aliases = rebuild_alias_records(&merged_cities.cities);
     let stations = merge_stations(
         &dependency_inputs,
         &merged_cities.city_id_remap,
@@ -2208,6 +2218,93 @@ fn build_aggregate_city_id_remap(
     remap
 }
 
+fn cleanup_station_like_and_zz_residual_cities(
+    cities: &mut Vec<aetrain_domain::City>,
+    city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+    station_mappings: &StationMappingReport,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) {
+    let mapping_by_city = station_mappings
+        .records
+        .iter()
+        .fold(BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(), |mut acc, record| {
+            acc.entry(record.city_id.clone()).or_default().push(record);
+            acc
+        });
+    let snapshot = cities.clone();
+    let mut remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
+
+    for city in cities.iter_mut() {
+        if city.country_code == "ZZ" {
+            if let Some(country_code) = infer_country_code_from_station_mappings(city, station_mappings)
+            {
+                city.country_code = country_code.clone();
+                issues.push(NormalizationIssue {
+                    severity: crate::IssueSeverity::Info,
+                    source_id: aggregate_source_id.to_string(),
+                    entity_ref: city.city_id.to_string(),
+                    message: format!(
+                        "corrected aggregate ZZ city {} to country {} from station evidence",
+                        city.display_name, country_code
+                    ),
+                });
+            }
+        }
+
+        if !is_station_qualified_city_name(&city.display_name) || city.station_ids.len() != 1 {
+            continue;
+        }
+
+        let effective_country = infer_country_code_from_station_mappings(city, station_mappings)
+            .unwrap_or_else(|| city.country_code.clone());
+        let child_keys = station_like_parent_keys(city, mapping_by_city.get(&city.city_id));
+        let allow_nearby_fallback = starts_with_urban_platform_label(&city.display_name);
+        let mut candidates = snapshot
+            .iter()
+            .filter(|parent| parent.city_id != city.city_id)
+            .filter_map(|parent| {
+                station_like_parent_match_score(
+                    city,
+                    parent,
+                    &effective_country,
+                    &child_keys,
+                    allow_nearby_fallback,
+                )
+                .map(|score| (parent, score))
+            })
+            .collect::<Vec<_>>();
+        candidates.sort_by(|left, right| right.1.cmp(&left.1));
+        if candidates.is_empty() {
+            continue;
+        }
+        if candidates.len() >= 2 && candidates[0].1 == candidates[1].1 {
+            continue;
+        }
+        let parent = candidates[0].0;
+        remap.insert(city.city_id.clone(), parent.city_id.clone());
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Info,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: city.city_id.to_string(),
+            message: format!(
+                "demoted aggregate station-like singleton city {} into parent city {}",
+                city.display_name, parent.display_name
+            ),
+        });
+    }
+
+    if remap.is_empty() {
+        return;
+    }
+    for (from_city_id, to_city_id) in &remap {
+        rebind_city_id_remap(city_id_remap, from_city_id, to_city_id);
+    }
+    *cities = collapse_cities_by_remap(cities.drain(..), &remap)
+        .into_values()
+        .collect();
+}
+
 fn connected_city_components(group: &[&aetrain_domain::City]) -> Vec<Vec<usize>> {
     let mut visited = vec![false; group.len()];
     let mut components = Vec::new();
@@ -2550,6 +2647,48 @@ fn route_like_parent_match_score(
     ))
 }
 
+fn station_like_parent_match_score(
+    child_city: &aetrain_domain::City,
+    parent_city: &aetrain_domain::City,
+    effective_country: &str,
+    child_keys: &BTreeSet<String>,
+    allow_nearby_fallback: bool,
+) -> Option<(u8, u8, std::cmp::Reverse<u32>, usize)> {
+    if parent_city.country_code != effective_country
+        || is_station_qualified_city_name(&parent_city.display_name)
+        || route_like_candidate_record(parent_city).is_some()
+    {
+        return None;
+    }
+
+    let distance_meters =
+        geo_distance_meters(child_city.location, parent_city.location).round() as u32;
+    if distance_meters > 10_000 {
+        return None;
+    }
+
+    let parent_keys = parent_city_match_keys(parent_city);
+    let key_match = !child_keys.is_empty() && child_keys.iter().any(|key| parent_keys.contains(key));
+    let fallback_match = allow_nearby_fallback && distance_meters <= 7_500;
+    if !key_match && !fallback_match {
+        return None;
+    }
+
+    let authority_rank = if city_id_has_registry_qid(parent_city) {
+        4
+    } else if parent_city.wikidata_qid.is_some() {
+        3
+    } else {
+        city_identity_quality(parent_city)
+    };
+    Some((
+        authority_rank,
+        parent_city.station_ids.len() as u8,
+        std::cmp::Reverse(distance_meters),
+        parent_city.aliases.len(),
+    ))
+}
+
 fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
     let Some(base_name) = route_like_primary_parent_key(display_name) else {
         return BTreeSet::new();
@@ -2564,6 +2703,36 @@ fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
     keys.insert(comparable_place_key(&expanded));
     keys.retain(|key| !key.is_empty());
     keys
+}
+
+fn station_like_parent_keys(
+    city: &aetrain_domain::City,
+    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+) -> BTreeSet<String> {
+    let mut keys = BTreeSet::new();
+    let mut names = vec![city.display_name.clone()];
+    if let Some(records) = station_records {
+        names.extend(records.iter().map(|record| record.station_display_name.clone()));
+    }
+    for name in names {
+        let identity = city_identity_key(&name);
+        if !identity.is_empty() {
+            keys.insert(comparable_place_key(&identity));
+            let expanded = identity
+                .split_whitespace()
+                .map(expand_abbreviated_place_token)
+                .collect::<Vec<_>>()
+                .join(" ");
+            keys.insert(comparable_place_key(&expanded));
+        }
+    }
+    keys.retain(|key| !key.is_empty());
+    keys
+}
+
+fn starts_with_urban_platform_label(display_name: &str) -> bool {
+    let normalized = normalize_name(display_name);
+    normalized.starts_with("s bahn ") || normalized.starts_with("u bahn ")
 }
 
 fn route_like_primary_parent_key(display_name: &str) -> Option<String> {
@@ -2594,6 +2763,63 @@ fn route_like_primary_parent_key(display_name: &str) -> Option<String> {
     Some(comparable_place_key(&prefix.join(" ")))
 }
 
+fn infer_country_code_from_station_mappings(
+    city: &aetrain_domain::City,
+    station_mappings: &StationMappingReport,
+) -> Option<String> {
+    let direct = infer_country_code_from_station_ids(&city.station_ids);
+    if direct.is_some() {
+        return direct;
+    }
+
+    let filtered_station_ids = station_mappings
+        .records
+        .iter()
+        .filter(|record| record.city_id == city.city_id)
+        .filter(|record| !is_bus_like_station_display_name(&record.station_display_name))
+        .map(|record| record.station_id.clone())
+        .collect::<Vec<_>>();
+    if let Some(country_code) = infer_country_code_from_station_ids(&filtered_station_ids) {
+        return Some(country_code);
+    }
+
+    let mut raw_prefixes = station_mappings
+        .records
+        .iter()
+        .filter(|record| record.city_id == city.city_id)
+        .filter_map(|record| infer_country_code_from_station_key(&record.station_key))
+        .collect::<BTreeSet<_>>();
+    if raw_prefixes.len() == 1 {
+        return raw_prefixes.pop_first();
+    }
+
+    None
+}
+
+fn is_bus_like_station_display_name(value: &str) -> bool {
+    let normalized = normalize_name(value);
+    normalized.contains("gare routiere")
+        || normalized.contains("busbahnhof")
+        || normalized.contains("busstation")
+        || normalized.starts_with("bus ")
+}
+
+fn infer_country_code_from_station_key(station_key: &str) -> Option<String> {
+    let prefix = station_key.split(':').next()?;
+    let normalized = prefix.strip_prefix('P').unwrap_or(prefix).to_ascii_lowercase();
+    match normalized.as_str() {
+        "de" => Some("DE".to_string()),
+        "fr" => Some("FR".to_string()),
+        "ch" => Some("CH".to_string()),
+        "at" => Some("AT".to_string()),
+        "be" => Some("BE".to_string()),
+        "lu" => Some("LU".to_string()),
+        "es" => Some("ES".to_string()),
+        "it" => Some("IT".to_string()),
+        _ => None,
+    }
+}
+
 fn parent_city_match_keys(city: &aetrain_domain::City) -> BTreeSet<String> {
     let mut keys = BTreeSet::new();
     let mut names = city.aliases.clone();
@@ -2617,6 +2843,7 @@ fn comparable_place_key(value: &str) -> String {
 
 fn expand_abbreviated_place_token(token: &str) -> String {
     match token {
+        "ka" => "karlsruhe".to_string(),
         "st" => "saint".to_string(),
         "ste" => "sainte".to_string(),
         _ => token.to_string(),
@@ -3212,6 +3439,7 @@ impl PipelineAdapter for AggregateBundleAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{StationMappingRecord, StationMappingStrategy};
     use aetrain_dataset::{
         AliasRecord, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord, EdgeGeometrySource,
         PolylinePointE5,
@@ -3889,6 +4117,231 @@ mod tests {
             Some("ES")
         );
         assert_eq!(infer_country_code_from_station_ids(&mixed), None);
+    }
+
+    #[test]
+    fn infer_country_code_from_station_mappings_prefers_non_bus_station_evidence() {
+        let city = City {
+            city_id: CityId::new("perl-zz-66383162").expect("valid city id"),
+            slug: "perl".to_string(),
+            display_name: "Perl".to_string(),
+            country_code: "ZZ".to_string(),
+            location: GeoPoint {
+                lat: 49.4731,
+                lon: 6.3693,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![
+                StationId::new("station-uic-80251967").expect("valid station id"),
+                StationId::new("station-uic-87697839").expect("valid station id"),
+            ],
+            aliases: Vec::new(),
+        };
+        let station_mappings = StationMappingReport {
+            records: vec![
+                StationMappingRecord {
+                    station_key: "StopArea:OCE80251967".to_string(),
+                    station_id: StationId::new("station-uic-80251967").expect("valid station id"),
+                    city_id: city.city_id.clone(),
+                    city_cluster_key: "fallback-perl-80251967".to_string(),
+                    station_display_name: "Perl".to_string(),
+                    mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                    confidence: 50,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+                StationMappingRecord {
+                    station_key: "StopArea:OCE87697839".to_string(),
+                    station_id: StationId::new("station-uic-87697839").expect("valid station id"),
+                    city_id: city.city_id.clone(),
+                    city_cluster_key: "fallback-perl-gare-routiere-87697839".to_string(),
+                    station_display_name: "Perl Gare Routière".to_string(),
+                    mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                    confidence: 50,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+            ],
+        };
+
+        assert_eq!(
+            infer_country_code_from_station_mappings(&city, &station_mappings).as_deref(),
+            Some("DE")
+        );
+    }
+
+    #[test]
+    fn infer_country_code_from_station_mappings_can_use_station_key_prefix() {
+        let city = City {
+            city_id: CityId::new("s-bahn-unten-at-3bca6a1e").expect("valid city id"),
+            slug: "s-bahn-unten".to_string(),
+            display_name: "S Bahn Unten".to_string(),
+            country_code: "AT".to_string(),
+            location: GeoPoint {
+                lat: 52.47606989,
+                lon: 13.36514378,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-900058101").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let station_mappings = StationMappingReport {
+            records: vec![StationMappingRecord {
+                station_key: "Pde:11000:900058101".to_string(),
+                station_id: StationId::new("station-uic-900058101").expect("valid station id"),
+                city_id: city.city_id.clone(),
+                city_cluster_key: "gtfs-basic-at-s-bahn-unten-0".to_string(),
+                station_display_name: "S-Bahn unten".to_string(),
+                mapping_strategy: StationMappingStrategy::GtfsStemCluster,
+                confidence: 60,
+                matched_reference_id: None,
+                matched_reference_name: None,
+                override_id: None,
+                source_refs: Vec::new(),
+            }],
+        };
+
+        assert_eq!(
+            infer_country_code_from_station_mappings(&city, &station_mappings).as_deref(),
+            Some("DE")
+        );
+    }
+
+    #[test]
+    fn cleanup_station_like_and_zz_residual_cities_demotes_and_corrects() {
+        let karlsruhe_id = CityId::new("karlsruhe-de-36d8b6bc").expect("valid city id");
+        let residual_id =
+            CityId::new("ka-hauptbahnhof-vorplatz-de-98d98592").expect("valid city id");
+        let perl_id = CityId::new("perl-zz-66383162").expect("valid city id");
+        let mut cities = vec![
+            City {
+                city_id: karlsruhe_id.clone(),
+                slug: "karlsruhe".to_string(),
+                display_name: "Karlsruhe".to_string(),
+                country_code: "DE".to_string(),
+                location: GeoPoint {
+                    lat: 48.9885,
+                    lon: 8.3908,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: (0..12)
+                    .map(|index| {
+                        StationId::new(format!("station-karlsruhe-{index}")).expect("valid station id")
+                    })
+                    .collect(),
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: residual_id.clone(),
+                slug: "ka-hauptbahnhof-vorplatz".to_string(),
+                display_name: "Ka Hauptbahnhof Vorplatz".to_string(),
+                country_code: "DE".to_string(),
+                location: GeoPoint {
+                    lat: 48.994346,
+                    lon: 8.399587,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![
+                    StationId::new("station-de-delfi-gtfs-d27d9101").expect("valid station id"),
+                ],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: perl_id.clone(),
+                slug: "perl".to_string(),
+                display_name: "Perl".to_string(),
+                country_code: "ZZ".to_string(),
+                location: GeoPoint {
+                    lat: 49.4731,
+                    lon: 6.3693,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![
+                    StationId::new("station-uic-80251967").expect("valid station id"),
+                    StationId::new("station-uic-87697839").expect("valid station id"),
+                ],
+                aliases: Vec::new(),
+            },
+        ];
+        let station_mappings = StationMappingReport {
+            records: vec![
+                StationMappingRecord {
+                    station_key: "de:08212:89".to_string(),
+                    station_id: StationId::new("station-de-delfi-gtfs-d27d9101")
+                        .expect("valid station id"),
+                    city_id: residual_id.clone(),
+                    city_cluster_key: "gtfs-basic-de-ka-0".to_string(),
+                    station_display_name: "KA Hauptbahnhof (Vorplatz)".to_string(),
+                    mapping_strategy: StationMappingStrategy::GtfsStemCluster,
+                    confidence: 60,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+                StationMappingRecord {
+                    station_key: "StopArea:OCE80251967".to_string(),
+                    station_id: StationId::new("station-uic-80251967").expect("valid station id"),
+                    city_id: perl_id.clone(),
+                    city_cluster_key: "fallback-perl-80251967".to_string(),
+                    station_display_name: "Perl".to_string(),
+                    mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                    confidence: 50,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+                StationMappingRecord {
+                    station_key: "StopArea:OCE87697839".to_string(),
+                    station_id: StationId::new("station-uic-87697839").expect("valid station id"),
+                    city_id: perl_id.clone(),
+                    city_cluster_key: "fallback-perl-gare-routiere-87697839".to_string(),
+                    station_display_name: "Perl Gare Routière".to_string(),
+                    mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                    confidence: 50,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+            ],
+        };
+        let mut remap = BTreeMap::new();
+        let mut issues = Vec::new();
+
+        cleanup_station_like_and_zz_residual_cities(
+            &mut cities,
+            &mut remap,
+            &station_mappings,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert!(!cities.iter().any(|city| city.city_id == residual_id));
+        assert_eq!(
+            remap.get(&residual_id).cloned(),
+            Some(karlsruhe_id.clone())
+        );
+        let perl = cities
+            .iter()
+            .find(|city| city.city_id == perl_id)
+            .expect("perl city should remain");
+        assert_eq!(perl.country_code, "DE");
     }
 
     #[test]
