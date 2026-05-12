@@ -302,7 +302,7 @@ pub fn build_sncf_dataset(
 ) -> Result<SncfBuildOutput> {
     let station_references = load_station_references(stations_csv_path)?;
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
-    let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path)?;
+    let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path, gtfs_source_id)?;
     let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
     let rail_geometry_network = rail_geometry_path
         .map(RailGeometryNetwork::load_sncf_rfn_geojson)
@@ -411,7 +411,7 @@ pub fn build_gtfs_basic_dataset(
     overrides: &ManualOverrideRegistry,
 ) -> Result<BasicGtfsBuildOutput> {
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
-    let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path)?;
+    let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path, gtfs_source_id)?;
     let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
     let used_station_keys =
         collect_used_station_keys(gtfs_path, &trip_descriptors, &stop_to_station_key)?;
@@ -1551,7 +1551,10 @@ fn scale_geo_point_e5(point: GeoPoint) -> Result<PolylinePointE5> {
     })
 }
 
-fn load_allowed_routes(archive: &mut ZipArchive<File>) -> Result<HashMap<String, i16>> {
+fn load_allowed_routes_for_source(
+    archive: &mut ZipArchive<File>,
+    gtfs_source_id: &str,
+) -> Result<HashMap<String, i16>> {
     let routes_entry = resolve_gtfs_archive_member_name(archive, "routes.txt")
         .context("missing routes.txt in GTFS archive")?;
     let routes = archive
@@ -1561,7 +1564,7 @@ fn load_allowed_routes(archive: &mut ZipArchive<File>) -> Result<HashMap<String,
     let mut allowed = HashMap::new();
     for row in reader.deserialize::<GtfsRouteRow>() {
         let row = row.context("failed to parse GTFS route")?;
-        if is_supported_rail_route_type(row.route_type) {
+        if is_supported_rail_route(&row, gtfs_source_id) {
             allowed.insert(row.route_id, row.route_type);
         }
     }
@@ -1601,11 +1604,14 @@ fn load_trip_descriptors(
     Ok(trip_descriptors)
 }
 
-fn load_trip_descriptors_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, TripDescriptor>> {
+fn load_trip_descriptors_from_gtfs(
+    gtfs_path: &Path,
+    gtfs_source_id: &str,
+) -> Result<HashMap<String, TripDescriptor>> {
     let file =
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
-    let allowed_routes = load_allowed_routes(&mut archive)?;
+    let allowed_routes = load_allowed_routes_for_source(&mut archive, gtfs_source_id)?;
     load_trip_descriptors(&mut archive, &allowed_routes)
 }
 
@@ -2559,6 +2565,21 @@ fn is_supported_rail_route_type(route_type: i16) -> bool {
     route_type == 2 || (100..=117).contains(&route_type)
 }
 
+fn is_supported_rail_route(route: &GtfsRouteRow, gtfs_source_id: &str) -> bool {
+    let route_id = route.route_id.as_str();
+    if gtfs_source_id == "de-delfi-gtfs" {
+        if route_id.contains("|Bus|")
+            || route_id.contains("|Tram")
+            || route_id.contains("|U-Ba")
+            || route_id.contains("|Faeh")
+        {
+            return false;
+        }
+        return matches!(route.route_type, 2 | 101 | 102 | 103 | 105 | 107 | 109 | 116 | 117);
+    }
+    is_supported_rail_route_type(route.route_type)
+}
+
 fn normalize_french_code_insee(input: &str) -> String {
     match input {
         "75101" | "75102" | "75103" | "75104" | "75105" | "75106" | "75107" | "75108" | "75109"
@@ -3108,6 +3129,25 @@ T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
             comparable_gtfs_basic_place_key("Bruck Mur Bahnhof"),
             "bruck mur".to_string()
         );
+    }
+
+    #[test]
+    fn german_route_policy_rejects_bus_and_urban_transit_route_ids() {
+        let bus_route = GtfsRouteRow {
+            route_id: "de:VBB:12063036|Bus|686:_".to_string(),
+            route_type: 106,
+        };
+        let urban_route = GtfsRouteRow {
+            route_id: "de:VBB:11000000|U-Ba".to_string(),
+            route_type: 400,
+        };
+        let rail_route = GtfsRouteRow {
+            route_id: "7138187_109".to_string(),
+            route_type: 109,
+        };
+        assert!(!is_supported_rail_route(&bus_route, "de-delfi-gtfs"));
+        assert!(!is_supported_rail_route(&urban_route, "de-delfi-gtfs"));
+        assert!(is_supported_rail_route(&rail_route, "de-delfi-gtfs"));
     }
 
     #[test]
