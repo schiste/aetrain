@@ -130,7 +130,14 @@ fn run(args: Args) -> Result<()> {
             Ok(())
         }
         Command::Run => {
-            let scoped_manifest = build_manifest_scope(&manifest, &args.target_ids)?;
+            // Fetch must walk the full target closure (an aggregate
+            // target like europe-validated has source_ids=[] but
+            // depends on national targets that carry the actual GTFS
+            // source ids). build_manifest_scope intentionally returns
+            // only the directly-requested targets; using it here meant
+            // fetch saw zero sources, returned an empty Vec, and the
+            // subsequent build step then died with "missing source".
+            let scoped_manifest = fetch_manifest_scope(&manifest, &args.target_ids)?;
             let fetched = fetch_sources(&scoped_manifest, &args.cache_root, args.force)?;
             let artifacts = build_targets(&manifest, &args, &fetched)?;
             print_fetch_summary(&args.manifest_path, &fetched);
