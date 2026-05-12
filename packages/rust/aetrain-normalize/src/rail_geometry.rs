@@ -113,10 +113,6 @@ impl RailGeometryNetwork {
         Ok(Self { nodes, adjacency })
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.nodes.is_empty()
-    }
-
     pub fn route_polyline(&self, from: GeoPoint, to: GeoPoint) -> Option<Vec<GeoPoint>> {
         if self.nodes.is_empty() {
             return None;

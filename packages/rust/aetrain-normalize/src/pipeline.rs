@@ -268,6 +268,7 @@ struct RouteLikeDemotionStats {
     ambiguous_count: u64,
 }
 
+#[allow(clippy::too_many_arguments)] // Public API consumed by aetrain-pipeline.
 pub fn build_pipeline_target(
     manifest: &SourceManifest,
     manifest_dir: &Path,
@@ -323,16 +324,17 @@ pub fn build_pipeline_target(
     let adapter = adapter_for(&target.adapter)
         .with_context(|| format!("unsupported adapter {}", target.adapter))?;
     let artifacts = adapter.build(request)?;
-    export_pipeline_target(
+    let source_snapshots = artifacts.canonical.meta.source_snapshots.clone();
+    export_pipeline_target(ExportPipelineTargetRequest {
         manifest,
         target,
-        &artifacts,
-        &sources,
+        artifacts: &artifacts,
+        sources: &sources,
         output_root,
         dataset_version,
         generated_at,
-        artifacts.canonical.meta.source_snapshots.clone(),
-    )
+        source_snapshots,
+    })
 }
 
 pub fn sync_web_debug_artifacts(
@@ -353,16 +355,30 @@ pub fn sync_web_debug_artifacts(
     Ok(())
 }
 
-fn export_pipeline_target(
-    manifest: &SourceManifest,
-    target: &TargetDefinition,
-    artifacts: &AdapterBuildArtifacts,
-    sources: &[&FetchedSource],
-    output_root: &Path,
-    dataset_version: &str,
-    generated_at: &str,
+struct ExportPipelineTargetRequest<'a> {
+    manifest: &'a SourceManifest,
+    target: &'a TargetDefinition,
+    artifacts: &'a AdapterBuildArtifacts,
+    sources: &'a [&'a FetchedSource],
+    output_root: &'a Path,
+    dataset_version: &'a str,
+    generated_at: &'a str,
     source_snapshots: Vec<SourceSnapshot>,
+}
+
+fn export_pipeline_target(
+    request: ExportPipelineTargetRequest<'_>,
 ) -> Result<PipelineArtifactManifest> {
+    let ExportPipelineTargetRequest {
+        manifest,
+        target,
+        artifacts,
+        sources,
+        output_root,
+        dataset_version,
+        generated_at,
+        source_snapshots,
+    } = request;
     let target_root = output_root.join(&target.id);
     fs::create_dir_all(&target_root)
         .with_context(|| format!("failed to create {}", target_root.display()))?;
@@ -507,7 +523,10 @@ fn export_pipeline_target(
         &quality_dir.join("station-like-cities.json"),
         &quality_report.station_like_cities,
     )?;
-    write_json(&quality_dir.join("zz-cities.json"), &quality_report.zz_cities)?;
+    write_json(
+        &quality_dir.join("zz-cities.json"),
+        &quality_report.zz_cities,
+    )?;
     write_json(
         &quality_dir.join("abbreviation-candidates.json"),
         &quality_report.abbreviation_candidates,
@@ -572,27 +591,36 @@ fn build_quality_report(
             .iter()
             .filter(|city| city.wikidata_qid.is_some() && city_id_has_registry_qid(city))
             .count(),
-        cities_with_wikidata_qid: cities.iter().filter(|city| city.wikidata_qid.is_some()).count(),
-        cities_with_population: cities.iter().filter(|city| city.population.is_some()).count(),
+        cities_with_wikidata_qid: cities
+            .iter()
+            .filter(|city| city.wikidata_qid.is_some())
+            .count(),
+        cities_with_population: cities
+            .iter()
+            .filter(|city| city.population.is_some())
+            .count(),
         matched_count: counter_value(counters, "registry_overlay_match_count"),
         unmatched_count: counter_value(counters, "registry_overlay_unmatched_count"),
         ambiguous_count: counter_value(counters, "registry_overlay_ambiguous_count"),
-        country_correction_count: counter_value(counters, "registry_overlay_country_correction_count"),
+        country_correction_count: counter_value(
+            counters,
+            "registry_overlay_country_correction_count",
+        ),
         station_rescue_count: counter_value(counters, "registry_overlay_station_rescue_count"),
     };
 
     let mut grouped = BTreeMap::<String, PipelineCountryQualityRecord>::new();
     for city in cities {
-        let record = grouped
-            .entry(city.country_code.clone())
-            .or_insert_with(|| PipelineCountryQualityRecord {
+        let record = grouped.entry(city.country_code.clone()).or_insert_with(|| {
+            PipelineCountryQualityRecord {
                 country_code: city.country_code.clone(),
                 city_count: 0,
                 station_like_city_count: 0,
                 zz_city_count: 0,
                 wikidata_city_count: 0,
                 population_city_count: 0,
-            });
+            }
+        });
         record.city_count += 1;
         if is_station_qualified_city_name(&city.display_name) {
             record.station_like_city_count += 1;
@@ -628,10 +656,8 @@ fn build_quality_report(
     ) = low_signal_candidates
         .into_iter()
         .partition(|record| record.reason == "digit_or_route_like_name");
-    let route_like_residuals = build_route_like_residual_records(
-        &route_like_candidates,
-        station_mappings,
-    );
+    let route_like_residuals =
+        build_route_like_residual_records(&route_like_candidates, station_mappings);
 
     let gate_results = vec![
         quality_gate_equals(
@@ -759,9 +785,7 @@ fn abbreviation_candidate_record(
     } else {
         None
     };
-    let Some(reason) = reason else {
-        return None;
-    };
+    let reason = reason?;
     Some(PipelineAbbreviationCandidateRecord {
         city_id: city.city_id.clone(),
         display_name: city.display_name.clone(),
@@ -800,9 +824,7 @@ fn build_route_like_residual_records(
     route_like_candidates
         .iter()
         .map(|candidate| {
-            let mapping_strategy = mapping_strategies
-                .get(candidate.city_id.as_str())
-                .cloned();
+            let mapping_strategy = mapping_strategies.get(candidate.city_id.as_str()).cloned();
             let (classification, suggested_action) =
                 classify_route_like_residual(candidate, mapping_strategy.as_deref());
             let derived_parent_key = if classification == "station_only_feed_stop_label" {
@@ -871,9 +893,7 @@ fn city_id_has_registry_qid(city: &aetrain_domain::City) -> bool {
     let Some(qid) = city.wikidata_qid.as_deref() else {
         return false;
     };
-    city.city_id
-        .as_str()
-        .ends_with(&qid.to_ascii_lowercase())
+    city.city_id.as_str().ends_with(&qid.to_ascii_lowercase())
 }
 
 fn export_web_debug_bundle(
@@ -1681,18 +1701,16 @@ fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> M
             .sort_by(|left, right| left.as_str().cmp(right.as_str()));
         city.station_ids
             .dedup_by(|left, right| left.as_str() == right.as_str());
-        if city.country_code == "ZZ" {
-            if let Some(inferred_country_code) = infer_country_code_from_station_ids(&city.station_ids) {
-                city.country_code = inferred_country_code;
-            }
+        if city.country_code == "ZZ"
+            && let Some(inferred_country_code) =
+                infer_country_code_from_station_ids(&city.station_ids)
+        {
+            city.country_code = inferred_country_code;
         }
     }
     canonicalize_aggregate_city_names(merged.values_mut(), aggregate_source_id, &mut issues);
-    let second_stage_remap = build_aggregate_city_id_remap(
-        merged.values().collect(),
-        aggregate_source_id,
-        &mut issues,
-    );
+    let second_stage_remap =
+        build_aggregate_city_id_remap(merged.values().collect(), aggregate_source_id, &mut issues);
     let mut city_id_remap = city_id_remap;
     if !second_stage_remap.is_empty() {
         for (from_city_id, to_city_id) in &second_stage_remap {
@@ -1885,7 +1903,11 @@ fn canonicalize_aggregate_city_names<'a>(
         if cleaned_display_name == city.display_name {
             continue;
         }
-        if !city.aliases.iter().any(|alias| alias == &original_display_name) {
+        if !city
+            .aliases
+            .iter()
+            .any(|alias| alias == &original_display_name)
+        {
             city.aliases.push(original_display_name.clone());
         }
         city.display_name = cleaned_display_name;
@@ -1906,7 +1928,7 @@ fn is_plausible_aggregate_city_name(normalized_name: &str) -> bool {
     let tokens = normalized_name.split_whitespace().collect::<Vec<_>>();
     !normalized_name.is_empty()
         && !is_station_qualified_city_name(normalized_name)
-        && !(tokens.len() == 1 && normalized_name.len() <= 2)
+        && (tokens.len() != 1 || normalized_name.len() > 2)
 }
 
 fn title_case_ascii_name(normalized_name: &str) -> String {
@@ -2361,7 +2383,10 @@ fn apply_registry_city_authority(
             changed = true;
         }
         if original_display_name != registry_city.display_name
-            && !city.aliases.iter().any(|alias| alias == &original_display_name)
+            && !city
+                .aliases
+                .iter()
+                .any(|alias| alias == &original_display_name)
         {
             city.aliases.push(original_display_name.clone());
             changed = true;
@@ -2557,7 +2582,10 @@ fn route_like_primary_parent_key(display_name: &str) -> Option<String> {
         })
         .unwrap_or(tokens.len());
     let mut prefix = tokens[..marker_index].to_vec();
-    while prefix.last().is_some_and(|token| is_route_locality_token(token)) {
+    while prefix
+        .last()
+        .is_some_and(|token| is_route_locality_token(token))
+    {
         prefix.pop();
     }
     if prefix.is_empty() {
@@ -2603,7 +2631,10 @@ fn is_place_connector_token(token: &str) -> bool {
 }
 
 fn is_route_locality_token(token: &str) -> bool {
-    matches!(token, "abri" | "bourg" | "carrefour" | "centre" | "cte" | "inter")
+    matches!(
+        token,
+        "abri" | "bourg" | "carrefour" | "centre" | "cte" | "inter"
+    )
 }
 
 fn recompute_duplicates(
@@ -2812,11 +2843,10 @@ fn city_identity_key(value: &str) -> String {
         }
     } else {
         loop {
-            let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()]) {
-                Some(tokens.len() - 2)
-            } else if tokens.ends_with(&["gare".to_string(), "central".to_string()]) {
-                Some(tokens.len() - 2)
-            } else if tokens.ends_with(&["central".to_string(), "station".to_string()]) {
+            let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()])
+                || tokens.ends_with(&["gare".to_string(), "central".to_string()])
+                || tokens.ends_with(&["central".to_string(), "station".to_string()])
+            {
                 Some(tokens.len() - 2)
             } else if tokens.last().is_some_and(|token| is_station_token(token)) {
                 Some(tokens.len() - 1)
@@ -2835,17 +2865,17 @@ fn city_identity_key(value: &str) -> String {
     }
 
     loop {
-        let trimmed = if tokens.ends_with(&["arret".to_string(), "tcl".to_string()]) {
+        let trimmed = if tokens.ends_with(&["arret".to_string(), "tcl".to_string()])
+            || tokens.ends_with(&["rond".to_string(), "point".to_string()])
+            || tokens.ends_with(&["la".to_string(), "poste".to_string()])
+            || tokens.ends_with(&["route".to_string(), "nationale".to_string()])
+            || tokens.ends_with(&["route".to_string(), "principale".to_string()])
+        {
             Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["rond".to_string(), "point".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["la".to_string(), "poste".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["route".to_string(), "nationale".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["route".to_string(), "principale".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.last().is_some_and(|token| is_locality_suffix_token(token)) {
+        } else if tokens
+            .last()
+            .is_some_and(|token| is_locality_suffix_token(token))
+        {
             Some(tokens.len() - 1)
         } else {
             None
@@ -2867,15 +2897,9 @@ fn city_identity_key(value: &str) -> String {
                 .is_some_and(|token| is_street_suffix_token(token))
         {
             Some(tokens.len() - 2)
-        } else if tokens
-            .last()
-            .is_some_and(|token| token.chars().any(|ch| ch.is_ascii_digit()))
-        {
-            Some(tokens.len() - 1)
-        } else if tokens
-            .last()
-            .is_some_and(|token| is_route_designator_token(token))
-        {
+        } else if tokens.last().is_some_and(|token| {
+            token.chars().any(|ch| ch.is_ascii_digit()) || is_route_designator_token(token)
+        }) {
             Some(tokens.len() - 1)
         } else {
             None
@@ -2978,7 +3002,10 @@ fn is_route_designator_token(token: &str) -> bool {
 }
 
 fn is_street_suffix_token(token: &str) -> bool {
-    matches!(token, "allee" | "avenue" | "chaussee" | "road" | "route" | "rue" | "strasse")
+    matches!(
+        token,
+        "allee" | "avenue" | "chaussee" | "road" | "route" | "rue" | "strasse"
+    )
 }
 
 fn geo_distance_meters(left: aetrain_domain::GeoPoint, right: aetrain_domain::GeoPoint) -> f64 {
@@ -3119,35 +3146,40 @@ impl PipelineAdapter for GtfsBasicAdapter {
             request.overrides,
         )?;
 
-        let counters = BTreeMap::from([(
-            "gtfs_station_count".to_string(),
-            output.summary.gtfs_station_count as u64,
-        ),(
-            "source_rejected_city_candidate_count".to_string(),
-            output.rejected_city_candidates.records.len() as u64,
-        ),(
-            "source_demoted_city_candidate_count".to_string(),
-            output
-                .rejected_city_candidates
-                .records
-                .iter()
-                .filter(|record| {
-                    record.resolution
-                        == crate::RejectedCityCandidateResolution::DemotedToParentCity
-                })
-                .count() as u64,
-        ),(
-            "source_unresolved_city_candidate_count".to_string(),
-            output
-                .rejected_city_candidates
-                .records
-                .iter()
-                .filter(|record| {
-                    record.resolution
-                        != crate::RejectedCityCandidateResolution::DemotedToParentCity
-                })
-                .count() as u64,
-        )]);
+        let counters = BTreeMap::from([
+            (
+                "gtfs_station_count".to_string(),
+                output.summary.gtfs_station_count as u64,
+            ),
+            (
+                "source_rejected_city_candidate_count".to_string(),
+                output.rejected_city_candidates.records.len() as u64,
+            ),
+            (
+                "source_demoted_city_candidate_count".to_string(),
+                output
+                    .rejected_city_candidates
+                    .records
+                    .iter()
+                    .filter(|record| {
+                        record.resolution
+                            == crate::RejectedCityCandidateResolution::DemotedToParentCity
+                    })
+                    .count() as u64,
+            ),
+            (
+                "source_unresolved_city_candidate_count".to_string(),
+                output
+                    .rejected_city_candidates
+                    .records
+                    .iter()
+                    .filter(|record| {
+                        record.resolution
+                            != crate::RejectedCityCandidateResolution::DemotedToParentCity
+                    })
+                    .count() as u64,
+            ),
+        ]);
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_basic_output(&output),
@@ -3384,7 +3416,6 @@ mod tests {
             aliases: Vec::new(),
         };
 
-        let lyon = lyon;
         let input = vec![paris_fr.clone(), paris_ch.clone(), lyon];
         let mut issues = Vec::new();
         let remap =
@@ -3671,19 +3702,32 @@ mod tests {
             wikidata_qid: None,
             population: None,
             interest_score: None,
-            station_ids: vec![StationId::new("station-bad-oeynhausen-bf").expect("valid station id")],
+            station_ids: vec![
+                StationId::new("station-bad-oeynhausen-bf").expect("valid station id"),
+            ],
             aliases: Vec::new(),
         };
 
         let mut issues = Vec::new();
         let remap = build_aggregate_city_id_remap(
-            vec![&bad_vigaun, &bad_vigaun_s_bahn, &bad_oeynhausen, &bad_oeynhausen_bf],
+            vec![
+                &bad_vigaun,
+                &bad_vigaun_s_bahn,
+                &bad_oeynhausen,
+                &bad_oeynhausen_bf,
+            ],
             "europe-aggregate",
             &mut issues,
         );
 
-        assert_eq!(remap.get(&bad_vigaun_s_bahn.city_id), Some(&bad_vigaun.city_id));
-        assert_eq!(remap.get(&bad_oeynhausen_bf.city_id), Some(&bad_oeynhausen.city_id));
+        assert_eq!(
+            remap.get(&bad_vigaun_s_bahn.city_id),
+            Some(&bad_vigaun.city_id)
+        );
+        assert_eq!(
+            remap.get(&bad_oeynhausen_bf.city_id),
+            Some(&bad_oeynhausen.city_id)
+        );
     }
 
     #[test]
@@ -3715,7 +3759,9 @@ mod tests {
             wikidata_qid: None,
             population: None,
             interest_score: None,
-            station_ids: vec![StationId::new("station-adamswiller-mairie").expect("valid station id")],
+            station_ids: vec![
+                StationId::new("station-adamswiller-mairie").expect("valid station id"),
+            ],
             aliases: Vec::new(),
         };
 
@@ -3726,22 +3772,30 @@ mod tests {
             &mut issues,
         );
 
-        assert_eq!(remap.get(&adamswiller_mairie.city_id), Some(&adamswiller.city_id));
+        assert_eq!(
+            remap.get(&adamswiller_mairie.city_id),
+            Some(&adamswiller.city_id)
+        );
     }
 
     #[test]
     fn canonicalize_aggregate_city_names_trims_station_and_locality_singletons() {
-        let mut cities = vec![
+        let mut cities = [
             City {
                 city_id: CityId::new("bad-oeynhausen-bf-zob-de-6b4b910f").expect("valid city id"),
                 slug: "bad-oeynhausen-bf-zob".to_string(),
                 display_name: "Bad Oeynhausen Bf Zob".to_string(),
                 country_code: "DE".to_string(),
-                location: GeoPoint { lat: 52.206, lon: 8.803 },
+                location: GeoPoint {
+                    lat: 52.206,
+                    lon: 8.803,
+                },
                 wikidata_qid: None,
                 population: None,
                 interest_score: None,
-                station_ids: vec![StationId::new("station-bad-oeynhausen-bf").expect("valid station id")],
+                station_ids: vec![
+                    StationId::new("station-bad-oeynhausen-bf").expect("valid station id"),
+                ],
                 aliases: Vec::new(),
             },
             City {
@@ -3749,23 +3803,35 @@ mod tests {
                 slug: "adamswiller-mairie".to_string(),
                 display_name: "Adamswiller Mairie".to_string(),
                 country_code: "ZZ".to_string(),
-                location: GeoPoint { lat: 48.883, lon: 7.227 },
+                location: GeoPoint {
+                    lat: 48.883,
+                    lon: 7.227,
+                },
                 wikidata_qid: None,
                 population: None,
                 interest_score: None,
-                station_ids: vec![StationId::new("station-adamswiller-mairie").expect("valid station id")],
+                station_ids: vec![
+                    StationId::new("station-adamswiller-mairie").expect("valid station id"),
+                ],
                 aliases: Vec::new(),
             },
             City {
-                city_id: CityId::new("kilstett-13-route-nationale-fr-3f58b216").expect("valid city id"),
+                city_id: CityId::new("kilstett-13-route-nationale-fr-3f58b216")
+                    .expect("valid city id"),
                 slug: "kilstett-13-route-nationale".to_string(),
                 display_name: "Kilstett 13 Route Nationale".to_string(),
                 country_code: "FR".to_string(),
-                location: GeoPoint { lat: 48.676, lon: 7.857 },
+                location: GeoPoint {
+                    lat: 48.676,
+                    lon: 7.857,
+                },
                 wikidata_qid: None,
                 population: None,
                 interest_score: None,
-                station_ids: vec![StationId::new("station-kilstett-13-route-nationale").expect("valid station id")],
+                station_ids: vec![
+                    StationId::new("station-kilstett-13-route-nationale")
+                        .expect("valid station id"),
+                ],
                 aliases: Vec::new(),
             },
         ];
@@ -3775,13 +3841,28 @@ mod tests {
 
         assert_eq!(cities[0].display_name, "Bad Oeynhausen");
         assert_eq!(cities[0].slug, "bad-oeynhausen");
-        assert!(cities[0].aliases.iter().any(|alias| alias == "Bad Oeynhausen Bf Zob"));
+        assert!(
+            cities[0]
+                .aliases
+                .iter()
+                .any(|alias| alias == "Bad Oeynhausen Bf Zob")
+        );
         assert_eq!(cities[1].display_name, "Adamswiller");
         assert_eq!(cities[1].slug, "adamswiller");
-        assert!(cities[1].aliases.iter().any(|alias| alias == "Adamswiller Mairie"));
+        assert!(
+            cities[1]
+                .aliases
+                .iter()
+                .any(|alias| alias == "Adamswiller Mairie")
+        );
         assert_eq!(cities[2].display_name, "Kilstett");
         assert_eq!(cities[2].slug, "kilstett");
-        assert!(cities[2].aliases.iter().any(|alias| alias == "Kilstett 13 Route Nationale"));
+        assert!(
+            cities[2]
+                .aliases
+                .iter()
+                .any(|alias| alias == "Kilstett 13 Route Nationale")
+        );
         assert_eq!(issues.len(), 3);
     }
 
@@ -3795,9 +3876,18 @@ mod tests {
             StationId::new("station-uic-88140010").expect("valid station id"),
         ];
 
-        assert_eq!(infer_country_code_from_station_ids(&berlin).as_deref(), Some("DE"));
-        assert_eq!(infer_country_code_from_station_ids(&bruxelles).as_deref(), Some("BE"));
-        assert_eq!(infer_country_code_from_station_ids(&barcelone).as_deref(), Some("ES"));
+        assert_eq!(
+            infer_country_code_from_station_ids(&berlin).as_deref(),
+            Some("DE")
+        );
+        assert_eq!(
+            infer_country_code_from_station_ids(&bruxelles).as_deref(),
+            Some("BE")
+        );
+        assert_eq!(
+            infer_country_code_from_station_ids(&barcelone).as_deref(),
+            Some("ES")
+        );
         assert_eq!(infer_country_code_from_station_ids(&mixed), None);
     }
 
@@ -4096,8 +4186,13 @@ mod tests {
             .map(|city| (city.city_id.clone(), city.city_id.clone()))
             .collect::<BTreeMap<_, _>>();
 
-        let stats =
-            apply_registry_city_authority(&mut cities, &mut remap, &overlay, "europe-aggregate", &mut issues);
+        let stats = apply_registry_city_authority(
+            &mut cities,
+            &mut remap,
+            &overlay,
+            "europe-aggregate",
+            &mut issues,
+        );
 
         assert_eq!(cities[0].city_id.as_str(), "paris-fr-q90");
         assert_eq!(cities[0].wikidata_qid.as_deref(), Some("Q90"));
@@ -4114,13 +4209,15 @@ mod tests {
         assert_eq!(cities[3].country_code, "FR");
         assert_eq!(cities[3].wikidata_qid.as_deref(), Some("Q7880"));
         assert_eq!(
-            remap.get(&CityId::new("nantes-ch-8fefd121").expect("valid city id"))
+            remap
+                .get(&CityId::new("nantes-ch-8fefd121").expect("valid city id"))
                 .expect("remapped nantes")
                 .as_str(),
             "nantes-fr-q12191"
         );
         assert_eq!(
-            remap.get(&CityId::new("toulouse-matabiau-ch-099c66c9").expect("valid city id"))
+            remap
+                .get(&CityId::new("toulouse-matabiau-ch-099c66c9").expect("valid city id"))
                 .expect("remapped toulouse")
                 .as_str(),
             "toulouse-fr-q7880"
@@ -4205,8 +4302,13 @@ mod tests {
             .map(|city| (city.city_id.clone(), city.city_id.clone()))
             .collect::<BTreeMap<_, _>>();
 
-        let stats =
-            apply_registry_city_authority(&mut cities, &mut remap, &overlay, "europe-aggregate", &mut issues);
+        let stats = apply_registry_city_authority(
+            &mut cities,
+            &mut remap,
+            &overlay,
+            "europe-aggregate",
+            &mut issues,
+        );
 
         assert_eq!(stats.matched_count, 0);
         assert_eq!(stats.unmatched_count, 0);
@@ -4301,7 +4403,10 @@ mod tests {
             slug: "agde".to_string(),
             display_name: "Agde".to_string(),
             country_code: "FR".to_string(),
-            location: GeoPoint { lat: 43.31, lon: 3.47 },
+            location: GeoPoint {
+                lat: 43.31,
+                lon: 3.47,
+            },
             wikidata_qid: None,
             population: None,
             interest_score: None,
@@ -4397,9 +4502,15 @@ mod tests {
         let report = build_quality_report(&[route_like, abbrev], None, &counters, 0);
 
         assert_eq!(report.route_like_candidates.len(), 1);
-        assert_eq!(report.route_like_candidates[0].reason, "digit_or_route_like_name");
+        assert_eq!(
+            report.route_like_candidates[0].reason,
+            "digit_or_route_like_name"
+        );
         assert_eq!(report.abbreviation_candidates.len(), 1);
-        assert_eq!(report.abbreviation_candidates[0].reason, "single_token_too_short");
+        assert_eq!(
+            report.abbreviation_candidates[0].reason,
+            "single_token_too_short"
+        );
     }
 
     #[test]
@@ -4410,7 +4521,10 @@ mod tests {
                 slug: "munster".to_string(),
                 display_name: "Munster".to_string(),
                 country_code: "FR".to_string(),
-                location: GeoPoint { lat: 48.0400, lon: 7.1380 },
+                location: GeoPoint {
+                    lat: 48.0400,
+                    lon: 7.1380,
+                },
                 wikidata_qid: None,
                 population: None,
                 interest_score: Some(4),
@@ -4423,7 +4537,10 @@ mod tests {
                 slug: "munster-inter-d417-badischhof".to_string(),
                 display_name: "Munster Inter D417 Badischhof".to_string(),
                 country_code: "FR".to_string(),
-                location: GeoPoint { lat: 48.0410, lon: 7.1400 },
+                location: GeoPoint {
+                    lat: 48.0410,
+                    lon: 7.1400,
+                },
                 wikidata_qid: None,
                 population: None,
                 interest_score: Some(1),
@@ -4480,7 +4597,8 @@ mod tests {
                 reason: "digit_or_route_like_name".to_string(),
             },
             PipelineAbbreviationCandidateRecord {
-                city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d").expect("valid city id"),
+                city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d")
+                    .expect("valid city id"),
                 display_name: "Wimmenau D 919 Rue De La".to_string(),
                 country_code: "FR".to_string(),
                 normalized_name: "wimmenau d 919 rue de la".to_string(),
@@ -4523,9 +4641,18 @@ mod tests {
 
         assert_eq!(residuals.len(), 2);
         assert_eq!(residuals[0].classification, "station_only_feed_stop_label");
-        assert_eq!(residuals[0].mapping_strategy.as_deref(), Some("gtfs_stem_cluster"));
-        assert_eq!(residuals[1].classification, "reference_gap_parent_city_missing");
-        assert_eq!(residuals[1].mapping_strategy.as_deref(), Some("fallback_reference_gap"));
+        assert_eq!(
+            residuals[0].mapping_strategy.as_deref(),
+            Some("gtfs_stem_cluster")
+        );
+        assert_eq!(
+            residuals[1].classification,
+            "reference_gap_parent_city_missing"
+        );
+        assert_eq!(
+            residuals[1].mapping_strategy.as_deref(),
+            Some("fallback_reference_gap")
+        );
         assert_eq!(residuals[1].derived_parent_key.as_deref(), Some("wimmenau"));
     }
 }

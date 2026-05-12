@@ -287,6 +287,7 @@ struct TripDescriptor {
     shape_id: Option<String>,
 }
 
+#[allow(clippy::too_many_arguments)] // Public API re-exported from aetrain-normalize.
 pub fn build_sncf_dataset(
     gtfs_path: &Path,
     stations_csv_path: &Path,
@@ -338,16 +339,18 @@ pub fn build_sncf_dataset(
     )?;
 
     let (edges, edge_geometries) = build_city_edges(
-        gtfs_path,
-        gtfs_source_id,
-        &trip_descriptors,
-        &shapes_by_id,
-        rail_geometry_network.as_ref(),
-        rail_geometry_source_id,
-        &stop_to_station_key,
-        &station_locations,
-        &station_key_to_city,
-        &station_key_confidence,
+        BuildCityEdgesInputs {
+            gtfs_path,
+            gtfs_source_id,
+            trip_descriptors: &trip_descriptors,
+            shapes_by_id: &shapes_by_id,
+            rail_geometry_network: rail_geometry_network.as_ref(),
+            rail_geometry_source_id,
+            stop_to_station_key: &stop_to_station_key,
+            station_locations: &station_locations,
+            station_key_to_city: &station_key_to_city,
+            station_key_confidence: &station_key_confidence,
+        },
         &mut issues,
     )?;
     let duplicates =
@@ -431,23 +434,25 @@ pub fn build_gtfs_basic_dataset(
         station_key_to_city,
         station_key_confidence,
     ) = normalize_gtfs_only_stations(
-            &gtfs_stations,
-            gtfs_source_id,
-            country_code,
-            overrides,
-            &mut issues,
-        )?;
-    let (edges, edge_geometries) = build_city_edges(
-        gtfs_path,
+        &gtfs_stations,
         gtfs_source_id,
-        &trip_descriptors,
-        &shapes_by_id,
-        None,
-        None,
-        &stop_to_station_key,
-        &station_locations,
-        &station_key_to_city,
-        &station_key_confidence,
+        country_code,
+        overrides,
+        &mut issues,
+    )?;
+    let (edges, edge_geometries) = build_city_edges(
+        BuildCityEdgesInputs {
+            gtfs_path,
+            gtfs_source_id,
+            trip_descriptors: &trip_descriptors,
+            shapes_by_id: &shapes_by_id,
+            rail_geometry_network: None,
+            rail_geometry_source_id: None,
+            stop_to_station_key: &stop_to_station_key,
+            station_locations: &station_locations,
+            station_key_to_city: &station_key_to_city,
+            station_key_confidence: &station_key_confidence,
+        },
         &mut issues,
     )?;
     let duplicates =
@@ -595,14 +600,7 @@ fn load_gtfs_stations(path: &Path) -> Result<(Vec<GtfsStationArea>, HashMap<Stri
     Ok((areas.into_values().collect(), stop_to_station_key))
 }
 
-fn normalize_stations(
-    gtfs_stations: &[GtfsStationArea],
-    references: &[ReferenceStation],
-    gtfs_source_id: &str,
-    station_reference_source_id: &str,
-    overrides: &ManualOverrideRegistry,
-    issues: &mut Vec<NormalizationIssue>,
-) -> Result<(
+type NormalizeStationsResult = (
     Vec<City>,
     Vec<Station>,
     StationMappingReport,
@@ -612,7 +610,16 @@ fn normalize_stations(
     HashMap<String, u8>,
     usize,
     usize,
-)> {
+);
+
+fn normalize_stations(
+    gtfs_stations: &[GtfsStationArea],
+    references: &[ReferenceStation],
+    gtfs_source_id: &str,
+    station_reference_source_id: &str,
+    overrides: &ManualOverrideRegistry,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Result<NormalizeStationsResult> {
     let override_lookup = build_override_lookup(overrides)?;
     let mut applied_override_ids = HashSet::<String>::new();
     let mut reference_by_uic = HashMap::<String, Vec<&ReferenceStation>>::new();
@@ -783,7 +790,8 @@ fn normalize_stations(
         resolve_gtfs_basic_ineligible_clusters(&clusters, gtfs_source_id, issues);
     if !eligibility_resolution.remap.is_empty() {
         for station in &mut pending_stations {
-            if let Some(parent_cluster_key) = eligibility_resolution.remap.get(&station.cluster_key) {
+            if let Some(parent_cluster_key) = eligibility_resolution.remap.get(&station.cluster_key)
+            {
                 station.cluster_key = parent_cluster_key.clone();
             }
         }
@@ -799,9 +807,13 @@ fn normalize_stations(
             let parent_cluster = clusters
                 .get_mut(parent_cluster_key)
                 .expect("demoted GTFS-basic parent cluster should exist");
-            parent_cluster.station_keys.extend(child_cluster.station_keys);
+            parent_cluster
+                .station_keys
+                .extend(child_cluster.station_keys);
             parent_cluster.station_ids.extend(child_cluster.station_ids);
-            parent_cluster.display_names.extend(child_cluster.display_names);
+            parent_cluster
+                .display_names
+                .extend(child_cluster.display_names);
             parent_cluster.aliases.extend(child_cluster.aliases);
             parent_cluster.lat_sum += child_cluster.lat_sum;
             parent_cluster.lon_sum += child_cluster.lon_sum;
@@ -955,13 +967,7 @@ fn normalize_stations(
     ))
 }
 
-fn normalize_gtfs_only_stations(
-    gtfs_stations: &[GtfsStationArea],
-    gtfs_source_id: &str,
-    country_code: &str,
-    overrides: &ManualOverrideRegistry,
-    issues: &mut Vec<NormalizationIssue>,
-) -> Result<(
+type NormalizeGtfsOnlyStationsResult = (
     Vec<City>,
     Vec<Station>,
     StationMappingReport,
@@ -969,7 +975,15 @@ fn normalize_gtfs_only_stations(
     Vec<AliasRecord>,
     HashMap<String, CityId>,
     HashMap<String, u8>,
-)> {
+);
+
+fn normalize_gtfs_only_stations(
+    gtfs_stations: &[GtfsStationArea],
+    gtfs_source_id: &str,
+    country_code: &str,
+    overrides: &ManualOverrideRegistry,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Result<NormalizeGtfsOnlyStationsResult> {
     let override_lookup = build_override_lookup(overrides)?;
     let mut applied_override_ids = HashSet::<String>::new();
     let stem_by_station_key = derive_gtfs_basic_city_stems(gtfs_stations);
@@ -1058,7 +1072,8 @@ fn normalize_gtfs_only_stations(
         resolve_gtfs_basic_ineligible_clusters(&clusters, gtfs_source_id, issues);
     if !eligibility_resolution.remap.is_empty() {
         for station in &mut pending_stations {
-            if let Some(parent_cluster_key) = eligibility_resolution.remap.get(&station.cluster_key) {
+            if let Some(parent_cluster_key) = eligibility_resolution.remap.get(&station.cluster_key)
+            {
                 station.cluster_key = parent_cluster_key.clone();
             }
         }
@@ -1074,9 +1089,13 @@ fn normalize_gtfs_only_stations(
             let parent_cluster = clusters
                 .get_mut(parent_cluster_key)
                 .expect("demoted GTFS-basic parent cluster should exist");
-            parent_cluster.station_keys.extend(child_cluster.station_keys);
+            parent_cluster
+                .station_keys
+                .extend(child_cluster.station_keys);
             parent_cluster.station_ids.extend(child_cluster.station_ids);
-            parent_cluster.display_names.extend(child_cluster.display_names);
+            parent_cluster
+                .display_names
+                .extend(child_cluster.display_names);
             parent_cluster.aliases.extend(child_cluster.aliases);
             parent_cluster.lat_sum += child_cluster.lat_sum;
             parent_cluster.lon_sum += child_cluster.lon_sum;
@@ -1228,19 +1247,35 @@ fn normalize_gtfs_only_stations(
     ))
 }
 
+struct BuildCityEdgesInputs<'a> {
+    gtfs_path: &'a Path,
+    gtfs_source_id: &'a str,
+    trip_descriptors: &'a HashMap<String, TripDescriptor>,
+    shapes_by_id: &'a HashMap<String, Vec<GeoPoint>>,
+    rail_geometry_network: Option<&'a RailGeometryNetwork>,
+    rail_geometry_source_id: Option<&'a str>,
+    stop_to_station_key: &'a HashMap<String, String>,
+    station_locations: &'a HashMap<String, GeoPoint>,
+    station_key_to_city: &'a HashMap<String, CityId>,
+    station_key_confidence: &'a HashMap<String, u8>,
+}
+
 fn build_city_edges(
-    gtfs_path: &Path,
-    gtfs_source_id: &str,
-    trip_descriptors: &HashMap<String, TripDescriptor>,
-    shapes_by_id: &HashMap<String, Vec<GeoPoint>>,
-    rail_geometry_network: Option<&RailGeometryNetwork>,
-    rail_geometry_source_id: Option<&str>,
-    stop_to_station_key: &HashMap<String, String>,
-    station_locations: &HashMap<String, GeoPoint>,
-    station_key_to_city: &HashMap<String, CityId>,
-    station_key_confidence: &HashMap<String, u8>,
+    inputs: BuildCityEdgesInputs<'_>,
     issues: &mut Vec<NormalizationIssue>,
 ) -> Result<(Vec<TravelEdge>, EdgeGeometryArtifact)> {
+    let BuildCityEdgesInputs {
+        gtfs_path,
+        gtfs_source_id,
+        trip_descriptors,
+        shapes_by_id,
+        rail_geometry_network,
+        rail_geometry_source_id,
+        stop_to_station_key,
+        station_locations,
+        station_key_to_city,
+        station_key_confidence,
+    } = inputs;
     let file =
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
@@ -1318,19 +1353,22 @@ fn build_city_edges(
                         .copied()
                         .unwrap_or(50),
                 );
-            let (geometry_points, geometry_source, geometry_provenance) = build_edge_geometry(
-                previous.location,
-                location,
-                trip_descriptor
+            let mut ctx = EdgeGeometryContext {
+                shape_points: trip_descriptor
                     .shape_id
                     .as_deref()
                     .and_then(|shape_id| shapes_by_id.get(shape_id)),
                 rail_geometry_network,
                 rail_geometry_source_id,
-                &mut geometry_cache,
-                station_snap_nodes.as_ref(),
+                geometry_cache: &mut geometry_cache,
+                station_snap_nodes: station_snap_nodes.as_ref(),
+            };
+            let (geometry_points, geometry_source, geometry_provenance) = build_edge_geometry(
+                previous.location,
+                location,
                 &previous.station_key,
                 station_key,
+                &mut ctx,
             );
 
             let key = (previous.city_id.clone(), city_id.clone());
@@ -1397,32 +1435,39 @@ fn build_city_edges(
     Ok((edges, EdgeGeometryArtifact { geometries }))
 }
 
+struct EdgeGeometryContext<'a> {
+    shape_points: Option<&'a Vec<GeoPoint>>,
+    rail_geometry_network: Option<&'a RailGeometryNetwork>,
+    rail_geometry_source_id: Option<&'a str>,
+    geometry_cache: &'a mut HashMap<(String, String), Option<Vec<GeoPoint>>>,
+    station_snap_nodes: Option<&'a HashMap<String, Option<usize>>>,
+}
+
 fn build_edge_geometry(
     from_location: GeoPoint,
     to_location: GeoPoint,
-    shape_points: Option<&Vec<GeoPoint>>,
-    rail_geometry_network: Option<&RailGeometryNetwork>,
-    rail_geometry_source_id: Option<&str>,
-    geometry_cache: &mut HashMap<(String, String), Option<Vec<GeoPoint>>>,
-    station_snap_nodes: Option<&HashMap<String, Option<usize>>>,
     from_station_key: &str,
     to_station_key: &str,
+    ctx: &mut EdgeGeometryContext<'_>,
 ) -> (Vec<GeoPoint>, EdgeGeometrySource, Vec<String>) {
-    if let Some(shape_points) = shape_points
+    if let Some(shape_points) = ctx.shape_points
         && let Some(points) = extract_shape_segment(shape_points, from_location, to_location)
     {
         return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
     }
 
-    if let Some(rail_geometry_network) = rail_geometry_network {
+    if let Some(rail_geometry_network) = ctx.rail_geometry_network {
         let cache_key = (from_station_key.to_string(), to_station_key.to_string());
-        let start_node = station_snap_nodes
+        let start_node = ctx
+            .station_snap_nodes
             .and_then(|snap_nodes| snap_nodes.get(from_station_key))
             .and_then(|node| *node);
-        let end_node = station_snap_nodes
+        let end_node = ctx
+            .station_snap_nodes
             .and_then(|snap_nodes| snap_nodes.get(to_station_key))
             .and_then(|node| *node);
-        let cached = geometry_cache
+        let cached = ctx
+            .geometry_cache
             .entry(cache_key)
             .or_insert_with(|| match (start_node, end_node) {
                 (Some(start_node), Some(end_node)) => rail_geometry_network
@@ -1432,7 +1477,7 @@ fn build_edge_geometry(
             .clone();
         if let Some(points) = cached {
             let mut provenance = Vec::new();
-            if let Some(source_id) = rail_geometry_source_id {
+            if let Some(source_id) = ctx.rail_geometry_source_id {
                 provenance.push(format!("geometry:{source_id}"));
             }
             return (
@@ -1951,22 +1996,25 @@ fn resolve_gtfs_basic_ineligible_clusters(
         match eligibility {
             CityEligibility::Eligible => {}
             CityEligibility::StationOnlyFeedStopLabel => {
-                resolutions.report.records.push(RejectedCityCandidateRecord {
-                    cluster_key: cluster_key.clone(),
-                    display_name: display_name.clone(),
-                    country_code: clusters
-                        .get(cluster_key)
-                        .map(|cluster| cluster.country_code.clone())
-                        .unwrap_or_else(|| "ZZ".to_string()),
-                    station_count: clusters
-                        .get(cluster_key)
-                        .map(|cluster| cluster.station_ids.len())
-                        .unwrap_or(0),
-                    eligibility: "station_only_feed_stop_label".to_string(),
-                    resolution: RejectedCityCandidateResolution::UnresolvedStationOnly,
-                    derived_parent_key: None,
-                    parent_cluster_key: None,
-                });
+                resolutions
+                    .report
+                    .records
+                    .push(RejectedCityCandidateRecord {
+                        cluster_key: cluster_key.clone(),
+                        display_name: display_name.clone(),
+                        country_code: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.country_code.clone())
+                            .unwrap_or_else(|| "ZZ".to_string()),
+                        station_count: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.station_ids.len())
+                            .unwrap_or(0),
+                        eligibility: "station_only_feed_stop_label".to_string(),
+                        resolution: RejectedCityCandidateResolution::UnresolvedStationOnly,
+                        derived_parent_key: None,
+                        parent_cluster_key: None,
+                    });
                 issues.push(NormalizationIssue {
                     severity: IssueSeverity::Warning,
                     source_id: source_id.to_string(),
@@ -1986,22 +2034,25 @@ fn resolve_gtfs_basic_ineligible_clusters(
                         &cluster_details,
                     )
                 }) else {
-                    resolutions.report.records.push(RejectedCityCandidateRecord {
-                        cluster_key: cluster_key.clone(),
-                        display_name: display_name.clone(),
-                        country_code: clusters
-                            .get(cluster_key)
-                            .map(|cluster| cluster.country_code.clone())
-                            .unwrap_or_else(|| "ZZ".to_string()),
-                        station_count: clusters
-                            .get(cluster_key)
-                            .map(|cluster| cluster.station_ids.len())
-                            .unwrap_or(0),
-                        eligibility: "route_like_local_stop".to_string(),
-                        resolution: RejectedCityCandidateResolution::UnresolvedReferenceGap,
-                        derived_parent_key: parent_key.clone(),
-                        parent_cluster_key: None,
-                    });
+                    resolutions
+                        .report
+                        .records
+                        .push(RejectedCityCandidateRecord {
+                            cluster_key: cluster_key.clone(),
+                            display_name: display_name.clone(),
+                            country_code: clusters
+                                .get(cluster_key)
+                                .map(|cluster| cluster.country_code.clone())
+                                .unwrap_or_else(|| "ZZ".to_string()),
+                            station_count: clusters
+                                .get(cluster_key)
+                                .map(|cluster| cluster.station_ids.len())
+                                .unwrap_or(0),
+                            eligibility: "route_like_local_stop".to_string(),
+                            resolution: RejectedCityCandidateResolution::UnresolvedReferenceGap,
+                            derived_parent_key: parent_key.clone(),
+                            parent_cluster_key: None,
+                        });
                     issues.push(NormalizationIssue {
                         severity: IssueSeverity::Warning,
                         source_id: source_id.to_string(),
@@ -2016,22 +2067,25 @@ fn resolve_gtfs_basic_ineligible_clusters(
                 resolutions
                     .remap
                     .insert(cluster_key.clone(), parent_cluster_key.clone());
-                resolutions.report.records.push(RejectedCityCandidateRecord {
-                    cluster_key: cluster_key.clone(),
-                    display_name: display_name.clone(),
-                    country_code: clusters
-                        .get(cluster_key)
-                        .map(|cluster| cluster.country_code.clone())
-                        .unwrap_or_else(|| "ZZ".to_string()),
-                    station_count: clusters
-                        .get(cluster_key)
-                        .map(|cluster| cluster.station_ids.len())
-                        .unwrap_or(0),
-                    eligibility: "route_like_local_stop".to_string(),
-                    resolution: RejectedCityCandidateResolution::DemotedToParentCity,
-                    derived_parent_key: parent_key.clone(),
-                    parent_cluster_key: Some(parent_cluster_key.clone()),
-                });
+                resolutions
+                    .report
+                    .records
+                    .push(RejectedCityCandidateRecord {
+                        cluster_key: cluster_key.clone(),
+                        display_name: display_name.clone(),
+                        country_code: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.country_code.clone())
+                            .unwrap_or_else(|| "ZZ".to_string()),
+                        station_count: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.station_ids.len())
+                            .unwrap_or(0),
+                        eligibility: "route_like_local_stop".to_string(),
+                        resolution: RejectedCityCandidateResolution::DemotedToParentCity,
+                        derived_parent_key: parent_key.clone(),
+                        parent_cluster_key: Some(parent_cluster_key.clone()),
+                    });
                 let parent_display_name = cluster_details
                     .iter()
                     .find(|(candidate_cluster_key, _, _, _, _)| {
@@ -2059,14 +2113,13 @@ fn classify_gtfs_basic_city_eligibility(display_name: &str) -> CityEligibility {
     let normalized = normalize_name(display_name);
     let tokens = normalized.split_whitespace().collect::<Vec<_>>();
     let first_token = tokens.first().copied().unwrap_or_default();
-    let is_station_only_bus_label =
-        normalized == "bus"
-            || normalized == "busbahnhof"
-            || normalized.starts_with("bus ")
-            || normalized.starts_with("bussteige ")
-            || first_token
-                .strip_prefix("bus")
-                .is_some_and(|suffix| !suffix.is_empty() && suffix.chars().all(|ch| ch.is_ascii_digit()));
+    let is_station_only_bus_label = normalized == "bus"
+        || normalized == "busbahnhof"
+        || normalized.starts_with("bus ")
+        || normalized.starts_with("bussteige ")
+        || first_token.strip_prefix("bus").is_some_and(|suffix| {
+            !suffix.is_empty() && suffix.chars().all(|ch| ch.is_ascii_digit())
+        });
     if is_station_only_bus_label
         || (normalized.chars().all(|ch| ch.is_ascii_alphanumeric())
             && normalized.chars().any(|ch| ch.is_ascii_digit())
@@ -2099,8 +2152,12 @@ fn resolve_gtfs_basic_parent_cluster_key(
                 return None;
             }
             let distance = haversine_meters(*location, child_location);
-            (distance <= GTFS_BASIC_ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS)
-                .then_some((cluster_key, display_name, distance, *station_count))
+            (distance <= GTFS_BASIC_ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS).then_some((
+                cluster_key,
+                display_name,
+                distance,
+                *station_count,
+            ))
         })
         .collect::<Vec<_>>();
     if candidates.is_empty() {
@@ -2164,11 +2221,10 @@ fn cleaned_city_name_candidate(name: &str) -> String {
         .collect::<Vec<_>>();
 
     loop {
-        let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["gare".to_string(), "central".to_string()]) {
-            Some(tokens.len() - 2)
-        } else if tokens.ends_with(&["central".to_string(), "station".to_string()]) {
+        let trimmed = if tokens.ends_with(&["gare".to_string(), "centrale".to_string()])
+            || tokens.ends_with(&["gare".to_string(), "central".to_string()])
+            || tokens.ends_with(&["central".to_string(), "station".to_string()])
+        {
             Some(tokens.len() - 2)
         } else if tokens.last().is_some_and(|token| {
             matches!(
@@ -2233,10 +2289,12 @@ fn gtfs_basic_route_like_parent_key(display_name: &str) -> Option<String> {
     }) {
         prefix.pop();
     }
-    while prefix
-        .last()
-        .is_some_and(|token| matches!(*token, "abri" | "bourg" | "carrefour" | "centre" | "cte" | "inter"))
-    {
+    while prefix.last().is_some_and(|token| {
+        matches!(
+            *token,
+            "abri" | "bourg" | "carrefour" | "centre" | "cte" | "inter"
+        )
+    }) {
         prefix.pop();
     }
     if prefix.is_empty() {
@@ -2267,8 +2325,7 @@ fn comparable_gtfs_basic_place_key(value: &str) -> String {
         .filter(|token| {
             !matches!(
                 token.as_str(),
-                "a"
-                    | "b"
+                "a" | "b"
                     | "d"
                     | "de"
                     | "des"
@@ -2830,7 +2887,9 @@ T1,08:10:00,08:15:00,StopArea:MUNSTER,2\n",
         );
         assert_eq!(output.stations[0].city_id, output.stations[1].city_id);
         assert!(output.issues.iter().any(|issue| {
-            issue.message.contains("demoted GTFS-basic route-like cluster")
+            issue
+                .message
+                .contains("demoted GTFS-basic route-like cluster")
         }));
 
         let _ = fs::remove_file(zip_path);

@@ -294,6 +294,10 @@ pub struct NormalizationIssue {
     pub message: String,
 }
 
+fn default_true() -> bool {
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -498,8 +502,4 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(ids, vec!["fr", "de", "europe"]);
     }
-}
-
-fn default_true() -> bool {
-    true
 }
