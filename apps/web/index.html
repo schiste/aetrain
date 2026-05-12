@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="./src/ui/tokens.css" />
   </head>
   <body>
+    <!-- Skip-link surfaces only via keyboard tab; lets a keyboard user
+         bypass the sidebar and land on the map without traversing the
+         entire trip list. Hidden visually until focused. -->
+    <a class="skip-link" href="#map">Skip to map</a>
     <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>
   </body>

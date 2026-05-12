@@ -82,9 +82,14 @@ function ensureShellMarkup(host: HTMLElement): void {
   host.replaceChildren(
     html`
       <ae-sidebar></ae-sidebar>
-      <div id="map"></div>
+      <div
+        id="map"
+        role="application"
+        aria-label="European rail network map. Use arrow keys to pan and plus or minus to zoom."
+        tabindex="0"
+      ></div>
       <ae-debug-toggles></ae-debug-toggles>
-      <div id="citycount">
+      <div id="citycount" role="status" aria-live="polite">
         Showing <b id="cc-n">0</b> / <b id="cc-t">0</b> cities
       </div>
       <ae-undo-toast></ae-undo-toast>

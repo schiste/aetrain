@@ -29,6 +29,15 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--ae-bg); color: var(--ae-fg); font-family: var(--ae-font-display); overflow: hidden; }
 
+/* Default focus-visible style for any element that doesn't define one
+   of its own — guarantees keyboard users always see where they are.
+   Components with custom focus rings still win via specificity. */
+:focus-visible { outline: 2px solid var(--ae-accent); outline-offset: 2px; }
+button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
+  outline: 2px solid var(--ae-accent);
+  outline-offset: 2px;
+}
+
 #app { position: fixed; inset: 0; display: grid; grid-template-columns: clamp(18rem, 28vw, 24rem) minmax(0, 1fr); min-width: 0; overflow: hidden; }
 /* Custom-element wrappers must be transparent to the grid so #side and #map
    become direct grid items. Without `display: contents` they default to
@@ -236,6 +245,27 @@ ae-trip-list[data-revealed="true"] .suggest { animation: ae-suggestion-reveal 12
 .bd:hover { background: rgba(244, 63, 94, .18); }
 
 #map { width: 100%; height: 100%; min-width: 0; min-height: 0; background: var(--ae-bg); }
+
+/* Visually-hidden skip-link that becomes visible when focused via Tab.
+   The first focusable element on the page; lets keyboard / screen-
+   reader users jump to the map without traversing the sidebar. */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  transform: translateY(-200%);
+  z-index: 1000;
+  background: var(--ae-accent);
+  color: var(--ae-bg);
+  font-family: var(--ae-font-display);
+  font-size: 13px;
+  font-weight: 600;
+  padding: .5rem .9rem;
+  border-radius: var(--ae-radius-md);
+  text-decoration: none;
+  transition: transform .12s;
+}
+.skip-link:focus { transform: translateY(0); outline: 2px solid var(--ae-bg-3); outline-offset: 2px; }
 
 /* Bottom-centered toast for the undo-stop-removal affordance. The host
    is always in the DOM (single instance in the shell); only the inner

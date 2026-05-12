@@ -213,6 +213,11 @@ defineComponent("ae-filters", (host) => {
     const statusEl = document.createElement("div");
     statusEl.className = "fi";
     statusEl.id = "fi-txt";
+    // Filter status text changes whenever the user adjusts a slider —
+    // announce it politely so screen readers keep up with the filter
+    // hit-count without interrupting the drag.
+    statusEl.setAttribute("role", "status");
+    statusEl.setAttribute("aria-live", "polite");
     fc.appendChild(statusEl);
 
     details.appendChild(fc);
