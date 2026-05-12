@@ -237,13 +237,21 @@ defineComponent("ae-trip-list", (host) => {
 });
 
 function renderEmpty(): DocumentFragment {
+  // role="status" announces this empty state to screen readers without
+  // stealing focus (matches aria-live="polite" on the host). The pulse
+  // hint draws the eye toward the map — see the matching pulse on the
+  // highest-interest visible city in leaflet-map-surface.ts.
   return html`
-    <div id="empty">
+    <div id="empty" role="status">
       <div class="icon" aria-hidden="true">🚂</div>
       Click any city on the map<br />
       or search to build your trip.<br /><br />
       Interesting stops along your<br />
       route will be suggested automatically.
+      <div class="hint" aria-hidden="true">
+        <span class="dot"></span>
+        Tap a glowing city to start
+      </div>
     </div>
   `;
 }

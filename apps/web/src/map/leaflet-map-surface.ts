@@ -275,6 +275,12 @@ const BACKGROUND_NETWORK_SIMPLIFIED_ZOOM = 6.5;
 const ARRIVAL_PULSE_DURATION_MS = 600;
 const ARRIVAL_PULSE_MIN_RADIUS_PX = 8;
 const ARRIVAL_PULSE_MAX_RADIUS_PX = 28;
+// Continuous seed-pulse drawn around the highest-interest visible city
+// while the trip is empty. One full sin cycle per period; the loop ends
+// the moment a stop is added or the city scrolls out of view.
+const SEED_PULSE_PERIOD_MS = 2200;
+const SEED_PULSE_MIN_RADIUS_PX = 10;
+const SEED_PULSE_MAX_RADIUS_PX = 22;
 
 const diagnostics = createDiagnostics("web/map/canvas-surface");
 
@@ -472,6 +478,12 @@ export function createLeafletMapSurface({
   // Pending fly-to scale-pulse target; consumed on the next render.
   let pendingArrivalPulseFor: string | null = null;
   let arrivalPulse: { city: string; startedAt: number } | null = null;
+  // Continuous "start here" pulse on the top-ranked visible city while
+  // the trip is empty. seedPulseStartedAt is the wallclock anchor so the
+  // sin phase stays smooth across renders; seedPulseRafId tracks the rAF
+  // loop so we can cancel it when the trip is no longer empty.
+  let seedPulseStartedAt: number | null = null;
+  let seedPulseRafId = 0;
 
   const resizeObserver =
     typeof ResizeObserver !== "undefined"
@@ -551,6 +563,17 @@ export function createLeafletMapSurface({
           search_query_length: String(normalizedState.searchQuery || "").length
         });
         return lastRenderStats;
+      }
+
+      // Drive the empty-state seed pulse off the trip length. The pulse
+      // is purely a visual cue, so we start/stop the rAF loop here but
+      // don't mark the cities layer dirty unless the trip flag actually
+      // flipped — re-rendering on every keystroke would defeat the LOD
+      // budget.
+      if (normalizedState.trip.length === 0) {
+        startSeedPulse();
+      } else {
+        stopSeedPulse();
       }
 
       scheduleRender("planner-state", dirty);
@@ -986,6 +1009,33 @@ export function createLeafletMapSurface({
     // need to redraw the network / landmass / routes layers every frame.
     invalidateAnimationFrame("arrival-pulse");
     window.requestAnimationFrame(schedulePulseFrame);
+  }
+
+  function startSeedPulse(): void {
+    if (seedPulseStartedAt !== null) return;
+    seedPulseStartedAt = now();
+    diagnostics.debug("starting seed pulse");
+    schedulePulseFrameSeed();
+  }
+
+  function stopSeedPulse(): void {
+    if (seedPulseStartedAt === null) return;
+    seedPulseStartedAt = null;
+    if (seedPulseRafId) {
+      window.cancelAnimationFrame(seedPulseRafId);
+      seedPulseRafId = 0;
+    }
+    // One final clean repaint to drop the pulse ring.
+    invalidateAnimationFrame("seed-pulse-end");
+  }
+
+  function schedulePulseFrameSeed(): void {
+    if (seedPulseStartedAt === null) return;
+    // Same shape as schedulePulseFrame() for the arrival pulse — only the
+    // cities layer is dirtied so we don't redraw the network/landmass at
+    // 60fps for a single ring.
+    invalidateAnimationFrame("seed-pulse");
+    seedPulseRafId = window.requestAnimationFrame(schedulePulseFrameSeed);
   }
 
   function stopFlyAnimation(): void {
@@ -1460,6 +1510,45 @@ export function createLeafletMapSurface({
     }
 
     drawArrivalPulse(visibleCities);
+    drawSeedPulse(visibleCities);
+  }
+
+  function drawSeedPulse(visibleCities: VisibleCity[]): void {
+    if (seedPulseStartedAt === null) return;
+    if (visibleCities.length === 0) return;
+
+    // Highest-interest city currently in viewport (already viewport- and
+    // LOD-culled by buildRenderPlan). Tie-break on population to keep the
+    // pulse stable as the camera nudges around. We don't memoize the
+    // target between frames — when the camera moves the "best" city
+    // changes naturally, which is the affordance we want.
+    let target: VisibleCity | null = null;
+    let bestScore = -Infinity;
+    for (const candidate of visibleCities) {
+      const score = candidate.city.interest * 1000 + candidate.city.pop / 1000;
+      if (score > bestScore) {
+        bestScore = score;
+        target = candidate;
+      }
+    }
+    if (!target) return;
+
+    const elapsed = now() - seedPulseStartedAt;
+    const phase = (elapsed % SEED_PULSE_PERIOD_MS) / SEED_PULSE_PERIOD_MS;
+    // Cosine "breathing" between min and max radius; opacity drops as
+    // the ring grows so the outer edge dissolves rather than snapping.
+    const eased = 0.5 - 0.5 * Math.cos(phase * Math.PI * 2);
+    const radius =
+      SEED_PULSE_MIN_RADIUS_PX + (SEED_PULSE_MAX_RADIUS_PX - SEED_PULSE_MIN_RADIUS_PX) * eased;
+    const opacity = 0.65 * (1 - eased * 0.55);
+
+    cityContext.save();
+    cityContext.beginPath();
+    cityContext.arc(target.x, target.y, radius, 0, Math.PI * 2);
+    cityContext.lineWidth = 2;
+    cityContext.strokeStyle = `rgba(129, 140, 248, ${opacity.toFixed(3)})`;
+    cityContext.stroke();
+    cityContext.restore();
   }
 
   function drawArrivalPulse(visibleCities: VisibleCity[]): void {
