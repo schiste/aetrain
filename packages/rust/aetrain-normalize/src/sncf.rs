@@ -26,6 +26,8 @@ pub const DEFAULT_DUPLICATE_DISTANCE_METERS: u32 = 25_000;
 const NAME_MATCH_DISTANCE_METERS: f64 = 2_000.0;
 const GTFS_BASIC_STEM_DISTANCE_METERS: f64 = 30_000.0;
 const GTFS_BASIC_ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS: f64 = 5_000.0;
+const GTFS_BASIC_URBAN_PARENT_MAX_DISTANCE_METERS: f64 = 15_000.0;
+const GTFS_BASIC_URBAN_NEARBY_FALLBACK_MAX_DISTANCE_METERS: f64 = 5_000.0;
 const MAX_SHAPE_STOP_DISTANCE_METERS: f64 = 25_000.0;
 const SHAPE_ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
 
@@ -205,12 +207,14 @@ struct CityCluster {
 enum CityEligibility {
     Eligible,
     StationOnlyFeedStopLabel,
+    UrbanInterchangeOrHub { parent_key: Option<String> },
     RouteLikeLocalStop { parent_key: Option<String> },
 }
 
 #[derive(Clone, Debug, Default)]
 struct CityEligibilityResolution {
     remap: HashMap<String, String>,
+    rename_display_name: HashMap<String, String>,
     report: RejectedCityCandidateReport,
 }
 
@@ -825,6 +829,17 @@ fn normalize_stations(
         }
     }
 
+    for (cluster_key, display_name) in &eligibility_resolution.rename_display_name {
+        let Some(cluster) = clusters.get_mut(cluster_key) else {
+            continue;
+        };
+        for existing_name in &cluster.display_names {
+            cluster.aliases.insert(existing_name.clone());
+        }
+        cluster.display_names = vec![display_name.clone()];
+        cluster.aliases.insert(display_name.clone());
+    }
+
     let mut cities = Vec::new();
     let mut city_id_by_cluster = HashMap::new();
     let mut station_key_to_city = HashMap::new();
@@ -1105,6 +1120,17 @@ fn normalize_gtfs_only_stations(
         for child_cluster_key in merged_children {
             clusters.remove(&child_cluster_key);
         }
+    }
+
+    for (cluster_key, display_name) in &eligibility_resolution.rename_display_name {
+        let Some(cluster) = clusters.get_mut(cluster_key) else {
+            continue;
+        };
+        for existing_name in &cluster.display_names {
+            cluster.aliases.insert(existing_name.clone());
+        }
+        cluster.display_names = vec![display_name.clone()];
+        cluster.aliases.insert(display_name.clone());
     }
 
     let mut cities = Vec::new();
@@ -2031,6 +2057,90 @@ fn resolve_gtfs_basic_ineligible_clusters(
                     ),
                 });
             }
+            CityEligibility::UrbanInterchangeOrHub { parent_key } => {
+                let Some(parent_cluster_key) = resolve_gtfs_basic_urban_parent_cluster_key(
+                    cluster_key,
+                    parent_key.as_deref(),
+                    *location,
+                    &cluster_details,
+                ) else {
+                    if let Some(derived_display_name) = parent_key
+                        .as_deref()
+                        .and_then(derived_parent_display_name_from_key)
+                    {
+                        resolutions
+                            .rename_display_name
+                            .insert(cluster_key.clone(), derived_display_name);
+                    }
+                    resolutions
+                        .report
+                        .records
+                        .push(RejectedCityCandidateRecord {
+                            cluster_key: cluster_key.clone(),
+                            display_name: display_name.clone(),
+                            country_code: clusters
+                                .get(cluster_key)
+                                .map(|cluster| cluster.country_code.clone())
+                                .unwrap_or_else(|| "ZZ".to_string()),
+                            station_count: clusters
+                                .get(cluster_key)
+                                .map(|cluster| cluster.station_ids.len())
+                                .unwrap_or(0),
+                            eligibility: "urban_interchange_or_hub".to_string(),
+                            resolution: RejectedCityCandidateResolution::UnresolvedStationOnly,
+                            derived_parent_key: parent_key.clone(),
+                            parent_cluster_key: None,
+                        });
+                    issues.push(NormalizationIssue {
+                        severity: IssueSeverity::Warning,
+                        source_id: source_id.to_string(),
+                        entity_ref: cluster_key.clone(),
+                        message: format!(
+                            "GTFS-basic urban interchange cluster {} has no deterministic parent-city match",
+                            display_name
+                        ),
+                    });
+                    continue;
+                };
+                resolutions
+                    .remap
+                    .insert(cluster_key.clone(), parent_cluster_key.clone());
+                resolutions
+                    .report
+                    .records
+                    .push(RejectedCityCandidateRecord {
+                        cluster_key: cluster_key.clone(),
+                        display_name: display_name.clone(),
+                        country_code: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.country_code.clone())
+                            .unwrap_or_else(|| "ZZ".to_string()),
+                        station_count: clusters
+                            .get(cluster_key)
+                            .map(|cluster| cluster.station_ids.len())
+                            .unwrap_or(0),
+                        eligibility: "urban_interchange_or_hub".to_string(),
+                        resolution: RejectedCityCandidateResolution::DemotedToParentCity,
+                        derived_parent_key: parent_key.clone(),
+                        parent_cluster_key: Some(parent_cluster_key.clone()),
+                    });
+                let parent_display_name = cluster_details
+                    .iter()
+                    .find(|(candidate_cluster_key, _, _, _, _)| {
+                        candidate_cluster_key == &parent_cluster_key
+                    })
+                    .map(|(_, parent_display_name, _, _, _)| parent_display_name.clone())
+                    .unwrap_or_else(|| parent_cluster_key.clone());
+                issues.push(NormalizationIssue {
+                    severity: IssueSeverity::Info,
+                    source_id: source_id.to_string(),
+                    entity_ref: cluster_key.clone(),
+                    message: format!(
+                        "demoted GTFS-basic urban interchange cluster {} into parent city {}",
+                        display_name, parent_display_name
+                    ),
+                });
+            }
             CityEligibility::RouteLikeLocalStop { parent_key } => {
                 let Some(parent_cluster_key) = parent_key.as_deref().and_then(|parent_key| {
                     resolve_gtfs_basic_parent_cluster_key(
@@ -2133,12 +2243,27 @@ fn classify_gtfs_basic_city_eligibility(display_name: &str) -> CityEligibility {
     {
         return CityEligibility::StationOnlyFeedStopLabel;
     }
+    if is_gtfs_basic_urban_interchange_name(&normalized) {
+        return CityEligibility::UrbanInterchangeOrHub {
+            parent_key: gtfs_basic_urban_parent_key(display_name),
+        };
+    }
     if normalized.chars().any(|ch| ch.is_ascii_digit()) {
         return CityEligibility::RouteLikeLocalStop {
             parent_key: gtfs_basic_route_like_parent_key(display_name),
         };
     }
     CityEligibility::Eligible
+}
+
+fn is_gtfs_basic_urban_interchange_name(normalized: &str) -> bool {
+    normalized.ends_with(" u")
+        || normalized == "s u"
+        || normalized.starts_with("s u ")
+        || normalized.contains(" s u")
+        || normalized.ends_with(" zob")
+        || normalized.contains(" busbahnhof")
+        || normalized.ends_with(" u tram")
 }
 
 fn resolve_gtfs_basic_parent_cluster_key(
@@ -2184,6 +2309,92 @@ fn resolve_gtfs_basic_parent_cluster_key(
         return None;
     }
     Some(candidates[0].0.clone())
+}
+
+fn resolve_gtfs_basic_urban_parent_cluster_key(
+    child_cluster_key: &str,
+    parent_key: Option<&str>,
+    child_location: GeoPoint,
+    cluster_details: &[(String, String, GeoPoint, CityEligibility, usize)],
+) -> Option<String> {
+    if let Some(parent_key) = parent_key {
+        let mut exact_candidates = cluster_details
+            .iter()
+            .filter(|(cluster_key, _, _, eligibility, _)| {
+                cluster_key != child_cluster_key && *eligibility == CityEligibility::Eligible
+            })
+            .filter_map(|(cluster_key, display_name, location, _, station_count)| {
+                let comparable = comparable_gtfs_basic_place_key(display_name);
+                if comparable != parent_key {
+                    return None;
+                }
+                let distance = haversine_meters(*location, child_location);
+                (distance <= GTFS_BASIC_URBAN_PARENT_MAX_DISTANCE_METERS).then_some((
+                    cluster_key,
+                    display_name,
+                    distance,
+                    *station_count,
+                ))
+            })
+            .collect::<Vec<_>>();
+        exact_candidates.sort_by(|left, right| {
+            right
+                .3
+                .cmp(&left.3)
+                .then_with(|| left.2.total_cmp(&right.2))
+                .then_with(|| left.1.cmp(right.1))
+                .then_with(|| left.0.cmp(right.0))
+        });
+        if exact_candidates.len() >= 2
+            && exact_candidates[0].3 == exact_candidates[1].3
+            && (exact_candidates[0].2 - exact_candidates[1].2).abs() < 1.0
+        {
+            return None;
+        }
+        if let Some(candidate) = exact_candidates.first() {
+            return Some(candidate.0.clone());
+        }
+    }
+
+    let mut nearby_candidates = cluster_details
+        .iter()
+        .filter(|(cluster_key, _, _, eligibility, _)| {
+            cluster_key != child_cluster_key && *eligibility == CityEligibility::Eligible
+        })
+        .filter_map(|(cluster_key, display_name, location, _, station_count)| {
+            let distance = haversine_meters(*location, child_location);
+            let comparable = comparable_gtfs_basic_place_key(display_name);
+            (*station_count >= 10
+                && distance <= GTFS_BASIC_URBAN_NEARBY_FALLBACK_MAX_DISTANCE_METERS
+                && is_usable_city_name_prefix(&comparable))
+            .then_some((cluster_key, display_name, distance, *station_count))
+        })
+        .collect::<Vec<_>>();
+    nearby_candidates.sort_by(|left, right| {
+        right
+            .3
+            .cmp(&left.3)
+            .then_with(|| left.2.total_cmp(&right.2))
+            .then_with(|| left.1.cmp(right.1))
+            .then_with(|| left.0.cmp(right.0))
+    });
+    if nearby_candidates.len() >= 2
+        && nearby_candidates[0].3 == nearby_candidates[1].3
+        && (nearby_candidates[0].2 - nearby_candidates[1].2).abs() < 250.0
+    {
+        return None;
+    }
+    nearby_candidates
+        .first()
+        .map(|candidate| candidate.0.clone())
+}
+
+fn derived_parent_display_name_from_key(parent_key: &str) -> Option<String> {
+    let normalized = normalize_name(parent_key);
+    if normalized.is_empty() || !is_usable_city_name_prefix(&normalized) {
+        return None;
+    }
+    Some(title_case(&normalized))
 }
 
 fn is_usable_city_name_prefix(prefix: &str) -> bool {
@@ -2307,6 +2518,37 @@ fn gtfs_basic_route_like_parent_key(display_name: &str) -> Option<String> {
         return None;
     }
     Some(comparable_gtfs_basic_place_key(&prefix.join(" ")))
+}
+
+fn gtfs_basic_urban_parent_key(display_name: &str) -> Option<String> {
+    let normalized = normalize_name(display_name);
+    let mut tokens = normalized.split_whitespace().collect::<Vec<_>>();
+    if tokens.len() >= 2 && tokens[0] == "s" && tokens[1] == "u" {
+        tokens.drain(..2);
+    } else if tokens.first().copied() == Some("u") {
+        tokens.drain(..1);
+    }
+    while tokens.last().is_some_and(|token| {
+        matches!(
+            *token,
+            "u" | "tram" | "zob" | "bahn" | "bf" | "bhf" | "hbf" | "bahnhof"
+        )
+    }) {
+        tokens.pop();
+    }
+    while tokens.last().is_some_and(|token| matches!(*token, "s")) {
+        tokens.pop();
+    }
+    if tokens.is_empty() {
+        return None;
+    }
+    let raw = tokens.join(" ");
+    let comparable = comparable_gtfs_basic_place_key(&raw);
+    if comparable.is_empty() {
+        Some(raw)
+    } else {
+        Some(comparable)
+    }
 }
 
 fn comparable_gtfs_basic_place_key(value: &str) -> String {
@@ -2575,7 +2817,10 @@ fn is_supported_rail_route(route: &GtfsRouteRow, gtfs_source_id: &str) -> bool {
         {
             return false;
         }
-        return matches!(route.route_type, 2 | 101 | 102 | 103 | 105 | 107 | 109 | 116 | 117);
+        return matches!(
+            route.route_type,
+            2 | 101 | 102 | 103 | 105 | 107 | 109 | 116 | 117
+        );
     }
     is_supported_rail_route_type(route.route_type)
 }
@@ -3104,6 +3349,24 @@ T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
             CityEligibility::StationOnlyFeedStopLabel
         );
         assert_eq!(
+            classify_gtfs_basic_city_eligibility("Ka Europaplatz U"),
+            CityEligibility::UrbanInterchangeOrHub {
+                parent_key: Some("ka europaplatz".to_string()),
+            }
+        );
+        assert_eq!(
+            classify_gtfs_basic_city_eligibility("Hauptbahnhof U Tram"),
+            CityEligibility::UrbanInterchangeOrHub {
+                parent_key: Some("hauptbahnhof".to_string()),
+            }
+        );
+        assert_eq!(
+            classify_gtfs_basic_city_eligibility("S U Berlin"),
+            CityEligibility::UrbanInterchangeOrHub {
+                parent_key: Some("berlin".to_string()),
+            }
+        );
+        assert_eq!(
             classify_gtfs_basic_city_eligibility("Wimmenau D.919 - Rue de la Gare"),
             CityEligibility::RouteLikeLocalStop {
                 parent_key: Some("wimmenau".to_string()),
@@ -3128,6 +3391,122 @@ T1,09:20:00,09:25:00,StopArea:LINZHBF,2\n",
         assert_eq!(
             comparable_gtfs_basic_place_key("Bruck Mur Bahnhof"),
             "bruck mur".to_string()
+        );
+        assert_eq!(
+            gtfs_basic_urban_parent_key("Ka Europaplatz U"),
+            Some("ka europaplatz".to_string())
+        );
+        assert_eq!(
+            gtfs_basic_urban_parent_key("Hauptbahnhof U Tram"),
+            Some("hauptbahnhof".to_string())
+        );
+        assert_eq!(
+            gtfs_basic_urban_parent_key("S U Berlin"),
+            Some("berlin".to_string())
+        );
+    }
+
+    #[test]
+    fn unresolved_urban_interchange_cluster_uses_clean_parent_display_name() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-urban-parent-name-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:BUNDE,Bunde Bahnhof Zob,52.2000,8.5830,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:BUNDE,1\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "de-delfi-gtfs",
+            "DE",
+            "test-version",
+            "2026-05-12T09:30:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert_eq!(output.summary.city_count, 1);
+        assert_eq!(output.cities[0].display_name, "Bunde");
+        assert!(
+            output.cities[0]
+                .aliases
+                .iter()
+                .any(|alias| alias == "Bunde Bahnhof Zob")
+        );
+        assert!(
+            output
+                .rejected_city_candidates
+                .records
+                .iter()
+                .any(|record| {
+                    record.display_name == "Bunde Bahnhof Zob"
+                        && record.resolution
+                            == RejectedCityCandidateResolution::UnresolvedStationOnly
+                })
+        );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn urban_parent_resolution_avoids_distant_generic_city_fallbacks() {
+        let child_location = GeoPoint {
+            lat: 52.1500,
+            lon: 8.6300,
+        };
+        let cluster_details = vec![
+            (
+                "child".to_string(),
+                "Herford Bahnhof Zob".to_string(),
+                child_location,
+                CityEligibility::UrbanInterchangeOrHub {
+                    parent_key: Some("herford".to_string()),
+                },
+                2,
+            ),
+            (
+                "generic-d".to_string(),
+                "D".to_string(),
+                GeoPoint {
+                    lat: 52.1505,
+                    lon: 8.6310,
+                },
+                CityEligibility::Eligible,
+                25,
+            ),
+            (
+                "bielefeld".to_string(),
+                "Bielefeld".to_string(),
+                GeoPoint {
+                    lat: 52.0302,
+                    lon: 8.5325,
+                },
+                CityEligibility::Eligible,
+                40,
+            ),
+        ];
+
+        assert_eq!(
+            resolve_gtfs_basic_urban_parent_cluster_key(
+                "child",
+                Some("herford"),
+                child_location,
+                &cluster_details,
+            ),
+            None
         );
     }
 
