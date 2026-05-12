@@ -17,3 +17,11 @@ edition = "2024"
 license = "AGPL-3.0-only"
 rust-version = "1.92"
 version = "0.1.0"
+
+# Optimised release profile for the wasm-pack output. Lives at the
+# workspace root because Cargo ignores `[profile.*]` declared in
+# non-root member crates.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1

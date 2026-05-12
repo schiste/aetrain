@@ -22,7 +22,6 @@ panic-hook = ["dep:console_error_panic_hook"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 
-[profile.release]
-opt-level = "z"
-lto = true
-codegen-units = 1
+# Note: the release profile for the wasm artifact (opt-level = "z", LTO,
+# single codegen unit) lives in the workspace-root Cargo.toml — Cargo
+# ignores profiles declared in non-root members.

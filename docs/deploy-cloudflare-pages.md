@@ -12,8 +12,14 @@ CF Pages reads the build config in this order:
    `pages_build_output_dir = "apps/web/dist"`. This tells CF Pages
    where to find the production artifact.
 2. The project `package.json` at repo root (committed) exposes
-   `npm run build` which delegates to `cd apps/web && npm ci && npm
-   run build`. CF auto-detects this and runs it on every deploy.
+   `npm run build`, which delegates to
+   `scripts/build-for-pages.sh`. The script installs `wasm-pack`
+   if it's missing, ensures the `wasm32-unknown-unknown` rustup
+   target is present, rebuilds `packages/rust/aetrain-routing-wasm`
+   in release mode, then runs `npm ci && npm run build` inside
+   `apps/web`. CF Pages re-runs the full pipeline on every deploy,
+   so the wasm artifact is always in sync with the routing crate
+   — there is no committed `pkg/` to drift.
 3. `apps/web/public/_headers` (committed) ships into `dist/` via
    Vite's static-asset pipeline. It pins:
    - `Content-Type: text/javascript` for any `.ts` URL that ever
@@ -33,7 +39,13 @@ manually in the dashboard:
 - **Build command**: `npm run build`
 - **Build output directory**: `apps/web/dist`
 - **Root directory**: leave blank (`/`)
-- **Environment variables**: none required
+- **Environment variables**:
+  - `RUST_VERSION` = `1.92.0` — must match the `channel` in
+    `rust-toolchain.toml`. CF Pages uses this to provision rustup
+    + the matching toolchain in the build image; without it the
+    build script can't add the `wasm32-unknown-unknown` target.
+  - `NODE_VERSION` — optional; pin if you want to lock the
+    Node version the Pages image uses for `npm ci`.
 
 ## Why this matters
 

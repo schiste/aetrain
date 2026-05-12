@@ -1,4 +1,0 @@
-# wasm-pack regenerates this file with a single `*` on every build.
-# We intentionally track the generated artifacts in this directory so
-# Cloudflare Pages can deploy without a Rust toolchain in its build
-# env. If `wasm-pack build` resets this file, restore it.

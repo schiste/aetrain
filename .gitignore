@@ -38,11 +38,9 @@ out/
 target/
 apps/web/dist/
 apps/web/.vite/
-# packages/rust/aetrain-routing-wasm/pkg/ is intentionally tracked —
-# Cloudflare Pages doesn't have a Rust toolchain in its build env, so
-# we ship the wasm-pack output with the source. Rebuild locally via
-# `wasm-pack build packages/rust/aetrain-routing-wasm --target web --release`
-# and commit the regenerated pkg/* whenever the routing crate changes.
+# wasm-pack output for the routing crate is built on demand (locally and
+# on Cloudflare Pages — see scripts/build-for-pages.sh) and never tracked.
+packages/rust/aetrain-routing-wasm/pkg/
 apps/web/test-results/
 apps/web/playwright-report/
 apps/web/blob-report/
