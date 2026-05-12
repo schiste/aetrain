@@ -493,6 +493,9 @@ export function createLeafletMapSurface({
   // loop so we can cancel it when the trip is no longer empty.
   let seedPulseStartedAt: number | null = null;
   let seedPulseRafId = 0;
+  // Last tripKey for which we triggered the routes-fade animation.
+  // Stays "" on the first render so the initial route draw fades in too.
+  let lastRoutesFadeTripKey = "";
 
   const resizeObserver =
     typeof ResizeObserver !== "undefined"
@@ -975,11 +978,25 @@ export function createLeafletMapSurface({
     const endCamera = clampCamera(target, currentSize);
     const endWorld = mercatorProject(endCamera.lon, endCamera.lat);
     const startedAt = now();
-    const durationMs = 560;
+    // Adaptive duration: longer travels get more time so the camera
+    // speed stays roughly constant in pixel-space. Clamped to a
+    // tight 360–820ms band so quick toggles don't drag and continent-
+    // spanning flies don't feel sluggish.
+    const dx = endWorld.x - startWorld.x;
+    const dy = endWorld.y - startWorld.y;
+    const worldDistance = Math.hypot(dx, dy);
+    const zoomDelta = Math.abs(endCamera.zoom - startCamera.zoom);
+    const durationMs = Math.min(
+      820,
+      Math.max(360, 380 + worldDistance * 24000 + zoomDelta * 60)
+    );
 
     const tick = (): void => {
       const progress = Math.min(1, (now() - startedAt) / durationMs);
-      const eased = easeInOutCubic(progress);
+      // easeInOutQuint: stronger ease at both ends than the previous
+      // cubic, gives the camera a softer "settle" without losing the
+      // sense of motion in the middle.
+      const eased = easeInOutQuint(progress);
       const centerWorld = {
         x: lerp(startWorld.x, endWorld.x, eased),
         y: lerp(startWorld.y, endWorld.y, eased)
@@ -1176,6 +1193,19 @@ export function createLeafletMapSurface({
 
     if (dirty.routes) {
       drawRoutes(frame, currentState.segments);
+      // Trigger a one-shot fade-in on the routes canvas whenever the
+      // trip key actually changes (stop added/removed/reordered). The
+      // signature carries tripKey so we can spot the change without
+      // re-deriving from state. CSS handles the ramp via .routes.fading;
+      // forcing a reflow before re-adding the class restarts the
+      // keyframe — without it, replays during fly-to animations would
+      // be ignored.
+      if (currentSignature.tripKey !== lastRoutesFadeTripKey) {
+        lastRoutesFadeTripKey = currentSignature.tripKey;
+        routeCanvas.classList.remove("fading");
+        void routeCanvas.offsetWidth;
+        routeCanvas.classList.add("fading");
+      }
     }
 
     if (dirty.cities || dirty.labels) {
@@ -2401,6 +2431,12 @@ function easeInOutCubic(value: number): number {
   return value < 0.5
     ? 4 * value * value * value
     : 1 - ((-2 * value + 2) ** 3) / 2;
+}
+
+function easeInOutQuint(value: number): number {
+  return value < 0.5
+    ? 16 * value * value * value * value * value
+    : 1 - ((-2 * value + 2) ** 5) / 2;
 }
 
 function lerp(from: number, to: number, progress: number): number {

@@ -174,8 +174,17 @@ ae-trip-list[data-revealed="true"] .suggest { animation: ae-suggestion-reveal 12
   from { opacity: 0; transform: translateY(-2px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Pop animation on stop rows: replayed each render via a key on .ts
+   plus a CSS class trick. The animation is short (180ms) and uses
+   `both` so the final state sticks. */
+ae-trip-list[data-revealed="true"] .ts { animation: ae-stop-pop 180ms cubic-bezier(.34, 1.4, .64, 1) both; }
+@keyframes ae-stop-pop {
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
+}
 @media (prefers-reduced-motion: reduce) {
-  ae-trip-list[data-revealed="true"] .suggest { animation: none; }
+  ae-trip-list[data-revealed="true"] .suggest,
+  ae-trip-list[data-revealed="true"] .ts { animation: none; }
 }
 .sri.kbnav { background: var(--ae-bg-3); outline: 1px solid var(--ae-accent); outline-offset: -1px; }
 
@@ -245,6 +254,20 @@ ae-trip-list[data-revealed="true"] .suggest { animation: ae-suggestion-reveal 12
 .bd:hover { background: rgba(244, 63, 94, .18); }
 
 #map { width: 100%; height: 100%; min-width: 0; min-height: 0; background: var(--ae-bg); }
+
+/* One-shot fade-in on the routes canvas when the trip key changes.
+   The animation is paused while .fading is absent (resting state); a
+   forced reflow + re-add of the class in JS replays the keyframe. */
+.aetrain-map-canvas.routes.fading {
+  animation: ae-routes-fade-in 260ms ease-out;
+}
+@keyframes ae-routes-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aetrain-map-canvas.routes.fading { animation: none; }
+}
 
 /* Visually-hidden skip-link that becomes visible when focused via Tab.
    The first focusable element on the page; lets keyboard / screen-
