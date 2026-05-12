@@ -442,20 +442,83 @@ ae-debug-toggles {
 }
 @media (max-width: 800px) {
   body { overflow: hidden; }
-  /* On narrow viewports the sidebar sits below the map. The map takes the
-     primary row; the sidebar scrolls independently in the row beneath it.
-     Grid `order` flips the visual stacking without touching the DOM order
-     (which keeps tab order: sidebar first → map second). */
-  #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(18rem, 50dvh); }
+  /* On narrow viewports the sidebar becomes a bottom sheet: the map
+     takes the full background; the sidebar floats at the bottom with
+     two height states gated by data-sheet-state ("expanded" | "peek").
+     Grid `order` flips the visual stacking without touching DOM order
+     (so tab order remains sidebar → map for assistive tech). */
+  #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
   #app > #map { order: 0; }
-  #app > aside#side, #app > #side { order: 1; width: 100%; min-width: 100%; height: auto; max-height: none; border-right: none; border-top: 1px solid var(--ae-border); border-bottom: none; }
+  #app > aside#side, #app > #side {
+    order: 1;
+    width: 100%;
+    min-width: 100%;
+    max-height: none;
+    border-right: none;
+    border-top: 1px solid var(--ae-border);
+    border-bottom: none;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    box-shadow: 0 -12px 24px -16px rgba(0, 0, 0, .55);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    transition: height 220ms ease;
+  }
+  #app > aside#side[data-sheet-state="expanded"],
+  #app > #side[data-sheet-state="expanded"] {
+    height: min(70dvh, 36rem);
+  }
+  #app > aside#side[data-sheet-state="peek"],
+  #app > #side[data-sheet-state="peek"] {
+    height: calc(8.25rem + env(safe-area-inset-bottom, 0px));
+  }
+  #side[data-sheet-state="peek"] .side-main { overflow: hidden; }
+  /* In peek, show only the header (stats sit there too) — hide the
+     filters / search / trip-list scrolls but keep stats visible. */
+  #side[data-sheet-state="peek"] ae-filters,
+  #side[data-sheet-state="peek"] ae-search,
+  #side[data-sheet-state="peek"] ae-trip-list,
+  #side[data-sheet-state="peek"] .sh { display: none; }
+  .sheet-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 28px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .sheet-handle .grip {
+    width: 44px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--ae-border-soft);
+    transition: background .15s;
+  }
+  .sheet-handle:hover .grip { background: var(--ae-fg-muted); }
+  .sheet-handle:focus-visible { outline: none; }
+  .sheet-handle:focus-visible .grip { background: var(--ae-accent); }
+
   .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  #citycount { right: 12px; bottom: 12px; max-width: calc(100vw - 24px); }
+  /* Lift the city-count badge above the bottom-sheet's peek footprint
+     so it stays legible whichever state the sheet is in. */
+  #citycount {
+    right: 12px;
+    bottom: calc(9rem + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - 24px);
+  }
   /* Search dropdown becomes self-scrolling so long result lists don't
      push other panels offscreen on touch devices. */
   #sr { max-height: 50vh; overflow-y: auto; }
   /* Bigger tap targets on touch. */
   .tx { width: 36px; height: 36px; min-width: 36px; min-height: 36px; font-size: 16px; }
+}
+
+/* Hide the sheet handle on desktop where the sidebar is a left
+   column, not a sheet. */
+@media (min-width: 801px) {
+  .sheet-handle { display: none; }
 }
 @media (max-width: 560px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

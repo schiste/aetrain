@@ -11,6 +11,14 @@ import "./ae-trip-list.ts";
 import { defineComponent } from "../runtime/component.ts";
 import { html } from "../runtime/html.ts";
 import { tryUseAppContext } from "../runtime/context.ts";
+import { signal } from "../runtime/signal.ts";
+
+// Bottom-sheet collapse state for the mobile layout. Persisted via the
+// `data-sheet-state` attribute on #side; CSS reacts via the
+// `@media (max-width: 800px)` rules in tokens.css. On desktop the
+// attribute is set but no styles consume it.
+type SheetState = "peek" | "expanded";
+const sheetState = signal<SheetState>("expanded");
 
 defineComponent("ae-sidebar", () => ({
   render() {
@@ -25,11 +33,33 @@ defineComponent("ae-sidebar", () => ({
       event.preventDefault();
       void ctx?.onShareTrip();
     };
+    const onToggleSheet = (event: Event) => {
+      event.preventDefault();
+      sheetState.set(sheetState.peek() === "expanded" ? "peek" : "expanded");
+    };
 
     const datasetMeta = ctx ? ctx.datasetMeta() : "Loading dataset…";
+    const currentSheetState = sheetState();
+    const sheetLabel =
+      currentSheetState === "expanded" ? "Collapse sidebar" : "Expand sidebar";
 
     return html`
-      <aside id="side" role="complementary" aria-label="Trip planner">
+      <aside
+        id="side"
+        role="complementary"
+        aria-label="Trip planner"
+        data-sheet-state=${currentSheetState}
+      >
+        <button
+          class="sheet-handle"
+          type="button"
+          aria-label=${sheetLabel}
+          aria-expanded=${currentSheetState === "expanded" ? "true" : "false"}
+          aria-controls="side"
+          onclick=${onToggleSheet}
+        >
+          <span class="grip" aria-hidden="true"></span>
+        </button>
         <div class="side-main">
           <div class="sh">
             <h1>Aetrain</h1>
