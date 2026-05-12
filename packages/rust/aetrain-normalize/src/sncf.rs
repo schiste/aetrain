@@ -2150,6 +2150,14 @@ fn resolve_gtfs_basic_ineligible_clusters(
                         &cluster_details,
                     )
                 }) else {
+                    if let Some(derived_display_name) = parent_key
+                        .as_deref()
+                        .and_then(derived_parent_display_name_from_key)
+                    {
+                        resolutions
+                            .rename_display_name
+                            .insert(cluster_key.clone(), derived_display_name);
+                    }
                     resolutions
                         .report
                         .records
@@ -3455,6 +3463,61 @@ T1,08:00:00,08:05:00,StopArea:BUNDE,1\n",
                     record.display_name == "Bunde Bahnhof Zob"
                         && record.resolution
                             == RejectedCityCandidateResolution::UnresolvedStationOnly
+                })
+        );
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
+    fn unresolved_route_like_cluster_uses_clean_parent_display_name() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-route-like-parent-name-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:GOLDAU,Goldau A4,47.0495,8.5460,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:GOLDAU,1\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "ch-gtfs",
+            "CH",
+            "test-version",
+            "2026-05-12T10:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert_eq!(output.summary.city_count, 1);
+        assert_eq!(output.cities[0].display_name, "Goldau");
+        assert!(
+            output.cities[0]
+                .aliases
+                .iter()
+                .any(|alias| alias == "Goldau A4")
+        );
+        assert!(
+            output
+                .rejected_city_candidates
+                .records
+                .iter()
+                .any(|record| {
+                    record.display_name == "Goldau A4"
+                        && record.resolution
+                            == RejectedCityCandidateResolution::UnresolvedReferenceGap
                 })
         );
 
