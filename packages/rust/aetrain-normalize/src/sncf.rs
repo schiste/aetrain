@@ -2088,13 +2088,18 @@ fn resolve_gtfs_basic_ineligible_clusters(
                     *location,
                     &cluster_details,
                 ) else {
-                    if let Some(derived_display_name) = parent_key
-                        .as_deref()
-                        .and_then(derived_parent_display_name_from_key)
-                    {
-                        resolutions
-                            .rename_display_name
-                            .insert(cluster_key.clone(), derived_display_name);
+                    if let Some(parent_key) = parent_key.as_deref() {
+                        if let Some(derived_display_name) =
+                            derived_fallback_urban_city_display_name(parent_key)
+                        {
+                            resolutions
+                                .rename_display_name
+                                .insert(cluster_key.clone(), derived_display_name);
+                        } else {
+                            resolutions.drop_cluster_keys.insert(cluster_key.clone());
+                        }
+                    } else {
+                        resolutions.drop_cluster_keys.insert(cluster_key.clone());
                     }
                     resolutions
                         .report
@@ -2429,9 +2434,35 @@ fn derived_parent_display_name_from_key(parent_key: &str) -> Option<String> {
     Some(title_case(&normalized))
 }
 
+fn derived_fallback_urban_city_display_name(parent_key: &str) -> Option<String> {
+    let normalized = normalize_name(parent_key);
+    let tokens = normalized.split_whitespace().collect::<Vec<_>>();
+    if tokens.is_empty() || !is_usable_city_name_prefix(&normalized) {
+        return None;
+    }
+
+    let looks_like_stop_fragment = tokens.len() == 1
+        && (tokens[0].ends_with("str")
+            || tokens[0].ends_with("strasse")
+            || tokens[0].ends_with("platz")
+            || tokens[0].ends_with("tor")
+            || tokens[0].ends_with("campus")
+            || tokens[0].ends_with("brucke")
+            || tokens[0].ends_with("bruecke"));
+    if looks_like_stop_fragment {
+        return None;
+    }
+
+    Some(title_case(&normalized))
+}
+
 fn is_usable_city_name_prefix(prefix: &str) -> bool {
     let tokens = prefix.split_whitespace().collect::<Vec<_>>();
     if tokens.is_empty() {
+        return false;
+    }
+
+    if tokens.len() == 2 && tokens[0] == "s" && tokens[1] == "u" {
         return false;
     }
 
@@ -3555,6 +3586,50 @@ T1,08:00:00,08:05:00,StopArea:BUNDE,1\n",
     }
 
     #[test]
+    fn unresolved_non_locality_urban_interchange_cluster_is_dropped() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-gtfs-basic-urban-stop-fragment-drop-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:YORCK,S U Yorckstr,52.4930,13.3650,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:YORCK,1\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+
+        let output = build_gtfs_basic_dataset(
+            &zip_path,
+            "de-delfi-gtfs",
+            "DE",
+            "test-version",
+            "2026-05-12T11:15:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("gtfs basic dataset should build");
+
+        assert_eq!(output.summary.city_count, 0);
+        assert_eq!(output.summary.station_count, 0);
+        assert!(output.stations.is_empty());
+        assert!(output.station_mappings.records.is_empty());
+        assert!(output.rejected_city_candidates.records.iter().any(|record| {
+            record.display_name == "S U Yorckstr"
+                && record.resolution == RejectedCityCandidateResolution::UnresolvedStationOnly
+        }));
+
+        let _ = fs::remove_file(zip_path);
+    }
+
+    #[test]
     fn unresolved_route_like_cluster_uses_clean_parent_display_name() {
         let zip_path = write_test_gtfs_zip(
             "aetrain-gtfs-basic-route-like-parent-name-test.zip",
@@ -3709,6 +3784,34 @@ T1,08:00:00,08:05:00,StopArea:GOLDAU,1\n",
             stems.get("s2").map(String::as_str),
             Some("bad hofgastein bahnhof")
         );
+    }
+
+    #[test]
+    fn gtfs_basic_stem_rejects_generic_s_u_prefix() {
+        let stations = vec![
+            GtfsStationArea {
+                station_key: "s1".to_string(),
+                display_name: "S+U Westhafen (Berlin)".to_string(),
+                location: GeoPoint {
+                    lat: 52.5350,
+                    lon: 13.3440,
+                },
+                uic_code: None,
+            },
+            GtfsStationArea {
+                station_key: "s2".to_string(),
+                display_name: "S+U Gesundbrunnen Bhf (Berlin)".to_string(),
+                location: GeoPoint {
+                    lat: 52.5493,
+                    lon: 13.3884,
+                },
+                uic_code: None,
+            },
+        ];
+
+        let stems = derive_gtfs_basic_city_stems(&stations);
+        assert_ne!(stems.get("s1").map(String::as_str), Some("s u"));
+        assert_ne!(stems.get("s2").map(String::as_str), Some("s u"));
     }
 
     #[test]
