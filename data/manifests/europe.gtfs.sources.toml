@@ -221,7 +221,7 @@ url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020"
 file_name = "ch-gtfs.zip"
 active = true
 role = "schedule"
-resolver = { kind = "html_latest_match", page_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020", href_pattern = '^https://data\\.opentransportdata\\.swiss/dataset/[0-9a-f-]+/resource/[0-9a-f-]+/download/gtfs_fp2026_\\d{8}\\.zip$' }
+resolver = { kind = "html_latest_match", page_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020", href_pattern = '^https://data\.opentransportdata\.swiss/dataset/[0-9a-f-]+/resource/[0-9a-f-]+/download/gtfs_fp2026_\d{8}\.zip$' }
 include_service_classes = ["intercity", "regional", "ferry"]
 notes = "Official Swiss GTFS static feed resolved from the public dataset page. The public dataset redirects to a short-lived signed download URL."
 
