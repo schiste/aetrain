@@ -760,6 +760,9 @@ fn city_quality_record(city: &aetrain_domain::City) -> PipelineCityQualityRecord
 fn abbreviation_candidate_record(
     city: &aetrain_domain::City,
 ) -> Option<PipelineAbbreviationCandidateRecord> {
+    if is_legitimate_short_city_name(city) {
+        return None;
+    }
     let normalized_name = normalize_name(&city.display_name);
     let token_count = normalized_name.split_whitespace().count();
     let compact = normalized_name.replace(' ', "");
@@ -793,6 +796,18 @@ fn abbreviation_candidate_record(
         normalized_name,
         reason: reason.to_string(),
     })
+}
+
+fn is_legitimate_short_city_name(city: &aetrain_domain::City) -> bool {
+    matches!(
+        (city.country_code.as_str(), normalize_name(&city.display_name).as_str()),
+        ("FR", "eu")
+            | ("FR", "ay")
+            | ("CH", "au sg")
+            | ("CH", "au zh")
+            | ("CH", "ay f")
+            | ("CH", "re")
+    )
 }
 
 fn route_like_candidate_record(
@@ -1539,6 +1554,30 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         request.target.id.as_str(),
         &mut merged_cities.issues,
     );
+    let post_cleanup_remap = build_aggregate_city_id_remap(
+        merged_cities.cities.iter().collect(),
+        request.target.id.as_str(),
+        &mut merged_cities.issues,
+    );
+    if !post_cleanup_remap.is_empty() {
+        for (from_city_id, to_city_id) in &post_cleanup_remap {
+            rebind_city_id_remap(&mut merged_cities.city_id_remap, from_city_id, to_city_id);
+        }
+        merged_cities.cities = collapse_cities_by_remap(
+            merged_cities.cities.drain(..),
+            &post_cleanup_remap,
+        )
+        .into_values()
+        .collect();
+    }
+    counters.insert(
+        "route_like_city_unresolved_count".to_string(),
+        merged_cities
+            .cities
+            .iter()
+            .filter(|city| route_like_candidate_record(city).is_some())
+            .count() as u64,
+    );
     merged_cities.aliases = rebuild_alias_records(&merged_cities.cities);
     let stations = merge_stations(
         &dependency_inputs,
@@ -2236,9 +2275,8 @@ fn cleanup_station_like_and_zz_residual_cities(
     let mut remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
 
     for city in cities.iter_mut() {
-        if city.country_code == "ZZ" {
-            if let Some(country_code) = infer_country_code_from_station_mappings(city, station_mappings)
-            {
+        if let Some(country_code) = infer_country_code_from_station_mappings(city, station_mappings) {
+            if city.country_code == "ZZ" {
                 city.country_code = country_code.clone();
                 issues.push(NormalizationIssue {
                     severity: crate::IssueSeverity::Info,
@@ -2249,7 +2287,121 @@ fn cleanup_station_like_and_zz_residual_cities(
                         city.display_name, country_code
                     ),
                 });
+            } else if city.country_code != country_code && city.wikidata_qid.is_none() {
+                let original_country_code = city.country_code.clone();
+                city.country_code = country_code.clone();
+                issues.push(NormalizationIssue {
+                    severity: crate::IssueSeverity::Info,
+                    source_id: aggregate_source_id.to_string(),
+                    entity_ref: city.city_id.to_string(),
+                    message: format!(
+                        "corrected weak aggregate city country for {} from {} to {} using station evidence",
+                        city.display_name, original_country_code, country_code
+                    ),
+                });
             }
+        }
+
+        if let Some(cleaned_display_name) =
+            cleaned_residual_city_display_name(city, mapping_by_city.get(&city.city_id))
+            && cleaned_display_name != city.display_name
+        {
+            let original_display_name = city.display_name.clone();
+            if !city.aliases.iter().any(|alias| alias == &original_display_name) {
+                city.aliases.push(original_display_name.clone());
+            }
+            city.display_name = cleaned_display_name.clone();
+            city.slug = city_identity_key(&cleaned_display_name).replace(' ', "-");
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Info,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "cleaned aggregate residual city display name from {} to {}",
+                    original_display_name, cleaned_display_name
+                ),
+            });
+        }
+
+        if let Some(expanded_display_name) = explicit_abbreviation_expansion(city) {
+            let original_display_name = city.display_name.clone();
+            let expanded_key = comparable_place_key(&expanded_display_name);
+            let effective_country = infer_country_code_from_station_mappings(city, station_mappings)
+                .unwrap_or_else(|| city.country_code.clone());
+            let mut candidates = snapshot
+                .iter()
+                .filter(|parent| parent.city_id != city.city_id)
+                .filter(|parent| effective_country == effective_city_country_code(parent, station_mappings))
+                .filter(|parent| comparable_place_key(&city_identity_key(&parent.display_name)) == expanded_key)
+                .filter_map(|parent| {
+                    let distance_meters = geo_distance_meters(city.location, parent.location);
+                    (distance_meters <= AGGREGATE_CITY_MERGE_DISTANCE_METERS as f64)
+                        .then_some((parent, distance_meters))
+                })
+                .collect::<Vec<_>>();
+            candidates.sort_by(|left, right| {
+                left.1
+                    .partial_cmp(&right.1)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+            if let Some((parent, _)) = candidates.first().copied() {
+                remap.insert(city.city_id.clone(), parent.city_id.clone());
+                issues.push(NormalizationIssue {
+                    severity: crate::IssueSeverity::Info,
+                    source_id: aggregate_source_id.to_string(),
+                    entity_ref: city.city_id.to_string(),
+                    message: format!(
+                        "demoted aggregate abbreviated city {} into canonical parent city {}",
+                        original_display_name, parent.display_name
+                    ),
+                });
+            } else if expanded_display_name != city.display_name {
+                if !city.aliases.iter().any(|alias| alias == &original_display_name) {
+                    city.aliases.push(original_display_name.clone());
+                }
+                city.display_name = expanded_display_name.clone();
+                city.slug = city_identity_key(&expanded_display_name).replace(' ', "-");
+                issues.push(NormalizationIssue {
+                    severity: crate::IssueSeverity::Info,
+                    source_id: aggregate_source_id.to_string(),
+                    entity_ref: city.city_id.to_string(),
+                    message: format!(
+                        "expanded aggregate abbreviated city display name from {} to {}",
+                        original_display_name, expanded_display_name
+                    ),
+                });
+                if city.display_name == "Berlin" {
+                    if let Some(parent) = snapshot.iter().find(|parent| {
+                        parent.city_id != city.city_id
+                            && effective_city_country_code(parent, station_mappings) == "DE"
+                            && comparable_place_key(&city_identity_key(&parent.display_name))
+                                == "berlin"
+                    }) {
+                        remap.insert(city.city_id.clone(), parent.city_id.clone());
+                    }
+                }
+            }
+        }
+
+        if normalize_name(&city.display_name) == "s"
+            && city.wikidata_qid.is_none()
+            && let Some(parent) = best_major_parent_for_generic_s_cluster(
+                city,
+                &snapshot,
+                station_mappings,
+            )
+        {
+            remap.insert(city.city_id.clone(), parent.city_id.clone());
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Info,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "demoted aggregate generic S-prefix city {} into parent city {}",
+                    city.display_name, parent.display_name
+                ),
+            });
+            continue;
         }
 
         if !is_station_qualified_city_name(&city.display_name) || city.station_ids.len() != 1 {
@@ -2303,6 +2455,111 @@ fn cleanup_station_like_and_zz_residual_cities(
     *cities = collapse_cities_by_remap(cities.drain(..), &remap)
         .into_values()
         .collect();
+}
+
+fn effective_city_country_code(
+    city: &aetrain_domain::City,
+    station_mappings: &StationMappingReport,
+) -> String {
+    infer_country_code_from_station_mappings(city, station_mappings)
+        .unwrap_or_else(|| city.country_code.clone())
+}
+
+fn cleaned_residual_city_display_name(
+    city: &aetrain_domain::City,
+    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+) -> Option<String> {
+    if !is_station_qualified_city_name(&city.display_name)
+        && route_like_candidate_record(city).is_none()
+        && !matches!(normalize_name(&city.display_name).as_str(), "ay f")
+    {
+        return None;
+    }
+
+    if normalize_name(&city.display_name) == "ay f" {
+        return Some("Ay".to_string());
+    }
+
+    let mut names = vec![city.display_name.clone()];
+    names.extend(city.aliases.clone());
+    if let Some(records) = station_records {
+        names.extend(records.iter().map(|record| record.station_display_name.clone()));
+    }
+
+    let mut candidates = BTreeSet::new();
+    for name in names {
+        let cleaned_key = city_identity_key(&name);
+        if !cleaned_key.is_empty()
+            && is_plausible_aggregate_city_name(&cleaned_key)
+            && cleaned_key.split_whitespace().all(|token| {
+                !token.chars().any(|ch| ch.is_ascii_digit())
+                    && !is_route_designator_token(token)
+                    && !is_street_suffix_token(token)
+            })
+        {
+            candidates.insert(title_case_ascii_name(&cleaned_key));
+        }
+        if let Some(route_key) = route_like_primary_parent_key(&name)
+            && is_plausible_aggregate_city_name(&route_key)
+        {
+            candidates.insert(title_case_ascii_name(&route_key));
+        }
+    }
+
+    candidates
+        .into_iter()
+        .max_by(|left, right| canonical_cleaned_name_rank(left).cmp(&canonical_cleaned_name_rank(right)))
+}
+
+fn canonical_cleaned_name_rank(value: &str) -> (usize, usize, std::cmp::Reverse<String>) {
+    let normalized = normalize_name(value);
+    (
+        normalized.split_whitespace().count(),
+        normalized.len(),
+        std::cmp::Reverse(normalized),
+    )
+}
+
+fn explicit_abbreviation_expansion(city: &aetrain_domain::City) -> Option<String> {
+    match (city.country_code.as_str(), normalize_name(&city.display_name).as_str()) {
+        ("DE", "d") => Some("Dusseldorf".to_string()),
+        ("DE", "fds") => Some("Freudenstadt".to_string()),
+        ("DE", "gd") => Some("Schwabisch Gmund".to_string()),
+        ("DE", "ma") => Some("Mannheim".to_string()),
+        ("DE", "me") => Some("Mettmann".to_string()),
+        ("DE", "mg") => Some("Monchengladbach".to_string()),
+        ("DE", "s") => Some("Berlin".to_string()),
+        _ => None,
+    }
+}
+
+fn best_major_parent_for_generic_s_cluster<'a>(
+    city: &aetrain_domain::City,
+    snapshot: &'a [aetrain_domain::City],
+    station_mappings: &StationMappingReport,
+) -> Option<&'a aetrain_domain::City> {
+    if normalize_name(&city.display_name) != "s" {
+        return None;
+    }
+    let effective_country = effective_city_country_code(city, station_mappings);
+    snapshot
+        .iter()
+        .filter(|parent| parent.city_id != city.city_id)
+        .filter(|parent| effective_city_country_code(parent, station_mappings) == effective_country)
+        .filter(|parent| normalize_name(&parent.display_name) != "s")
+        .filter_map(|parent| {
+            let distance_meters = geo_distance_meters(city.location, parent.location);
+            (distance_meters <= AGGREGATE_CITY_MERGE_DISTANCE_METERS as f64).then_some((
+                parent,
+                (
+                    parent.interest_score.unwrap_or(0),
+                    parent.station_ids.len(),
+                    std::cmp::Reverse(distance_meters.round() as u32),
+                ),
+            ))
+        })
+        .max_by(|left, right| left.1.cmp(&right.1))
+        .map(|(parent, _)| parent)
 }
 
 fn connected_city_components(group: &[&aetrain_domain::City]) -> Vec<Vec<usize>> {
@@ -4345,6 +4602,91 @@ mod tests {
     }
 
     #[test]
+    fn cleaned_residual_city_display_name_strips_route_like_noise() {
+        let city = City {
+            city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d").expect("valid city id"),
+            slug: "wimmenau-d-919-rue-de-la".to_string(),
+            display_name: "Wimmenau D 919 Rue De La".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.910025,
+                lon: 7.420315,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-87642348").expect("valid station id")],
+            aliases: vec!["Wimmenau D.919 - Rue de la Gare".to_string()],
+        };
+
+        assert_eq!(
+            cleaned_residual_city_display_name(&city, None).as_deref(),
+            Some("Wimmenau")
+        );
+    }
+
+    #[test]
+    fn abbreviation_candidate_record_exempts_legitimate_short_names() {
+        let eu = City {
+            city_id: CityId::new("eu-fr-76255").expect("valid city id"),
+            slug: "eu".to_string(),
+            display_name: "Eu".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 50.054139,
+                lon: 1.417087,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-87317537").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let au_sg = City {
+            city_id: CityId::new("au-sg-ch-e9228a80").expect("valid city id"),
+            slug: "au-sg".to_string(),
+            display_name: "Au Sg".to_string(),
+            country_code: "CH".to_string(),
+            location: GeoPoint {
+                lat: 47.43561098,
+                lon: 9.64140235,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-8506316").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+
+        assert!(abbreviation_candidate_record(&eu).is_none());
+        assert!(abbreviation_candidate_record(&au_sg).is_none());
+    }
+
+    #[test]
+    fn explicit_abbreviation_expansion_maps_known_german_codes() {
+        let d = City {
+            city_id: CityId::new("d-de-d6d09cb7").expect("valid city id"),
+            slug: "d".to_string(),
+            display_name: "D".to_string(),
+            country_code: "DE".to_string(),
+            location: GeoPoint {
+                lat: 51.2133554,
+                lon: 6.7755882,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-de-delfi-gtfs-405ced36").expect("valid station id")],
+            aliases: vec!["D-Bilk S".to_string()],
+        };
+
+        assert_eq!(
+            explicit_abbreviation_expansion(&d).as_deref(),
+            Some("Dusseldorf")
+        );
+    }
+
+    #[test]
     fn aggregate_enrichment_assigns_low_interest_to_station_shaped_rows() {
         let berlin = City {
             city_id: CityId::new("berlin-de-5b922f02").expect("valid city id"),
@@ -4911,10 +5253,8 @@ mod tests {
             "single_token_too_short"
         );
         assert_eq!(
-            abbreviation_candidate_record(&au_sg)
-                .expect("au sg candidate")
-                .reason,
-            "multi_token_short_code"
+            abbreviation_candidate_record(&au_sg),
+            None
         );
         assert_eq!(
             abbreviation_candidate_record(&rn)
