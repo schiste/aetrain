@@ -172,6 +172,20 @@ pub struct PipelineRouteLikeResidualRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineRouteGeometryQualityRecord {
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub from_country_code: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub to_country_code: String,
+    pub duration_min: Option<u32>,
+    pub geometry_source: EdgeGeometrySource,
+    pub point_count: usize,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -181,6 +195,7 @@ pub struct PipelineQualityReport {
     pub abbreviation_candidates: Vec<PipelineAbbreviationCandidateRecord>,
     pub route_like_candidates: Vec<PipelineAbbreviationCandidateRecord>,
     pub route_like_residuals: Vec<PipelineRouteLikeResidualRecord>,
+    pub non_railway_route_geometries: Vec<PipelineRouteGeometryQualityRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -389,7 +404,7 @@ fn export_pipeline_target(
             .iter()
             .map(|source| PipelineSourceArtifact {
                 source_id: source.definition.id.clone(),
-                local_path: source.local_path.display().to_string(),
+                local_path: source_artifact_local_path_for_export(&source.local_path, &target_root),
                 fetched_at: source.fetched_at.clone(),
                 sha256: source.sha256.clone(),
                 version_hint: source
@@ -451,6 +466,8 @@ fn export_pipeline_target(
 
     let quality_report = build_quality_report(
         &artifacts.canonical.cities,
+        &artifacts.canonical.edges,
+        &resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?,
         artifacts.station_mappings.as_ref(),
         &artifacts.counters,
         artifacts.duplicates.candidates.len(),
@@ -540,7 +557,56 @@ fn export_pipeline_target(
         &quality_dir.join("route-like-residuals.json"),
         &quality_report.route_like_residuals,
     )?;
+    write_json(
+        &quality_dir.join("non-railway-route-geometries.json"),
+        &quality_report.non_railway_route_geometries,
+    )?;
     Ok(artifact_manifest)
+}
+
+fn source_artifact_local_path_for_export(source_path: &Path, target_root: &Path) -> String {
+    let Ok(source_path) = absolutize_existing_path(source_path) else {
+        return source_path.display().to_string();
+    };
+    let Ok(target_root) = absolutize_existing_path(target_root) else {
+        return source_path.display().to_string();
+    };
+    relative_path_between(&source_path, &target_root)
+        .unwrap_or(source_path)
+        .display()
+        .to_string()
+}
+
+fn absolutize_existing_path(path: &Path) -> Result<PathBuf> {
+    let path = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(path)
+    };
+    path.canonicalize()
+        .with_context(|| format!("failed to canonicalize {}", path.display()))
+}
+
+fn relative_path_between(path: &Path, base_dir: &Path) -> Option<PathBuf> {
+    let path_components = path.components().collect::<Vec<_>>();
+    let base_components = base_dir.components().collect::<Vec<_>>();
+    if path_components.first() != base_components.first() {
+        return None;
+    }
+
+    let common_len = path_components
+        .iter()
+        .zip(base_components.iter())
+        .take_while(|(left, right)| left == right)
+        .count();
+    let mut relative = PathBuf::new();
+    for _ in common_len..base_components.len() {
+        relative.push("..");
+    }
+    for component in &path_components[common_len..] {
+        relative.push(component.as_os_str());
+    }
+    Some(relative)
 }
 
 fn export_canonical_bundle(
@@ -583,6 +649,8 @@ fn export_canonical_bundle(
 
 fn build_quality_report(
     cities: &[aetrain_domain::City],
+    edges: &[aetrain_domain::TravelEdge],
+    edge_geometries: &EdgeGeometryArtifact,
     station_mappings: Option<&StationMappingReport>,
     counters: &BTreeMap<String, u64>,
     duplicate_count: usize,
@@ -659,6 +727,8 @@ fn build_quality_report(
         .partition(|record| record.reason == "digit_or_route_like_name");
     let route_like_residuals =
         build_route_like_residual_records(&route_like_candidates, station_mappings);
+    let non_railway_route_geometries =
+        build_non_railway_route_geometry_records(cities, edges, edge_geometries);
 
     let gate_results = vec![
         quality_gate_equals(
@@ -702,7 +772,103 @@ fn build_quality_report(
         abbreviation_candidates,
         route_like_candidates,
         route_like_residuals,
+        non_railway_route_geometries,
     }
+}
+
+fn build_non_railway_route_geometry_records(
+    cities: &[aetrain_domain::City],
+    edges: &[aetrain_domain::TravelEdge],
+    edge_geometries: &EdgeGeometryArtifact,
+) -> Vec<PipelineRouteGeometryQualityRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let duration_by_edge = edges
+        .iter()
+        .map(|edge| {
+            (
+                (edge.from_city_id.clone(), edge.to_city_id.clone()),
+                edge.duration_min,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    edge_geometries
+        .geometries
+        .iter()
+        .filter(|geometry| !is_railway_layer_geometry_source(&geometry.source))
+        .filter_map(|geometry| {
+            let from_city = cities_by_id.get(&geometry.from_city_id)?;
+            let to_city = cities_by_id.get(&geometry.to_city_id)?;
+            Some(PipelineRouteGeometryQualityRecord {
+                from_city_id: geometry.from_city_id.clone(),
+                from_display_name: from_city.display_name.clone(),
+                from_country_code: from_city.country_code.clone(),
+                to_city_id: geometry.to_city_id.clone(),
+                to_display_name: to_city.display_name.clone(),
+                to_country_code: to_city.country_code.clone(),
+                duration_min: duration_by_edge
+                    .get(&(geometry.from_city_id.clone(), geometry.to_city_id.clone()))
+                    .copied(),
+                geometry_source: geometry.source.clone(),
+                point_count: geometry.points.len(),
+                provenance: geometry.provenance.clone(),
+            })
+        })
+        .collect()
+}
+
+fn insert_route_geometry_coverage_counters(
+    counters: &mut BTreeMap<String, u64>,
+    edge_geometries: &EdgeGeometryArtifact,
+) {
+    let railway_layer_count = edge_geometries
+        .geometries
+        .iter()
+        .filter(|geometry| is_railway_layer_geometry_source(&geometry.source))
+        .count() as u64;
+    let gtfs_shape_count = edge_geometries
+        .geometries
+        .iter()
+        .filter(|geometry| geometry.source == EdgeGeometrySource::GtfsShapeSegment)
+        .count() as u64;
+    let straight_line_count = edge_geometries
+        .geometries
+        .iter()
+        .filter(|geometry| geometry.source == EdgeGeometrySource::StraightLineFallback)
+        .count() as u64;
+    let non_railway_layer_count = edge_geometries.geometries.len() as u64 - railway_layer_count;
+
+    counters.insert(
+        "route_geometry_count".to_string(),
+        edge_geometries.geometries.len() as u64,
+    );
+    counters.insert(
+        "railway_layer_route_geometry_count".to_string(),
+        railway_layer_count,
+    );
+    counters.insert(
+        "non_railway_layer_route_geometry_count".to_string(),
+        non_railway_layer_count,
+    );
+    counters.insert(
+        "gtfs_shape_route_geometry_count".to_string(),
+        gtfs_shape_count,
+    );
+    counters.insert(
+        "straight_line_route_geometry_count".to_string(),
+        straight_line_count,
+    );
+}
+
+fn is_railway_layer_geometry_source(source: &EdgeGeometrySource) -> bool {
+    matches!(
+        source,
+        EdgeGeometrySource::InfrastructureGraphFallback
+            | EdgeGeometrySource::OsmGraphFallbackPlanned
+    )
 }
 
 fn counter_value(counters: &BTreeMap<String, u64>, key: &str) -> u64 {
@@ -1593,6 +1759,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         &mut edge_geometries,
         &merged_cities.cities,
         &dependency_inputs,
+        request.manifest,
         request.target.id.as_str(),
         &mut merged_cities.issues,
     )?;
@@ -1600,6 +1767,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         "aggregate_rail_geometry_repair_count".to_string(),
         aggregate_rail_geometry_repair_count,
     );
+    insert_route_geometry_coverage_counters(&mut counters, &edge_geometries);
     let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
     apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
     counters.insert(
@@ -2203,11 +2371,12 @@ fn apply_aggregate_rail_geometry_authority(
     edge_geometries: &mut EdgeGeometryArtifact,
     cities: &[City],
     inputs: &[AggregateTargetInput],
+    manifest: &SourceManifest,
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
 ) -> Result<u64> {
     let Some((rail_geometry_source_id, rail_geometry_network)) =
-        load_aggregate_rail_geometry_network(inputs)?
+        load_aggregate_rail_geometry_network(inputs, manifest)?
     else {
         return Ok(0);
     };
@@ -2266,23 +2435,62 @@ fn apply_aggregate_rail_geometry_authority(
 
 fn load_aggregate_rail_geometry_network(
     inputs: &[AggregateTargetInput],
+    manifest: &SourceManifest,
 ) -> Result<Option<(String, RailGeometryNetwork)>> {
-    let Some(artifact) = inputs
+    let rail_geometry_sources = manifest
+        .sources
         .iter()
-        .flat_map(|input| &input.manifest.source_artifacts)
-        .find(|artifact| artifact.source_id == "sncf-fr-rfn-lines")
-    else {
-        return Ok(None);
-    };
-    let path = PathBuf::from(&artifact.local_path);
-    let network = RailGeometryNetwork::load_sncf_rfn_geojson(&path).with_context(|| {
-        format!(
-            "failed to load aggregate rail geometry authority {} from {}",
-            artifact.source_id,
-            path.display()
-        )
-    })?;
-    Ok(Some((artifact.source_id.clone(), network)))
+        .filter(|source| source.role.as_deref() == Some("rail_geometry"))
+        .map(|source| (source.id.as_str(), source))
+        .collect::<BTreeMap<_, _>>();
+
+    for (input, artifact) in inputs.iter().flat_map(|input| {
+        input
+            .manifest
+            .source_artifacts
+            .iter()
+            .map(move |artifact| (input, artifact))
+    }) {
+        let Some(source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
+            continue;
+        };
+        if source_definition.adapter != "sncf_fr" {
+            continue;
+        }
+        let path =
+            resolve_pipeline_source_artifact_path(artifact, &input.manifest.outputs.target_root);
+        let network = RailGeometryNetwork::load_sncf_rfn_geojson(&path).with_context(|| {
+            format!(
+                "failed to load aggregate rail geometry authority {} from {}",
+                artifact.source_id,
+                path.display()
+            )
+        })?;
+        return Ok(Some((artifact.source_id.clone(), network)));
+    }
+
+    Ok(None)
+}
+
+fn resolve_pipeline_source_artifact_path(
+    artifact: &PipelineSourceArtifact,
+    target_root: &str,
+) -> PathBuf {
+    let local_path = PathBuf::from(&artifact.local_path);
+    if local_path.is_absolute() {
+        return local_path;
+    }
+
+    let target_relative = PathBuf::from(target_root).join(&local_path);
+    if target_relative.exists() {
+        return target_relative;
+    }
+
+    if local_path.exists() {
+        return local_path;
+    }
+
+    target_relative
 }
 
 fn scale_geo_point_e5_for_pipeline(point: GeoPoint) -> PolylinePointE5 {
@@ -4041,6 +4249,20 @@ mod tests {
     }
 
     #[test]
+    fn relative_path_between_artifact_and_target_root_is_stable() {
+        let path =
+            PathBuf::from("/repo/data/cache/raw/sncf-fr-rfn-lines/sncf-fr-rfn-lines.geojson");
+        let target_root = PathBuf::from("/repo/data/build/stage1/sncf-fr");
+
+        assert_eq!(
+            relative_path_between(&path, &target_root),
+            Some(PathBuf::from(
+                "../../../cache/raw/sncf-fr-rfn-lines/sncf-fr-rfn-lines.geojson"
+            ))
+        );
+    }
+
+    #[test]
     fn aggregate_city_merge_canonicalizes_duplicate_foreign_feed_cities() {
         let paris_fr = City {
             city_id: CityId::new("paris-fr-75056").expect("valid city id"),
@@ -5336,7 +5558,14 @@ mod tests {
             ("residual_zz_city_count".to_string(), 360),
         ]);
 
-        let report = build_quality_report(&cities, None, &counters, 0);
+        let report = build_quality_report(
+            &cities,
+            &[],
+            &EdgeGeometryArtifact { geometries: vec![] },
+            None,
+            &counters,
+            0,
+        );
 
         assert_eq!(report.registry_match_report.authoritative_city_count, 0);
         assert_eq!(report.station_like_cities.len(), 1);
@@ -5379,6 +5608,110 @@ mod tests {
                 .status,
             "pass"
         );
+    }
+
+    #[test]
+    fn quality_report_lists_route_geometries_not_using_railway_layer() {
+        let paris = City {
+            city_id: CityId::new("paris-fr").expect("valid city id"),
+            slug: "paris".to_string(),
+            display_name: "Paris".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.8566,
+                lon: 2.3522,
+            },
+            wikidata_qid: Some("Q90".to_string()),
+            population: Some(2_100_000),
+            interest_score: Some(10),
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let lyon = City {
+            city_id: CityId::new("lyon-fr").expect("valid city id"),
+            slug: "lyon".to_string(),
+            display_name: "Lyon".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 45.764,
+                lon: 4.8357,
+            },
+            wikidata_qid: Some("Q456".to_string()),
+            population: Some(500_000),
+            interest_score: Some(7),
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let edges = vec![TravelEdge {
+            from_city_id: paris.city_id.clone(),
+            to_city_id: lyon.city_id.clone(),
+            duration_min: 120,
+            service_kind: ServiceKind::Rail,
+            service_class: ServiceClass::Intercity,
+            change_count_estimate: Some(0),
+            source_confidence: 90,
+            provenance: vec!["test:route".to_string()],
+        }];
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![
+                EdgeGeometryRecord {
+                    from_city_id: paris.city_id.clone(),
+                    to_city_id: lyon.city_id.clone(),
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_885_660,
+                            lon_e5: 235_220,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_576_400,
+                            lon_e5: 483_570,
+                        },
+                    ],
+                    source: EdgeGeometrySource::StraightLineFallback,
+                    provenance: vec!["test:route".to_string()],
+                },
+                EdgeGeometryRecord {
+                    from_city_id: lyon.city_id.clone(),
+                    to_city_id: paris.city_id.clone(),
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_576_400,
+                            lon_e5: 483_570,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_700_000,
+                            lon_e5: 360_000,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_885_660,
+                            lon_e5: 235_220,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: vec!["geometry:test-rail".to_string()],
+                },
+            ],
+        };
+        let mut counters = BTreeMap::new();
+        insert_route_geometry_coverage_counters(&mut counters, &edge_geometries);
+
+        let report =
+            build_quality_report(&[paris, lyon], &edges, &edge_geometries, None, &counters, 0);
+
+        assert_eq!(report.non_railway_route_geometries.len(), 1);
+        assert_eq!(
+            report.non_railway_route_geometries[0].geometry_source,
+            EdgeGeometrySource::StraightLineFallback
+        );
+        assert_eq!(
+            report.non_railway_route_geometries[0].duration_min,
+            Some(120)
+        );
+        assert_eq!(
+            counters.get("non_railway_layer_route_geometry_count"),
+            Some(&1)
+        );
+        assert_eq!(counters.get("railway_layer_route_geometry_count"), Some(&1));
     }
 
     #[test]
@@ -5479,7 +5812,14 @@ mod tests {
         };
         let counters = BTreeMap::new();
 
-        let report = build_quality_report(&[route_like, abbrev], None, &counters, 0);
+        let report = build_quality_report(
+            &[route_like, abbrev],
+            &[],
+            &EdgeGeometryArtifact { geometries: vec![] },
+            None,
+            &counters,
+            0,
+        );
 
         assert_eq!(report.route_like_candidates.len(), 1);
         assert_eq!(
