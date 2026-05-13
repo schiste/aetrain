@@ -2183,6 +2183,17 @@ export function createLeafletMapSurface({
     frame: MapFrame,
     stats: RenderStats
   ): void {
+    // The empty-state seed-pulse fires this rAF loop at ~60fps, all
+    // with the same `reason: "seed-pulse"`. Emitting a metric + info
+    // event per frame buried 5000-event diagnostic buffers in ~40s
+    // (regression from 717f9b0). The pulse is purely cosmetic — its
+    // duration is tightly bounded by the cities-only dirty-flag set
+    // and the perf HUD reads lastRenderStats directly, so we lose no
+    // signal by skipping the diagnostics emit for this reason.
+    if (reason === "seed-pulse") {
+      return;
+    }
+
     diagnostics.metric("map-render", stats.rendered, {
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
