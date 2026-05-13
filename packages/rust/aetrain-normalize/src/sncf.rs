@@ -1519,15 +1519,17 @@ fn build_edge_geometry(
             })
             .clone();
         if let Some(points) = cached {
-            let mut provenance = Vec::new();
-            if let Some(source_id) = ctx.rail_geometry_source_id {
-                provenance.push(format!("geometry:{source_id}"));
+            if route_geometry_distance_is_plausible(&points, from_location, to_location) {
+                let mut provenance = Vec::new();
+                if let Some(source_id) = ctx.rail_geometry_source_id {
+                    provenance.push(format!("geometry:{source_id}"));
+                }
+                return (
+                    points,
+                    EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance,
+                );
             }
-            return (
-                points,
-                EdgeGeometrySource::InfrastructureGraphFallback,
-                provenance,
-            );
         }
     }
 
@@ -1542,6 +1544,45 @@ fn build_edge_geometry(
         EdgeGeometrySource::StraightLineFallback,
         Vec::new(),
     )
+}
+
+fn route_geometry_distance_is_plausible(
+    points: &[GeoPoint],
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+) -> bool {
+    if points.len() < 2 {
+        return false;
+    }
+    let direct_meters = haversine_meters(from_location, to_location);
+    let geometry_meters = points
+        .windows(2)
+        .map(|window| haversine_meters(window[0], window[1]))
+        .sum::<f64>();
+    route_geometry_distance_metrics_are_plausible(geometry_meters, direct_meters)
+}
+
+fn route_geometry_distance_metrics_are_plausible(geometry_meters: f64, direct_meters: f64) -> bool {
+    if direct_meters < 1.0 {
+        return geometry_meters <= 1_000.0;
+    }
+    geometry_meters <= max_plausible_route_geometry_meters(direct_meters)
+}
+
+fn max_plausible_route_geometry_meters(direct_meters: f64) -> f64 {
+    if direct_meters < 1_000.0 {
+        return direct_meters + 20_000.0;
+    }
+    if direct_meters < 30_000.0 {
+        return (direct_meters * 6.0).max(direct_meters + 5_000.0);
+    }
+    if direct_meters < 100_000.0 {
+        return direct_meters * 4.0;
+    }
+    if direct_meters < 300_000.0 {
+        return direct_meters * 3.0;
+    }
+    direct_meters * 2.5
 }
 
 fn extract_shape_segment(
@@ -4084,6 +4125,83 @@ ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
                 .any(|entry| entry == "geometry:sncf-fr-rfn-lines")
         );
         assert!(output.edge_geometries.geometries[0].points.len() >= 3);
+
+        let _ = fs::remove_file(zip_path);
+        let _ = fs::remove_file(stations_csv_path);
+        let _ = fs::remove_file(rail_geojson_path);
+    }
+
+    #[test]
+    fn sncf_dataset_rejects_absurd_rfn_geometry_detours() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-rfn-detour-rejection-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:OCE87543009,Orléans,47.907891,1.904242,1,\n\
+StopArea:OCE87543116,Saint-Cyr-en-Val,47.819215,1.947581,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:OCE87543009,1\n\
+T1,08:08:00,08:09:00,StopArea:OCE87543116,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+        let stations_csv_path = write_text_file(
+            "aetrain-rfn-detour-rejection-stations-test.csv",
+            "id,nom,position_geographique,codeinsee,codes_uic\n\
+ref-orleans,Orléans,\"47.907891,1.904242\",45234,87543009\n\
+ref-saint-cyr,Saint-Cyr-en-Val,\"47.819215,1.947581\",45272,87543116\n",
+        )
+        .expect("station reference CSV should be created");
+        let rail_geojson_path = write_text_file(
+            "aetrain-rfn-detour-rejection-lines-test.geojson",
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [1.904242, 47.907891],
+          [0.100000, 47.300000],
+          [1.947581, 47.819215]
+        ]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("rail geojson should be created");
+
+        let output = build_sncf_dataset(
+            &zip_path,
+            &stations_csv_path,
+            Some(&rail_geojson_path),
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            Some("sncf-fr-rfn-lines"),
+            "test-version",
+            "2026-05-08T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("sncf dataset should build");
+
+        assert_eq!(output.summary.edge_count, 1);
+        assert_eq!(
+            output.edge_geometries.geometries[0].source,
+            EdgeGeometrySource::StraightLineFallback
+        );
+        assert_eq!(output.edge_geometries.geometries[0].points.len(), 2);
 
         let _ = fs::remove_file(zip_path);
         let _ = fs::remove_file(stations_csv_path);

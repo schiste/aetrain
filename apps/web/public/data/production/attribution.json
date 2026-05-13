@@ -1,8 +1,8 @@
 {
   "dataset_id": "stage1-europe-gtfs",
   "target_id": "europe-validated",
-  "dataset_version": "20260513-073241.483629",
-  "generated_at": "2026-05-13T07:32:41.483629Z",
+  "dataset_version": "20260513-164213.595118",
+  "generated_at": "2026-05-13T16:42:13.595118Z",
   "sources": [
     {
       "source_id": "at-oebb-gtfs",

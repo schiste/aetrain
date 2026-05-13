@@ -186,6 +186,22 @@ pub struct PipelineRouteGeometryQualityRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineRouteGeometryAnomalyRecord {
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub duration_min: Option<u32>,
+    pub geometry_source: EdgeGeometrySource,
+    pub geometry_distance_km: u32,
+    pub direct_distance_km: u32,
+    pub detour_ratio_x100: Option<u32>,
+    pub implied_speed_kmh: Option<u32>,
+    pub anomaly_type: String,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -196,6 +212,7 @@ pub struct PipelineQualityReport {
     pub route_like_candidates: Vec<PipelineAbbreviationCandidateRecord>,
     pub route_like_residuals: Vec<PipelineRouteLikeResidualRecord>,
     pub non_railway_route_geometries: Vec<PipelineRouteGeometryQualityRecord>,
+    pub route_geometry_anomalies: Vec<PipelineRouteGeometryAnomalyRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -232,6 +249,7 @@ pub struct PipelineArtifactManifest {
 const QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES: u64 = 100;
 const QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES: u64 = 250;
 const QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES: u64 = 10;
+const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str = "geometry:invalid-railway-path-rejected";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineAttributionFile {
@@ -561,6 +579,10 @@ fn export_pipeline_target(
         &quality_dir.join("non-railway-route-geometries.json"),
         &quality_report.non_railway_route_geometries,
     )?;
+    write_json(
+        &quality_dir.join("route-geometry-anomalies.json"),
+        &quality_report.route_geometry_anomalies,
+    )?;
     Ok(artifact_manifest)
 }
 
@@ -729,6 +751,8 @@ fn build_quality_report(
         build_route_like_residual_records(&route_like_candidates, station_mappings);
     let non_railway_route_geometries =
         build_non_railway_route_geometry_records(cities, edges, edge_geometries);
+    let route_geometry_anomalies =
+        build_route_geometry_anomaly_records(cities, edges, edge_geometries);
 
     let gate_results = vec![
         quality_gate_equals(
@@ -773,6 +797,7 @@ fn build_quality_report(
         route_like_candidates,
         route_like_residuals,
         non_railway_route_geometries,
+        route_geometry_anomalies,
     }
 }
 
@@ -820,6 +845,142 @@ fn build_non_railway_route_geometry_records(
         .collect()
 }
 
+fn build_route_geometry_anomaly_records(
+    cities: &[aetrain_domain::City],
+    edges: &[aetrain_domain::TravelEdge],
+    edge_geometries: &EdgeGeometryArtifact,
+) -> Vec<PipelineRouteGeometryAnomalyRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let edge_by_id = edges
+        .iter()
+        .map(|edge| ((edge.from_city_id.clone(), edge.to_city_id.clone()), edge))
+        .collect::<BTreeMap<_, _>>();
+
+    edge_geometries
+        .geometries
+        .iter()
+        .filter_map(|geometry| {
+            let from_city = cities_by_id.get(&geometry.from_city_id)?;
+            let to_city = cities_by_id.get(&geometry.to_city_id)?;
+            let edge =
+                edge_by_id.get(&(geometry.from_city_id.clone(), geometry.to_city_id.clone()));
+            let metrics = route_geometry_metrics(
+                &geometry.points,
+                from_city.location,
+                to_city.location,
+                edge.map(|edge| edge.duration_min),
+            );
+            let anomaly_type = route_geometry_anomaly_type(geometry, edge.copied(), &metrics)?;
+            Some(PipelineRouteGeometryAnomalyRecord {
+                from_city_id: geometry.from_city_id.clone(),
+                from_display_name: from_city.display_name.clone(),
+                to_city_id: geometry.to_city_id.clone(),
+                to_display_name: to_city.display_name.clone(),
+                duration_min: edge.map(|edge| edge.duration_min),
+                geometry_source: geometry.source.clone(),
+                geometry_distance_km: meters_to_km_u32(metrics.geometry_meters),
+                direct_distance_km: meters_to_km_u32(metrics.direct_meters),
+                detour_ratio_x100: metrics.detour_ratio_x100,
+                implied_speed_kmh: metrics.implied_speed_kmh,
+                anomaly_type,
+                provenance: geometry.provenance.clone(),
+            })
+        })
+        .collect()
+}
+
+#[derive(Clone, Copy, Debug)]
+struct RouteGeometryMetrics {
+    geometry_meters: f64,
+    direct_meters: f64,
+    detour_ratio_x100: Option<u32>,
+    implied_speed_kmh: Option<u32>,
+}
+
+fn route_geometry_metrics(
+    points: &[PolylinePointE5],
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+    duration_min: Option<u32>,
+) -> RouteGeometryMetrics {
+    let geometry_meters = edge_geometry_length_meters(points);
+    let direct_meters = geo_distance_meters(from_location, to_location);
+    let detour_ratio_x100 =
+        (direct_meters >= 1.0).then(|| ((geometry_meters / direct_meters) * 100.0).round() as u32);
+    let implied_speed_kmh =
+        duration_min
+            .filter(|duration_min| *duration_min > 0)
+            .map(|duration_min| {
+                ((geometry_meters / 1_000.0) / (duration_min as f64 / 60.0)).round() as u32
+            });
+
+    RouteGeometryMetrics {
+        geometry_meters,
+        direct_meters,
+        detour_ratio_x100,
+        implied_speed_kmh,
+    }
+}
+
+fn route_geometry_anomaly_type(
+    geometry: &EdgeGeometryRecord,
+    edge: Option<&aetrain_domain::TravelEdge>,
+    metrics: &RouteGeometryMetrics,
+) -> Option<String> {
+    if geometry
+        .provenance
+        .iter()
+        .any(|entry| entry == INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE)
+    {
+        return Some("rejected_invalid_railway_geometry".to_string());
+    }
+
+    if is_railway_layer_geometry_source(&geometry.source)
+        && !route_geometry_distance_metrics_are_plausible(
+            metrics.geometry_meters,
+            metrics.direct_meters,
+        )
+    {
+        return Some("railway_geometry_detour".to_string());
+    }
+
+    if edge.is_some() && route_geometry_speed_is_physically_impossible(metrics) {
+        return Some("impossible_geometry_speed".to_string());
+    }
+
+    None
+}
+
+fn route_geometry_speed_is_physically_impossible(metrics: &RouteGeometryMetrics) -> bool {
+    metrics.implied_speed_kmh.is_some_and(|speed| speed > 380)
+}
+
+fn edge_geometry_length_meters(points: &[PolylinePointE5]) -> f64 {
+    points
+        .windows(2)
+        .map(|window| {
+            geo_distance_meters(
+                polyline_point_to_geo(&window[0]),
+                polyline_point_to_geo(&window[1]),
+            )
+        })
+        .sum()
+}
+
+fn polyline_point_to_geo(point: &PolylinePointE5) -> GeoPoint {
+    GeoPoint {
+        lat: point.lat_e5 as f64 / 100_000.0,
+        lon: point.lon_e5 as f64 / 100_000.0,
+    }
+}
+
+fn meters_to_km_u32(meters: f64) -> u32 {
+    (meters / 1_000.0).round().clamp(0.0, u32::MAX as f64) as u32
+}
+
 fn insert_route_geometry_coverage_counters(
     counters: &mut BTreeMap<String, u64>,
     edge_geometries: &EdgeGeometryArtifact,
@@ -861,6 +1022,29 @@ fn insert_route_geometry_coverage_counters(
         "straight_line_route_geometry_count".to_string(),
         straight_line_count,
     );
+}
+
+fn route_geometry_distance_metrics_are_plausible(geometry_meters: f64, direct_meters: f64) -> bool {
+    if direct_meters < 1.0 {
+        return geometry_meters <= 1_000.0;
+    }
+    geometry_meters <= max_plausible_route_geometry_meters(direct_meters)
+}
+
+fn max_plausible_route_geometry_meters(direct_meters: f64) -> f64 {
+    if direct_meters < 1_000.0 {
+        return direct_meters + 20_000.0;
+    }
+    if direct_meters < 30_000.0 {
+        return (direct_meters * 6.0).max(direct_meters + 5_000.0);
+    }
+    if direct_meters < 100_000.0 {
+        return direct_meters * 4.0;
+    }
+    if direct_meters < 300_000.0 {
+        return direct_meters * 3.0;
+    }
+    direct_meters * 2.5
 }
 
 fn is_railway_layer_geometry_source(source: &EdgeGeometrySource) -> bool {
@@ -1755,9 +1939,17 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     let edges = merge_edges(&dependency_inputs, &merged_cities.city_id_remap);
     let mut edge_geometries =
         merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
+    let invalid_railway_route_geometry_rejected_count = reject_invalid_railway_layer_geometries(
+        &mut edge_geometries,
+        &merged_cities.cities,
+        &edges,
+        request.target.id.as_str(),
+        &mut merged_cities.issues,
+    );
     let aggregate_rail_geometry_repair_count = apply_aggregate_rail_geometry_authority(
         &mut edge_geometries,
         &merged_cities.cities,
+        &edges,
         &dependency_inputs,
         request.manifest,
         request.target.id.as_str(),
@@ -1766,6 +1958,10 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     counters.insert(
         "aggregate_rail_geometry_repair_count".to_string(),
         aggregate_rail_geometry_repair_count,
+    );
+    counters.insert(
+        "invalid_railway_route_geometry_rejected_count".to_string(),
+        invalid_railway_route_geometry_rejected_count,
     );
     insert_route_geometry_coverage_counters(&mut counters, &edge_geometries);
     let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
@@ -2367,9 +2563,80 @@ fn merge_edge_geometries(
     }
 }
 
+fn reject_invalid_railway_layer_geometries(
+    edge_geometries: &mut EdgeGeometryArtifact,
+    cities: &[City],
+    edges: &[aetrain_domain::TravelEdge],
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> u64 {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let edge_by_id = edges
+        .iter()
+        .map(|edge| ((edge.from_city_id.clone(), edge.to_city_id.clone()), edge))
+        .collect::<BTreeMap<_, _>>();
+    let mut rejected_count = 0;
+
+    for geometry in &mut edge_geometries.geometries {
+        if !is_railway_layer_geometry_source(&geometry.source) {
+            continue;
+        }
+        let Some(from_city) = cities_by_id.get(&geometry.from_city_id) else {
+            continue;
+        };
+        let Some(to_city) = cities_by_id.get(&geometry.to_city_id) else {
+            continue;
+        };
+        let edge = edge_by_id.get(&(geometry.from_city_id.clone(), geometry.to_city_id.clone()));
+        let metrics = route_geometry_metrics(
+            &geometry.points,
+            from_city.location,
+            to_city.location,
+            edge.map(|edge| edge.duration_min),
+        );
+        let distance_is_plausible = route_geometry_distance_metrics_are_plausible(
+            metrics.geometry_meters,
+            metrics.direct_meters,
+        );
+        if distance_is_plausible && !route_geometry_speed_is_physically_impossible(&metrics) {
+            continue;
+        }
+
+        geometry.points = vec![
+            scale_geo_point_e5_for_pipeline(from_city.location),
+            scale_geo_point_e5_for_pipeline(to_city.location),
+        ];
+        geometry.source = EdgeGeometrySource::StraightLineFallback;
+        merge_string_vec(
+            &mut geometry.provenance,
+            &[INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE.to_string()],
+        );
+        rejected_count += 1;
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Warning,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: format!("{}->{}", geometry.from_city_id, geometry.to_city_id),
+            message: format!(
+                "rejected implausible railway geometry from {} to {}: geometry={}km direct={}km detour_ratio_x100={:?}",
+                from_city.display_name,
+                to_city.display_name,
+                meters_to_km_u32(metrics.geometry_meters),
+                meters_to_km_u32(metrics.direct_meters),
+                metrics.detour_ratio_x100
+            ),
+        });
+    }
+
+    rejected_count
+}
+
 fn apply_aggregate_rail_geometry_authority(
     edge_geometries: &mut EdgeGeometryArtifact,
     cities: &[City],
+    edges: &[aetrain_domain::TravelEdge],
     inputs: &[AggregateTargetInput],
     manifest: &SourceManifest,
     aggregate_source_id: &str,
@@ -2387,9 +2654,20 @@ fn apply_aggregate_rail_geometry_authority(
     let mut repaired_count = 0;
     let mut provenance = Vec::new();
     provenance.push(format!("geometry:{rail_geometry_source_id}"));
+    let edge_by_id = edges
+        .iter()
+        .map(|edge| ((edge.from_city_id.clone(), edge.to_city_id.clone()), edge))
+        .collect::<BTreeMap<_, _>>();
 
     for geometry in &mut edge_geometries.geometries {
         if geometry.source == EdgeGeometrySource::InfrastructureGraphFallback {
+            continue;
+        }
+        if geometry
+            .provenance
+            .iter()
+            .any(|entry| entry == INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE)
+        {
             continue;
         }
         let Some(from_city) = cities_by_id.get(&geometry.from_city_id) else {
@@ -2409,11 +2687,27 @@ fn apply_aggregate_rail_geometry_authority(
         if points.len() < 3 {
             continue;
         }
-
-        geometry.points = points
+        let points_e5 = points
             .into_iter()
             .map(scale_geo_point_e5_for_pipeline)
-            .collect();
+            .collect::<Vec<_>>();
+        let metrics = route_geometry_metrics(
+            &points_e5,
+            from_city.location,
+            to_city.location,
+            edge_by_id
+                .get(&(geometry.from_city_id.clone(), geometry.to_city_id.clone()))
+                .map(|edge| edge.duration_min),
+        );
+        if !route_geometry_distance_metrics_are_plausible(
+            metrics.geometry_meters,
+            metrics.direct_meters,
+        ) || route_geometry_speed_is_physically_impossible(&metrics)
+        {
+            continue;
+        }
+
+        geometry.points = points_e5;
         geometry.source = EdgeGeometrySource::InfrastructureGraphFallback;
         merge_string_vec(&mut geometry.provenance, &provenance);
         repaired_count += 1;
@@ -5712,6 +6006,93 @@ mod tests {
             Some(&1)
         );
         assert_eq!(counters.get("railway_layer_route_geometry_count"), Some(&1));
+    }
+
+    #[test]
+    fn quality_report_flags_implausible_route_geometry_anomalies() {
+        let orleans = City {
+            city_id: CityId::new("orleans-fr").expect("valid city id"),
+            slug: "orleans".to_string(),
+            display_name: "Orleans".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 47.907891,
+                lon: 1.904242,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: Some(7),
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let saint_cyr = City {
+            city_id: CityId::new("saint-cyr-en-val-fr").expect("valid city id"),
+            slug: "saint-cyr-en-val".to_string(),
+            display_name: "Saint Cyr En Val".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 47.819215,
+                lon: 1.947581,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: Some(5),
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let edges = vec![TravelEdge {
+            from_city_id: orleans.city_id.clone(),
+            to_city_id: saint_cyr.city_id.clone(),
+            duration_min: 8,
+            service_kind: ServiceKind::Rail,
+            service_class: ServiceClass::Regional,
+            change_count_estimate: Some(0),
+            source_confidence: 100,
+            provenance: vec!["test:route".to_string()],
+        }];
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![EdgeGeometryRecord {
+                from_city_id: orleans.city_id.clone(),
+                to_city_id: saint_cyr.city_id.clone(),
+                points: vec![
+                    PolylinePointE5 {
+                        lat_e5: 4_790_789,
+                        lon_e5: 190_424,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: 4_730_000,
+                        lon_e5: 10_000,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: 4_781_922,
+                        lon_e5: 194_758,
+                    },
+                ],
+                source: EdgeGeometrySource::InfrastructureGraphFallback,
+                provenance: vec!["geometry:test-rail".to_string()],
+            }],
+        };
+
+        let report = build_quality_report(
+            &[orleans, saint_cyr],
+            &edges,
+            &edge_geometries,
+            None,
+            &BTreeMap::new(),
+            0,
+        );
+
+        assert_eq!(report.route_geometry_anomalies.len(), 1);
+        assert_eq!(
+            report.route_geometry_anomalies[0].anomaly_type,
+            "railway_geometry_detour"
+        );
+        assert!(
+            report.route_geometry_anomalies[0]
+                .detour_ratio_x100
+                .expect("detour ratio should be present")
+                > 600
+        );
     }
 
     #[test]
