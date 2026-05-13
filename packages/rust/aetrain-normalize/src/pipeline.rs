@@ -11,7 +11,7 @@ use aetrain_dataset::{
     RuntimeEdgeGeometryRecord, RuntimeGraph, RuntimeStationArtifact, RuntimeStationRecord,
     SourceSnapshot,
 };
-use aetrain_domain::{ServiceClass, ServiceKind};
+use aetrain_domain::{City, GeoPoint, ServiceClass, ServiceKind};
 use aetrain_registry::RegistryCanonicalBundle;
 use anyhow::{Context, Result, bail};
 use deunicode::deunicode;
@@ -21,6 +21,7 @@ use crate::{
     DuplicateCityReport, FetchedSource, ManualOverrideRegistry, NormalizationIssue, SourceKind,
     SourceManifest, StationMappingReport, TargetDefinition, build_gtfs_basic_dataset,
     build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
+    rail_geometry::RailGeometryNetwork,
 };
 
 pub trait PipelineAdapter {
@@ -800,7 +801,10 @@ fn abbreviation_candidate_record(
 
 fn is_legitimate_short_city_name(city: &aetrain_domain::City) -> bool {
     matches!(
-        (city.country_code.as_str(), normalize_name(&city.display_name).as_str()),
+        (
+            city.country_code.as_str(),
+            normalize_name(&city.display_name).as_str()
+        ),
         ("FR", "eu")
             | ("FR", "ay")
             | ("CH", "au sg")
@@ -1563,12 +1567,10 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         for (from_city_id, to_city_id) in &post_cleanup_remap {
             rebind_city_id_remap(&mut merged_cities.city_id_remap, from_city_id, to_city_id);
         }
-        merged_cities.cities = collapse_cities_by_remap(
-            merged_cities.cities.drain(..),
-            &post_cleanup_remap,
-        )
-        .into_values()
-        .collect();
+        merged_cities.cities =
+            collapse_cities_by_remap(merged_cities.cities.drain(..), &post_cleanup_remap)
+                .into_values()
+                .collect();
     }
     counters.insert(
         "route_like_city_unresolved_count".to_string(),
@@ -1585,7 +1587,19 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         request.target.id.as_str(),
     )?;
     let edges = merge_edges(&dependency_inputs, &merged_cities.city_id_remap);
-    let edge_geometries = merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
+    let mut edge_geometries =
+        merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
+    let aggregate_rail_geometry_repair_count = apply_aggregate_rail_geometry_authority(
+        &mut edge_geometries,
+        &merged_cities.cities,
+        &dependency_inputs,
+        request.target.id.as_str(),
+        &mut merged_cities.issues,
+    )?;
+    counters.insert(
+        "aggregate_rail_geometry_repair_count".to_string(),
+        aggregate_rail_geometry_repair_count,
+    );
     let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
     apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
     counters.insert(
@@ -2185,6 +2199,99 @@ fn merge_edge_geometries(
     }
 }
 
+fn apply_aggregate_rail_geometry_authority(
+    edge_geometries: &mut EdgeGeometryArtifact,
+    cities: &[City],
+    inputs: &[AggregateTargetInput],
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Result<u64> {
+    let Some((rail_geometry_source_id, rail_geometry_network)) =
+        load_aggregate_rail_geometry_network(inputs)?
+    else {
+        return Ok(0);
+    };
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let mut repaired_count = 0;
+    let mut provenance = Vec::new();
+    provenance.push(format!("geometry:{rail_geometry_source_id}"));
+
+    for geometry in &mut edge_geometries.geometries {
+        if geometry.source == EdgeGeometrySource::InfrastructureGraphFallback {
+            continue;
+        }
+        let Some(from_city) = cities_by_id.get(&geometry.from_city_id) else {
+            continue;
+        };
+        let Some(to_city) = cities_by_id.get(&geometry.to_city_id) else {
+            continue;
+        };
+        if from_city.country_code != "FR" || to_city.country_code != "FR" {
+            continue;
+        }
+        let Some(points) =
+            rail_geometry_network.route_polyline(from_city.location, to_city.location)
+        else {
+            continue;
+        };
+        if points.len() < 3 {
+            continue;
+        }
+
+        geometry.points = points
+            .into_iter()
+            .map(scale_geo_point_e5_for_pipeline)
+            .collect();
+        geometry.source = EdgeGeometrySource::InfrastructureGraphFallback;
+        merge_string_vec(&mut geometry.provenance, &provenance);
+        repaired_count += 1;
+    }
+
+    if repaired_count > 0 {
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Info,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: "edge-geometries".to_string(),
+            message: format!(
+                "repaired {repaired_count} aggregate route geometries using {rail_geometry_source_id}"
+            ),
+        });
+    }
+
+    Ok(repaired_count)
+}
+
+fn load_aggregate_rail_geometry_network(
+    inputs: &[AggregateTargetInput],
+) -> Result<Option<(String, RailGeometryNetwork)>> {
+    let Some(artifact) = inputs
+        .iter()
+        .flat_map(|input| &input.manifest.source_artifacts)
+        .find(|artifact| artifact.source_id == "sncf-fr-rfn-lines")
+    else {
+        return Ok(None);
+    };
+    let path = PathBuf::from(&artifact.local_path);
+    let network = RailGeometryNetwork::load_sncf_rfn_geojson(&path).with_context(|| {
+        format!(
+            "failed to load aggregate rail geometry authority {} from {}",
+            artifact.source_id,
+            path.display()
+        )
+    })?;
+    Ok(Some((artifact.source_id.clone(), network)))
+}
+
+fn scale_geo_point_e5_for_pipeline(point: GeoPoint) -> PolylinePointE5 {
+    PolylinePointE5 {
+        lat_e5: (point.lat * 100_000.0).round() as i32,
+        lon_e5: (point.lon * 100_000.0).round() as i32,
+    }
+}
+
 fn merge_station_mappings(
     inputs: &[AggregateTargetInput],
     city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
@@ -2264,18 +2371,19 @@ fn cleanup_station_like_and_zz_residual_cities(
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
 ) {
-    let mapping_by_city = station_mappings
-        .records
-        .iter()
-        .fold(BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(), |mut acc, record| {
+    let mapping_by_city = station_mappings.records.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(),
+        |mut acc, record| {
             acc.entry(record.city_id.clone()).or_default().push(record);
             acc
-        });
+        },
+    );
     let snapshot = cities.clone();
     let mut remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
 
     for city in cities.iter_mut() {
-        if let Some(country_code) = infer_country_code_from_station_mappings(city, station_mappings) {
+        if let Some(country_code) = infer_country_code_from_station_mappings(city, station_mappings)
+        {
             if city.country_code == "ZZ" {
                 city.country_code = country_code.clone();
                 issues.push(NormalizationIssue {
@@ -2307,7 +2415,11 @@ fn cleanup_station_like_and_zz_residual_cities(
             && cleaned_display_name != city.display_name
         {
             let original_display_name = city.display_name.clone();
-            if !city.aliases.iter().any(|alias| alias == &original_display_name) {
+            if !city
+                .aliases
+                .iter()
+                .any(|alias| alias == &original_display_name)
+            {
                 city.aliases.push(original_display_name.clone());
             }
             city.display_name = cleaned_display_name.clone();
@@ -2326,13 +2438,18 @@ fn cleanup_station_like_and_zz_residual_cities(
         if let Some(expanded_display_name) = explicit_abbreviation_expansion(city) {
             let original_display_name = city.display_name.clone();
             let expanded_key = comparable_place_key(&expanded_display_name);
-            let effective_country = infer_country_code_from_station_mappings(city, station_mappings)
-                .unwrap_or_else(|| city.country_code.clone());
+            let effective_country =
+                infer_country_code_from_station_mappings(city, station_mappings)
+                    .unwrap_or_else(|| city.country_code.clone());
             let mut candidates = snapshot
                 .iter()
                 .filter(|parent| parent.city_id != city.city_id)
-                .filter(|parent| effective_country == effective_city_country_code(parent, station_mappings))
-                .filter(|parent| comparable_place_key(&city_identity_key(&parent.display_name)) == expanded_key)
+                .filter(|parent| {
+                    effective_country == effective_city_country_code(parent, station_mappings)
+                })
+                .filter(|parent| {
+                    comparable_place_key(&city_identity_key(&parent.display_name)) == expanded_key
+                })
                 .filter_map(|parent| {
                     let distance_meters = geo_distance_meters(city.location, parent.location);
                     (distance_meters <= AGGREGATE_CITY_MERGE_DISTANCE_METERS as f64)
@@ -2356,7 +2473,11 @@ fn cleanup_station_like_and_zz_residual_cities(
                     ),
                 });
             } else if expanded_display_name != city.display_name {
-                if !city.aliases.iter().any(|alias| alias == &original_display_name) {
+                if !city
+                    .aliases
+                    .iter()
+                    .any(|alias| alias == &original_display_name)
+                {
                     city.aliases.push(original_display_name.clone());
                 }
                 city.display_name = expanded_display_name.clone();
@@ -2385,11 +2506,8 @@ fn cleanup_station_like_and_zz_residual_cities(
 
         if normalize_name(&city.display_name) == "s"
             && city.wikidata_qid.is_none()
-            && let Some(parent) = best_major_parent_for_generic_s_cluster(
-                city,
-                &snapshot,
-                station_mappings,
-            )
+            && let Some(parent) =
+                best_major_parent_for_generic_s_cluster(city, &snapshot, station_mappings)
         {
             remap.insert(city.city_id.clone(), parent.city_id.clone());
             issues.push(NormalizationIssue {
@@ -2483,7 +2601,11 @@ fn cleaned_residual_city_display_name(
     let mut names = vec![city.display_name.clone()];
     names.extend(city.aliases.clone());
     if let Some(records) = station_records {
-        names.extend(records.iter().map(|record| record.station_display_name.clone()));
+        names.extend(
+            records
+                .iter()
+                .map(|record| record.station_display_name.clone()),
+        );
     }
 
     let mut candidates = BTreeSet::new();
@@ -2506,9 +2628,9 @@ fn cleaned_residual_city_display_name(
         }
     }
 
-    candidates
-        .into_iter()
-        .max_by(|left, right| canonical_cleaned_name_rank(left).cmp(&canonical_cleaned_name_rank(right)))
+    candidates.into_iter().max_by(|left, right| {
+        canonical_cleaned_name_rank(left).cmp(&canonical_cleaned_name_rank(right))
+    })
 }
 
 fn canonical_cleaned_name_rank(value: &str) -> (usize, usize, std::cmp::Reverse<String>) {
@@ -2521,7 +2643,10 @@ fn canonical_cleaned_name_rank(value: &str) -> (usize, usize, std::cmp::Reverse<
 }
 
 fn explicit_abbreviation_expansion(city: &aetrain_domain::City) -> Option<String> {
-    match (city.country_code.as_str(), normalize_name(&city.display_name).as_str()) {
+    match (
+        city.country_code.as_str(),
+        normalize_name(&city.display_name).as_str(),
+    ) {
         ("DE", "d") => Some("Dusseldorf".to_string()),
         ("DE", "fds") => Some("Freudenstadt".to_string()),
         ("DE", "gd") => Some("Schwabisch Gmund".to_string()),
@@ -2925,7 +3050,8 @@ fn station_like_parent_match_score(
     }
 
     let parent_keys = parent_city_match_keys(parent_city);
-    let key_match = !child_keys.is_empty() && child_keys.iter().any(|key| parent_keys.contains(key));
+    let key_match =
+        !child_keys.is_empty() && child_keys.iter().any(|key| parent_keys.contains(key));
     let fallback_match = allow_nearby_fallback && distance_meters <= 7_500;
     if !key_match && !fallback_match {
         return None;
@@ -2969,7 +3095,11 @@ fn station_like_parent_keys(
     let mut keys = BTreeSet::new();
     let mut names = vec![city.display_name.clone()];
     if let Some(records) = station_records {
-        names.extend(records.iter().map(|record| record.station_display_name.clone()));
+        names.extend(
+            records
+                .iter()
+                .map(|record| record.station_display_name.clone()),
+        );
     }
     for name in names {
         let identity = city_identity_key(&name);
@@ -3063,7 +3193,10 @@ fn is_bus_like_station_display_name(value: &str) -> bool {
 
 fn infer_country_code_from_station_key(station_key: &str) -> Option<String> {
     let prefix = station_key.split(':').next()?;
-    let normalized = prefix.strip_prefix('P').unwrap_or(prefix).to_ascii_lowercase();
+    let normalized = prefix
+        .strip_prefix('P')
+        .unwrap_or(prefix)
+        .to_ascii_lowercase();
     match normalized.as_str() {
         "de" => Some("DE".to_string()),
         "fr" => Some("FR".to_string()),
@@ -3200,9 +3333,9 @@ fn merge_edge_geometry_record(existing: &mut EdgeGeometryRecord, incoming: &Edge
 
 fn edge_geometry_source_rank(source: &EdgeGeometrySource) -> u8 {
     match source {
-        EdgeGeometrySource::GtfsShapeSegment => 0,
-        EdgeGeometrySource::InfrastructureGraphFallback => 1,
-        EdgeGeometrySource::OsmGraphFallbackPlanned => 2,
+        EdgeGeometrySource::InfrastructureGraphFallback => 0,
+        EdgeGeometrySource::OsmGraphFallbackPlanned => 1,
+        EdgeGeometrySource::GtfsShapeSegment => 2,
         EdgeGeometrySource::StraightLineFallback => 3,
     }
 }
@@ -3851,6 +3984,63 @@ mod tests {
     }
 
     #[test]
+    fn edge_geometry_merge_prefers_rail_graph_over_gtfs_shape() {
+        let from_city_id = CityId::new("paris-fr").expect("valid city id");
+        let to_city_id = CityId::new("strasbourg-fr").expect("valid city id");
+        let mut existing = EdgeGeometryRecord {
+            from_city_id: from_city_id.clone(),
+            to_city_id: to_city_id.clone(),
+            points: vec![
+                PolylinePointE5 {
+                    lat_e5: 4_887_698,
+                    lon_e5: 235_912,
+                },
+                PolylinePointE5 {
+                    lat_e5: 4_858_534,
+                    lon_e5: 773_407,
+                },
+            ],
+            source: EdgeGeometrySource::GtfsShapeSegment,
+            provenance: vec!["test:gtfs".to_string()],
+        };
+        let incoming = EdgeGeometryRecord {
+            from_city_id,
+            to_city_id,
+            points: vec![
+                PolylinePointE5 {
+                    lat_e5: 4_887_698,
+                    lon_e5: 235_912,
+                },
+                PolylinePointE5 {
+                    lat_e5: 4_870_000,
+                    lon_e5: 400_000,
+                },
+                PolylinePointE5 {
+                    lat_e5: 4_858_534,
+                    lon_e5: 773_407,
+                },
+            ],
+            source: EdgeGeometrySource::InfrastructureGraphFallback,
+            provenance: vec!["geometry:sncf-fr-rfn-lines".to_string()],
+        };
+
+        merge_edge_geometry_record(&mut existing, &incoming);
+
+        assert_eq!(
+            existing.source,
+            EdgeGeometrySource::InfrastructureGraphFallback
+        );
+        assert_eq!(existing.points.len(), 3);
+        assert!(existing.provenance.iter().any(|entry| entry == "test:gtfs"));
+        assert!(
+            existing
+                .provenance
+                .iter()
+                .any(|entry| entry == "geometry:sncf-fr-rfn-lines")
+        );
+    }
+
+    #[test]
     fn aggregate_city_merge_canonicalizes_duplicate_foreign_feed_cities() {
         let paris_fr = City {
             city_id: CityId::new("paris-fr-75056").expect("valid city id"),
@@ -4493,7 +4683,8 @@ mod tests {
                 interest_score: None,
                 station_ids: (0..12)
                     .map(|index| {
-                        StationId::new(format!("station-karlsruhe-{index}")).expect("valid station id")
+                        StationId::new(format!("station-karlsruhe-{index}"))
+                            .expect("valid station id")
                     })
                     .collect(),
                 aliases: Vec::new(),
@@ -4590,10 +4781,7 @@ mod tests {
         );
 
         assert!(!cities.iter().any(|city| city.city_id == residual_id));
-        assert_eq!(
-            remap.get(&residual_id).cloned(),
-            Some(karlsruhe_id.clone())
-        );
+        assert_eq!(remap.get(&residual_id).cloned(), Some(karlsruhe_id.clone()));
         let perl = cities
             .iter()
             .find(|city| city.city_id == perl_id)
@@ -4676,7 +4864,9 @@ mod tests {
             wikidata_qid: None,
             population: None,
             interest_score: None,
-            station_ids: vec![StationId::new("station-de-delfi-gtfs-405ced36").expect("valid station id")],
+            station_ids: vec![
+                StationId::new("station-de-delfi-gtfs-405ced36").expect("valid station id"),
+            ],
             aliases: vec!["D-Bilk S".to_string()],
         };
 
@@ -5252,10 +5442,7 @@ mod tests {
                 .reason,
             "single_token_too_short"
         );
-        assert_eq!(
-            abbreviation_candidate_record(&au_sg),
-            None
-        );
+        assert_eq!(abbreviation_candidate_record(&au_sg), None);
         assert_eq!(
             abbreviation_candidate_record(&rn)
                 .expect("route candidate")

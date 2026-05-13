@@ -5,15 +5,19 @@
   "chunks": [
     {
       "file": "edge-geometries/chunk-0000.json",
-      "geometry_count": 11513
+      "geometry_count": 10346
     },
     {
       "file": "edge-geometries/chunk-0001.json",
-      "geometry_count": 7660
+      "geometry_count": 7865
     },
     {
       "file": "edge-geometries/chunk-0002.json",
-      "geometry_count": 7997
+      "geometry_count": 6688
+    },
+    {
+      "file": "edge-geometries/chunk-0003.json",
+      "geometry_count": 2271
     }
   ]
 }

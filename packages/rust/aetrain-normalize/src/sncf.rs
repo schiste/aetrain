@@ -1499,12 +1499,6 @@ fn build_edge_geometry(
     to_station_key: &str,
     ctx: &mut EdgeGeometryContext<'_>,
 ) -> (Vec<GeoPoint>, EdgeGeometrySource, Vec<String>) {
-    if let Some(shape_points) = ctx.shape_points
-        && let Some(points) = extract_shape_segment(shape_points, from_location, to_location)
-    {
-        return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
-    }
-
     if let Some(rail_geometry_network) = ctx.rail_geometry_network {
         let cache_key = (from_station_key.to_string(), to_station_key.to_string());
         let start_node = ctx
@@ -1535,6 +1529,12 @@ fn build_edge_geometry(
                 provenance,
             );
         }
+    }
+
+    if let Some(shape_points) = ctx.shape_points
+        && let Some(points) = extract_shape_segment(shape_points, from_location, to_location)
+    {
+        return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
     }
 
     (
@@ -3404,7 +3404,10 @@ T1,08:20:00,08:25:00,StopArea:WIENHBF,2\n",
         .expect("gtfs basic dataset should build");
 
         assert!(
-            output.cities.iter().all(|city| city.display_name != "Busbahnhof"),
+            output
+                .cities
+                .iter()
+                .all(|city| city.display_name != "Busbahnhof"),
             "station-only stop labels should not materialize as canonical cities"
         );
         assert!(
@@ -3422,10 +3425,17 @@ T1,08:20:00,08:25:00,StopArea:WIENHBF,2\n",
                 .all(|record| record.station_display_name != "Busbahnhof"),
             "station-only stop labels should not survive into station mappings"
         );
-        assert!(output.rejected_city_candidates.records.iter().any(|record| {
-            record.display_name == "Busbahnhof"
-                && record.resolution == RejectedCityCandidateResolution::UnresolvedStationOnly
-        }));
+        assert!(
+            output
+                .rejected_city_candidates
+                .records
+                .iter()
+                .any(|record| {
+                    record.display_name == "Busbahnhof"
+                        && record.resolution
+                            == RejectedCityCandidateResolution::UnresolvedStationOnly
+                })
+        );
 
         let _ = fs::remove_file(zip_path);
     }
@@ -3621,10 +3631,17 @@ T1,08:00:00,08:05:00,StopArea:YORCK,1\n",
         assert_eq!(output.summary.station_count, 0);
         assert!(output.stations.is_empty());
         assert!(output.station_mappings.records.is_empty());
-        assert!(output.rejected_city_candidates.records.iter().any(|record| {
-            record.display_name == "S U Yorckstr"
-                && record.resolution == RejectedCityCandidateResolution::UnresolvedStationOnly
-        }));
+        assert!(
+            output
+                .rejected_city_candidates
+                .records
+                .iter()
+                .any(|record| {
+                    record.display_name == "S U Yorckstr"
+                        && record.resolution
+                            == RejectedCityCandidateResolution::UnresolvedStationOnly
+                })
+        );
 
         let _ = fs::remove_file(zip_path);
     }
@@ -3980,6 +3997,97 @@ ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
 
         let _ = fs::remove_file(zip_path);
         let _ = fs::remove_file(stations_csv_path);
+    }
+
+    #[test]
+    fn sncf_dataset_prefers_rfn_geometry_over_shape_segments() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-rfn-authority-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:OCE8727100,Paris Nord,48.8809,2.3553,1,\n\
+StopArea:OCE8772319,Lyon Part Dieu,45.7604,4.8599,1,\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id,shape_id\nR1,T1,S1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,08:00:00,08:05:00,StopArea:OCE8727100,1\n\
+T1,10:00:00,10:05:00,StopArea:OCE8772319,2\n",
+                ),
+                (
+                    "shapes.txt",
+                    "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\n\
+S1,48.8809,2.3553,1\n\
+S1,45.7604,4.8599,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+        let stations_csv_path = write_text_file(
+            "aetrain-rfn-authority-stations-test.csv",
+            "id,nom,position_geographique,codeinsee,codes_uic\n\
+ref-paris-nord,Paris Nord,\"48.8809,2.3553\",75056,8727100\n\
+ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
+        )
+        .expect("station reference CSV should be created");
+        let rail_geojson_path = write_text_file(
+            "aetrain-rfn-authority-lines-test.geojson",
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2.3553, 48.8809],
+          [2.9000, 48.3000],
+          [3.7000, 47.3000],
+          [4.3000, 46.4000],
+          [4.8599, 45.7604]
+        ]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("rail geojson should be created");
+
+        let output = build_sncf_dataset(
+            &zip_path,
+            &stations_csv_path,
+            Some(&rail_geojson_path),
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            Some("sncf-fr-rfn-lines"),
+            "test-version",
+            "2026-05-08T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("sncf dataset should build");
+
+        assert_eq!(output.summary.edge_count, 1);
+        assert_eq!(
+            output.edge_geometries.geometries[0].source,
+            EdgeGeometrySource::InfrastructureGraphFallback
+        );
+        assert!(
+            output.edge_geometries.geometries[0]
+                .provenance
+                .iter()
+                .any(|entry| entry == "geometry:sncf-fr-rfn-lines")
+        );
+        assert!(output.edge_geometries.geometries[0].points.len() >= 3);
+
+        let _ = fs::remove_file(zip_path);
+        let _ = fs::remove_file(stations_csv_path);
+        let _ = fs::remove_file(rail_geojson_path);
     }
 
     #[test]
