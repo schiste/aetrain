@@ -92,6 +92,8 @@ pub struct AdapterBuildArtifacts {
     pub edge_geometries: Option<EdgeGeometryArtifact>,
     pub station_mappings: Option<StationMappingReport>,
     pub rejected_city_candidates: Option<crate::RejectedCityCandidateReport>,
+    pub plain_name_fallback_gap_registry_candidates:
+        Vec<PipelinePlainNameFallbackGapRegistryRecord>,
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
     pub quarantined_promoted_attachment_gap_cities:
         Vec<PipelineQuarantinedPromotedAttachmentGapCityRecord>,
@@ -324,6 +326,12 @@ pub struct PipelineStationAttachmentAuditRecord {
     pub to_display_name: String,
     pub direct_distance_km: u32,
     pub duration_min: Option<u32>,
+    pub from_city_layer_status: String,
+    pub to_city_layer_status: String,
+    pub from_registry_resolution_status: String,
+    pub to_registry_resolution_status: String,
+    pub from_attachment_surface: String,
+    pub to_attachment_surface: String,
     pub from_local_candidate_distances_m: Vec<u32>,
     pub to_local_candidate_distances_m: Vec<u32>,
     pub from_expanded_candidate_distances_m: Vec<u32>,
@@ -357,6 +365,19 @@ pub struct PipelineQuarantinedFallbackGapCityRecord {
     pub country_code: String,
     pub station_display_names: Vec<String>,
     pub classification: String,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelinePlainNameFallbackGapRegistryRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub country_code: String,
+    pub station_display_names: Vec<String>,
+    pub registry_resolution_status: String,
+    pub registry_city_id: Option<aetrain_domain::CityId>,
+    pub registry_display_name: Option<String>,
+    pub registry_distance_m: Option<u32>,
     pub suggested_action: String,
 }
 
@@ -398,6 +419,8 @@ pub struct PipelineQualityReport {
     pub promoted_domestic_authority_gap_details: Vec<PipelinePromotedDomesticAuthorityGapRecord>,
     pub promoted_station_attachment_gap_details: Vec<PipelineStationAttachmentAuditRecord>,
     pub authority_detour_corridors: Vec<PipelineAuthorityDetourCorridorRecord>,
+    pub plain_name_fallback_gap_registry_candidates:
+        Vec<PipelinePlainNameFallbackGapRegistryRecord>,
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
     pub quarantined_promoted_attachment_gap_cities:
         Vec<PipelineQuarantinedPromotedAttachmentGapCityRecord>,
@@ -683,6 +706,7 @@ fn export_pipeline_target(
         &artifacts.canonical.edges,
         &resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?,
         artifacts.station_mappings.as_ref(),
+        &artifacts.plain_name_fallback_gap_registry_candidates,
         &artifacts.quarantined_fallback_gap_cities,
         &artifacts.quarantined_promoted_attachment_gap_cities,
         &artifacts.counters,
@@ -837,6 +861,10 @@ fn export_pipeline_target(
         &quality_report.authority_detour_corridors,
     )?;
     write_json(
+        &quality_dir.join("plain-name-fallback-gap-registry-candidates.json"),
+        &quality_report.plain_name_fallback_gap_registry_candidates,
+    )?;
+    write_json(
         &quality_dir.join("quarantined-fallback-gap-cities.json"),
         &quality_report.quarantined_fallback_gap_cities,
     )?;
@@ -903,6 +931,24 @@ fn load_geometry_authority_registry(
     GeometryAuthorityRegistry::load(&registry_path).map(Some)
 }
 
+fn load_registry_overlay_bundle(
+    manifest_dir: &Path,
+    target: &TargetDefinition,
+) -> Result<Option<RegistryCanonicalBundle>> {
+    let Some(path) = target.registry_overlay_path.as_deref() else {
+        return Ok(None);
+    };
+    let overlay_path = resolve_manifest_relative_path(manifest_dir, path);
+    read_json(&overlay_path)
+        .with_context(|| {
+            format!(
+                "failed to load registry overlay bundle from {}",
+                overlay_path.display()
+            )
+        })
+        .map(Some)
+}
+
 fn export_canonical_bundle(
     output_dir: &Path,
     artifacts: &AdapterBuildArtifacts,
@@ -946,6 +992,7 @@ fn build_quality_report(
     edges: &[aetrain_domain::TravelEdge],
     edge_geometries: &EdgeGeometryArtifact,
     station_mappings: Option<&StationMappingReport>,
+    plain_name_fallback_gap_registry_candidates: &[PipelinePlainNameFallbackGapRegistryRecord],
     quarantined_fallback_gap_cities: &[PipelineQuarantinedFallbackGapCityRecord],
     quarantined_promoted_attachment_gap_cities: &[PipelineQuarantinedPromotedAttachmentGapCityRecord],
     counters: &BTreeMap<String, u64>,
@@ -1115,6 +1162,8 @@ fn build_quality_report(
     let promoted_station_attachment_gap_details = build_promoted_station_attachment_gap_details(
         &promoted_domestic_authority_gap_details,
         cities,
+        station_mappings,
+        plain_name_fallback_gap_registry_candidates,
         &authority_networks,
     );
     let authority_detour_corridors =
@@ -1416,6 +1465,8 @@ fn build_quality_report(
         promoted_domestic_authority_gap_details,
         promoted_station_attachment_gap_details,
         authority_detour_corridors,
+        plain_name_fallback_gap_registry_candidates:
+            plain_name_fallback_gap_registry_candidates.to_vec(),
         quarantined_fallback_gap_cities: quarantined_fallback_gap_cities.to_vec(),
         quarantined_promoted_attachment_gap_cities:
             quarantined_promoted_attachment_gap_cities.to_vec(),
@@ -1894,11 +1945,28 @@ fn classify_authority_path_failure_reason(
 fn build_promoted_station_attachment_gap_details(
     promoted_domestic_authority_gap_details: &[PipelinePromotedDomesticAuthorityGapRecord],
     cities: &[City],
+    station_mappings: Option<&StationMappingReport>,
+    plain_name_fallback_gap_registry_candidates: &[PipelinePlainNameFallbackGapRegistryRecord],
     authority_networks: &BTreeMap<String, RailGeometryNetwork>,
 ) -> Vec<PipelineStationAttachmentAuditRecord> {
     let cities_by_id = cities
         .iter()
         .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let station_records_by_city = station_mappings
+        .map(|report| {
+            report.records.iter().fold(
+                BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(),
+                |mut acc, record| {
+                    acc.entry(record.city_id.clone()).or_default().push(record);
+                    acc
+                },
+            )
+        })
+        .unwrap_or_default();
+    let plain_name_registry_by_city = plain_name_fallback_gap_registry_candidates
+        .iter()
+        .map(|record| (record.city_id.clone(), record))
         .collect::<BTreeMap<_, _>>();
 
     promoted_domestic_authority_gap_details
@@ -1908,6 +1976,26 @@ fn build_promoted_station_attachment_gap_details(
             let network = authority_networks.get(&record.source_id)?;
             let from_city = cities_by_id.get(&record.from_city_id)?;
             let to_city = cities_by_id.get(&record.to_city_id)?;
+            let from_local_candidate_distances_m = network
+                .route_snap_candidates(from_city.location)
+                .into_iter()
+                .map(|(_, distance)| distance)
+                .collect::<Vec<_>>();
+            let to_local_candidate_distances_m = network
+                .route_snap_candidates(to_city.location)
+                .into_iter()
+                .map(|(_, distance)| distance)
+                .collect::<Vec<_>>();
+            let from_expanded_candidate_distances_m = network
+                .expanded_route_snap_candidates(from_city.location)
+                .into_iter()
+                .map(|(_, distance)| distance)
+                .collect::<Vec<_>>();
+            let to_expanded_candidate_distances_m = network
+                .expanded_route_snap_candidates(to_city.location)
+                .into_iter()
+                .map(|(_, distance)| distance)
+                .collect::<Vec<_>>();
             Some(PipelineStationAttachmentAuditRecord {
                 source_id: record.source_id.clone(),
                 country_code: record.country_code.clone(),
@@ -1917,30 +2005,76 @@ fn build_promoted_station_attachment_gap_details(
                 to_display_name: record.to_display_name.clone(),
                 direct_distance_km: record.direct_distance_km,
                 duration_min: record.duration_min,
-                from_local_candidate_distances_m: network
-                    .route_snap_candidates(from_city.location)
-                    .into_iter()
-                    .map(|(_, distance)| distance)
-                    .collect(),
-                to_local_candidate_distances_m: network
-                    .route_snap_candidates(to_city.location)
-                    .into_iter()
-                    .map(|(_, distance)| distance)
-                    .collect(),
-                from_expanded_candidate_distances_m: network
-                    .expanded_route_snap_candidates(from_city.location)
-                    .into_iter()
-                    .map(|(_, distance)| distance)
-                    .collect(),
-                to_expanded_candidate_distances_m: network
-                    .expanded_route_snap_candidates(to_city.location)
-                    .into_iter()
-                    .map(|(_, distance)| distance)
-                    .collect(),
+                from_city_layer_status: classify_city_layer_status(
+                    from_city,
+                    station_records_by_city.get(&from_city.city_id).map(Vec::as_slice),
+                )
+                .to_string(),
+                to_city_layer_status: classify_city_layer_status(
+                    to_city,
+                    station_records_by_city.get(&to_city.city_id).map(Vec::as_slice),
+                )
+                .to_string(),
+                from_registry_resolution_status: plain_name_registry_by_city
+                    .get(&from_city.city_id)
+                    .map(|record| record.registry_resolution_status.clone())
+                    .unwrap_or_else(|| "not_applicable".to_string()),
+                to_registry_resolution_status: plain_name_registry_by_city
+                    .get(&to_city.city_id)
+                    .map(|record| record.registry_resolution_status.clone())
+                    .unwrap_or_else(|| "not_applicable".to_string()),
+                from_attachment_surface: classify_attachment_surface(
+                    &from_local_candidate_distances_m,
+                    &from_expanded_candidate_distances_m,
+                )
+                .to_string(),
+                to_attachment_surface: classify_attachment_surface(
+                    &to_local_candidate_distances_m,
+                    &to_expanded_candidate_distances_m,
+                )
+                .to_string(),
+                from_local_candidate_distances_m,
+                to_local_candidate_distances_m,
+                from_expanded_candidate_distances_m,
+                to_expanded_candidate_distances_m,
                 provenance: record.provenance.clone(),
             })
         })
         .collect()
+}
+
+fn classify_city_layer_status(
+    city: &aetrain_domain::City,
+    station_records: Option<&[&crate::StationMappingRecord]>,
+) -> &'static str {
+    if is_fallback_reference_gap_singleton_city(city, station_records) {
+        if station_records
+            .and_then(|records| classify_quarantined_fallback_gap_pseudo_city(city, records))
+            .is_some()
+        {
+            "fallback_gap_pseudo_city"
+        } else {
+            "fallback_gap_plain_name_singleton"
+        }
+    } else if city_id_has_registry_qid(city) || city.wikidata_qid.is_some() || city.population.is_some()
+    {
+        "authoritative_city"
+    } else {
+        "regular_city"
+    }
+}
+
+fn classify_attachment_surface(
+    local_candidate_distances_m: &[u32],
+    expanded_candidate_distances_m: &[u32],
+) -> &'static str {
+    if expanded_candidate_distances_m.is_empty() {
+        "no_authority_candidates"
+    } else if local_candidate_distances_m.is_empty() {
+        "expanded_only_candidates"
+    } else {
+        "local_candidates_available"
+    }
 }
 
 fn build_authority_detour_corridor_records(
@@ -3457,15 +3591,8 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         "route_like_city_ambiguous_count".to_string(),
         merged_cities.route_like_demotion_stats.ambiguous_count,
     );
-    if let Some(registry_overlay_path) = request.target.registry_overlay_path.as_deref() {
-        let overlay_path =
-            resolve_manifest_relative_path(request.manifest_dir, registry_overlay_path);
-        let overlay: RegistryCanonicalBundle = read_json(&overlay_path).with_context(|| {
-            format!(
-                "failed to load registry overlay bundle from {}",
-                overlay_path.display()
-            )
-        })?;
+    let registry_overlay = load_registry_overlay_bundle(request.manifest_dir, request.target)?;
+    if let Some(overlay) = registry_overlay.as_ref() {
         let overlay_stats = apply_registry_city_authority(
             &mut merged_cities.cities,
             &mut merged_cities.city_id_remap,
@@ -3524,6 +3651,28 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
             .cities
             .iter()
             .filter(|city| route_like_candidate_record(city).is_some())
+            .count() as u64,
+    );
+    let pre_merge_station_mappings =
+        merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
+    let plain_name_fallback_gap_registry_candidates =
+        promote_plain_name_fallback_gap_registry_cities(
+            &mut merged_cities.cities,
+            &mut merged_cities.city_id_remap,
+            &pre_merge_station_mappings,
+            registry_overlay.as_ref(),
+            request.target.id.as_str(),
+            &mut merged_cities.issues,
+        );
+    counters.insert(
+        "plain_name_fallback_gap_registry_candidate_count".to_string(),
+        plain_name_fallback_gap_registry_candidates.len() as u64,
+    );
+    counters.insert(
+        "plain_name_fallback_gap_registry_resolved_count".to_string(),
+        plain_name_fallback_gap_registry_candidates
+            .iter()
+            .filter(|record| record.registry_resolution_status == "resolved_exact_registry_city_match")
             .count() as u64,
     );
     merged_cities.aliases = rebuild_alias_records(&merged_cities.cities);
@@ -3687,6 +3836,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         edge_geometries: Some(edge_geometries),
         station_mappings: Some(station_mappings),
         rejected_city_candidates: Some(rejected_city_candidates),
+        plain_name_fallback_gap_registry_candidates,
         quarantined_fallback_gap_cities,
         quarantined_promoted_attachment_gap_cities,
         duplicates,
@@ -5368,6 +5518,167 @@ fn quarantine_unresolved_fallback_gap_pseudo_cities(
     quarantined
 }
 
+fn promote_plain_name_fallback_gap_registry_cities(
+    cities: &mut [aetrain_domain::City],
+    city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+    station_mappings: &StationMappingReport,
+    registry_overlay: Option<&RegistryCanonicalBundle>,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Vec<PipelinePlainNameFallbackGapRegistryRecord> {
+    let mapping_by_city = station_mappings.records.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(),
+        |mut acc, record| {
+            acc.entry(record.city_id.clone()).or_default().push(record);
+            acc
+        },
+    );
+    let registry_index = build_registry_exact_city_name_index(registry_overlay);
+    let mut records = Vec::new();
+
+    for city in cities.iter_mut() {
+        let Some(station_records) = mapping_by_city.get(&city.city_id).map(Vec::as_slice) else {
+            continue;
+        };
+        let Some(mut record) = classify_plain_name_fallback_gap_registry_candidate(
+            city,
+            station_records,
+            &registry_index,
+        ) else {
+            continue;
+        };
+
+        if record.registry_resolution_status == "resolved_exact_registry_city_match" {
+            let registry_city = registry_index
+                .get(&(normalize_name(&city.display_name), city.country_code.clone()))
+                .and_then(|cities| cities.first())
+                .copied()
+                .expect("resolved registry candidate should exist");
+            let original_city_id = city.city_id.clone();
+            let original_display_name = city.display_name.clone();
+            if city.city_id != registry_city.city_id {
+                rebind_city_id_remap(city_id_remap, &city.city_id, &registry_city.city_id);
+                city.city_id = registry_city.city_id.clone();
+            }
+            city.slug = registry_city.slug.clone();
+            city.display_name = registry_city.display_name.clone();
+            city.country_code = registry_city.country_code.clone();
+            city.wikidata_qid = registry_city.wikidata_qid.clone();
+            city.population = registry_city.population;
+            if original_display_name != registry_city.display_name
+                && !city.aliases.iter().any(|alias| alias == &original_display_name)
+            {
+                city.aliases.push(original_display_name);
+            }
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Info,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: original_city_id.to_string(),
+                message: format!(
+                    "resolved plain-name fallback-gap city {} via exact registry municipality {}",
+                    record.display_name, registry_city.city_id
+                ),
+            });
+            record.city_id = city.city_id.clone();
+        }
+
+        records.push(record);
+    }
+
+    records
+}
+
+fn build_registry_exact_city_name_index<'a>(
+    registry_overlay: Option<&'a RegistryCanonicalBundle>,
+) -> BTreeMap<(String, String), Vec<&'a aetrain_registry::RegistryCity>> {
+    let Some(registry_overlay) = registry_overlay else {
+        return BTreeMap::new();
+    };
+    let mut index = BTreeMap::<(String, String), Vec<&aetrain_registry::RegistryCity>>::new();
+    for city in &registry_overlay.cities {
+        index
+            .entry((normalize_name(&city.display_name), city.country_code.clone()))
+            .or_default()
+            .push(city);
+    }
+    index
+}
+
+fn classify_plain_name_fallback_gap_registry_candidate(
+    city: &aetrain_domain::City,
+    station_records: &[&crate::StationMappingRecord],
+    registry_index: &BTreeMap<(String, String), Vec<&aetrain_registry::RegistryCity>>,
+) -> Option<PipelinePlainNameFallbackGapRegistryRecord> {
+    if !is_fallback_reference_gap_singleton_city(city, Some(station_records))
+        || city.wikidata_qid.is_some()
+        || city.population.is_some()
+        || classify_quarantined_fallback_gap_pseudo_city(city, station_records).is_some()
+    {
+        return None;
+    }
+
+    let station_display_names = station_records
+        .iter()
+        .map(|record| record.station_display_name.clone())
+        .collect::<Vec<_>>();
+    let key = (normalize_name(&city.display_name), city.country_code.clone());
+    let matches = registry_index.get(&key).cloned().unwrap_or_default();
+    let (registry_resolution_status, registry_city_id, registry_display_name, registry_distance_m, suggested_action) =
+        match matches.as_slice() {
+            [] => (
+                "no_registry_match".to_string(),
+                None,
+                None,
+                None,
+                "expand authoritative municipality registry coverage for this plain-name fallback city"
+                    .to_string(),
+            ),
+            [registry_city] => {
+                let distance_m =
+                    geo_distance_meters(city.location, registry_city.identity_point).round() as u32;
+                if distance_m <= 25_000 {
+                    (
+                        "resolved_exact_registry_city_match".to_string(),
+                        Some(registry_city.city_id.clone()),
+                        Some(registry_city.display_name.clone()),
+                        Some(distance_m),
+                        "promote to the exact registry municipality and keep stop membership under that city"
+                            .to_string(),
+                    )
+                } else {
+                    (
+                        "registry_match_too_far".to_string(),
+                        Some(registry_city.city_id.clone()),
+                        Some(registry_city.display_name.clone()),
+                        Some(distance_m),
+                        "review locality geometry before promoting this plain-name fallback city"
+                            .to_string(),
+                    )
+                }
+            }
+            _ => (
+                "ambiguous_registry_match".to_string(),
+                None,
+                None,
+                None,
+                "add disambiguating registry coverage before promoting this plain-name fallback city"
+                    .to_string(),
+            ),
+        };
+
+    Some(PipelinePlainNameFallbackGapRegistryRecord {
+        city_id: city.city_id.clone(),
+        display_name: city.display_name.clone(),
+        country_code: city.country_code.clone(),
+        station_display_names,
+        registry_resolution_status,
+        registry_city_id,
+        registry_display_name,
+        registry_distance_m,
+        suggested_action,
+    })
+}
+
 fn quarantine_placeholder_promoted_attachment_gap_cities(
     cities: &mut Vec<aetrain_domain::City>,
     aliases: &mut Vec<aetrain_dataset::AliasRecord>,
@@ -6716,6 +7027,7 @@ impl PipelineAdapter for SncfAdapter {
             edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
             rejected_city_candidates: Some(output.rejected_city_candidates),
+            plain_name_fallback_gap_registry_candidates: Vec::new(),
             quarantined_fallback_gap_cities: Vec::new(),
             quarantined_promoted_attachment_gap_cities: Vec::new(),
             duplicates: output.duplicates,
@@ -6788,6 +7100,7 @@ impl PipelineAdapter for GtfsBasicAdapter {
             edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
             rejected_city_candidates: Some(output.rejected_city_candidates),
+            plain_name_fallback_gap_registry_candidates: Vec::new(),
             quarantined_fallback_gap_cities: Vec::new(),
             quarantined_promoted_attachment_gap_cities: Vec::new(),
             duplicates: output.duplicates,
@@ -7887,11 +8200,117 @@ mod tests {
     }
 
     #[test]
+    fn promote_plain_name_fallback_gap_registry_cities_resolves_exact_match() {
+        let original_id = CityId::new("ajain-fr-fallback").expect("valid city id");
+        let registry_id = CityId::new("ajain-fr-q123").expect("valid city id");
+        let mut cities = vec![City {
+            city_id: original_id.clone(),
+            slug: "ajain".to_string(),
+            display_name: "Ajain".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 46.2065,
+                lon: 1.9971,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-87417808").expect("valid station id")],
+            aliases: Vec::new(),
+        }];
+        let station_mappings = StationMappingReport {
+            records: vec![StationMappingRecord {
+                station_key: "StopArea:OCE87417808".to_string(),
+                station_id: StationId::new("station-uic-87417808").expect("valid station id"),
+                city_id: original_id.clone(),
+                city_cluster_key: "fallback-ajain-87417808".to_string(),
+                station_display_name: "Ajain".to_string(),
+                mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                confidence: 50,
+                matched_reference_id: None,
+                matched_reference_name: None,
+                override_id: None,
+                source_refs: Vec::new(),
+            }],
+        };
+        let overlay = RegistryCanonicalBundle {
+            meta: RegistryMeta {
+                schema_version: 1,
+                dataset_id: "registry-test".to_string(),
+                scope: "test".to_string(),
+                generated_at: "2026-05-14T00:00:00Z".to_string(),
+            },
+            cities: vec![RegistryCity {
+                city_id: registry_id.clone(),
+                slug: "ajain".to_string(),
+                display_name: "Ajain".to_string(),
+                country_code: "FR".to_string(),
+                identity_point: GeoPoint {
+                    lat: 46.2067,
+                    lon: 1.9972,
+                },
+                map_anchor_point: GeoPoint {
+                    lat: 46.2067,
+                    lon: 1.9972,
+                },
+                bbox: None,
+                wikidata_qid: Some("Q123".to_string()),
+                population: Some(1_100),
+                status: RegistryStatus::Resolved,
+                external_refs: Vec::new(),
+            }],
+            stations: Vec::new(),
+            memberships: Vec::new(),
+            name_variants: Vec::new(),
+            city_facts: Vec::new(),
+            city_signals: Vec::new(),
+        };
+        let mut remap = BTreeMap::new();
+        let mut issues = Vec::new();
+
+        let records = promote_plain_name_fallback_gap_registry_cities(
+            &mut cities,
+            &mut remap,
+            &station_mappings,
+            Some(&overlay),
+            "europe-validated",
+            &mut issues,
+        );
+
+        assert_eq!(records.len(), 1);
+        assert_eq!(
+            records[0].registry_resolution_status,
+            "resolved_exact_registry_city_match"
+        );
+        assert_eq!(cities[0].city_id, registry_id);
+        assert_eq!(cities[0].wikidata_qid.as_deref(), Some("Q123"));
+        assert_eq!(cities[0].population, Some(1_100));
+        assert_eq!(remap.get(&original_id), Some(&cities[0].city_id));
+        assert_eq!(issues.len(), 1);
+    }
+
+    #[test]
     fn fallback_gap_local_stop_qualifier_recognizes_champ_de_foire() {
         assert!(fallback_gap_station_name_has_local_stop_qualifier(
             "Gouzon Champ De Foire"
         ));
         assert!(!fallback_gap_station_name_has_local_stop_qualifier("Quillan"));
+    }
+
+    #[test]
+    fn classify_attachment_surface_distinguishes_coverage_modes() {
+        assert_eq!(
+            classify_attachment_surface(&[], &[]),
+            "no_authority_candidates"
+        );
+        assert_eq!(
+            classify_attachment_surface(&[], &[120, 240]),
+            "expanded_only_candidates"
+        );
+        assert_eq!(
+            classify_attachment_surface(&[80], &[80, 120]),
+            "local_candidates_available"
+        );
     }
 
     #[test]
@@ -8424,6 +8843,7 @@ mod tests {
             None,
             &[],
             &[],
+            &[],
             &counters,
             0,
             None,
@@ -8620,6 +9040,7 @@ mod tests {
             None,
             &[],
             &[],
+            &[],
             &counters,
             0,
             None,
@@ -8734,6 +9155,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &[],
             &[],
             &BTreeMap::new(),
@@ -8864,6 +9286,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &[],
             &[],
             &BTreeMap::new(),
@@ -9320,6 +9743,7 @@ mod tests {
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
             None,
+            &[],
             &[],
             &[],
             &counters,
