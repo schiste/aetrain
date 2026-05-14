@@ -307,6 +307,40 @@ pub struct PipelinePromotedDomesticAuthorityGapRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineStationAttachmentAuditRecord {
+    pub source_id: String,
+    pub country_code: String,
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub direct_distance_km: u32,
+    pub duration_min: Option<u32>,
+    pub from_local_candidate_distances_m: Vec<u32>,
+    pub to_local_candidate_distances_m: Vec<u32>,
+    pub from_expanded_candidate_distances_m: Vec<u32>,
+    pub to_expanded_candidate_distances_m: Vec<u32>,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineAuthorityDetourCorridorRecord {
+    pub source_id: String,
+    pub from_country_code: String,
+    pub to_country_code: String,
+    pub corridor_key: String,
+    pub route_count: u64,
+    pub example_routes: Vec<String>,
+    pub min_direct_distance_km: u32,
+    pub max_direct_distance_km: u32,
+    pub min_routed_authority_distance_km: u32,
+    pub max_routed_authority_distance_km: u32,
+    pub min_detour_ratio_x100: u32,
+    pub max_detour_ratio_x100: u32,
+    pub max_snap_distance_m: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQuarantinedFallbackGapCityRecord {
     pub city_id: aetrain_domain::CityId,
     pub display_name: String,
@@ -339,6 +373,8 @@ pub struct PipelineQualityReport {
     pub rail_authority_defect_details: Vec<PipelineRailAuthorityDefectRecord>,
     pub shape_plausibility_defect_details: Vec<PipelineShapePlausibilityDefectRecord>,
     pub promoted_domestic_authority_gap_details: Vec<PipelinePromotedDomesticAuthorityGapRecord>,
+    pub promoted_station_attachment_gap_details: Vec<PipelineStationAttachmentAuditRecord>,
+    pub authority_detour_corridors: Vec<PipelineAuthorityDetourCorridorRecord>,
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
 }
 
@@ -767,6 +803,14 @@ fn export_pipeline_target(
         &quality_report.promoted_domestic_authority_gap_details,
     )?;
     write_json(
+        &quality_dir.join("promoted-station-attachment-gap-details.json"),
+        &quality_report.promoted_station_attachment_gap_details,
+    )?;
+    write_json(
+        &quality_dir.join("authority-detour-corridors.json"),
+        &quality_report.authority_detour_corridors,
+    )?;
+    write_json(
         &quality_dir.join("quarantined-fallback-gap-cities.json"),
         &quality_report.quarantined_fallback_gap_cities,
     )?;
@@ -1037,6 +1081,13 @@ fn build_quality_report(
         authority_registry,
         &authority_networks,
     );
+    let promoted_station_attachment_gap_details = build_promoted_station_attachment_gap_details(
+        &promoted_domestic_authority_gap_details,
+        cities,
+        &authority_networks,
+    );
+    let authority_detour_corridors =
+        build_authority_detour_corridor_records(&rail_authority_defect_details);
     let promoted_station_attachment_gap_count = promoted_domestic_authority_gap_details
         .iter()
         .filter(|record| record.authority_gap_reason == "authority_station_attachment_gap")
@@ -1280,6 +1331,8 @@ fn build_quality_report(
         rail_authority_defect_details,
         shape_plausibility_defect_details,
         promoted_domestic_authority_gap_details,
+        promoted_station_attachment_gap_details,
+        authority_detour_corridors,
         quarantined_fallback_gap_cities: quarantined_fallback_gap_cities.to_vec(),
     }
 }
@@ -1714,6 +1767,157 @@ fn classify_authority_path_failure_reason(
         (Some(_), Some(_), false) => "authority_topology_no_route",
         _ => "authority_station_attachment_gap",
     }
+}
+
+fn build_promoted_station_attachment_gap_details(
+    promoted_domestic_authority_gap_details: &[PipelinePromotedDomesticAuthorityGapRecord],
+    cities: &[City],
+    authority_networks: &BTreeMap<String, RailGeometryNetwork>,
+) -> Vec<PipelineStationAttachmentAuditRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+
+    promoted_domestic_authority_gap_details
+        .iter()
+        .filter(|record| record.authority_gap_reason == "authority_station_attachment_gap")
+        .filter_map(|record| {
+            let network = authority_networks.get(&record.source_id)?;
+            let from_city = cities_by_id.get(&record.from_city_id)?;
+            let to_city = cities_by_id.get(&record.to_city_id)?;
+            Some(PipelineStationAttachmentAuditRecord {
+                source_id: record.source_id.clone(),
+                country_code: record.country_code.clone(),
+                from_city_id: record.from_city_id.clone(),
+                from_display_name: record.from_display_name.clone(),
+                to_city_id: record.to_city_id.clone(),
+                to_display_name: record.to_display_name.clone(),
+                direct_distance_km: record.direct_distance_km,
+                duration_min: record.duration_min,
+                from_local_candidate_distances_m: network
+                    .route_snap_candidates(from_city.location)
+                    .into_iter()
+                    .map(|(_, distance)| distance)
+                    .collect(),
+                to_local_candidate_distances_m: network
+                    .route_snap_candidates(to_city.location)
+                    .into_iter()
+                    .map(|(_, distance)| distance)
+                    .collect(),
+                from_expanded_candidate_distances_m: network
+                    .expanded_route_snap_candidates(from_city.location)
+                    .into_iter()
+                    .map(|(_, distance)| distance)
+                    .collect(),
+                to_expanded_candidate_distances_m: network
+                    .expanded_route_snap_candidates(to_city.location)
+                    .into_iter()
+                    .map(|(_, distance)| distance)
+                    .collect(),
+                provenance: record.provenance.clone(),
+            })
+        })
+        .collect()
+}
+
+fn build_authority_detour_corridor_records(
+    rail_authority_defect_details: &[PipelineRailAuthorityDefectRecord],
+) -> Vec<PipelineAuthorityDetourCorridorRecord> {
+    let mut grouped = BTreeMap::<(String, String, String, String), Vec<&PipelineRailAuthorityDefectRecord>>::new();
+    for record in rail_authority_defect_details
+        .iter()
+        .filter(|record| record.authority_defect_reason == "implausible_authority_detour")
+    {
+        let (left_id, left_name, left_country, right_id, right_name, right_country) =
+            if record.from_city_id <= record.to_city_id {
+                (
+                    record.from_city_id.to_string(),
+                    record.from_display_name.clone(),
+                    record.from_country_code.clone(),
+                    record.to_city_id.to_string(),
+                    record.to_display_name.clone(),
+                    record.to_country_code.clone(),
+                )
+            } else {
+                (
+                    record.to_city_id.to_string(),
+                    record.to_display_name.clone(),
+                    record.to_country_code.clone(),
+                    record.from_city_id.to_string(),
+                    record.from_display_name.clone(),
+                    record.from_country_code.clone(),
+                )
+            };
+        grouped
+            .entry((
+                record.source_id.clone(),
+                left_id,
+                right_id,
+                format!("{left_name} ({left_country}) <-> {right_name} ({right_country})"),
+            ))
+            .or_default()
+            .push(record);
+    }
+
+    grouped
+        .into_iter()
+        .map(|((source_id, _left_id, _right_id, corridor_key), records)| {
+            let first = records[0];
+            PipelineAuthorityDetourCorridorRecord {
+                source_id,
+                from_country_code: first.from_country_code.clone(),
+                to_country_code: first.to_country_code.clone(),
+                corridor_key,
+                route_count: records.len() as u64,
+                example_routes: records
+                    .iter()
+                    .take(6)
+                    .map(|record| format!("{} -> {}", record.from_display_name, record.to_display_name))
+                    .collect(),
+                min_direct_distance_km: records
+                    .iter()
+                    .map(|record| record.direct_distance_km)
+                    .min()
+                    .unwrap_or(0),
+                max_direct_distance_km: records
+                    .iter()
+                    .map(|record| record.direct_distance_km)
+                    .max()
+                    .unwrap_or(0),
+                min_routed_authority_distance_km: records
+                    .iter()
+                    .filter_map(|record| record.routed_authority_distance_km)
+                    .min()
+                    .unwrap_or(0),
+                max_routed_authority_distance_km: records
+                    .iter()
+                    .filter_map(|record| record.routed_authority_distance_km)
+                    .max()
+                    .unwrap_or(0),
+                min_detour_ratio_x100: records
+                    .iter()
+                    .filter_map(|record| record.detour_ratio_x100)
+                    .min()
+                    .unwrap_or(0),
+                max_detour_ratio_x100: records
+                    .iter()
+                    .filter_map(|record| record.detour_ratio_x100)
+                    .max()
+                    .unwrap_or(0),
+                max_snap_distance_m: records
+                    .iter()
+                    .flat_map(|record| {
+                        [
+                            record.start_snap_distance_m.unwrap_or(0),
+                            record.end_snap_distance_m.unwrap_or(0),
+                        ]
+                    })
+                    .max()
+                    .unwrap_or(0),
+            }
+        })
+        .collect()
 }
 
 fn infer_feed_source_id_from_provenance(provenance: &[String]) -> Option<String> {
