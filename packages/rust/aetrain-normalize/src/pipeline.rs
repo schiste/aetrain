@@ -262,6 +262,7 @@ pub struct PipelineRailAuthorityDefectRecord {
     pub start_snap_distance_m: Option<u32>,
     pub end_snap_distance_m: Option<u32>,
     pub route_found_in_authority_graph: bool,
+    pub authority_defect_reason: String,
     pub routed_authority_distance_km: Option<u32>,
     pub routed_authority_point_count: Option<usize>,
     pub provenance: Vec<String>,
@@ -991,6 +992,42 @@ fn build_quality_report(
         authority_registry,
         &authority_networks,
     );
+    let promoted_rejected_station_attachment_gap_count = rail_authority_defect_details
+        .iter()
+        .filter(|record| {
+            record.from_country_code == record.to_country_code
+                && authority_registry.is_some_and(|registry| {
+                    registry
+                        .country(&record.from_country_code)
+                        .is_some_and(|entry| entry.status.is_promoted())
+                })
+                && record.authority_defect_reason == "authority_station_attachment_gap"
+        })
+        .count() as u64;
+    let promoted_rejected_topology_no_route_gap_count = rail_authority_defect_details
+        .iter()
+        .filter(|record| {
+            record.from_country_code == record.to_country_code
+                && authority_registry.is_some_and(|registry| {
+                    registry
+                        .country(&record.from_country_code)
+                        .is_some_and(|entry| entry.status.is_promoted())
+                })
+                && record.authority_defect_reason == "authority_topology_no_route"
+        })
+        .count() as u64;
+    let promoted_rejected_implausible_detour_count = rail_authority_defect_details
+        .iter()
+        .filter(|record| {
+            record.from_country_code == record.to_country_code
+                && authority_registry.is_some_and(|registry| {
+                    registry
+                        .country(&record.from_country_code)
+                        .is_some_and(|entry| entry.status.is_promoted())
+                })
+                && record.authority_defect_reason == "implausible_authority_detour"
+        })
+        .count() as u64;
     let shape_plausibility_defect_details =
         build_shape_plausibility_defect_details(&rejected_shape_plausibility_routes);
     let promoted_domestic_authority_gap_details = build_promoted_domestic_authority_gap_details(
@@ -1199,6 +1236,24 @@ fn build_quality_report(
             "promoted_rejected_rail_authority_count_zero",
             "promoted_rejected_rail_authority_count",
             promoted_rejected_rail_authority_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_rejected_station_attachment_gap_count_zero",
+            "promoted_rejected_station_attachment_gap_count",
+            promoted_rejected_station_attachment_gap_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_rejected_topology_no_route_gap_count_zero",
+            "promoted_rejected_topology_no_route_gap_count",
+            promoted_rejected_topology_no_route_gap_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_rejected_implausible_authority_detour_count_zero",
+            "promoted_rejected_implausible_authority_detour_count",
+            promoted_rejected_implausible_detour_count,
             0,
         ),
     ];
@@ -1471,6 +1526,12 @@ fn build_rail_authority_defect_details(
                 start_snap_distance_m,
                 end_snap_distance_m,
                 route_found_in_authority_graph,
+                authority_defect_reason: classify_authority_path_failure_reason(
+                    start_snap_distance_m,
+                    end_snap_distance_m,
+                    route_found_in_authority_graph,
+                )
+                .to_string(),
                 routed_authority_distance_km,
                 routed_authority_point_count,
                 provenance: geometry.provenance.clone(),
@@ -1632,6 +1693,18 @@ fn build_promoted_domestic_authority_gap_details(
 }
 
 fn classify_promoted_domestic_authority_gap_reason(
+    start_snap_distance_m: Option<u32>,
+    end_snap_distance_m: Option<u32>,
+    route_found_in_authority_graph: bool,
+) -> &'static str {
+    classify_authority_path_failure_reason(
+        start_snap_distance_m,
+        end_snap_distance_m,
+        route_found_in_authority_graph,
+    )
+}
+
+fn classify_authority_path_failure_reason(
     start_snap_distance_m: Option<u32>,
     end_snap_distance_m: Option<u32>,
     route_found_in_authority_graph: bool,
@@ -8044,6 +8117,15 @@ mod tests {
                 .status,
             "fail"
         );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "promoted_topology_no_route_gap_count")
+                .expect("promoted topology no-route gate")
+                .status,
+            "pass"
+        );
     }
 
     #[test]
@@ -8216,6 +8298,10 @@ mod tests {
         assert_eq!(
             classify_promoted_domestic_authority_gap_reason(Some(42), Some(84), true),
             "implausible_authority_detour"
+        );
+        assert_eq!(
+            classify_authority_path_failure_reason(Some(42), Some(84), false),
+            "authority_topology_no_route"
         );
     }
 
