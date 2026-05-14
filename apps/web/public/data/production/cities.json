@@ -49714,43 +49714,30 @@
     "display_name": "Geneve",
     "country_code": "CH",
     "location": {
-      "lat": 46.211802295999995,
-      "lon": 6.143822569999999
+      "lat": 46.212217323999994,
+      "lon": 6.1466103924999995
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 9,
+    "interest_score": 10,
     "station_ids": [
       "station-uic-8501008",
       "station-uic-8501026",
       "station-uic-85010264",
       "station-uic-8516272",
       "station-uic-8516273",
-      "station-uic-8516283"
+      "station-uic-8516283",
+      "station-uic-85162727",
+      "station-uic-85162834"
     ],
     "aliases": [
+      "Geneve Champel",
+      "Geneve Secheron",
       "Genève-Aéroport",
       "Genève-Champel",
       "Genève-Eaux-Vives",
       "Genève-Sécheron"
     ]
-  },
-  {
-    "city_id": "geneve-champel-zz-9076fd47",
-    "slug": "geneve-champel",
-    "display_name": "Geneve Champel",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.192191,
-      "lon": 6.153505
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85162727"
-    ],
-    "aliases": []
   },
   {
     "city_id": "geneve-cornavin-zz-3bc6e4e1",
@@ -49788,23 +49775,6 @@
     "aliases": [
       "Genève Eaux-Vives Gare"
     ]
-  },
-  {
-    "city_id": "geneve-secheron-zz-91372053",
-    "slug": "geneve-secheron",
-    "display_name": "Geneve Secheron",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.222438,
-      "lon": 6.144557
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85162834"
-    ],
-    "aliases": []
   },
   {
     "city_id": "genlis-fr-21292",
@@ -73536,41 +73506,26 @@
     "display_name": "La Chaux De Fonds",
     "country_code": "CH",
     "location": {
-      "lat": 47.098457349166665,
-      "lon": 6.826459616666667
+      "lat": 47.09493067458333,
+      "lon": 6.819642308333334
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-8500184",
       "station-uic-8504314",
       "station-uic-85043141",
       "station-uic-8504321",
-      "station-uic-8504381"
+      "station-uic-8504381",
+      "station-uic-85043216"
     ],
     "aliases": [
+      "La Chaux De Fonds Les Forges",
       "La Chaux-de-Fonds Les Forges",
       "La Chaux-de-Fonds-Est",
       "La Chaux-de-Fonds-Grenier"
     ]
-  },
-  {
-    "city_id": "la-chaux-de-fonds-les-forges-zz-1abc1784",
-    "slug": "la-chaux-de-fonds-les-forges",
-    "display_name": "La Chaux De Fonds Les Forges",
-    "country_code": "CH",
-    "location": {
-      "lat": 47.091404,
-      "lon": 6.812825
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85043216"
-    ],
-    "aliases": []
   },
   {
     "city_id": "la-chaux-des-crotenay-fr-39129",
@@ -77458,59 +77413,28 @@
     "aliases": []
   },
   {
-    "city_id": "lancy-bachet-zz-a5016871",
-    "slug": "lancy-bachet",
-    "display_name": "Lancy Bachet",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.174333,
-      "lon": 6.129372
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85171421"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "lancy-ch-d6e5769b",
     "slug": "lancy",
     "display_name": "Lancy",
     "country_code": "CH",
     "location": {
-      "lat": 46.18013706,
-      "lon": 6.1271525350000005
+      "lat": 46.184517029999995,
+      "lon": 6.126242767500001
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 7,
     "station_ids": [
+      "station-uic-85171421",
       "station-uic-8516155",
-      "station-uic-8517142"
+      "station-uic-8517142",
+      "station-uic-85161554"
     ],
     "aliases": [
+      "Lancy Pont Rouge",
       "Lancy-Bachet",
       "Lancy-Pont-Rouge"
     ]
-  },
-  {
-    "city_id": "lancy-pont-rouge-zz-e0f8289c",
-    "slug": "lancy-pont-rouge",
-    "display_name": "Lancy Pont Rouge",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.188897,
-      "lon": 6.125333
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85161554"
-    ],
-    "aliases": []
   },
   {
     "city_id": "landas-fr-59330",
@@ -80195,54 +80119,24 @@
     "display_name": "Le Chatelard",
     "country_code": "CH",
     "location": {
-      "lat": 46.057568855,
-      "lon": 6.954146075
+      "lat": 46.05785146375,
+      "lon": 6.95510726875
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-8501566",
-      "station-uic-8501568"
+      "station-uic-8501568",
+      "station-uic-85015685",
+      "station-uic-85015669"
     ],
     "aliases": [
+      "Le Chatelard Frontiere",
+      "Le Chatelard Vs",
       "Le Châtelard VS",
       "Le Châtelard-Frontière"
     ]
-  },
-  {
-    "city_id": "le-chatelard-frontiere-zz-400c484c",
-    "slug": "le-chatelard-frontiere",
-    "display_name": "Le Chatelard Frontiere",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.053259,
-      "lon": 6.950241
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85015685"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "le-chatelard-vs-zz-c09761f2",
-    "slug": "le-chatelard-vs",
-    "display_name": "Le Chatelard Vs",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.060289,
-      "lon": 6.958021
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-85015669"
-    ],
-    "aliases": []
   },
   {
     "city_id": "le-coteau-fr-42071",
@@ -89364,8 +89258,8 @@
     "display_name": "Lyon",
     "country_code": "FR",
     "location": {
-      "lat": 45.761011,
-      "lon": 4.827087
+      "lat": 45.76733825,
+      "lon": 4.81544725
     },
     "wikidata_qid": "Q456",
     "population": 522969,
@@ -89381,15 +89275,19 @@
       "station-uic-8772202",
       "station-uic-87722025",
       "station-uic-8772319",
-      "station-uic-87723197"
+      "station-uic-87723197",
+      "station-uic-87697136",
+      "station-uic-87697045"
     ],
     "aliases": [
       "Lyon Gorge de Loup",
       "Lyon Jean Macé",
       "Lyon Part Dieu",
       "Lyon Perrache",
+      "Lyon Perrache Gare Routiere",
       "Lyon Saint-Paul",
-      "Lyon Vaise"
+      "Lyon Vaise",
+      "Lyon Vaise Gare Routiere"
     ]
   },
   {
@@ -89411,25 +89309,6 @@
     ],
     "aliases": [
       "Lyon Part Dieu Gare Routiere"
-    ]
-  },
-  {
-    "city_id": "lyon-perrache-gare-routiere-zz-b07a51cb",
-    "slug": "lyon-perrache",
-    "display_name": "Lyon Perrache",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.74912,
-      "lon": 4.827332
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87697136"
-    ],
-    "aliases": [
-      "Lyon Perrache Gare Routiere"
     ]
   },
   {
@@ -89505,25 +89384,6 @@
       "station-uic-87698332"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "lyon-vaise-gare-routiere-zz-6e92fbd5",
-    "slug": "lyon-vaise",
-    "display_name": "Lyon Vaise",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.779611,
-      "lon": 4.803685
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87697045"
-    ],
-    "aliases": [
-      "Lyon Vaise Gare Routiere"
-    ]
   },
   {
     "city_id": "lyss-ch-a2e881b1",
@@ -95527,8 +95387,8 @@
     "display_name": "Milano",
     "country_code": "IT",
     "location": {
-      "lat": 45.49207149,
-      "lon": 9.194208115999999
+      "lat": 45.488493745,
+      "lon": 9.190951058
     },
     "wikidata_qid": null,
     "population": null,
@@ -95541,7 +95401,8 @@
       "station-uic-8301640",
       "station-uic-8301645",
       "station-uic-8301666",
-      "station-uic-8301700"
+      "station-uic-8301700",
+      "station-uic-83016451"
     ],
     "aliases": [
       "Milano Centrale",
@@ -95551,23 +95412,6 @@
       "Milano Porta Garibaldi",
       "Milano Villapizzone"
     ]
-  },
-  {
-    "city_id": "milano-porta-garibaldi-zz-7967f76f",
-    "slug": "milano-porta-garibaldi",
-    "display_name": "Milano Porta Garibaldi",
-    "country_code": "IT",
-    "location": {
-      "lat": 45.484916,
-      "lon": 9.187694
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-83016451"
-    ],
-    "aliases": []
   },
   {
     "city_id": "milhaud-fr-30169",
@@ -111118,25 +110962,6 @@
     "aliases": []
   },
   {
-    "city_id": "paris-austerlitz-routiere-zz-6b835d00",
-    "slug": "paris-austerlitz",
-    "display_name": "Paris Austerlitz",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.841536,
-      "lon": 2.367945
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87737429"
-    ],
-    "aliases": [
-      "Paris Austerlitz Routiere"
-    ]
-  },
-  {
     "city_id": "paris-fr-q90",
     "slug": "paris",
     "display_name": "Paris",
@@ -111149,6 +110974,7 @@
     "population": 2243739,
     "interest_score": 10,
     "station_ids": [
+      "station-uic-87737429",
       "station-uic-000008700011",
       "station-uic-000008700014",
       "station-uic-8711300",
@@ -111167,6 +110993,7 @@
     ],
     "aliases": [
       "Paris Austerlitz",
+      "Paris Austerlitz Routiere",
       "Paris Bercy Bourg. Pays d'Auv.",
       "Paris Est",
       "Paris Gare de Lyon",
@@ -127920,21 +127747,24 @@
     "display_name": "Saint Gilles Lycee Haut Rhin",
     "country_code": "FR",
     "location": {
-      "lat": 48.073767333333336,
-      "lon": 7.271886333333334
+      "lat": 48.06682166666667,
+      "lon": 7.252489166666667
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-8718155",
       "station-uic-87181552",
       "station-uic-87182345",
-      "station-uic-87182360"
+      "station-uic-87182360",
+      "station-uic-87665455"
     ],
     "aliases": [
       "Logelbach",
-      "Walbach - La Forge"
+      "Walbach - La Forge",
+      "Walbach Forge",
+      "Walbach La Forge Abri D 417"
     ]
   },
   {
@@ -149820,7 +149650,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87665380"
     ],
@@ -153914,7 +153744,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772332",
       "station-uic-87723320"
@@ -158630,25 +158460,6 @@
     "aliases": [
       "Waidhofen/Ybbs Bahnhof",
       "Waidhofen/Ybbs Stadt"
-    ]
-  },
-  {
-    "city_id": "walbach-forge-zz-2670494b",
-    "slug": "walbach-forge",
-    "display_name": "Walbach Forge",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.059876,
-      "lon": 7.233092
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87665455"
-    ],
-    "aliases": [
-      "Walbach La Forge Abri D 417"
     ]
   },
   {

@@ -29955,7 +29955,7 @@
   },
   {
     "from_city_id": "blois-chambord-fr-41018",
-    "to_city_id": "paris-austerlitz-routiere-zz-6b835d00",
+    "to_city_id": "paris-fr-q90",
     "duration_min": 150,
     "service_kind": "rail",
     "service_class": "regional",
@@ -47311,13 +47311,15 @@
   {
     "from_city_id": "chambesy-ch-03211e19",
     "to_city_id": "geneve-ch-aaf44349",
-    "duration_min": 2,
+    "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-L1-B-j26-1"
+      "ch-gtfs:91-L1-B-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
   {
@@ -52233,19 +52235,6 @@
     ]
   },
   {
-    "from_city_id": "collonges-fontaines-fr-69063",
-    "to_city_id": "lyon-vaise-gare-routiere-zz-6e92fbd5",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::CE3BDFA1-8C2E-4088-82BD-B59FD309E3B4:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "colloto-es-285ef9e2",
     "to_city_id": "el-berron-es-767950b5",
     "duration_min": 11,
@@ -52391,19 +52380,6 @@
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "colmar-fr-68066",
-    "to_city_id": "saint-gilles-lycee-haut-rhin-fr-68374",
-    "duration_min": 1,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
       "geometry:sncf-fr-rfn-lines"
@@ -75821,7 +75797,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-MBX-j26-1"
+      "ch-gtfs:91-MBX-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:"
     ]
   },
   {
@@ -83839,7 +83817,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-L3-B-j26-1"
+      "ch-gtfs:91-L3-B-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
   {
@@ -83875,7 +83855,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-51-Y-j26-1"
+      "ch-gtfs:91-51-Y-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:"
     ]
   },
   {
@@ -129084,7 +129066,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-L4-A-j26-1"
+      "ch-gtfs:91-L4-A-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:"
     ]
   },
   {
@@ -129096,7 +129080,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-L7-j26-1"
+      "ch-gtfs:91-L7-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:"
     ]
   },
   {
@@ -133257,7 +133243,7 @@
   },
   {
     "from_city_id": "le-buet-fr-74290",
-    "to_city_id": "le-chatelard-frontiere-zz-400c484c",
+    "to_city_id": "le-chatelard-ch-b8dab5ff",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -133573,7 +133559,22 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-MBX-j26-1"
+      "ch-gtfs:91-MBX-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:"
+    ]
+  },
+  {
+    "from_city_id": "le-chatelard-ch-b8dab5ff",
+    "to_city_id": "le-buet-fr-74290",
+    "duration_min": 6,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -133601,19 +133602,6 @@
     ]
   },
   {
-    "from_city_id": "le-chatelard-frontiere-zz-400c484c",
-    "to_city_id": "le-buet-fr-74290",
-    "duration_min": 6,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "le-cret-du-locle-ch-6b0517dc",
     "to_city_id": "la-chaux-de-fonds-ch-47bbc301",
     "duration_min": 2,
@@ -133622,7 +133610,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-20-J-j26-1"
+      "ch-gtfs:91-20-J-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::425904CF-2BA3-480E-A35A-C3BF5BAED237:"
     ]
   },
   {
@@ -138015,19 +138005,6 @@
   },
   {
     "from_city_id": "les-aubrais-fr-45147",
-    "to_city_id": "paris-austerlitz-routiere-zz-6b835d00",
-    "duration_min": 120,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "les-aubrais-fr-45147",
     "to_city_id": "paris-fr-q90",
     "duration_min": 55,
     "service_kind": "rail",
@@ -138035,8 +138012,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:"
     ]
   },
   {
@@ -149845,19 +149822,6 @@
     ]
   },
   {
-    "from_city_id": "lyon-perrache-gare-routiere-zz-b07a51cb",
-    "to_city_id": "venissieux-fr-69259",
-    "duration_min": 21,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::071CBAF9-7286-48EB-8849-4C25E035D1E0:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "lyon-saint-exupery-tgv-fr-69299",
     "to_city_id": "aix-en-provence-fr-13001",
     "duration_min": 68,
@@ -149985,18 +149949,6 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::FAC858B2-B613-40BA-9423-E079D6979A0C:",
       "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "lyon-vaise-gare-routiere-zz-6e92fbd5",
-    "to_city_id": "lyon-fr-q456",
-    "duration_min": 16,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::CE3BDFA1-8C2E-4088-82BD-B59FD309E3B4:"
     ]
   },
   {
@@ -182934,7 +182886,7 @@
   },
   {
     "from_city_id": "orleans-fr-45234",
-    "to_city_id": "paris-austerlitz-routiere-zz-6b835d00",
+    "to_city_id": "paris-fr-q90",
     "duration_min": 120,
     "service_kind": "rail",
     "service_class": "regional",
@@ -186856,32 +186808,6 @@
     ]
   },
   {
-    "from_city_id": "paris-austerlitz-routiere-zz-6b835d00",
-    "to_city_id": "blois-chambord-fr-41018",
-    "duration_min": 150,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "paris-austerlitz-routiere-zz-6b835d00",
-    "to_city_id": "les-aubrais-fr-45147",
-    "duration_min": 120,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "paris-fr-q90",
     "to_city_id": "aix-en-provence-fr-13001",
     "duration_min": 174,
@@ -186994,6 +186920,19 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::5af9eaad-75f1-4fdd-a67b-a7aea5d19625:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "paris-fr-q90",
+    "to_city_id": "blois-chambord-fr-41018",
+    "duration_min": 150,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -187369,8 +187308,9 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
+      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::13DADBDA-4FB1-4AA3-8DAB-60E24EF4AAFF:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::1BF2D66F-09EF-4CB8-A003-1417C1EA6532:"
     ]
   },
   {
@@ -214905,12 +214845,12 @@
   },
   {
     "from_city_id": "saint-gilles-lycee-haut-rhin-fr-68374",
-    "to_city_id": "colmar-fr-68066",
-    "duration_min": 1,
+    "to_city_id": "colmar-st-joseph-rue-du-val-st-gregoire-zz-ab85bc22",
+    "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
-    "source_confidence": 100,
+    "source_confidence": 50,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
       "geometry:sncf-fr-rfn-lines"
@@ -214938,21 +214878,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "saint-gilles-lycee-haut-rhin-fr-68374",
-    "to_city_id": "walbach-forge-zz-2670494b",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:"
     ]
   },
   {
@@ -251565,21 +251492,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "turckheim-place-de-la-republique-zz-a4f427ae",
-    "to_city_id": "walbach-forge-zz-2670494b",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:"
     ]
   },
   {
@@ -259198,7 +259112,9 @@
     "change_count_estimate": 0,
     "source_confidence": 60,
     "provenance": [
-      "ch-gtfs:91-L7-j26-1"
+      "ch-gtfs:91-L7-j26-1",
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:"
     ]
   },
   {
@@ -266436,58 +266352,6 @@
     ]
   },
   {
-    "from_city_id": "walbach-forge-zz-2670494b",
-    "to_city_id": "colmar-st-joseph-rue-du-val-st-gregoire-zz-ab85bc22",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "walbach-forge-zz-2670494b",
-    "to_city_id": "saint-gilles-lycee-haut-rhin-fr-68374",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "walbach-forge-zz-2670494b",
-    "to_city_id": "turckheim-place-de-la-republique-zz-a4f427ae",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "walbach-forge-zz-2670494b",
-    "to_city_id": "wihr-au-val-soultzbach-fr-68368",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "walbourg-fr-67511",
     "to_city_id": "hoelschloch-surbourg-fr-67487",
     "duration_min": 3,
@@ -271228,19 +271092,6 @@
     "from_city_id": "wihr-au-val-soultzbach-fr-68368",
     "to_city_id": "turckheim-place-de-la-republique-zz-a4f427ae",
     "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BF9CA9C4-EFE5-4615-808B-11E79551FF23:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "wihr-au-val-soultzbach-fr-68368",
-    "to_city_id": "walbach-forge-zz-2670494b",
-    "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
