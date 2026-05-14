@@ -2883,7 +2883,7 @@
     ]
   },
   {
-    "from_city_id": "ajain-zz-2bcab696",
+    "from_city_id": "ajain-fr-q673204",
     "to_city_id": "gueret-fr-23096",
     "duration_min": 11,
     "service_kind": "rail",
@@ -4034,7 +4034,7 @@
   },
   {
     "from_city_id": "alegia-es-474f1efc",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 9,
     "service_kind": "rail",
     "service_class": "regional",
@@ -4173,7 +4173,7 @@
     ]
   },
   {
-    "from_city_id": "alet-les-bains-zz-2e6466a9",
+    "from_city_id": "alet-les-bains-fr-q173787",
     "to_city_id": "limoux-fr-11206",
     "duration_min": 13,
     "service_kind": "rail",
@@ -9960,7 +9960,7 @@
     ]
   },
   {
-    "from_city_id": "arcachon-fr-33009",
+    "from_city_id": "arcachon-fr-q191460",
     "to_city_id": "biganos-facture-fr-33051",
     "duration_min": 14,
     "service_kind": "rail",
@@ -9972,7 +9972,7 @@
     ]
   },
   {
-    "from_city_id": "arcachon-fr-33009",
+    "from_city_id": "arcachon-fr-q191460",
     "to_city_id": "bordeaux-fr-q1479",
     "duration_min": 120,
     "service_kind": "rail",
@@ -9984,8 +9984,8 @@
     ]
   },
   {
-    "from_city_id": "arcachon-fr-33009",
-    "to_city_id": "la-teste-fr-33529",
+    "from_city_id": "arcachon-fr-q191460",
+    "to_city_id": "la-teste-de-buch-fr-q233133",
     "duration_min": 3,
     "service_kind": "rail",
     "service_class": "regional",
@@ -27370,7 +27370,7 @@
   },
   {
     "from_city_id": "biganos-facture-fr-33051",
-    "to_city_id": "arcachon-fr-33009",
+    "to_city_id": "arcachon-fr-q191460",
     "duration_min": 15,
     "service_kind": "rail",
     "service_class": "regional",
@@ -27408,7 +27408,7 @@
   },
   {
     "from_city_id": "biganos-facture-fr-33051",
-    "to_city_id": "la-teste-fr-33529",
+    "to_city_id": "la-teste-de-buch-fr-q233133",
     "duration_min": 11,
     "service_kind": "rail",
     "service_class": "regional",
@@ -27704,7 +27704,7 @@
   },
   {
     "from_city_id": "billabona-zizurkil-es-94bed9e2",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -31301,7 +31301,7 @@
   },
   {
     "from_city_id": "bordeaux-fr-q1479",
-    "to_city_id": "arcachon-fr-33009",
+    "to_city_id": "arcachon-fr-q191460",
     "duration_min": 120,
     "service_kind": "rail",
     "service_class": "regional",
@@ -90126,7 +90126,7 @@
   },
   {
     "from_city_id": "gueret-fr-23096",
-    "to_city_id": "ajain-zz-2bcab696",
+    "to_city_id": "ajain-fr-q673204",
     "duration_min": 12,
     "service_kind": "rail",
     "service_class": "regional",
@@ -90457,7 +90457,7 @@
   },
   {
     "from_city_id": "gujan-mestras-fr-33199",
-    "to_city_id": "la-teste-fr-33529",
+    "to_city_id": "la-teste-de-buch-fr-q233133",
     "duration_min": 2,
     "service_kind": "rail",
     "service_class": "regional",
@@ -125066,8 +125066,8 @@
     ]
   },
   {
-    "from_city_id": "la-teste-fr-33529",
-    "to_city_id": "arcachon-fr-33009",
+    "from_city_id": "la-teste-de-buch-fr-q233133",
+    "to_city_id": "arcachon-fr-q191460",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -125078,7 +125078,7 @@
     ]
   },
   {
-    "from_city_id": "la-teste-fr-33529",
+    "from_city_id": "la-teste-de-buch-fr-q233133",
     "to_city_id": "biganos-facture-fr-33051",
     "duration_min": 12,
     "service_kind": "rail",
@@ -125090,7 +125090,7 @@
     ]
   },
   {
-    "from_city_id": "la-teste-fr-33529",
+    "from_city_id": "la-teste-de-buch-fr-q233133",
     "to_city_id": "gujan-mestras-fr-33199",
     "duration_min": 2,
     "service_kind": "rail",
@@ -140091,7 +140091,7 @@
   },
   {
     "from_city_id": "limoux-fr-11206",
-    "to_city_id": "alet-les-bains-zz-2e6466a9",
+    "to_city_id": "alet-les-bains-fr-q173787",
     "duration_min": 13,
     "service_kind": "rail",
     "service_class": "regional",
@@ -179633,7 +179633,7 @@
   },
   {
     "from_city_id": "ordizia-es-067fef1b",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 16,
     "service_kind": "rail",
     "service_class": "regional",
@@ -179657,7 +179657,7 @@
   },
   {
     "from_city_id": "ordizia-ordicia-es-47904722",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 16,
     "service_kind": "rail",
     "service_class": "regional",
@@ -197181,7 +197181,7 @@
   },
   {
     "from_city_id": "raismes-fr-59491",
-    "to_city_id": "wallers-fr-59632",
+    "to_city_id": "wallers-fr-q473417",
     "duration_min": 4,
     "service_kind": "rail",
     "service_class": "regional",
@@ -218108,7 +218108,7 @@
   },
   {
     "from_city_id": "san-sebastian-donostia-es-1123237f",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 27,
     "service_kind": "rail",
     "service_class": "regional",
@@ -230697,7 +230697,7 @@
   },
   {
     "from_city_id": "somain-fr-59574",
-    "to_city_id": "wallers-fr-59632",
+    "to_city_id": "wallers-fr-q473417",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -243819,7 +243819,7 @@
   },
   {
     "from_city_id": "tolosa-centro-es-d9ef15a1",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 1,
     "service_kind": "rail",
     "service_class": "regional",
@@ -243828,103 +243828,6 @@
     "provenance": [
       "es-renfe-cercanias-gtfs:61T0001C1",
       "es-renfe-mainline-gtfs:1160011200VRE"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "alegia-es-474f1efc",
-    "duration_min": 4,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-cercanias-gtfs:61T0001C1"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "billabona-zizurkil-es-94bed9e2",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-cercanias-gtfs:61T0005C1"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "ordizia-es-067fef1b",
-    "duration_min": 16,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-cercanias-gtfs:61T0006C1"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "ordizia-ordicia-es-47904722",
-    "duration_min": 16,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:1160011200VRE"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "san-sebastian-donostia-es-1123237f",
-    "duration_min": 32,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-cercanias-gtfs:61T0005C1",
-      "es-renfe-mainline-gtfs:1700011600GL023"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "tolosa-centro-es-d9ef15a1",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-cercanias-gtfs:61T0002C1"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "villabona-zizurkil-es-71ef14d3",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:1000011600VRX"
-    ]
-  },
-  {
-    "from_city_id": "tolosa-es-f6c717ea",
-    "to_city_id": "zumarraga-es-eb54776e",
-    "duration_min": 28,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:1160017000GL023"
     ]
   },
   {
@@ -245089,6 +244992,103 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::3C11D08B-6F1C-416C-A388-63B4074018CB:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "alegia-es-474f1efc",
+    "duration_min": 4,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-cercanias-gtfs:61T0001C1"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "billabona-zizurkil-es-94bed9e2",
+    "duration_min": 5,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-cercanias-gtfs:61T0005C1"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "ordizia-es-067fef1b",
+    "duration_min": 16,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-cercanias-gtfs:61T0006C1"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "ordizia-ordicia-es-47904722",
+    "duration_min": 16,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-mainline-gtfs:1160011200VRE"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "san-sebastian-donostia-es-1123237f",
+    "duration_min": 32,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-cercanias-gtfs:61T0005C1",
+      "es-renfe-mainline-gtfs:1700011600GL023"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "tolosa-centro-es-d9ef15a1",
+    "duration_min": 2,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-cercanias-gtfs:61T0002C1"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "villabona-zizurkil-es-71ef14d3",
+    "duration_min": 5,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-mainline-gtfs:1000011600VRX"
+    ]
+  },
+  {
+    "from_city_id": "toulouse-fr-q7880",
+    "to_city_id": "zumarraga-es-eb54776e",
+    "duration_min": 28,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "es-renfe-mainline-gtfs:1160017000GL023"
     ]
   },
   {
@@ -257777,7 +257777,7 @@
   },
   {
     "from_city_id": "villabona-zizurkil-es-71ef14d3",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 6,
     "service_kind": "rail",
     "service_class": "regional",
@@ -262991,7 +262991,7 @@
     ]
   },
   {
-    "from_city_id": "wallers-fr-59632",
+    "from_city_id": "wallers-fr-q473417",
     "to_city_id": "raismes-fr-59491",
     "duration_min": 4,
     "service_kind": "rail",
@@ -263003,7 +263003,7 @@
     ]
   },
   {
-    "from_city_id": "wallers-fr-59632",
+    "from_city_id": "wallers-fr-q473417",
     "to_city_id": "somain-fr-59574",
     "duration_min": 6,
     "service_kind": "rail",
@@ -274410,7 +274410,7 @@
   },
   {
     "from_city_id": "zumarraga-es-eb54776e",
-    "to_city_id": "tolosa-es-f6c717ea",
+    "to_city_id": "toulouse-fr-q7880",
     "duration_min": 32,
     "service_kind": "rail",
     "service_class": "regional",

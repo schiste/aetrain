@@ -1,0 +1,2160 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-wikidata-27",
+    "scope": "fr-wikidata-27",
+    "generated_at": "2026-05-14T00:00:00Z"
+  },
+  "cities": [
+    {
+      "city_id": "paris-fr-q90",
+      "slug": "paris",
+      "display_name": "Paris",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.85666666666667,
+        "lon": 2.352222222222222
+      },
+      "map_anchor_point": {
+        "lat": 48.85666666666667,
+        "lon": 2.352222222222222
+      },
+      "bbox": {
+        "min_lat": 48.85666666666667,
+        "min_lon": 2.352222222222222,
+        "max_lat": 48.85666666666667,
+        "max_lon": 2.352222222222222
+      },
+      "wikidata_qid": "Q90",
+      "population": 2243739,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q90"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "slug": "lyon",
+      "display_name": "Lyon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.7675,
+        "lon": 4.835
+      },
+      "map_anchor_point": {
+        "lat": 45.7675,
+        "lon": 4.835
+      },
+      "bbox": {
+        "min_lat": 45.7675,
+        "min_lon": 4.835,
+        "max_lat": 45.7675,
+        "max_lon": 4.835
+      },
+      "wikidata_qid": "Q456",
+      "population": 522969,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q456"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "slug": "marseille",
+      "display_name": "Marseille",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.296666666667,
+        "lon": 5.3763888888889
+      },
+      "map_anchor_point": {
+        "lat": 43.296666666667,
+        "lon": 5.3763888888889
+      },
+      "bbox": {
+        "min_lat": 43.296666666667,
+        "min_lon": 5.3763888888889,
+        "max_lat": 43.296666666667,
+        "max_lon": 5.3763888888889
+      },
+      "wikidata_qid": "Q23482",
+      "population": 914000,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q23482"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "slug": "toulouse",
+      "display_name": "Toulouse",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.60444444444445,
+        "lon": 1.4433333333333334
+      },
+      "map_anchor_point": {
+        "lat": 43.60444444444445,
+        "lon": 1.4433333333333334
+      },
+      "bbox": {
+        "min_lat": 43.60444444444445,
+        "min_lon": 1.4433333333333334,
+        "max_lat": 43.60444444444445,
+        "max_lon": 1.4433333333333334
+      },
+      "wikidata_qid": "Q7880",
+      "population": 514819,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q7880"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "slug": "bordeaux",
+      "display_name": "Bordeaux",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.837777777778,
+        "lon": -0.57944444444444
+      },
+      "map_anchor_point": {
+        "lat": 44.837777777778,
+        "lon": -0.57944444444444
+      },
+      "bbox": {
+        "min_lat": 44.837777777778,
+        "min_lon": -0.57944444444444,
+        "max_lat": 44.837777777778,
+        "max_lon": -0.57944444444444
+      },
+      "wikidata_qid": "Q1479",
+      "population": 267991,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q1479"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "slug": "nantes",
+      "display_name": "Nantes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.217222222222,
+        "lon": -1.5538888888889
+      },
+      "map_anchor_point": {
+        "lat": 47.217222222222,
+        "lon": -1.5538888888889
+      },
+      "bbox": {
+        "min_lat": 47.217222222222,
+        "min_lon": -1.5538888888889,
+        "max_lat": 47.217222222222,
+        "max_lon": -1.5538888888889
+      },
+      "wikidata_qid": "Q12191",
+      "population": 327734,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q12191"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "slug": "lille",
+      "display_name": "Lille",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 50.631944444444,
+        "lon": 3.0575
+      },
+      "map_anchor_point": {
+        "lat": 50.631944444444,
+        "lon": 3.0575
+      },
+      "bbox": {
+        "min_lat": 50.631944444444,
+        "min_lon": 3.0575,
+        "max_lat": 50.631944444444,
+        "max_lon": 3.0575
+      },
+      "wikidata_qid": "Q648",
+      "population": 238695,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q648"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "slug": "strasbourg",
+      "display_name": "Strasbourg",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.573333333333,
+        "lon": 7.7522222222222
+      },
+      "map_anchor_point": {
+        "lat": 48.573333333333,
+        "lon": 7.7522222222222
+      },
+      "bbox": {
+        "min_lat": 48.573333333333,
+        "min_lon": 7.7522222222222,
+        "max_lat": 48.573333333333,
+        "max_lon": 7.7522222222222
+      },
+      "wikidata_qid": "Q6602",
+      "population": 293771,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6602"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "slug": "nice",
+      "display_name": "Nice",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.701944444444,
+        "lon": 7.2683333333333
+      },
+      "map_anchor_point": {
+        "lat": 43.701944444444,
+        "lon": 7.2683333333333
+      },
+      "bbox": {
+        "min_lat": 43.701944444444,
+        "min_lon": 7.2683333333333,
+        "max_lat": 43.701944444444,
+        "max_lon": 7.2683333333333
+      },
+      "wikidata_qid": "Q33959",
+      "population": 357737,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q33959"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "slug": "avignon",
+      "display_name": "Avignon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.948611111111,
+        "lon": 4.8083333333333
+      },
+      "map_anchor_point": {
+        "lat": 43.948611111111,
+        "lon": 4.8083333333333
+      },
+      "bbox": {
+        "min_lat": 43.948611111111,
+        "min_lon": 4.8083333333333,
+        "max_lat": 43.948611111111,
+        "max_lon": 4.8083333333333
+      },
+      "wikidata_qid": "Q6397",
+      "population": 94200,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6397"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397"
+        }
+      ]
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "slug": "montpellier",
+      "display_name": "Montpellier",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.610919444444,
+        "lon": 3.8772305555556
+      },
+      "map_anchor_point": {
+        "lat": 43.610919444444,
+        "lon": 3.8772305555556
+      },
+      "bbox": {
+        "min_lat": 43.610919444444,
+        "min_lon": 3.8772305555556,
+        "max_lat": 43.610919444444,
+        "max_lon": 3.8772305555556
+      },
+      "wikidata_qid": "Q6441",
+      "population": 310240,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6441"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6441"
+        }
+      ]
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "slug": "rennes",
+      "display_name": "Rennes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.114166666667,
+        "lon": -1.6808333333333
+      },
+      "map_anchor_point": {
+        "lat": 48.114166666667,
+        "lon": -1.6808333333333
+      },
+      "bbox": {
+        "min_lat": 48.114166666667,
+        "min_lon": -1.6808333333333,
+        "max_lat": 48.114166666667,
+        "max_lon": -1.6808333333333
+      },
+      "wikidata_qid": "Q647",
+      "population": 230890,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q647"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q647"
+        }
+      ]
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "slug": "grenoble",
+      "display_name": "Grenoble",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.186944444444,
+        "lon": 5.7263888888889
+      },
+      "map_anchor_point": {
+        "lat": 45.186944444444,
+        "lon": 5.7263888888889
+      },
+      "bbox": {
+        "min_lat": 45.186944444444,
+        "min_lon": 5.7263888888889,
+        "max_lat": 45.186944444444,
+        "max_lon": 5.7263888888889
+      },
+      "wikidata_qid": "Q1289",
+      "population": 166037,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q1289"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1289"
+        }
+      ]
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "slug": "dijon",
+      "display_name": "Dijon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.323055555556,
+        "lon": 5.0419444444444
+      },
+      "map_anchor_point": {
+        "lat": 47.323055555556,
+        "lon": 5.0419444444444
+      },
+      "bbox": {
+        "min_lat": 47.323055555556,
+        "min_lon": 5.0419444444444,
+        "max_lat": 47.323055555556,
+        "max_lon": 5.0419444444444
+      },
+      "wikidata_qid": "Q7003",
+      "population": 161830,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q7003"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7003"
+        }
+      ]
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "slug": "rouen",
+      "display_name": "Rouen",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 49.443055555556,
+        "lon": 1.1025
+      },
+      "map_anchor_point": {
+        "lat": 49.443055555556,
+        "lon": 1.1025
+      },
+      "bbox": {
+        "min_lat": 49.443055555556,
+        "min_lon": 1.1025,
+        "max_lat": 49.443055555556,
+        "max_lon": 1.1025
+      },
+      "wikidata_qid": "Q30974",
+      "population": 117662,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q30974"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q30974"
+        }
+      ]
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "slug": "reims",
+      "display_name": "Reims",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 49.265277777778,
+        "lon": 4.0286111111111
+      },
+      "map_anchor_point": {
+        "lat": 49.265277777778,
+        "lon": 4.0286111111111
+      },
+      "bbox": {
+        "min_lat": 49.265277777778,
+        "min_lon": 4.0286111111111,
+        "max_lat": 49.265277777778,
+        "max_lon": 4.0286111111111
+      },
+      "wikidata_qid": "Q41876",
+      "population": 187206,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q41876"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q41876"
+        }
+      ]
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "slug": "saint-etienne",
+      "display_name": "Saint-Étienne",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.433888888889,
+        "lon": 4.3897222222222
+      },
+      "map_anchor_point": {
+        "lat": 45.433888888889,
+        "lon": 4.3897222222222
+      },
+      "bbox": {
+        "min_lat": 45.433888888889,
+        "min_lon": 4.3897222222222,
+        "max_lat": 45.433888888889,
+        "max_lon": 4.3897222222222
+      },
+      "wikidata_qid": "Q42716",
+      "population": 199000,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q42716"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42716"
+        }
+      ]
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "slug": "toulon",
+      "display_name": "Toulon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.125,
+        "lon": 5.9305555555556
+      },
+      "map_anchor_point": {
+        "lat": 43.125,
+        "lon": 5.9305555555556
+      },
+      "bbox": {
+        "min_lat": 43.125,
+        "min_lon": 5.9305555555556,
+        "max_lat": 43.125,
+        "max_lon": 5.9305555555556
+      },
+      "wikidata_qid": "Q44160",
+      "population": 180834,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q44160"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q44160"
+        }
+      ]
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "slug": "angers",
+      "display_name": "Angers",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.472777777778,
+        "lon": -0.55555555555556
+      },
+      "map_anchor_point": {
+        "lat": 47.472777777778,
+        "lon": -0.55555555555556
+      },
+      "bbox": {
+        "min_lat": 47.472777777778,
+        "min_lon": -0.55555555555556,
+        "max_lat": 47.472777777778,
+        "max_lon": -0.55555555555556
+      },
+      "wikidata_qid": "Q38380",
+      "population": 159022,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q38380"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q38380"
+        }
+      ]
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "slug": "nimes",
+      "display_name": "Nîmes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.83833333333333,
+        "lon": 4.3597222222222225
+      },
+      "map_anchor_point": {
+        "lat": 43.83833333333333,
+        "lon": 4.3597222222222225
+      },
+      "bbox": {
+        "min_lat": 43.83833333333333,
+        "min_lon": 4.3597222222222225,
+        "max_lat": 43.83833333333333,
+        "max_lon": 4.3597222222222225
+      },
+      "wikidata_qid": "Q42807",
+      "population": 154196,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q42807"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42807"
+        }
+      ]
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "slug": "ajain",
+      "display_name": "Ajain",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 46.2075,
+        "lon": 1.9986111111111111
+      },
+      "map_anchor_point": {
+        "lat": 46.2075,
+        "lon": 1.9986111111111111
+      },
+      "bbox": {
+        "min_lat": 46.2075,
+        "min_lon": 1.9986111111111111,
+        "max_lat": 46.2075,
+        "max_lon": 1.9986111111111111
+      },
+      "wikidata_qid": "Q673204",
+      "population": null,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q673204"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q673204"
+        }
+      ]
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "slug": "alet-les-bains",
+      "display_name": "Alet-les-Bains",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 42.99638888888889,
+        "lon": 2.256388888888889
+      },
+      "map_anchor_point": {
+        "lat": 42.99638888888889,
+        "lon": 2.256388888888889
+      },
+      "bbox": {
+        "min_lat": 42.99638888888889,
+        "min_lon": 2.256388888888889,
+        "max_lat": 42.99638888888889,
+        "max_lon": 2.256388888888889
+      },
+      "wikidata_qid": "Q173787",
+      "population": null,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q173787"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q173787"
+        }
+      ]
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "slug": "esperaza",
+      "display_name": "Espéraza",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 42.93527777777778,
+        "lon": 2.2205555555555554
+      },
+      "map_anchor_point": {
+        "lat": 42.93527777777778,
+        "lon": 2.2205555555555554
+      },
+      "bbox": {
+        "min_lat": 42.93527777777778,
+        "min_lon": 2.2205555555555554,
+        "max_lat": 42.93527777777778,
+        "max_lon": 2.2205555555555554
+      },
+      "wikidata_qid": "Q609690",
+      "population": null,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q609690"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q609690"
+        }
+      ]
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "slug": "quillan",
+      "display_name": "Quillan",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 42.875277777777775,
+        "lon": 2.1819444444444445
+      },
+      "map_anchor_point": {
+        "lat": 42.875277777777775,
+        "lon": 2.1819444444444445
+      },
+      "bbox": {
+        "min_lat": 42.875277777777775,
+        "min_lon": 2.1819444444444445,
+        "max_lat": 42.875277777777775,
+        "max_lon": 2.1819444444444445
+      },
+      "wikidata_qid": "Q28381883",
+      "population": null,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q28381883"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q28381883"
+        }
+      ]
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "slug": "arcachon",
+      "display_name": "Arcachon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.65861111111111,
+        "lon": -1.1688888888888889
+      },
+      "map_anchor_point": {
+        "lat": 44.65861111111111,
+        "lon": -1.1688888888888889
+      },
+      "bbox": {
+        "min_lat": 44.65861111111111,
+        "min_lon": -1.1688888888888889,
+        "max_lat": 44.65861111111111,
+        "max_lon": -1.1688888888888889
+      },
+      "wikidata_qid": "Q191460",
+      "population": null,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q191460"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q191460"
+        }
+      ]
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "slug": "la-teste-de-buch",
+      "display_name": "La Teste-de-Buch",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.63099444444444,
+        "lon": -1.1482305555555556
+      },
+      "map_anchor_point": {
+        "lat": 44.63099444444444,
+        "lon": -1.1482305555555556
+      },
+      "bbox": {
+        "min_lat": 44.63099444444444,
+        "min_lon": -1.1482305555555556,
+        "max_lat": 44.63099444444444,
+        "max_lon": -1.1482305555555556
+      },
+      "wikidata_qid": "Q233133",
+      "population": 27566,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q233133"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q233133"
+        }
+      ]
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "slug": "wallers",
+      "display_name": "Wallers",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 50.375277777777775,
+        "lon": 3.3919444444444444
+      },
+      "map_anchor_point": {
+        "lat": 50.375277777777775,
+        "lon": 3.3919444444444444
+      },
+      "bbox": {
+        "min_lat": 50.375277777777775,
+        "min_lon": 3.3919444444444444,
+        "max_lat": 50.375277777777775,
+        "max_lon": 3.3919444444444444
+      },
+      "wikidata_qid": "Q473417",
+      "population": null,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q473417"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q473417"
+        }
+      ]
+    }
+  ],
+  "stations": [],
+  "memberships": [],
+  "name_variants": [
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville-Lumière",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paname",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Lutèce",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville de l'Amour",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "FR-75",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Pantruche",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville de Paris",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "City of Light",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "City of Love",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Lutetia",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Commune-Affranchie",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "capitale des Gaules",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "City of Lyon",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Cité phocéenne",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Ville-sans-Nom",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Sans-Nom",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massalia",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massilia",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massaliotes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsailles",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseilles",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsielles",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsielle",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "City of Marseille",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsaille",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsiglia",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille City",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Ville rose",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Tolosa",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse, Occitania",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Pink City",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Burdigala",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordèu",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Commune-Franklin",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordele",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordeu",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Naoned",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Naunnt",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "\"cité des ducs de Bretagne\"",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Rijsel",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lile",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Rysel",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Straßburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strassburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Schdroosburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strossburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strossburig",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strosburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strasburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nizza",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nissa",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nikaia",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nicaea",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Niça",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice, French Riviera",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice, Côte d'Azur",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "cité des papes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avinhon",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avignoun",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "value": "Montpelhièr",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "Rennes, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "City of Rennes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "Roazhon",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "value": "Rotomagus",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "value": "Rheims",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "St. Etienne",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Armes-Ville",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Commune-d'Armes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Canton-d'Armes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Libre-Ville",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "St. Étienne",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Sant Estève",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "value": "Port-la-Montagne",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "value": "Tolon",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Saint-Augustin (réunie à Angers)",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Saint-Léonard (réunie à Angers)",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Peu-de-Fonds",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Fruits-Sucrés",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Gaie-Vallée",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Saint-Samson (réunie à Angers)",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "value": "Nismes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "value": "Nimes",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "value": "Alet Les Bains",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "value": "Esperaza",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "value": "La Teste",
+      "kind": "canonical_alias",
+      "source": "wikidata-slice-fr-wikidata-27"
+    }
+  ],
+  "city_facts": [
+    {
+      "city_id": "paris-fr-q90",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q90"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q456"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q23482"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q7880"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q1479"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q12191"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q648"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6602"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q33959"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6397"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397"
+        }
+      ]
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6441"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6441"
+        }
+      ]
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q647"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q647"
+        }
+      ]
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q1289"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1289"
+        }
+      ]
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q7003"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7003"
+        }
+      ]
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q30974"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q30974"
+        }
+      ]
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q41876"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q41876"
+        }
+      ]
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q42716"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42716"
+        }
+      ]
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q44160"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q44160"
+        }
+      ]
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q38380"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q38380"
+        }
+      ]
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q42807"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42807"
+        }
+      ]
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q673204"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q673204"
+        }
+      ]
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q173787"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q173787"
+        }
+      ]
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q609690"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q609690"
+        }
+      ]
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q28381883"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q28381883"
+        }
+      ]
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q191460"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q191460"
+        }
+      ]
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q233133"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q233133"
+        }
+      ]
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q473417"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q473417"
+        }
+      ]
+    }
+  ],
+  "city_signals": [
+    {
+      "city_id": "paris-fr-q90",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-wikidata-27",
+    "scope": "fr-wikidata-27",
+    "generated_at": "2026-05-14T00:00:00Z"
+  },
+  "signals": [
+    {
+      "city_id": "paris-fr-q90",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "nature_interest_score": null,
+      "historical_interest_score": null,
+      "museum_interest_score": null,
+      "scenic_score": null,
+      "score_version": null,
+      "computed_at": null
+    }
+  ]
+}

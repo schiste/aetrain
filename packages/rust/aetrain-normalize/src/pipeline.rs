@@ -6093,15 +6093,32 @@ fn apply_registry_city_authority(
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
 ) -> RegistryOverlayStats {
+    let variant_names_by_city = overlay
+        .name_variants
+        .iter()
+        .fold(
+            BTreeMap::<aetrain_domain::CityId, Vec<String>>::new(),
+            |mut acc, variant| {
+                acc.entry(variant.city_id.clone())
+                    .or_default()
+                    .push(variant.value.clone());
+                acc
+            },
+        );
     let mut claimed_indexes = BTreeSet::new();
     let mut stats = RegistryOverlayStats::default();
     for registry_city in &overlay.cities {
+        let registry_names = build_registry_city_match_names(
+            registry_city,
+            variant_names_by_city.get(&registry_city.city_id),
+        );
         let candidates = cities
             .iter()
             .enumerate()
             .filter(|(index, _)| !claimed_indexes.contains(index))
             .filter_map(|(index, city)| {
-                registry_overlay_match_score(city, registry_city).map(|score| (index, score))
+                registry_overlay_match_score(city, registry_city, &registry_names)
+                    .map(|score| (index, score))
             })
             .collect::<Vec<_>>();
         let Some(best_score) = candidates.iter().map(|(_, score)| *score).max() else {
@@ -6198,6 +6215,21 @@ fn apply_registry_city_authority(
     stats
 }
 
+fn build_registry_city_match_names(
+    registry_city: &aetrain_registry::RegistryCity,
+    variant_names: Option<&Vec<String>>,
+) -> Vec<String> {
+    let mut names = vec![registry_city.display_name.clone()];
+    if let Some(variant_names) = variant_names {
+        for name in variant_names {
+            if !names.iter().any(|existing| existing == name) {
+                names.push(name.clone());
+            }
+        }
+    }
+    names
+}
+
 fn rebind_city_id_remap(
     city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
     from_city_id: &aetrain_domain::CityId,
@@ -6214,11 +6246,16 @@ fn rebind_city_id_remap(
 fn registry_overlay_match_score(
     city: &aetrain_domain::City,
     registry_city: &aetrain_registry::RegistryCity,
+    registry_names: &[String],
 ) -> Option<(u8, u8, u8, usize)> {
     let current_name = normalize_name(&city.display_name);
-    let registry_name = normalize_name(&registry_city.display_name);
-    let exact_name_match = current_name == registry_name;
-    let strong_prefix_match = current_name.starts_with(&(registry_name.clone() + " "));
+    let exact_name_match = registry_names
+        .iter()
+        .any(|name| current_name == normalize_name(name));
+    let strong_prefix_match = registry_names.iter().any(|name| {
+        let normalized = normalize_name(name);
+        current_name.starts_with(&(normalized + " "))
+    });
     if !exact_name_match && !strong_prefix_match {
         return None;
     }

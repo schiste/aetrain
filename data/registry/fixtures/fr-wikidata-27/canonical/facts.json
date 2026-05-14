@@ -1,0 +1,496 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-wikidata-27",
+    "scope": "fr-wikidata-27",
+    "generated_at": "2026-05-14T00:00:00Z"
+  },
+  "facts": [
+    {
+      "city_id": "paris-fr-q90",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q90"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q456"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q23482"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q7880"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q1479"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q12191"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q648"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6602"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q33959"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6397"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397"
+        }
+      ]
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q6441"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6441"
+        }
+      ]
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q647"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q647"
+        }
+      ]
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q1289"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1289"
+        }
+      ]
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q7003"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7003"
+        }
+      ]
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q30974"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q30974"
+        }
+      ]
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q41876"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q41876"
+        }
+      ]
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q42716"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42716"
+        }
+      ]
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q44160"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q44160"
+        }
+      ]
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q38380"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q38380"
+        }
+      ]
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q42807"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42807"
+        }
+      ]
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q673204"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q673204"
+        }
+      ]
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q173787"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q173787"
+        }
+      ]
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q609690"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q609690"
+        }
+      ]
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q28381883"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q28381883"
+        }
+      ]
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q191460"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q191460"
+        }
+      ]
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q233133"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q233133"
+        }
+      ]
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "wikidata-slice-fr-wikidata-27",
+          "external_id": "Q473417"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q473417"
+        }
+      ]
+    }
+  ]
+}

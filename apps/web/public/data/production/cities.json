@@ -1601,7 +1601,7 @@
     "aliases": []
   },
   {
-    "city_id": "ajain-zz-2bcab696",
+    "city_id": "ajain-fr-q673204",
     "slug": "ajain",
     "display_name": "Ajain",
     "country_code": "FR",
@@ -1609,7 +1609,7 @@
       "lat": 46.207153,
       "lon": 1.99724
     },
-    "wikidata_qid": null,
+    "wikidata_qid": "Q673204",
     "population": null,
     "interest_score": 4,
     "station_ids": [
@@ -2251,21 +2251,23 @@
     "aliases": []
   },
   {
-    "city_id": "alet-les-bains-zz-2e6466a9",
+    "city_id": "alet-les-bains-fr-q173787",
     "slug": "alet-les-bains",
-    "display_name": "Alet Les Bains",
+    "display_name": "Alet-les-Bains",
     "country_code": "FR",
     "location": {
       "lat": 42.997403,
       "lon": 2.252189
     },
-    "wikidata_qid": null,
+    "wikidata_qid": "Q173787",
     "population": null,
     "interest_score": 4,
     "station_ids": [
       "station-uic-87615187"
     ],
-    "aliases": []
+    "aliases": [
+      "Alet Les Bains"
+    ]
   },
   {
     "city_id": "alfafar-benetusser-es-a2924ec3",
@@ -5532,7 +5534,7 @@
     "aliases": []
   },
   {
-    "city_id": "arcachon-fr-33009",
+    "city_id": "arcachon-fr-q191460",
     "slug": "arcachon",
     "display_name": "Arcachon",
     "country_code": "FR",
@@ -5540,7 +5542,7 @@
       "lat": 44.658967,
       "lon": -1.165323
     },
-    "wikidata_qid": null,
+    "wikidata_qid": "Q191460",
     "population": null,
     "interest_score": 5,
     "station_ids": [
@@ -41253,21 +41255,23 @@
     ]
   },
   {
-    "city_id": "esperaza-zz-87883049",
+    "city_id": "esperaza-fr-q609690",
     "slug": "esperaza",
-    "display_name": "Esperaza",
+    "display_name": "Espéraza",
     "country_code": "FR",
     "location": {
       "lat": 42.935933,
       "lon": 2.218403
     },
-    "wikidata_qid": null,
+    "wikidata_qid": "Q609690",
     "population": null,
     "interest_score": 4,
     "station_ids": [
       "station-uic-87615211"
     ],
-    "aliases": []
+    "aliases": [
+      "Esperaza"
+    ]
   },
   {
     "city_id": "espinosa-de-henares-es-94ffa8b0",
@@ -75155,21 +75159,23 @@
     "aliases": []
   },
   {
-    "city_id": "la-teste-fr-33529",
-    "slug": "la-teste",
-    "display_name": "La Teste",
+    "city_id": "la-teste-de-buch-fr-q233133",
+    "slug": "la-teste-de-buch",
+    "display_name": "La Teste-de-Buch",
     "country_code": "FR",
     "location": {
       "lat": 44.636966,
       "lon": -1.14297
     },
-    "wikidata_qid": null,
-    "population": null,
+    "wikidata_qid": "Q233133",
+    "population": 27566,
     "interest_score": 5,
     "station_ids": [
       "station-uic-87582643"
     ],
-    "aliases": []
+    "aliases": [
+      "La Teste"
+    ]
   },
   {
     "city_id": "la-tine-ch-ad969d05",
@@ -116778,7 +116784,7 @@
     "aliases": []
   },
   {
-    "city_id": "quillan-zz-e290b349",
+    "city_id": "quillan-fr-q28381883",
     "slug": "quillan",
     "display_name": "Quillan",
     "country_code": "FR",
@@ -116786,7 +116792,7 @@
       "lat": 42.873947,
       "lon": 2.181787
     },
-    "wikidata_qid": null,
+    "wikidata_qid": "Q28381883",
     "population": null,
     "interest_score": 4,
     "station_ids": [
@@ -145904,24 +145910,6 @@
     "aliases": []
   },
   {
-    "city_id": "tolosa-es-f6c717ea",
-    "slug": "tolosa",
-    "display_name": "Tolosa",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.1354472,
-      "lon": -2.0790886
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-cf16b4b2",
-      "station-es-renfe-mainline-gtfs-cf16b4b2"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "tonnay-charente-fr-17449",
     "slug": "tonnay-charente",
     "display_name": "Tonnay Charente",
@@ -146545,18 +146533,36 @@
     "display_name": "Toulouse",
     "country_code": "FR",
     "location": {
-      "lat": 43.6114061,
-      "lon": 1.45394125
+      "lat": 43.1354472,
+      "lon": -2.0790886
     },
     "wikidata_qid": "Q7880",
     "population": 514819,
-    "interest_score": 6,
+    "interest_score": 9,
+    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-cf16b4b2",
+      "station-es-renfe-mainline-gtfs-cf16b4b2"
+    ],
+    "aliases": [
+      "Tolosa"
+    ]
+  },
+  {
+    "city_id": "toulouse-matabiau-ch-099c66c9",
+    "slug": "toulouse-matabiau",
+    "display_name": "Toulouse Matabiau",
+    "country_code": "FR",
+    "location": {
+      "lat": 43.6114061,
+      "lon": 1.45394125
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-8761100"
     ],
-    "aliases": [
-      "Toulouse Matabiau"
-    ]
+    "aliases": []
   },
   {
     "city_id": "tourcoing-fr-59599",
@@ -157367,7 +157373,7 @@
     ]
   },
   {
-    "city_id": "wallers-fr-59632",
+    "city_id": "wallers-fr-q473417",
     "slug": "wallers",
     "display_name": "Wallers",
     "country_code": "FR",
@@ -157375,7 +157381,7 @@
       "lat": 50.3845,
       "lon": 3.393922
     },
-    "wikidata_qid": null,
+    "wikidata_qid": "Q473417",
     "population": null,
     "interest_score": 5,
     "station_ids": [
