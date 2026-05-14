@@ -258,9 +258,20 @@ The following artifacts should become first-class outputs:
 - `rejected-shape-plausibility-routes.json`
 - `foreign-cross-border-leakage-routes.json`
 - `impossible-edge-speed-routes.json`
+- `country-geometry-authorities.json`
+- `corridor-geometry-authorities.json`
+- `rail-authority-defect-details.json`
+- `shape-plausibility-defect-details.json`
 
 These are not optional niceties. They are the operator surface for deciding
 whether a country is ready for broader onboarding.
+
+The promotion policy for those outputs now belongs in
+`data/manifests/geometry-authorities.toml`, which declares:
+
+- country-level infrastructure authority status
+- corridor-level infrastructure authority status
+- whether a country or corridor is merely tracked or truly production-ready
 
 ## Definition Of "Ready For More Data"
 
