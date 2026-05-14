@@ -86334,18 +86334,6 @@
     ]
   },
   {
-    "from_city_id": "gouzon-champ-de-foire-zz-abbb544a",
-    "to_city_id": "la-ville-gozet-fr-03185",
-    "duration_min": 35,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:"
-    ]
-  },
-  {
     "from_city_id": "graben-neudorf-de-df45904a",
     "to_city_id": "blankenloch-de-1958e6f6",
     "duration_min": 6,
@@ -125465,18 +125453,6 @@
   },
   {
     "from_city_id": "la-ville-gozet-fr-03185",
-    "to_city_id": "gouzon-champ-de-foire-zz-abbb544a",
-    "duration_min": 35,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:"
-    ]
-  },
-  {
-    "from_city_id": "la-ville-gozet-fr-03185",
     "to_city_id": "huriel-fr-03128",
     "duration_min": 9,
     "service_kind": "rail",
@@ -144725,35 +144701,9 @@
     ]
   },
   {
-    "from_city_id": "lucay-le-male-champ-de-foire-zz-366b36c0",
-    "to_city_id": "lucay-le-male-zz-f5942ec3",
-    "duration_min": 5,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::38B9D3C2-5951-4F05-87BA-2011072E93FD:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "lucay-le-male-zz-f5942ec3",
     "to_city_id": "la-gauterie-zz-c15b7c12",
     "duration_min": 7,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::38B9D3C2-5951-4F05-87BA-2011072E93FD:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "lucay-le-male-zz-f5942ec3",
-    "to_city_id": "lucay-le-male-champ-de-foire-zz-366b36c0",
-    "duration_min": 5,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,

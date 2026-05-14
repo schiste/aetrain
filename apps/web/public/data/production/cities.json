@@ -51650,23 +51650,6 @@
     ]
   },
   {
-    "city_id": "gouzon-champ-de-foire-zz-abbb544a",
-    "slug": "gouzon-champ-de-foire",
-    "display_name": "Gouzon Champ De Foire",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.191202,
-      "lon": 2.239953
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87158006"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "goxwiller-fr-67164",
     "slug": "goxwiller",
     "display_name": "Goxwiller",
@@ -86959,23 +86942,6 @@
     "aliases": []
   },
   {
-    "city_id": "lucay-le-male-champ-de-foire-zz-366b36c0",
-    "slug": "lucay-le-male-champ-de-foire",
-    "display_name": "Lucay Le Male Champ De Foire",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.123286,
-      "lon": 1.438125
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87733733"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "lucay-le-male-zz-f5942ec3",
     "slug": "lucay-le-male",
     "display_name": "Lucay Le Male",
@@ -86986,7 +86952,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87576363"
     ],
