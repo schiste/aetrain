@@ -1354,10 +1354,23 @@ fn build_city_edges(
     let mut edge_map = BTreeMap::<(CityId, CityId), EdgeAccumulator>::new();
     let mut previous_by_trip = HashMap::<String, StopVisit>::new();
     let mut geometry_cache = HashMap::<(String, String), Option<Vec<GeoPoint>>>::new();
-    let station_snap_nodes = rail_geometry_network.map(|network| {
+    let station_snap_candidates = rail_geometry_network.map(|network| {
         station_locations
             .iter()
-            .map(|(station_key, location)| (station_key.clone(), network.snap_point(*location)))
+            .map(|(station_key, location)| {
+                (station_key.clone(), network.route_snap_candidates(*location))
+            })
+            .collect::<HashMap<_, _>>()
+    });
+    let expanded_station_snap_candidates = rail_geometry_network.map(|network| {
+        station_locations
+            .iter()
+            .map(|(station_key, location)| {
+                (
+                    station_key.clone(),
+                    network.expanded_route_snap_candidates(*location),
+                )
+            })
             .collect::<HashMap<_, _>>()
     });
     let mut missing_stop_mappings = 0usize;
@@ -1472,13 +1485,15 @@ fn build_city_edges(
                 rail_geometry_network,
                 rail_geometry_source_id,
                 geometry_cache: &mut geometry_cache,
-                station_snap_nodes: station_snap_nodes.as_ref(),
+                station_snap_candidates: station_snap_candidates.as_ref(),
+                expanded_station_snap_candidates: expanded_station_snap_candidates.as_ref(),
             };
             let (geometry_points, geometry_source, geometry_provenance) = build_edge_geometry(
                 previous.location,
                 location,
                 &previous.station_key,
                 station_key,
+                duration_min,
                 &mut ctx,
             );
 
@@ -1551,33 +1566,86 @@ struct EdgeGeometryContext<'a> {
     rail_geometry_network: Option<&'a RailGeometryNetwork>,
     rail_geometry_source_id: Option<&'a str>,
     geometry_cache: &'a mut HashMap<(String, String), Option<Vec<GeoPoint>>>,
-    station_snap_nodes: Option<&'a HashMap<String, Option<usize>>>,
+    station_snap_candidates: Option<&'a HashMap<String, Vec<(usize, u32)>>>,
+    expanded_station_snap_candidates: Option<&'a HashMap<String, Vec<(usize, u32)>>>,
 }
+
+const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str =
+    "geometry:invalid-railway-path-rejected";
+const REJECTED_RAIL_METRICS_PROVENANCE_PREFIX: &str = "geometry:rejected-rail-metrics:";
 
 fn build_edge_geometry(
     from_location: GeoPoint,
     to_location: GeoPoint,
     from_station_key: &str,
     to_station_key: &str,
+    duration_min: u32,
     ctx: &mut EdgeGeometryContext<'_>,
 ) -> (Vec<GeoPoint>, EdgeGeometrySource, Vec<String>) {
+    let mut rejected_rail_provenance = Vec::<String>::new();
     if let Some(rail_geometry_network) = ctx.rail_geometry_network {
         let cache_key = (from_station_key.to_string(), to_station_key.to_string());
-        let start_node = ctx
-            .station_snap_nodes
-            .and_then(|snap_nodes| snap_nodes.get(from_station_key))
-            .and_then(|node| *node);
-        let end_node = ctx
-            .station_snap_nodes
-            .and_then(|snap_nodes| snap_nodes.get(to_station_key))
-            .and_then(|node| *node);
+        let start_candidates = ctx
+            .station_snap_candidates
+            .and_then(|snap_candidates| snap_candidates.get(from_station_key));
+        let end_candidates = ctx
+            .station_snap_candidates
+            .and_then(|snap_candidates| snap_candidates.get(to_station_key));
+        let expanded_start_candidates = ctx
+            .expanded_station_snap_candidates
+            .and_then(|snap_candidates| snap_candidates.get(from_station_key));
+        let expanded_end_candidates = ctx
+            .expanded_station_snap_candidates
+            .and_then(|snap_candidates| snap_candidates.get(to_station_key));
         let cached = ctx
             .geometry_cache
-            .entry(cache_key)
-            .or_insert_with(|| match (start_node, end_node) {
-                (Some(start_node), Some(end_node)) => rail_geometry_network
-                    .route_polyline_between_nodes(from_location, to_location, start_node, end_node),
-                _ => rail_geometry_network.route_polyline(from_location, to_location),
+            .entry(cache_key.clone())
+            .or_insert_with(|| match (start_candidates, end_candidates) {
+                (Some(start_candidates), Some(end_candidates))
+                    if !start_candidates.is_empty() && !end_candidates.is_empty() =>
+                {
+                    let local_route = rail_geometry_network.route_polyline_for_snap_candidates(
+                        from_location,
+                        to_location,
+                        start_candidates,
+                        end_candidates,
+                    );
+                    if local_route.as_ref().is_some_and(|points| {
+                        route_geometry_distance_is_plausible(points, from_location, to_location)
+                    })
+                    {
+                        local_route
+                    } else {
+                        match (expanded_start_candidates, expanded_end_candidates) {
+                            (Some(expanded_start_candidates), Some(expanded_end_candidates))
+                                if !expanded_start_candidates.is_empty()
+                                    && !expanded_end_candidates.is_empty() =>
+                            {
+                                rail_geometry_network.route_polyline_for_snap_candidates(
+                                    from_location,
+                                    to_location,
+                                    expanded_start_candidates,
+                                    expanded_end_candidates,
+                                )
+                            }
+                            _ => local_route,
+                        }
+                    }
+                }
+                _ => match (expanded_start_candidates, expanded_end_candidates) {
+                    (Some(expanded_start_candidates), Some(expanded_end_candidates))
+                        if !expanded_start_candidates.is_empty()
+                            && !expanded_end_candidates.is_empty() =>
+                    {
+                        rail_geometry_network.route_polyline_for_snap_candidates(
+                            from_location,
+                            to_location,
+                            expanded_start_candidates,
+                            expanded_end_candidates,
+                        )
+                    }
+                    _ => rail_geometry_network.route_polyline(from_location, to_location),
+                },
             })
             .clone();
         if let Some(points) = cached {
@@ -1592,6 +1660,13 @@ fn build_edge_geometry(
                     provenance,
                 );
             }
+            let metrics =
+                route_geometry_metrics(&points, from_location, to_location, Some(duration_min));
+            rejected_rail_provenance.push(INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE.to_string());
+            rejected_rail_provenance.push(build_rejected_geometry_metrics_provenance(&metrics));
+            if let Some(source_id) = ctx.rail_geometry_source_id {
+                rejected_rail_provenance.push(format!("geometry:{source_id}"));
+            }
         }
     }
 
@@ -1605,7 +1680,54 @@ fn build_edge_geometry(
     (
         vec![from_location, to_location],
         EdgeGeometrySource::StraightLineFallback,
-        Vec::new(),
+        rejected_rail_provenance,
+    )
+}
+
+struct RouteGeometryMetrics {
+    geometry_meters: f64,
+    direct_meters: f64,
+    detour_ratio_x100: Option<u32>,
+    implied_speed_kmh: Option<u32>,
+}
+
+fn route_geometry_metrics(
+    points: &[GeoPoint],
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+    duration_min: Option<u32>,
+) -> RouteGeometryMetrics {
+    let geometry_meters = points
+        .windows(2)
+        .map(|window| haversine_meters(window[0], window[1]))
+        .sum::<f64>();
+    let direct_meters = haversine_meters(from_location, to_location);
+    let detour_ratio_x100 = (direct_meters > 0.0)
+        .then(|| ((geometry_meters / direct_meters) * 100.0).round() as u32);
+    let implied_speed_kmh = duration_min.and_then(|minutes| {
+        (minutes > 0 && geometry_meters > 0.0)
+            .then(|| ((geometry_meters / 1000.0) / (minutes as f64 / 60.0)).round() as u32)
+    });
+
+    RouteGeometryMetrics {
+        geometry_meters,
+        direct_meters,
+        detour_ratio_x100,
+        implied_speed_kmh,
+    }
+}
+
+fn meters_to_km_u32(meters: f64) -> u32 {
+    (meters / 1000.0).round() as u32
+}
+
+fn build_rejected_geometry_metrics_provenance(metrics: &RouteGeometryMetrics) -> String {
+    format!(
+        "{REJECTED_RAIL_METRICS_PROVENANCE_PREFIX}geometry_km={};direct_km={};detour_ratio_x100={};implied_speed_kmh={}",
+        meters_to_km_u32(metrics.geometry_meters),
+        meters_to_km_u32(metrics.direct_meters),
+        metrics.detour_ratio_x100.unwrap_or(0),
+        metrics.implied_speed_kmh.unwrap_or(0),
     )
 }
 

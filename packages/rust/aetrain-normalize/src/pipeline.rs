@@ -1392,35 +1392,30 @@ fn build_rail_authority_defect_details(
                 routed_authority_distance_km,
                 routed_authority_point_count,
             ) = if let Some(network) = network {
-                let start = network.nearest_node_with_distance(from_city.location);
-                let end = network.nearest_node_with_distance(to_city.location);
-                let route = start.and_then(|(start_node, start_distance)| {
-                    end.map(|(end_node, end_distance)| {
-                        let points = network.route_polyline_between_nodes(
-                            from_city.location,
-                            to_city.location,
-                            start_node,
-                            end_node,
-                        );
-                        (start_distance, end_distance, points)
-                    })
-                });
-                if let Some((start_distance, end_distance, Some(points))) = route {
+                let start_candidates = network.route_snap_candidates(from_city.location);
+                let end_candidates = network.route_snap_candidates(to_city.location);
+                let points = network.route_polyline_for_snap_candidates(
+                    from_city.location,
+                    to_city.location,
+                    &start_candidates,
+                    &end_candidates,
+                );
+                if let Some(points) = points {
                     let points_e5 = points
                         .into_iter()
                         .map(scale_geo_point_e5_for_pipeline)
                         .collect::<Vec<_>>();
                     (
-                        Some(start_distance),
-                        Some(end_distance),
+                        start_candidates.first().map(|(_, distance)| *distance),
+                        end_candidates.first().map(|(_, distance)| *distance),
                         true,
                         Some(meters_to_km_u32(edge_geometry_length_meters(&points_e5))),
                         Some(points_e5.len()),
                     )
                 } else {
                     (
-                        start.map(|(_, distance)| distance),
-                        end.map(|(_, distance)| distance),
+                        start_candidates.first().map(|(_, distance)| *distance),
+                        end_candidates.first().map(|(_, distance)| *distance),
                         false,
                         None,
                         None,
@@ -1534,20 +1529,15 @@ fn build_promoted_domestic_authority_gap_details(
                 routed_authority_detour_ratio_x100,
                 routed_authority_implied_speed_kmh,
             ) = if let Some(network) = network {
-                let start = network.nearest_node_with_distance(from_city.location);
-                let end = network.nearest_node_with_distance(to_city.location);
-                let route = start.and_then(|(start_node, start_distance)| {
-                    end.map(|(end_node, end_distance)| {
-                        let points = network.route_polyline_between_nodes(
-                            from_city.location,
-                            to_city.location,
-                            start_node,
-                            end_node,
-                        );
-                        (start_distance, end_distance, points)
-                    })
-                });
-                if let Some((start_distance, end_distance, Some(points))) = route {
+                let start_candidates = network.route_snap_candidates(from_city.location);
+                let end_candidates = network.route_snap_candidates(to_city.location);
+                let points = network.route_polyline_for_snap_candidates(
+                    from_city.location,
+                    to_city.location,
+                    &start_candidates,
+                    &end_candidates,
+                );
+                if let Some(points) = points {
                     let points_e5 = points
                         .into_iter()
                         .map(scale_geo_point_e5_for_pipeline)
@@ -1559,8 +1549,8 @@ fn build_promoted_domestic_authority_gap_details(
                         duration_min,
                     );
                     (
-                        Some(start_distance),
-                        Some(end_distance),
+                        start_candidates.first().map(|(_, distance)| *distance),
+                        end_candidates.first().map(|(_, distance)| *distance),
                         true,
                         Some(meters_to_km_u32(metrics.geometry_meters)),
                         Some(points_e5.len()),
@@ -1569,8 +1559,8 @@ fn build_promoted_domestic_authority_gap_details(
                     )
                 } else {
                     (
-                        start.map(|(_, distance)| distance),
-                        end.map(|(_, distance)| distance),
+                        start_candidates.first().map(|(_, distance)| *distance),
+                        end_candidates.first().map(|(_, distance)| *distance),
                         false,
                         None,
                         None,

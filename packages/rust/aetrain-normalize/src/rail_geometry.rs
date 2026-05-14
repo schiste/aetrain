@@ -9,13 +9,14 @@ use aetrain_domain::GeoPoint;
 use anyhow::{Context, Result};
 use serde_json::Value;
 
-const DEFAULT_SNAP_DISTANCE_METERS: f64 = 25_000.0;
 const ROUTE_SNAP_DISTANCE_METERS: f64 = 5_000.0;
 const ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
 const NODE_MERGE_TOLERANCE_METERS: f64 = 120.0;
 const NODE_BUCKET_SCALE: f64 = 1_000.0;
 const SNAP_CANDIDATE_LIMIT: usize = 8;
 const SNAP_LOCALITY_SLACK_METERS: u32 = 300;
+const EXPANDED_SNAP_CANDIDATE_LIMIT: usize = 24;
+const EXPANDED_SNAP_LOCALITY_SLACK_METERS: u32 = 1_500;
 const MAX_SEGMENT_LENGTH_WITHOUT_VERTEX_METERS: u32 = 500;
 const COMPONENT_MICRO_STITCH_TOLERANCE_METERS: f64 = 60.0;
 const COMPONENT_ENDPOINT_STITCH_TOLERANCE_METERS: f64 = 150.0;
@@ -112,19 +113,6 @@ impl RailGeometryNetwork {
         self.best_route_polyline_between_points(from, to)
     }
 
-    pub fn snap_point(&self, target: GeoPoint) -> Option<usize> {
-        let (node_index, distance) = self.nearest_node(target)?;
-        if distance > DEFAULT_SNAP_DISTANCE_METERS {
-            return None;
-        }
-        Some(node_index)
-    }
-
-    pub fn nearest_node_with_distance(&self, target: GeoPoint) -> Option<(usize, u32)> {
-        let (node_index, distance) = self.nearest_node(target)?;
-        Some((node_index, distance.round() as u32))
-    }
-
     pub fn nearest_nodes_with_distance(
         &self,
         target: GeoPoint,
@@ -148,21 +136,59 @@ impl RailGeometryNetwork {
         from: GeoPoint,
         to: GeoPoint,
     ) -> Option<Vec<GeoPoint>> {
-        let start_candidates = filter_local_snap_candidates(self.nearest_nodes_with_distance(
-            from,
-            ROUTE_SNAP_DISTANCE_METERS.round() as u32,
-            SNAP_CANDIDATE_LIMIT,
-        ));
-        let end_candidates = filter_local_snap_candidates(self.nearest_nodes_with_distance(
-            to,
-            ROUTE_SNAP_DISTANCE_METERS.round() as u32,
-            SNAP_CANDIDATE_LIMIT,
-        ));
+        let start_candidates = self.route_snap_candidates(from);
+        let end_candidates = self.route_snap_candidates(to);
         if start_candidates.is_empty() || end_candidates.is_empty() {
             return None;
         }
 
         self.best_route_polyline_for_candidates(from, to, &start_candidates, &end_candidates)
+    }
+
+    pub fn route_snap_candidates(&self, target: GeoPoint) -> Vec<(usize, u32)> {
+        self.route_snap_candidates_with_params(
+            target,
+            SNAP_CANDIDATE_LIMIT,
+            SNAP_LOCALITY_SLACK_METERS,
+        )
+    }
+
+    pub fn expanded_route_snap_candidates(&self, target: GeoPoint) -> Vec<(usize, u32)> {
+        self.route_snap_candidates_with_params(
+            target,
+            EXPANDED_SNAP_CANDIDATE_LIMIT,
+            EXPANDED_SNAP_LOCALITY_SLACK_METERS,
+        )
+    }
+
+    pub fn route_polyline_for_snap_candidates(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+        start_candidates: &[(usize, u32)],
+        end_candidates: &[(usize, u32)],
+    ) -> Option<Vec<GeoPoint>> {
+        let start_candidates =
+            filter_local_snap_candidates(start_candidates.to_vec(), SNAP_LOCALITY_SLACK_METERS);
+        let end_candidates =
+            filter_local_snap_candidates(end_candidates.to_vec(), SNAP_LOCALITY_SLACK_METERS);
+        if start_candidates.is_empty() || end_candidates.is_empty() {
+            return None;
+        }
+
+        self.best_route_polyline_for_candidates(from, to, &start_candidates, &end_candidates)
+    }
+
+    fn route_snap_candidates_with_params(
+        &self,
+        target: GeoPoint,
+        limit: usize,
+        slack_meters: u32,
+    ) -> Vec<(usize, u32)> {
+        filter_local_snap_candidates(
+            self.nearest_nodes_with_distance(target, ROUTE_SNAP_DISTANCE_METERS.round() as u32, limit),
+            slack_meters,
+        )
     }
 
     fn best_route_polyline_for_candidates(
@@ -235,14 +261,6 @@ impl RailGeometryNetwork {
         }
 
         Some(points)
-    }
-
-    fn nearest_node(&self, target: GeoPoint) -> Option<(usize, f64)> {
-        self.nodes
-            .iter()
-            .enumerate()
-            .map(|(index, point)| (index, haversine_meters(*point, target)))
-            .min_by(|left, right| left.1.total_cmp(&right.1))
     }
 
     fn shortest_path(&self, start: usize, end: usize) -> Option<Vec<usize>> {
@@ -625,11 +643,11 @@ fn densify_segment(from: GeoPoint, to: GeoPoint) -> Vec<GeoPoint> {
     points
 }
 
-fn filter_local_snap_candidates(candidates: Vec<(usize, u32)>) -> Vec<(usize, u32)> {
+fn filter_local_snap_candidates(candidates: Vec<(usize, u32)>, slack_meters: u32) -> Vec<(usize, u32)> {
     let Some((_, nearest_distance)) = candidates.first() else {
         return candidates;
     };
-    let distance_limit = nearest_distance.saturating_add(SNAP_LOCALITY_SLACK_METERS);
+    let distance_limit = nearest_distance.saturating_add(slack_meters);
     candidates
         .into_iter()
         .filter(|(_, distance)| *distance <= distance_limit)

@@ -4818,21 +4818,25 @@
     "aliases": []
   },
   {
-    "city_id": "annecy-ch-ea7f0bc1",
+    "city_id": "annecy-fr-74010",
     "slug": "annecy",
     "display_name": "Annecy",
     "country_code": "FR",
     "location": {
-      "lat": 45.90212168,
-      "lon": 6.12163239
+      "lat": 45.920782,
+      "lon": 6.122582
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-8774600"
+      "station-uic-8774600",
+      "station-uic-87746008",
+      "station-uic-87746206"
     ],
-    "aliases": []
+    "aliases": [
+      "Pringy"
+    ]
   },
   {
     "city_id": "annemasse-fr-74012",
@@ -16559,7 +16563,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8714113",
       "station-uic-87141135"
@@ -26715,7 +26719,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8774100",
       "station-uic-87741009"
@@ -35275,21 +35279,25 @@
     "aliases": []
   },
   {
-    "city_id": "dombasle-sur-meurthe-ch-660274ba",
+    "city_id": "dombasle-sur-meurthe-fr-54159",
     "slug": "dombasle-sur-meurthe",
     "display_name": "Dombasle Sur Meurthe",
     "country_code": "FR",
     "location": {
-      "lat": 48.62331584,
-      "lon": 6.34332762
+      "lat": 48.614386499999995,
+      "lon": 6.3470984999999995
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-8714111"
+      "station-uic-8714111",
+      "station-uic-87141119",
+      "station-uic-87141127"
     ],
-    "aliases": []
+    "aliases": [
+      "Rosières-aux-Salines"
+    ]
   },
   {
     "city_id": "domblans-voiteur-fr-39199",
@@ -44371,25 +44379,21 @@
     "aliases": []
   },
   {
-    "city_id": "flaxlanden-fr-68384",
+    "city_id": "flaxlanden-ch-c211c997",
     "slug": "flaxlanden",
     "display_name": "Flaxlanden",
     "country_code": "FR",
     "location": {
-      "lat": 47.696503,
-      "lon": 7.299307000000001
+      "lat": 47.698828,
+      "lon": 7.30463277
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-8718104",
-      "station-uic-87181040",
-      "station-uic-87182196"
+      "station-uic-8718104"
     ],
-    "aliases": [
-      "Zillisheim"
-    ]
+    "aliases": []
   },
   {
     "city_id": "flehingen-de-d31e75c1",
@@ -115648,26 +115652,6 @@
     "aliases": []
   },
   {
-    "city_id": "pringy-fr-74010",
-    "slug": "pringy",
-    "display_name": "Pringy",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.920782,
-      "lon": 6.122582
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-uic-87746008",
-      "station-uic-87746206"
-    ],
-    "aliases": [
-      "Annecy"
-    ]
-  },
-  {
     "city_id": "pringy-haute-savoie-ch-352fdd2c",
     "slug": "pringy-haute-savoie",
     "display_name": "Pringy Haute Savoie",
@@ -122674,25 +122658,21 @@
     "aliases": []
   },
   {
-    "city_id": "rosieres-aux-salines-fr-54159",
+    "city_id": "rosieres-aux-salines-ch-89fa79f9",
     "slug": "rosieres-aux-salines",
     "display_name": "Rosieres Aux Salines",
     "country_code": "FR",
     "location": {
-      "lat": 48.614386499999995,
-      "lon": 6.3470984999999995
+      "lat": 48.60534449,
+      "lon": 6.35045126
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-87141119",
-      "station-uic-8714112",
-      "station-uic-87141127"
+      "station-uic-8714112"
     ],
-    "aliases": [
-      "Dombasle-sur-Meurthe"
-    ]
+    "aliases": []
   },
   {
     "city_id": "rosieres-fr-80680",
@@ -163234,21 +163214,25 @@
     "aliases": []
   },
   {
-    "city_id": "zillisheim-ch-4c29503b",
+    "city_id": "zillisheim-fr-68384",
     "slug": "zillisheim",
     "display_name": "Zillisheim",
     "country_code": "FR",
     "location": {
-      "lat": 47.694505,
-      "lon": 7.29447282
+      "lat": 47.696503,
+      "lon": 7.299307000000001
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-8718219"
+      "station-uic-87181040",
+      "station-uic-8718219",
+      "station-uic-87182196"
     ],
-    "aliases": []
+    "aliases": [
+      "Flaxlanden"
+    ]
   },
   {
     "city_id": "zimeysa-ch-865745d0",

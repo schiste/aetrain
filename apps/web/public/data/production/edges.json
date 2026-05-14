@@ -753,7 +753,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::b269aaa1-eef8-4e0a-8c36-344645dc0434:"
+      "sncf-fr-gtfs:FR:Line::b269aaa1-eef8-4e0a-8c36-344645dc0434:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -765,7 +766,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6a7e9883-518f-4a10-8f46-a659e93a82f9:"
+      "sncf-fr-gtfs:FR:Line::6a7e9883-518f-4a10-8f46-a659e93a82f9:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -1854,6 +1856,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4f784834-828d-4bbf-a65d-d21599ce8dc2:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=248;direct_km=11;detour_ratio_x100=2163;implied_speed_kmh=1491",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -2853,19 +2857,6 @@
     ]
   },
   {
-    "from_city_id": "aix-les-bains-le-revard-fr-73008",
-    "to_city_id": "pringy-fr-74010",
-    "duration_min": 26,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::60faff89-b743-4b4b-a86b-3c0537769bfa:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "aixe-sur-vienne-fr-87001",
     "to_city_id": "limoges-fr-87085",
     "duration_min": 8,
@@ -2900,8 +2891,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:"
     ]
   },
   {
@@ -3390,7 +3380,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:"
+      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -3402,7 +3393,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:"
+      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -3414,7 +3406,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1E753DF8-B3B7-4FFE-BF59-46FC27595D6E:"
+      "sncf-fr-gtfs:FR:Line::1E753DF8-B3B7-4FFE-BF59-46FC27595D6E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -4188,8 +4181,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::16796706-208E-49D1-8EE6-72B846994C27:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::16796706-208E-49D1-8EE6-72B846994C27:"
     ]
   },
   {
@@ -8741,6 +8733,58 @@
     ]
   },
   {
+    "from_city_id": "annecy-fr-74010",
+    "to_city_id": "annemasse-fr-74012",
+    "duration_min": 50,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::608A9B0B-6DF0-475B-82BA-E9792D7972A5:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "annecy-fr-74010",
+    "to_city_id": "groisy-thorens-la-caille-fr-74137",
+    "duration_min": 9,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::608A9B0B-6DF0-475B-82BA-E9792D7972A5:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "annecy-fr-74010",
+    "to_city_id": "lyon-part-dieu-de-cfdacf42",
+    "duration_min": 112,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::6F1D7ABC-B729-498A-B3BD-DE55587C60E2:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "annemasse-fr-74012",
+    "to_city_id": "annecy-fr-74010",
+    "duration_min": 43,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::608A9B0B-6DF0-475B-82BA-E9792D7972A5:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
     "from_city_id": "annemasse-fr-74012",
     "to_city_id": "bellegarde-fr-01033",
     "duration_min": 33,
@@ -8790,19 +8834,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::2239CF74-2DDE-4ECF-9A3F-022E65221125:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "annemasse-fr-74012",
-    "to_city_id": "pringy-fr-74010",
-    "duration_min": 43,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::608A9B0B-6DF0-475B-82BA-E9792D7972A5:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -9937,8 +9968,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:"
     ]
   },
   {
@@ -9950,8 +9980,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:"
     ]
   },
   {
@@ -10479,7 +10508,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:"
+      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -13669,8 +13699,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::d1189a05-48e1-477d-9b3c-f8ac8cb0397b:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::d1189a05-48e1-477d-9b3c-f8ac8cb0397b:"
     ]
   },
   {
@@ -17130,7 +17159,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:6627547_102",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::884A662A-9CC9-4133-94A5-88B4AE5206FD:"
     ]
   },
@@ -17155,8 +17183,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::884A662A-9CC9-4133-94A5-88B4AE5206FD:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::884A662A-9CC9-4133-94A5-88B4AE5206FD:"
     ]
   },
   {
@@ -17687,8 +17714,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F59B9C62-1417-47C0-983A-18064F9C7F28:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F59B9C62-1417-47C0-983A-18064F9C7F28:"
     ]
   },
   {
@@ -21206,7 +21232,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::b269aaa1-eef8-4e0a-8c36-344645dc0434:"
+      "sncf-fr-gtfs:FR:Line::b269aaa1-eef8-4e0a-8c36-344645dc0434:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -21780,7 +21807,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:"
+      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -21792,7 +21820,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:"
+      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -21842,7 +21871,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:"
+      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -24181,7 +24211,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::D7417ABE-8C4B-480A-8F81-072590BED9EC:"
+      "sncf-fr-gtfs:FR:Line::D7417ABE-8C4B-480A-8F81-072590BED9EC:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -25531,6 +25562,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4BBFA233-37AB-432A-BCCF-FB90719B1F8A:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=537;direct_km=17;detour_ratio_x100=3147;implied_speed_kmh=3223",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -27344,8 +27377,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:"
     ]
   },
   {
@@ -27383,8 +27415,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:"
     ]
   },
   {
@@ -28351,6 +28382,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::47102940-0922-439f-b9e9-1a93deaec574:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=242;direct_km=22;detour_ratio_x100=1109;implied_speed_kmh=970",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -30988,7 +31021,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -31274,8 +31308,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:"
     ]
   },
   {
@@ -32169,7 +32202,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::69ABADD2-325C-47DC-BC61-D74DD87C5E3C:"
+      "sncf-fr-gtfs:FR:Line::69ABADD2-325C-47DC-BC61-D74DD87C5E3C:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=210;direct_km=25;detour_ratio_x100=837;implied_speed_kmh=698",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -32207,7 +32243,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::cf0d9ce8-bf4e-448e-8bf0-6c965a95c788:"
+      "sncf-fr-gtfs:FR:Line::cf0d9ce8-bf4e-448e-8bf0-6c965a95c788:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=218;direct_km=31;detour_ratio_x100=693;implied_speed_kmh=568",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -40320,7 +40359,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::69ABADD2-325C-47DC-BC61-D74DD87C5E3C:"
+      "sncf-fr-gtfs:FR:Line::69ABADD2-325C-47DC-BC61-D74DD87C5E3C:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=210;direct_km=25;detour_ratio_x100=837;implied_speed_kmh=698",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -43407,7 +43449,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::938DCE7E-3A57-443A-B771-92F6F819E7E3:"
+      "sncf-fr-gtfs:FR:Line::938DCE7E-3A57-443A-B771-92F6F819E7E3:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -46148,7 +46191,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::38B9D3C2-5951-4F05-87BA-2011072E93FD:"
+      "sncf-fr-gtfs:FR:Line::38B9D3C2-5951-4F05-87BA-2011072E93FD:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -46277,7 +46321,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9a13b0be-a3ff-46de-8c0c-75f24e313e98:"
+      "sncf-fr-gtfs:FR:Line::9a13b0be-a3ff-46de-8c0c-75f24e313e98:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=321;direct_km=76;detour_ratio_x100=422;implied_speed_kmh=275",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -46411,6 +46458,8 @@
     "source_confidence": 80,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::05C666F4-3B26-4DB6-A4A8-F3C6D6150B76:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=264;direct_km=45;detour_ratio_x100=586;implied_speed_kmh=226",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -46437,19 +46486,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::2FFF7F96-0EBC-4AA1-B417-38EBD492057E:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "chambery-challes-les-eaux-fr-73065",
-    "to_city_id": "pringy-fr-74010",
-    "duration_min": 34,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::60faff89-b743-4b4b-a86b-3c0537769bfa:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -47076,6 +47112,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::9D734757-B3C7-4D8A-951E-0EB6FDA912B9:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=610;direct_km=63;detour_ratio_x100=962;implied_speed_kmh=892",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -47513,7 +47551,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::A9EA26B0-3D69-4602-855E-C8D196A3FD89:"
+      "sncf-fr-gtfs:FR:Line::A9EA26B0-3D69-4602-855E-C8D196A3FD89:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -47906,6 +47945,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4f784834-828d-4bbf-a65d-d21599ce8dc2:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=255;direct_km=7;detour_ratio_x100=3896;implied_speed_kmh=2187",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -51645,7 +51686,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -51757,7 +51799,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:"
+      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -51782,7 +51825,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::48d37a58-70b6-4c31-937f-b2a0d2d9cc1a:"
+      "sncf-fr-gtfs:FR:Line::48d37a58-70b6-4c31-937f-b2a0d2d9cc1a:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -51794,7 +51838,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::48d37a58-70b6-4c31-937f-b2a0d2d9cc1a:"
+      "sncf-fr-gtfs:FR:Line::48d37a58-70b6-4c31-937f-b2a0d2d9cc1a:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -51806,7 +51851,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2DABDC92-9157-469C-951A-FBFE8351C8A5:"
+      "sncf-fr-gtfs:FR:Line::2DABDC92-9157-469C-951A-FBFE8351C8A5:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -51818,7 +51864,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::85C46941-D838-4F3D-821F-CA69C7168ADF:"
+      "sncf-fr-gtfs:FR:Line::85C46941-D838-4F3D-821F-CA69C7168ADF:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -51843,7 +51890,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:"
+      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -54196,7 +54244,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:"
+      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -54537,6 +54586,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::E787EB35-6D67-48A0-A641-FEC921895C71:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=283;direct_km=29;detour_ratio_x100=967;implied_speed_kmh=424",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -54574,7 +54625,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
@@ -59841,7 +59891,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -59853,7 +59904,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -59878,7 +59930,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -59890,7 +59943,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -59954,7 +60008,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::18B0FAF0-44B1-4D0A-A8AD-2E32B7602EAD:"
+      "sncf-fr-gtfs:FR:Line::18B0FAF0-44B1-4D0A-A8AD-2E32B7602EAD:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -60279,6 +60334,19 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:7140607_101"
+    ]
+  },
+  {
+    "from_city_id": "dombasle-sur-meurthe-fr-54159",
+    "to_city_id": "blainville-damelevieres-fr-54152",
+    "duration_min": 3,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 100,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::14254a37-7e25-43a2-8be1-db7eafb9b72c:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -61844,6 +61912,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::F00BFCEC-2EE6-47D5-BB4A-6F967B6378BA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=62;direct_km=6;detour_ratio_x100=1116;implied_speed_kmh=747",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -73681,7 +73751,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6a7e9883-518f-4a10-8f46-a659e93a82f9:"
+      "sncf-fr-gtfs:FR:Line::6a7e9883-518f-4a10-8f46-a659e93a82f9:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -74390,7 +74461,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-MBX-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:"
     ]
   },
@@ -74883,19 +74953,6 @@
     ]
   },
   {
-    "from_city_id": "flaxlanden-fr-68384",
-    "to_city_id": "illfurth-fr-68152",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::B8877FA9-B743-4894-9C3C-F80156E0477E:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "flehingen-de-d31e75c1",
     "to_city_id": "oberderdingen-flehingen-de-69123511",
     "duration_min": 1,
@@ -75099,7 +75156,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2DF95135-3422-4DBA-9B8B-B9D470AC18EC:"
+      "sncf-fr-gtfs:FR:Line::2DF95135-3422-4DBA-9B8B-B9D470AC18EC:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -79282,8 +79340,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F59B9C62-1417-47C0-983A-18064F9C7F28:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F59B9C62-1417-47C0-983A-18064F9C7F28:"
     ]
   },
   {
@@ -82317,6 +82374,8 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-51-Y-j26-1",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=56;direct_km=3;detour_ratio_x100=2077;implied_speed_kmh=1129",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:"
     ]
@@ -82512,7 +82571,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
@@ -82526,7 +82584,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
@@ -83275,7 +83332,10 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::76213942-0D07-48A2-9108-99253D13D093:"
+      "sncf-fr-gtfs:FR:Line::76213942-0D07-48A2-9108-99253D13D093:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=280;direct_km=60;detour_ratio_x100=467;implied_speed_kmh=240",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -86282,8 +86342,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:"
     ]
   },
   {
@@ -86685,7 +86744,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:"
+      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -87875,6 +87935,8 @@
     "source_confidence": 80,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::05C666F4-3B26-4DB6-A4A8-F3C6D6150B76:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=264;direct_km=45;detour_ratio_x100=586;implied_speed_kmh=226",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -88545,7 +88607,7 @@
   },
   {
     "from_city_id": "groisy-thorens-la-caille-fr-74137",
-    "to_city_id": "pringy-fr-74010",
+    "to_city_id": "annecy-fr-74010",
     "duration_min": 8,
     "service_kind": "rail",
     "service_class": "regional",
@@ -90083,8 +90145,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:"
     ]
   },
   {
@@ -90427,8 +90488,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:"
     ]
   },
   {
@@ -96268,7 +96328,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2916761F-A5C7-4C33-9B9D-44ADFACFDECC:"
+      "sncf-fr-gtfs:FR:Line::2916761F-A5C7-4C33-9B9D-44ADFACFDECC:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -96293,7 +96354,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::938DCE7E-3A57-443A-B771-92F6F819E7E3:"
+      "sncf-fr-gtfs:FR:Line::938DCE7E-3A57-443A-B771-92F6F819E7E3:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -96357,7 +96419,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::481FE34B-4FEA-4C35-8ABE-58CB090620CD:"
+      "sncf-fr-gtfs:FR:Line::481FE34B-4FEA-4C35-8ABE-58CB090620CD:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -97688,6 +97751,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::F00BFCEC-2EE6-47D5-BB4A-6F967B6378BA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=59;direct_km=8;detour_ratio_x100=734;implied_speed_kmh=508",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -103375,19 +103440,6 @@
     ]
   },
   {
-    "from_city_id": "illfurth-fr-68152",
-    "to_city_id": "flaxlanden-fr-68384",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::B8877FA9-B743-4894-9C3C-F80156E0477E:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "illiers-combray-fr-28196",
     "to_city_id": "bailleau-le-pin-fr-28021",
     "duration_min": 15,
@@ -106006,7 +106058,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::48d37a58-70b6-4c31-937f-b2a0d2d9cc1a:"
+      "sncf-fr-gtfs:FR:Line::48d37a58-70b6-4c31-937f-b2a0d2d9cc1a:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -109158,7 +109211,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:162290_101",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::884A662A-9CC9-4133-94A5-88B4AE5206FD:"
     ]
   },
@@ -109484,8 +109536,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
     ]
   },
   {
@@ -109570,8 +109621,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
     ]
   },
   {
@@ -117163,8 +117213,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::884A662A-9CC9-4133-94A5-88B4AE5206FD:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::884A662A-9CC9-4133-94A5-88B4AE5206FD:"
     ]
   },
   {
@@ -117190,6 +117239,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::47102940-0922-439f-b9e9-1a93deaec574:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=242;direct_km=22;detour_ratio_x100=1109;implied_speed_kmh=1039",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -117293,8 +117344,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::B51875E3-EFE6-4B17-ABCB-659C9BC47E5D:"
     ]
   },
   {
@@ -117346,6 +117396,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::EB0A92AC-D640-4DFC-B422-FD8B63EAC402:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=250;direct_km=26;detour_ratio_x100=975;implied_speed_kmh=395",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -117462,8 +117514,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::4F3E7D7E-1FEF-4DB7-A210-473D950E2F37:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::4F3E7D7E-1FEF-4DB7-A210-473D950E2F37:"
     ]
   },
   {
@@ -118978,7 +119029,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:"
+      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -119016,7 +119068,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:"
+      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -119368,7 +119421,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2DF95135-3422-4DBA-9B8B-B9D470AC18EC:"
+      "sncf-fr-gtfs:FR:Line::2DF95135-3422-4DBA-9B8B-B9D470AC18EC:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -119965,7 +120019,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:"
+      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -120563,7 +120618,6 @@
     "provenance": [
       "ch-gtfs:91-20-J-j26-1",
       "ch-gtfs:91-2I-Y-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::425904CF-2BA3-480E-A35A-C3BF5BAED237:"
     ]
   },
@@ -120577,7 +120631,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-2I-Y-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::425904CF-2BA3-480E-A35A-C3BF5BAED237:"
     ]
   },
@@ -121172,7 +121225,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:"
+      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -121925,7 +121979,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -122110,7 +122165,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -122878,7 +122934,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-MBX-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:"
     ]
   },
@@ -123927,6 +123982,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::9D734757-B3C7-4D8A-951E-0EB6FDA912B9:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=486;direct_km=59;detour_ratio_x100=823;implied_speed_kmh=911",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -123979,6 +124036,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::A7628FC9-CF66-4A89-B2C2-9924DD8DCD89:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=431;direct_km=94;detour_ratio_x100=458;implied_speed_kmh=462",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -125039,8 +125098,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::9684FBBE-75D8-461A-B8F4-44181F11CFBC:"
     ]
   },
   {
@@ -125189,6 +125247,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::872509D5-9DC9-4F24-8BB0-3716CA6C6F27:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=190;direct_km=37;detour_ratio_x100=519;implied_speed_kmh=207",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -125412,8 +125472,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::a48af794-a699-4b7b-b4ad-d2e81b314aee:"
     ]
   },
   {
@@ -127086,6 +127145,8 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=56;direct_km=3;detour_ratio_x100=2077;implied_speed_kmh=1129",
       "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::dfae3cdb-16b3-47cb-b1e0-3aae1dd0f5fe:"
     ]
@@ -131565,7 +131626,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-20-J-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::425904CF-2BA3-480E-A35A-C3BF5BAED237:"
     ]
   },
@@ -131579,7 +131639,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-20-J-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::425904CF-2BA3-480E-A35A-C3BF5BAED237:"
     ]
   },
@@ -132051,7 +132110,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-20-J-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::425904CF-2BA3-480E-A35A-C3BF5BAED237:"
     ]
   },
@@ -133344,8 +133402,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6831fb72-94d3-417c-915f-b9656db78b1a:"
     ]
   },
   {
@@ -133486,7 +133543,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-MBX-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:"
     ]
   },
@@ -135811,7 +135867,10 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::76213942-0D07-48A2-9108-99253D13D093:"
+      "sncf-fr-gtfs:FR:Line::76213942-0D07-48A2-9108-99253D13D093:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=280;direct_km=60;detour_ratio_x100=467;implied_speed_kmh=240",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -136724,7 +136783,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::cf0d9ce8-bf4e-448e-8bf0-6c965a95c788:"
+      "sncf-fr-gtfs:FR:Line::cf0d9ce8-bf4e-448e-8bf0-6c965a95c788:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=218;direct_km=31;detour_ratio_x100=693;implied_speed_kmh=544",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -137028,7 +137090,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-MBX-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::f83553c0-f2de-48ff-90ff-a279eaef9614:"
     ]
   },
@@ -137580,7 +137641,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
@@ -138392,6 +138452,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::F00BFCEC-2EE6-47D5-BB4A-6F967B6378BA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=62;direct_km=6;detour_ratio_x100=1116;implied_speed_kmh=747",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -138405,6 +138467,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::F00BFCEC-2EE6-47D5-BB4A-6F967B6378BA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=59;direct_km=8;detour_ratio_x100=734;implied_speed_kmh=445",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -139675,6 +139739,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::EF683B67-9F06-479B-9E5B-BB38D497333B:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=135;direct_km=14;detour_ratio_x100=956;implied_speed_kmh=737",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -140056,8 +140122,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::16796706-208E-49D1-8EE6-72B846994C27:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::16796706-208E-49D1-8EE6-72B846994C27:"
     ]
   },
   {
@@ -142727,7 +142792,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2DABDC92-9157-469C-951A-FBFE8351C8A5:"
+      "sncf-fr-gtfs:FR:Line::2DABDC92-9157-469C-951A-FBFE8351C8A5:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -142765,7 +142831,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::882F7C2C-BF1F-4B1C-91B8-5A2F5CA0D208:"
+      "sncf-fr-gtfs:FR:Line::882F7C2C-BF1F-4B1C-91B8-5A2F5CA0D208:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -143026,6 +143093,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::3175F4A9-2947-4E88-95A8-B0A98B88A418:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=58;direct_km=6;detour_ratio_x100=968;implied_speed_kmh=433",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -145906,19 +145975,6 @@
     ]
   },
   {
-    "from_city_id": "luneville-fr-54329",
-    "to_city_id": "rosieres-aux-salines-fr-54159",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::ffe6d3aa-3a90-47ea-aeeb-92fa84909329:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "lungern-ch-caa4447f",
     "to_city_id": "brunig-hasliberg-ch-dfc27aa4",
     "duration_min": 8,
@@ -146651,8 +146707,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:"
     ]
   },
   {
@@ -146688,8 +146743,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:"
     ]
   },
   {
@@ -147205,6 +147259,19 @@
   },
   {
     "from_city_id": "lyon-part-dieu-de-cfdacf42",
+    "to_city_id": "annecy-fr-74010",
+    "duration_min": 111,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::6F1D7ABC-B729-498A-B3BD-DE55587C60E2:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "lyon-part-dieu-de-cfdacf42",
     "to_city_id": "chambery-challes-les-eaux-fr-73065",
     "duration_min": 90,
     "service_kind": "rail",
@@ -147291,19 +147358,6 @@
     "source_confidence": 50,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::6349C213-7B19-4078-BF2B-43CBECDA9545:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "lyon-part-dieu-de-cfdacf42",
-    "to_city_id": "pringy-fr-74010",
-    "duration_min": 111,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::6F1D7ABC-B729-498A-B3BD-DE55587C60E2:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -151947,7 +152001,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::EB0A92AC-D640-4DFC-B422-FD8B63EAC402:"
+      "sncf-fr-gtfs:FR:Line::EB0A92AC-D640-4DFC-B422-FD8B63EAC402:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -152935,7 +152990,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::B175B939-CEB2-4013-A90F-64CA627A5C45:"
+      "sncf-fr-gtfs:FR:Line::B175B939-CEB2-4013-A90F-64CA627A5C45:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=475;direct_km=17;detour_ratio_x100=2840;implied_speed_kmh=3165",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -153793,6 +153851,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4BBFA233-37AB-432A-BCCF-FB90719B1F8A:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=542;direct_km=13;detour_ratio_x100=4096;implied_speed_kmh=3612",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -154681,7 +154741,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:"
+      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -157063,6 +157124,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::053D505F-D103-4042-AA06-EBC60229BE50:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=522;direct_km=28;detour_ratio_x100=1886;implied_speed_kmh=1739",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -157185,8 +157248,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:"
     ]
   },
   {
@@ -159795,8 +159857,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2FFF7F96-0EBC-4AA1-B417-38EBD492057E:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2FFF7F96-0EBC-4AA1-B417-38EBD492057E:"
     ]
   },
   {
@@ -160667,8 +160728,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::d1189a05-48e1-477d-9b3c-f8ac8cb0397b:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::d1189a05-48e1-477d-9b3c-f8ac8cb0397b:"
     ]
   },
   {
@@ -160680,8 +160740,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::d1189a05-48e1-477d-9b3c-f8ac8cb0397b:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::d1189a05-48e1-477d-9b3c-f8ac8cb0397b:"
     ]
   },
   {
@@ -160987,7 +161046,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::11F076F8-55AD-4273-8679-AB5D0FBE8F9E:"
+      "sncf-fr-gtfs:FR:Line::11F076F8-55AD-4273-8679-AB5D0FBE8F9E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -161872,6 +161932,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B2E5B266-DAE7-4C0A-ABA0-B46411FB2CAA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=261;direct_km=24;detour_ratio_x100=1069;implied_speed_kmh=627",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -162175,7 +162237,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:"
+      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -162607,7 +162670,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::3730A943-C62B-4673-845F-64A7E3DAF78B:"
+      "sncf-fr-gtfs:FR:Line::3730A943-C62B-4673-845F-64A7E3DAF78B:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -162697,7 +162761,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F74CEFE4-4FF8-460D-BF41-14772B487A97:"
+      "sncf-fr-gtfs:FR:Line::F74CEFE4-4FF8-460D-BF41-14772B487A97:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -162735,7 +162800,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:"
+      "sncf-fr-gtfs:FR:Line::C44D2826-606A-4A26-84A4-C2136894CD96:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -163912,6 +163978,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B2E5B266-DAE7-4C0A-ABA0-B46411FB2CAA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=272;direct_km=14;detour_ratio_x100=1972;implied_speed_kmh=1167",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -164283,7 +164351,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:"
+      "sncf-fr-gtfs:FR:Line::F9B6D7CE-05C9-41F1-B2E7-C38E93D974F4:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -164829,7 +164898,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:"
+      "sncf-fr-gtfs:FR:Line::2295DCB3-5ABB-4028-8431-F6E4F94D0299:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -164867,7 +164937,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1E753DF8-B3B7-4FFE-BF59-46FC27595D6E:"
+      "sncf-fr-gtfs:FR:Line::1E753DF8-B3B7-4FFE-BF59-46FC27595D6E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -167869,19 +167940,6 @@
   },
   {
     "from_city_id": "nancy-fr-54395",
-    "to_city_id": "rosieres-aux-salines-fr-54159",
-    "duration_min": 8,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::ffe6d3aa-3a90-47ea-aeeb-92fa84909329:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "nancy-fr-54395",
     "to_city_id": "verdun-fr-55545",
     "duration_min": 108,
     "service_kind": "rail",
@@ -168019,7 +168077,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::3418b67d-a81f-4dde-b3b0-60cc96ed86f4:"
+      "sncf-fr-gtfs:FR:Line::3418b67d-a81f-4dde-b3b0-60cc96ed86f4:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=476;direct_km=61;detour_ratio_x100=779;implied_speed_kmh=840",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -169001,6 +169062,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4f784834-828d-4bbf-a65d-d21599ce8dc2:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=237;direct_km=21;detour_ratio_x100=1111;implied_speed_kmh=949",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -169859,7 +169922,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-9-N-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::2B812B1E-D18B-4CC1-9659-39B3683EEEDD:"
     ]
   },
@@ -172997,7 +173059,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:"
+      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -173022,7 +173085,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:"
+      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -173047,7 +173111,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:"
+      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -173059,7 +173124,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:"
+      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -173071,7 +173137,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:"
+      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -173096,7 +173163,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::07bfc39f-4dfd-46ce-98c3-aad42dfa98bd:"
+      "sncf-fr-gtfs:FR:Line::07bfc39f-4dfd-46ce-98c3-aad42dfa98bd:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -174285,7 +174353,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:"
+      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -178077,8 +178146,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::4F3E7D7E-1FEF-4DB7-A210-473D950E2F37:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::4F3E7D7E-1FEF-4DB7-A210-473D950E2F37:"
     ]
   },
   {
@@ -181897,8 +181965,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2FFF7F96-0EBC-4AA1-B417-38EBD492057E:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2FFF7F96-0EBC-4AA1-B417-38EBD492057E:"
     ]
   },
   {
@@ -186325,6 +186392,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4f784834-828d-4bbf-a65d-d21599ce8dc2:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=248;direct_km=11;detour_ratio_x100=2163;implied_speed_kmh=1491",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -186351,6 +186420,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4f784834-828d-4bbf-a65d-d21599ce8dc2:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=255;direct_km=7;detour_ratio_x100=3896;implied_speed_kmh=2552",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -186468,6 +186539,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::ec925e4f-137a-4761-914a-13d24e9ace87:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=227;direct_km=31;detour_ratio_x100=741;implied_speed_kmh=650",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -190337,7 +190410,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:"
+      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -191005,6 +191079,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::3175F4A9-2947-4E88-95A8-B0A98B88A418:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=58;direct_km=6;detour_ratio_x100=968;implied_speed_kmh=346",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -191057,7 +191133,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
@@ -191584,7 +191659,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:"
+      "sncf-fr-gtfs:FR:Line::9B25AB24-D245-4F3C-A70C-73EAF225FF0E:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -191779,6 +191855,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::AC0D0345-E670-4CE5-A652-D020458F4181:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=676;direct_km=13;detour_ratio_x100=5043;implied_speed_kmh=5074",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -194448,84 +194526,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:"
-    ]
-  },
-  {
-    "from_city_id": "pringy-fr-74010",
-    "to_city_id": "aix-les-bains-le-revard-fr-73008",
-    "duration_min": 25,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::60faff89-b743-4b4b-a86b-3c0537769bfa:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "pringy-fr-74010",
-    "to_city_id": "annemasse-fr-74012",
-    "duration_min": 50,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::608A9B0B-6DF0-475B-82BA-E9792D7972A5:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "pringy-fr-74010",
-    "to_city_id": "chambery-challes-les-eaux-fr-73065",
-    "duration_min": 60,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F4B0CFE6-18E1-4D06-A749-805E6E29BD07:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "pringy-fr-74010",
-    "to_city_id": "groisy-thorens-la-caille-fr-74137",
-    "duration_min": 9,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::608A9B0B-6DF0-475B-82BA-E9792D7972A5:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "pringy-fr-74010",
-    "to_city_id": "lyon-part-dieu-de-cfdacf42",
-    "duration_min": 112,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::6F1D7ABC-B729-498A-B3BD-DE55587C60E2:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "pringy-fr-74010",
-    "to_city_id": "rumilly-fr-74225",
-    "duration_min": 13,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F28D551A-A369-44D2-A99B-0E546CDBEC87:",
+      "sncf-fr-gtfs:FR:Line::ec7d6d78-7792-4822-be8b-5e0bab24ba62:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -194771,7 +194772,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::38B9D3C2-5951-4F05-87BA-2011072E93FD:"
+      "sncf-fr-gtfs:FR:Line::38B9D3C2-5951-4F05-87BA-2011072E93FD:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -197236,8 +197238,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:"
     ]
   },
   {
@@ -198619,6 +198620,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4BBFA233-37AB-432A-BCCF-FB90719B1F8A:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=537;direct_km=17;detour_ratio_x100=3147;implied_speed_kmh=3581",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -198632,6 +198635,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::915D5DDD-48DB-4134-A537-E0AEBFB320C1:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=610;direct_km=63;detour_ratio_x100=962;implied_speed_kmh=871",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -198645,6 +198650,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::84107FF1-AF5C-45A9-B6D6-52A10C5F424A:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=486;direct_km=59;detour_ratio_x100=823;implied_speed_kmh=857",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -198671,6 +198678,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4BBFA233-37AB-432A-BCCF-FB90719B1F8A:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=542;direct_km=13;detour_ratio_x100=4096;implied_speed_kmh=4063",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -198684,6 +198693,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4BBFA233-37AB-432A-BCCF-FB90719B1F8A:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=522;direct_km=28;detour_ratio_x100=1886;implied_speed_kmh=1841",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -201259,7 +201270,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::296E1EA3-237C-44D1-BFEE-3AE29C18948C:"
+      "sncf-fr-gtfs:FR:Line::296E1EA3-237C-44D1-BFEE-3AE29C18948C:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=477;direct_km=2;detour_ratio_x100=22536;implied_speed_kmh=14313",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -203014,6 +203028,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::D79097CD-B3F9-4C30-8676-74078751808C:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=354;direct_km=67;detour_ratio_x100=532;implied_speed_kmh=408",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -203241,7 +203257,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::75711759-571a-4c6c-a9fa-57cfb79a4b2f:"
+      "sncf-fr-gtfs:FR:Line::75711759-571a-4c6c-a9fa-57cfb79a4b2f:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -204975,45 +204992,6 @@
     ]
   },
   {
-    "from_city_id": "rosieres-aux-salines-fr-54159",
-    "to_city_id": "luneville-fr-54329",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::ffe6d3aa-3a90-47ea-aeeb-92fa84909329:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "rosieres-aux-salines-fr-54159",
-    "to_city_id": "nancy-fr-54395",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::ffe6d3aa-3a90-47ea-aeeb-92fa84909329:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "rosieres-aux-salines-fr-54159",
-    "to_city_id": "varangeville-saint-nicolas-fr-54549",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::f476471e-bbd4-4974-bf95-8c7cb9ca3e4a:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "rosieres-fr-80680",
     "to_city_id": "chaulnes-fr-80186",
     "duration_min": 5,
@@ -206247,6 +206225,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B2E5B266-DAE7-4C0A-ABA0-B46411FB2CAA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=261;direct_km=24;detour_ratio_x100=1069;implied_speed_kmh=825",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -206273,6 +206253,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B2E5B266-DAE7-4C0A-ABA0-B46411FB2CAA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=272;direct_km=14;detour_ratio_x100=1972;implied_speed_kmh=1257",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -206325,6 +206307,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B2E5B266-DAE7-4C0A-ABA0-B46411FB2CAA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=245;direct_km=38;detour_ratio_x100=644;implied_speed_kmh=272",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -207169,19 +207153,6 @@
     "provenance": [
       "ch-gtfs:91-36-j26-1",
       "de-delfi-gtfs:7137726_109"
-    ]
-  },
-  {
-    "from_city_id": "rumilly-fr-74225",
-    "to_city_id": "pringy-fr-74010",
-    "duration_min": 14,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F28D551A-A369-44D2-A99B-0E546CDBEC87:",
-      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -211664,7 +211635,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::d283aaa9-f32b-4b43-99a9-48ecc10044ba:"
+      "sncf-fr-gtfs:FR:Line::d283aaa9-f32b-4b43-99a9-48ecc10044ba:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -211845,7 +211817,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::c3f96b2e-6783-498a-9e87-3364aecbd9b5:"
+      "sncf-fr-gtfs:FR:Line::c3f96b2e-6783-498a-9e87-3364aecbd9b5:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -212507,7 +212480,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:"
+      "sncf-fr-gtfs:FR:Line::1C59DA64-5D12-4600-9092-4E99FCBFAC7A:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -212558,7 +212532,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::18B0FAF0-44B1-4D0A-A8AD-2E32B7602EAD:"
+      "sncf-fr-gtfs:FR:Line::18B0FAF0-44B1-4D0A-A8AD-2E32B7602EAD:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -212934,7 +212909,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:"
+      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -212972,7 +212948,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:"
+      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -212997,7 +212974,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::3730A943-C62B-4673-845F-64A7E3DAF78B:"
+      "sncf-fr-gtfs:FR:Line::3730A943-C62B-4673-845F-64A7E3DAF78B:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -213074,7 +213052,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:"
+      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -214713,7 +214692,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::dac9d85e-6b33-4d12-ac55-f9c9a330c1a0:"
+      "sncf-fr-gtfs:FR:Line::dac9d85e-6b33-4d12-ac55-f9c9a330c1a0:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -214998,7 +214978,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:"
+      "sncf-fr-gtfs:FR:Line::8A45A100-4B0A-430B-BAD0-EDB1ECD38F84:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -215504,7 +215485,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:"
+      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -215737,7 +215719,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::75711759-571a-4c6c-a9fa-57cfb79a4b2f:"
+      "sncf-fr-gtfs:FR:Line::75711759-571a-4c6c-a9fa-57cfb79a4b2f:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -215749,7 +215732,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::d283aaa9-f32b-4b43-99a9-48ecc10044ba:"
+      "sncf-fr-gtfs:FR:Line::d283aaa9-f32b-4b43-99a9-48ecc10044ba:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -215761,7 +215745,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::c3f96b2e-6783-498a-9e87-3364aecbd9b5:"
+      "sncf-fr-gtfs:FR:Line::c3f96b2e-6783-498a-9e87-3364aecbd9b5:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -215773,7 +215758,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::dac9d85e-6b33-4d12-ac55-f9c9a330c1a0:"
+      "sncf-fr-gtfs:FR:Line::dac9d85e-6b33-4d12-ac55-f9c9a330c1a0:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -220484,7 +220470,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::666769D0-F105-4734-9587-1D966650724A:"
+      "sncf-fr-gtfs:FR:Line::666769D0-F105-4734-9587-1D966650724A:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -220522,7 +220509,8 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::666769D0-F105-4734-9587-1D966650724A:"
+      "sncf-fr-gtfs:FR:Line::666769D0-F105-4734-9587-1D966650724A:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -221223,6 +221211,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::AC0D0345-E670-4CE5-A652-D020458F4181:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=676;direct_km=13;detour_ratio_x100=5043;implied_speed_kmh=5074",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -221236,6 +221226,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::CB496029-4727-4221-A130-5296ECC1CA01:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=649;direct_km=34;detour_ratio_x100=1897;implied_speed_kmh=1769",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -227041,6 +227033,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B2E5B266-DAE7-4C0A-ABA0-B46411FB2CAA:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=245;direct_km=38;detour_ratio_x100=644;implied_speed_kmh=272",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -227207,7 +227201,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::B175B939-CEB2-4013-A90F-64CA627A5C45:"
+      "sncf-fr-gtfs:FR:Line::B175B939-CEB2-4013-A90F-64CA627A5C45:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=475;direct_km=17;detour_ratio_x100=2840;implied_speed_kmh=3165",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -227219,7 +227216,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::3418b67d-a81f-4dde-b3b0-60cc96ed86f4:"
+      "sncf-fr-gtfs:FR:Line::3418b67d-a81f-4dde-b3b0-60cc96ed86f4:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=476;direct_km=61;detour_ratio_x100=779;implied_speed_kmh=816",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -230728,7 +230728,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:"
+      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -230753,8 +230754,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:"
     ]
   },
   {
@@ -236012,7 +236012,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::481FE34B-4FEA-4C35-8ABE-58CB090620CD:"
+      "sncf-fr-gtfs:FR:Line::481FE34B-4FEA-4C35-8ABE-58CB090620CD:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -238914,7 +238915,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:"
+      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -238926,7 +238928,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:"
+      "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -238990,7 +238993,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::07bfc39f-4dfd-46ce-98c3-aad42dfa98bd:"
+      "sncf-fr-gtfs:FR:Line::07bfc39f-4dfd-46ce-98c3-aad42dfa98bd:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -242774,7 +242778,6 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::6E3CCD81-9398-44C3-9D79-072A8303E507:",
       "sncf-fr-gtfs:FR:Line::94da6970-1eba-4166-9d52-74771396d651:"
     ]
@@ -242853,6 +242856,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::ec925e4f-137a-4761-914a-13d24e9ace87:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=227;direct_km=31;detour_ratio_x100=741;implied_speed_kmh=682",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -242977,7 +242982,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F74CEFE4-4FF8-460D-BF41-14772B487A97:"
+      "sncf-fr-gtfs:FR:Line::F74CEFE4-4FF8-460D-BF41-14772B487A97:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -246128,7 +246134,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-9-N-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::984d7034-ec86-434a-a5ea-cd737cc2a692:"
     ]
   },
@@ -247120,7 +247125,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::9a13b0be-a3ff-46de-8c0c-75f24e313e98:"
+      "sncf-fr-gtfs:FR:Line::9a13b0be-a3ff-46de-8c0c-75f24e313e98:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=321;direct_km=76;detour_ratio_x100=422;implied_speed_kmh=275",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -251922,6 +251930,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::E787EB35-6D67-48A0-A641-FEC921895C71:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=283;direct_km=29;detour_ratio_x100=967;implied_speed_kmh=424",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -253253,6 +253263,8 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::A7628FC9-CF66-4A89-B2C2-9924DD8DCD89:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=431;direct_km=94;detour_ratio_x100=458;implied_speed_kmh=470",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -253331,19 +253343,6 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::08AFFE9A-2809-4FB2-AD6C-C50161E2E96A:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "varangeville-saint-nicolas-fr-54549",
-    "to_city_id": "rosieres-aux-salines-fr-54159",
-    "duration_min": 2,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 100,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::f476471e-bbd4-4974-bf95-8c7cb9ca3e4a:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -255831,7 +255830,6 @@
     "source_confidence": 60,
     "provenance": [
       "ch-gtfs:91-L4-A-j26-1",
-      "geometry:sncf-fr-rfn-lines",
       "sncf-fr-gtfs:FR:Line::3DCDF960-BA93-4443-899F-283A2A13B7FE:"
     ]
   },
@@ -259534,7 +259532,10 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::296E1EA3-237C-44D1-BFEE-3AE29C18948C:"
+      "sncf-fr-gtfs:FR:Line::296E1EA3-237C-44D1-BFEE-3AE29C18948C:",
+      "geometry:invalid-railway-path-rejected",
+      "geometry:rejected-rail-metrics:geometry_km=477;direct_km=2;detour_ratio_x100=22536;implied_speed_kmh=14313",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -261950,7 +261951,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::A9EA26B0-3D69-4602-855E-C8D196A3FD89:"
+      "sncf-fr-gtfs:FR:Line::A9EA26B0-3D69-4602-855E-C8D196A3FD89:",
+      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -263047,8 +263049,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:"
     ]
   },
   {
@@ -263060,8 +263061,7 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2ED50A80-6E1F-4F0F-8782-4482CAA1A7DA:"
     ]
   },
   {
@@ -268254,8 +268254,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F91234F0-01DE-4035-A909-799A288E835E:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::F91234F0-01DE-4035-A909-799A288E835E:"
     ]
   },
   {
@@ -268992,8 +268991,7 @@
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::2515CEC3-EF8D-40D6-AA15-5DC17572BCFA:",
-      "geometry:sncf-fr-rfn-lines"
+      "sncf-fr-gtfs:FR:Line::2515CEC3-EF8D-40D6-AA15-5DC17572BCFA:"
     ]
   },
   {
