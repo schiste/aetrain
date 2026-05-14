@@ -4311,6 +4311,19 @@ fn cleanup_station_like_and_zz_residual_cities(
         },
     );
     let snapshot = cities.clone();
+    let effective_country_by_city = snapshot
+        .iter()
+        .map(|city| {
+            (
+                city.city_id.clone(),
+                effective_city_country_code(city, station_mappings),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let parent_match_keys_by_city = snapshot
+        .iter()
+        .map(|city| (city.city_id.clone(), parent_city_match_keys(city)))
+        .collect::<BTreeMap<_, _>>();
     let mut remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
 
     for city in cities.iter_mut() {
@@ -4454,6 +4467,28 @@ fn cleanup_station_like_and_zz_residual_cities(
             continue;
         }
 
+        if is_fallback_reference_gap_singleton_city(city, mapping_by_city.get(&city.city_id))
+            && let Some(parent) = best_parent_for_fallback_gap_alias_match(
+                city,
+                &snapshot,
+                mapping_by_city.get(&city.city_id),
+                &effective_country_by_city,
+                &parent_match_keys_by_city,
+            )
+        {
+            remap.insert(city.city_id.clone(), parent.city_id.clone());
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Info,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "demoted aggregate fallback-gap singleton city {} into authoritative parent city {}",
+                    city.display_name, parent.display_name
+                ),
+            });
+            continue;
+        }
+
         if !is_station_qualified_city_name(&city.display_name) || city.station_ids.len() != 1 {
             continue;
         }
@@ -4513,6 +4548,79 @@ fn effective_city_country_code(
 ) -> String {
     infer_country_code_from_station_mappings(city, station_mappings)
         .unwrap_or_else(|| city.country_code.clone())
+}
+
+fn is_fallback_reference_gap_singleton_city(
+    city: &aetrain_domain::City,
+    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+) -> bool {
+    city.wikidata_qid.is_none()
+        && city.station_ids.len() == 1
+        && station_records.is_some_and(|records| {
+            !records.is_empty()
+                && records.iter().all(|record| {
+                    record.mapping_strategy == crate::StationMappingStrategy::FallbackReferenceGap
+                })
+        })
+}
+
+fn best_parent_for_fallback_gap_alias_match<'a>(
+    city: &aetrain_domain::City,
+    snapshot: &'a [aetrain_domain::City],
+    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+    effective_country_by_city: &BTreeMap<aetrain_domain::CityId, String>,
+    parent_match_keys_by_city: &BTreeMap<aetrain_domain::CityId, BTreeSet<String>>,
+) -> Option<&'a aetrain_domain::City> {
+    let effective_country = effective_country_by_city
+        .get(&city.city_id)
+        .cloned()
+        .unwrap_or_else(|| city.country_code.clone());
+    let child_keys = station_like_parent_keys(city, station_records);
+    if child_keys.is_empty() {
+        return None;
+    }
+
+    let mut candidates = snapshot
+        .iter()
+        .filter(|parent| parent.city_id != city.city_id)
+        .filter(|parent| {
+            effective_country_by_city
+                .get(&parent.city_id)
+                .is_some_and(|country| *country == effective_country)
+        })
+        .filter(|parent| {
+            parent_match_keys_by_city
+                .get(&parent.city_id)
+                .is_some_and(|keys| keys.iter().any(|key| child_keys.contains(key)))
+        })
+        .filter_map(|parent| {
+            let distance_meters =
+                geo_distance_meters(city.location, parent.location).round() as u32;
+            (distance_meters <= 10_000).then_some((parent, distance_meters))
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        fallback_gap_parent_match_score(left.0)
+            .cmp(&fallback_gap_parent_match_score(right.0))
+            .then_with(|| left.1.cmp(&right.1))
+            .reverse()
+    });
+    if candidates.len() >= 2
+        && fallback_gap_parent_match_score(candidates[0].0)
+            == fallback_gap_parent_match_score(candidates[1].0)
+        && candidates[0].1 == candidates[1].1
+    {
+        return None;
+    }
+    candidates.first().map(|(parent, _)| *parent)
+}
+
+fn fallback_gap_parent_match_score(city: &aetrain_domain::City) -> (u8, usize, usize) {
+    (
+        u8::from(city_id_has_registry_qid(city) || city.wikidata_qid.is_some()),
+        city.station_ids.len(),
+        city.aliases.len(),
+    )
 }
 
 fn cleaned_residual_city_display_name(
@@ -6733,6 +6841,78 @@ mod tests {
             .find(|city| city.city_id == perl_id)
             .expect("perl city should remain");
         assert_eq!(perl.country_code, "DE");
+    }
+
+    #[test]
+    fn cleanup_station_like_and_zz_residual_cities_demotes_fallback_gap_alias_match() {
+        let lyon_id = CityId::new("lyon-fr-q456").expect("valid city id");
+        let residual_id =
+            CityId::new("lyon-vaise-gare-routiere-zz-6e92fbd5").expect("valid city id");
+        let mut cities = vec![
+            City {
+                city_id: lyon_id.clone(),
+                slug: "lyon".to_string(),
+                display_name: "Lyon".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 45.761011,
+                    lon: 4.827087,
+                },
+                wikidata_qid: Some("Q456".to_string()),
+                population: Some(522_969),
+                interest_score: Some(10),
+                station_ids: vec![
+                    StationId::new("station-uic-87723197").expect("valid station id"),
+                    StationId::new("station-uic-87722025").expect("valid station id"),
+                ],
+                aliases: vec!["Lyon Vaise".to_string()],
+            },
+            City {
+                city_id: residual_id.clone(),
+                slug: "lyon-vaise".to_string(),
+                display_name: "Lyon Vaise".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 45.779611,
+                    lon: 4.803685,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![
+                    StationId::new("station-uic-87697045").expect("valid station id"),
+                ],
+                aliases: vec!["Lyon Vaise Gare Routiere".to_string()],
+            },
+        ];
+        let station_mappings = StationMappingReport {
+            records: vec![StationMappingRecord {
+                station_key: "StopArea:OCE87697045".to_string(),
+                station_id: StationId::new("station-uic-87697045").expect("valid station id"),
+                city_id: residual_id.clone(),
+                city_cluster_key: "fallback-lyon-vaise-gare-routiere-87697045".to_string(),
+                station_display_name: "Lyon-Vaise-Gare-Routière".to_string(),
+                mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                confidence: 50,
+                matched_reference_id: None,
+                matched_reference_name: None,
+                override_id: None,
+                source_refs: Vec::new(),
+            }],
+        };
+        let mut remap = BTreeMap::new();
+        let mut issues = Vec::new();
+
+        cleanup_station_like_and_zz_residual_cities(
+            &mut cities,
+            &mut remap,
+            &station_mappings,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert!(!cities.iter().any(|city| city.city_id == residual_id));
+        assert_eq!(remap.get(&residual_id).cloned(), Some(lyon_id));
     }
 
     #[test]
