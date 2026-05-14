@@ -230,6 +230,12 @@ pub struct PipelineCountryGeometryAuthorityRecord {
     pub promoted: bool,
     pub source_id: Option<String>,
     pub missing_domestic_authority_count: u64,
+    pub promoted_station_attachment_gap_count: u64,
+    pub promoted_topology_no_route_gap_count: u64,
+    pub promoted_rejected_implausible_authority_detour_count: u64,
+    pub max_promoted_station_attachment_gap_count: Option<u64>,
+    pub max_promoted_topology_no_route_gap_count: Option<u64>,
+    pub max_promoted_rejected_implausible_authority_detour_count: Option<u64>,
     pub rejected_rail_authority_count: u64,
     pub notes: Option<String>,
 }
@@ -1181,8 +1187,12 @@ fn build_quality_report(
                 })
         })
         .count() as u64;
-    let country_geometry_authorities =
-        build_country_geometry_authority_records(authority_registry, &route_geometry_anomalies);
+    let country_geometry_authorities = build_country_geometry_authority_records(
+        authority_registry,
+        &route_geometry_anomalies,
+        &promoted_domestic_authority_gap_details,
+        &rail_authority_defect_details,
+    );
     let corridor_geometry_authorities =
         build_corridor_geometry_authority_records(authority_registry, &route_geometry_anomalies);
 
@@ -1308,6 +1318,54 @@ fn build_quality_report(
             0,
         ),
     ];
+    let mut gate_results = gate_results;
+    for country in &country_geometry_authorities {
+        if !country.promoted {
+            continue;
+        }
+        if let Some(target) = country.max_promoted_station_attachment_gap_count {
+            gate_results.push(quality_gate_less_than_or_equal(
+                &format!(
+                    "country_{}_promoted_station_attachment_gap_count_within_policy",
+                    country.country_code.to_lowercase()
+                ),
+                &format!(
+                    "country_{}_promoted_station_attachment_gap_count",
+                    country.country_code.to_lowercase()
+                ),
+                country.promoted_station_attachment_gap_count,
+                target,
+            ));
+        }
+        if let Some(target) = country.max_promoted_topology_no_route_gap_count {
+            gate_results.push(quality_gate_less_than_or_equal(
+                &format!(
+                    "country_{}_promoted_topology_no_route_gap_count_within_policy",
+                    country.country_code.to_lowercase()
+                ),
+                &format!(
+                    "country_{}_promoted_topology_no_route_gap_count",
+                    country.country_code.to_lowercase()
+                ),
+                country.promoted_topology_no_route_gap_count,
+                target,
+            ));
+        }
+        if let Some(target) = country.max_promoted_rejected_implausible_authority_detour_count {
+            gate_results.push(quality_gate_less_than_or_equal(
+                &format!(
+                    "country_{}_promoted_rejected_implausible_authority_detour_count_within_policy",
+                    country.country_code.to_lowercase()
+                ),
+                &format!(
+                    "country_{}_promoted_rejected_implausible_authority_detour_count",
+                    country.country_code.to_lowercase()
+                ),
+                country.promoted_rejected_implausible_authority_detour_count,
+                target,
+            ));
+        }
+    }
 
     PipelineQualityReport {
         gate_results,
@@ -1340,6 +1398,8 @@ fn build_quality_report(
 fn build_country_geometry_authority_records(
     authority_registry: Option<&GeometryAuthorityRegistry>,
     route_geometry_anomalies: &[PipelineRouteGeometryAnomalyRecord],
+    promoted_domestic_authority_gap_details: &[PipelinePromotedDomesticAuthorityGapRecord],
+    rail_authority_defect_details: &[PipelineRailAuthorityDefectRecord],
 ) -> Vec<PipelineCountryGeometryAuthorityRecord> {
     let Some(authority_registry) = authority_registry else {
         return Vec::new();
@@ -1348,27 +1408,62 @@ fn build_country_geometry_authority_records(
     authority_registry
         .countries
         .iter()
-        .map(|entry| PipelineCountryGeometryAuthorityRecord {
-            country_code: entry.country_code.clone(),
-            status: geometry_authority_status_label(&entry.status).to_string(),
-            promoted: entry.status.is_promoted(),
-            source_id: entry.source_id.clone(),
-            missing_domestic_authority_count: route_geometry_anomalies
+        .map(|entry| {
+            let missing_domestic_authority_count = route_geometry_anomalies
                 .iter()
                 .filter(|record| {
                     record.geometry_resolution_status == "missing_domestic_authority"
                         && record.from_country_code == entry.country_code
                 })
-                .count() as u64,
-            rejected_rail_authority_count: route_geometry_anomalies
+                .count() as u64;
+            let promoted_station_attachment_gap_count = promoted_domestic_authority_gap_details
                 .iter()
                 .filter(|record| {
-                    record.geometry_resolution_status == "rejected_rail_authority"
-                        && record.from_country_code == entry.country_code
-                        && record.to_country_code == entry.country_code
+                    record.country_code == entry.country_code
+                        && record.authority_gap_reason == "authority_station_attachment_gap"
                 })
-                .count() as u64,
-            notes: entry.notes.clone(),
+                .count() as u64;
+            let promoted_topology_no_route_gap_count = promoted_domestic_authority_gap_details
+                .iter()
+                .filter(|record| {
+                    record.country_code == entry.country_code
+                        && record.authority_gap_reason == "authority_topology_no_route"
+                })
+                .count() as u64;
+            let promoted_rejected_implausible_authority_detour_count =
+                rail_authority_defect_details
+                    .iter()
+                    .filter(|record| {
+                        record.from_country_code == entry.country_code
+                            && record.to_country_code == entry.country_code
+                            && record.authority_defect_reason == "implausible_authority_detour"
+                    })
+                    .count() as u64;
+            PipelineCountryGeometryAuthorityRecord {
+                country_code: entry.country_code.clone(),
+                status: geometry_authority_status_label(&entry.status).to_string(),
+                promoted: entry.status.is_promoted(),
+                source_id: entry.source_id.clone(),
+                missing_domestic_authority_count,
+                promoted_station_attachment_gap_count,
+                promoted_topology_no_route_gap_count,
+                promoted_rejected_implausible_authority_detour_count,
+                max_promoted_station_attachment_gap_count: entry
+                    .max_promoted_station_attachment_gap_count,
+                max_promoted_topology_no_route_gap_count: entry
+                    .max_promoted_topology_no_route_gap_count,
+                max_promoted_rejected_implausible_authority_detour_count: entry
+                    .max_promoted_rejected_implausible_authority_detour_count,
+                rejected_rail_authority_count: route_geometry_anomalies
+                    .iter()
+                    .filter(|record| {
+                        record.geometry_resolution_status == "rejected_rail_authority"
+                            && record.from_country_code == entry.country_code
+                            && record.to_country_code == entry.country_code
+                    })
+                    .count() as u64,
+                notes: entry.notes.clone(),
+            }
         })
         .collect()
 }
@@ -2507,6 +2602,25 @@ fn quality_gate_less_than(
         actual,
         target: format!("< {}", threshold),
         status: if actual < threshold {
+            "pass".to_string()
+        } else {
+            "fail".to_string()
+        },
+    }
+}
+
+fn quality_gate_less_than_or_equal(
+    gate_id: &str,
+    metric: &str,
+    actual: u64,
+    threshold: u64,
+) -> PipelineQualityGateResult {
+    PipelineQualityGateResult {
+        gate_id: gate_id.to_string(),
+        metric: metric.to_string(),
+        actual,
+        target: format!("<= {}", threshold),
+        status: if actual <= threshold {
             "pass".to_string()
         } else {
             "fail".to_string()
@@ -8276,6 +8390,9 @@ mod tests {
                 source_id: Some("sncf-fr-rfn-lines".to_string()),
                 loader: Some(GeometryAuthorityLoader::SncfRfnGeojson),
                 status: GeometryAuthorityStatus::ProductionReady,
+                max_promoted_station_attachment_gap_count: Some(0),
+                max_promoted_topology_no_route_gap_count: Some(0),
+                max_promoted_rejected_implausible_authority_detour_count: Some(0),
                 notes: None,
             }],
             corridors: Vec::new(),
@@ -8298,6 +8415,10 @@ mod tests {
         assert_eq!(
             report.country_geometry_authorities[0].missing_domestic_authority_count,
             1
+        );
+        assert_eq!(
+            report.country_geometry_authorities[0].max_promoted_station_attachment_gap_count,
+            Some(0)
         );
         assert_eq!(
             report
@@ -8329,6 +8450,15 @@ mod tests {
                 .expect("promoted topology no-route gate")
                 .status,
             "pass"
+        );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "country_fr_promoted_station_attachment_gap_count")
+                .expect("country policy gate")
+                .status,
+            "fail"
         );
     }
 

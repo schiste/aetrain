@@ -7,6 +7,9 @@ country_code = "FR"
 source_id = "sncf-fr-rfn-lines"
 loader = "sncf_rfn_geojson"
 status = "production_ready"
+max_promoted_station_attachment_gap_count = 0
+max_promoted_topology_no_route_gap_count = 0
+max_promoted_rejected_implausible_authority_detour_count = 0
 notes = "French domestic rail authority backed by SNCF RFN line geometry. Domestic straight lines and rail-authority rejections are treated as regressions."
 
 [[country]]

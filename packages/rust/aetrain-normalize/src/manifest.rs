@@ -157,6 +157,12 @@ pub struct CountryGeometryAuthorityDefinition {
     pub loader: Option<GeometryAuthorityLoader>,
     pub status: GeometryAuthorityStatus,
     #[serde(default)]
+    pub max_promoted_station_attachment_gap_count: Option<u64>,
+    #[serde(default)]
+    pub max_promoted_topology_no_route_gap_count: Option<u64>,
+    #[serde(default)]
+    pub max_promoted_rejected_implausible_authority_detour_count: Option<u64>,
+    #[serde(default)]
     pub notes: Option<String>,
 }
 
