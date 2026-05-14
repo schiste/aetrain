@@ -284,6 +284,26 @@ pub struct PipelineShapePlausibilityDefectRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelinePromotedDomesticAuthorityGapRecord {
+    pub source_id: String,
+    pub country_code: String,
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub direct_distance_km: u32,
+    pub duration_min: Option<u32>,
+    pub start_snap_distance_m: Option<u32>,
+    pub end_snap_distance_m: Option<u32>,
+    pub route_found_in_authority_graph: bool,
+    pub routed_authority_distance_km: Option<u32>,
+    pub routed_authority_point_count: Option<usize>,
+    pub routed_authority_detour_ratio_x100: Option<u32>,
+    pub routed_authority_implied_speed_kmh: Option<u32>,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -305,6 +325,7 @@ pub struct PipelineQualityReport {
     pub corridor_geometry_authorities: Vec<PipelineCorridorGeometryAuthorityRecord>,
     pub rail_authority_defect_details: Vec<PipelineRailAuthorityDefectRecord>,
     pub shape_plausibility_defect_details: Vec<PipelineShapePlausibilityDefectRecord>,
+    pub promoted_domestic_authority_gap_details: Vec<PipelinePromotedDomesticAuthorityGapRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -726,6 +747,10 @@ fn export_pipeline_target(
         &quality_dir.join("shape-plausibility-defect-details.json"),
         &quality_report.shape_plausibility_defect_details,
     )?;
+    write_json(
+        &quality_dir.join("promoted-domestic-authority-gap-details.json"),
+        &quality_report.promoted_domestic_authority_gap_details,
+    )?;
     Ok(artifact_manifest)
 }
 
@@ -949,6 +974,13 @@ fn build_quality_report(
     );
     let shape_plausibility_defect_details =
         build_shape_plausibility_defect_details(&rejected_shape_plausibility_routes);
+    let promoted_domestic_authority_gap_details = build_promoted_domestic_authority_gap_details(
+        &route_geometry_anomalies,
+        cities,
+        edges,
+        authority_registry,
+        &authority_networks,
+    );
     let domestic_straight_line_fallback_count = route_geometry_anomalies
         .iter()
         .filter(|record| {
@@ -1143,6 +1175,7 @@ fn build_quality_report(
         corridor_geometry_authorities,
         rail_authority_defect_details,
         shape_plausibility_defect_details,
+        promoted_domestic_authority_gap_details,
     }
 }
 
@@ -1433,6 +1466,121 @@ fn build_shape_plausibility_defect_details(
                 implied_speed_kmh,
                 provenance: record.provenance.clone(),
             }
+        })
+        .collect()
+}
+
+fn build_promoted_domestic_authority_gap_details(
+    route_geometry_anomalies: &[PipelineRouteGeometryAnomalyRecord],
+    cities: &[City],
+    edges: &[aetrain_domain::TravelEdge],
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    authority_networks: &BTreeMap<String, RailGeometryNetwork>,
+) -> Vec<PipelinePromotedDomesticAuthorityGapRecord> {
+    let Some(authority_registry) = authority_registry else {
+        return Vec::new();
+    };
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let edge_by_id = edges
+        .iter()
+        .map(|edge| ((edge.from_city_id.clone(), edge.to_city_id.clone()), edge))
+        .collect::<BTreeMap<_, _>>();
+
+    route_geometry_anomalies
+        .iter()
+        .filter(|record| {
+            record.geometry_resolution_status == "missing_domestic_authority"
+                && authority_registry
+                    .country(&record.from_country_code)
+                    .is_some_and(|entry| entry.status.is_promoted())
+        })
+        .filter_map(|record| {
+            let from_city = cities_by_id.get(&record.from_city_id)?;
+            let to_city = cities_by_id.get(&record.to_city_id)?;
+            let authority = authority_registry.country(&record.from_country_code)?;
+            let source_id = authority.source_id.clone()?;
+            let network = authority_networks.get(&source_id);
+            let duration_min = edge_by_id
+                .get(&(record.from_city_id.clone(), record.to_city_id.clone()))
+                .map(|edge| edge.duration_min);
+            let (
+                start_snap_distance_m,
+                end_snap_distance_m,
+                route_found_in_authority_graph,
+                routed_authority_distance_km,
+                routed_authority_point_count,
+                routed_authority_detour_ratio_x100,
+                routed_authority_implied_speed_kmh,
+            ) = if let Some(network) = network {
+                let start = network.nearest_node_with_distance(from_city.location);
+                let end = network.nearest_node_with_distance(to_city.location);
+                let route = start.and_then(|(start_node, start_distance)| {
+                    end.map(|(end_node, end_distance)| {
+                        let points = network.route_polyline_between_nodes(
+                            from_city.location,
+                            to_city.location,
+                            start_node,
+                            end_node,
+                        );
+                        (start_distance, end_distance, points)
+                    })
+                });
+                if let Some((start_distance, end_distance, Some(points))) = route {
+                    let points_e5 = points
+                        .into_iter()
+                        .map(scale_geo_point_e5_for_pipeline)
+                        .collect::<Vec<_>>();
+                    let metrics = route_geometry_metrics(
+                        &points_e5,
+                        from_city.location,
+                        to_city.location,
+                        duration_min,
+                    );
+                    (
+                        Some(start_distance),
+                        Some(end_distance),
+                        true,
+                        Some(meters_to_km_u32(metrics.geometry_meters)),
+                        Some(points_e5.len()),
+                        metrics.detour_ratio_x100,
+                        metrics.implied_speed_kmh,
+                    )
+                } else {
+                    (
+                        start.map(|(_, distance)| distance),
+                        end.map(|(_, distance)| distance),
+                        false,
+                        None,
+                        None,
+                        None,
+                        None,
+                    )
+                }
+            } else {
+                (None, None, false, None, None, None, None)
+            };
+
+            Some(PipelinePromotedDomesticAuthorityGapRecord {
+                source_id,
+                country_code: record.from_country_code.clone(),
+                from_city_id: record.from_city_id.clone(),
+                from_display_name: record.from_display_name.clone(),
+                to_city_id: record.to_city_id.clone(),
+                to_display_name: record.to_display_name.clone(),
+                direct_distance_km: record.direct_distance_km,
+                duration_min,
+                start_snap_distance_m,
+                end_snap_distance_m,
+                route_found_in_authority_graph,
+                routed_authority_distance_km,
+                routed_authority_point_count,
+                routed_authority_detour_ratio_x100,
+                routed_authority_implied_speed_kmh,
+                provenance: record.provenance.clone(),
+            })
         })
         .collect()
 }
@@ -3923,7 +4071,7 @@ fn apply_aggregate_rail_geometry_authority(
         else {
             continue;
         };
-        if points.len() < 3 {
+        if points.len() < 2 {
             continue;
         }
         let points_e5 = points
