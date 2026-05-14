@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dataset_version": "20260514-100144.280727",
-  "generated_at": "2026-05-14T10:01:44.280727Z",
+  "dataset_version": "20260514-101848.781065",
+  "generated_at": "2026-05-14T10:18:48.781065Z",
   "source_snapshots": [
     {
       "source_id": "at-oebb-gtfs",

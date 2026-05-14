@@ -13,6 +13,7 @@ const DEFAULT_SNAP_DISTANCE_METERS: f64 = 25_000.0;
 const ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
 const NODE_MERGE_TOLERANCE_METERS: f64 = 120.0;
 const NODE_BUCKET_SCALE: f64 = 1_000.0;
+const SNAP_CANDIDATE_LIMIT: usize = 8;
 
 #[derive(Clone, Debug)]
 pub struct RailGeometryNetwork {
@@ -103,9 +104,7 @@ impl RailGeometryNetwork {
             return None;
         }
 
-        let start_node = self.snap_point(from)?;
-        let end_node = self.snap_point(to)?;
-        self.route_polyline_between_nodes(from, to, start_node, end_node)
+        self.best_route_polyline_between_points(from, to)
     }
 
     pub fn snap_point(&self, target: GeoPoint) -> Option<usize> {
@@ -119,6 +118,70 @@ impl RailGeometryNetwork {
     pub fn nearest_node_with_distance(&self, target: GeoPoint) -> Option<(usize, u32)> {
         let (node_index, distance) = self.nearest_node(target)?;
         Some((node_index, distance.round() as u32))
+    }
+
+    pub fn nearest_nodes_with_distance(
+        &self,
+        target: GeoPoint,
+        max_distance_meters: u32,
+        limit: usize,
+    ) -> Vec<(usize, u32)> {
+        let mut candidates = self
+            .nodes
+            .iter()
+            .enumerate()
+            .map(|(index, point)| (index, haversine_meters(*point, target).round() as u32))
+            .filter(|(_, distance)| *distance <= max_distance_meters)
+            .collect::<Vec<_>>();
+        candidates.sort_by_key(|(_, distance)| *distance);
+        candidates.truncate(limit);
+        candidates
+    }
+
+    pub fn best_route_polyline_between_points(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+    ) -> Option<Vec<GeoPoint>> {
+        let start_candidates = self.nearest_nodes_with_distance(
+            from,
+            DEFAULT_SNAP_DISTANCE_METERS.round() as u32,
+            SNAP_CANDIDATE_LIMIT,
+        );
+        let end_candidates = self.nearest_nodes_with_distance(
+            to,
+            DEFAULT_SNAP_DISTANCE_METERS.round() as u32,
+            SNAP_CANDIDATE_LIMIT,
+        );
+        if start_candidates.is_empty() || end_candidates.is_empty() {
+            return None;
+        }
+
+        let mut best_route = None::<(u32, Vec<GeoPoint>)>;
+        let direct_distance = estimate_distance_meters(from, to);
+        for (start_node, start_distance) in &start_candidates {
+            for (end_node, end_distance) in &end_candidates {
+                if start_node == end_node && direct_distance > ENDPOINT_SNAP_DISTANCE_METERS as u32
+                {
+                    continue;
+                }
+                let Some(points) =
+                    self.route_polyline_between_nodes(from, to, *start_node, *end_node)
+                else {
+                    continue;
+                };
+                let route_distance = polyline_distance_meters(&points);
+                let score = route_distance
+                    .saturating_add(*start_distance)
+                    .saturating_add(*end_distance);
+                match &best_route {
+                    Some((best_score, _)) if score >= *best_score => {}
+                    _ => best_route = Some((score, points)),
+                }
+            }
+        }
+
+        best_route.map(|(_, points)| points)
     }
 
     pub fn route_polyline_between_nodes(
@@ -428,6 +491,13 @@ fn estimate_distance_meters(from: GeoPoint, to: GeoPoint) -> u32 {
     haversine_meters(from, to).round() as u32
 }
 
+fn polyline_distance_meters(points: &[GeoPoint]) -> u32 {
+    points
+        .windows(2)
+        .map(|window| estimate_distance_meters(window[0], window[1]))
+        .sum()
+}
+
 fn haversine_meters(left: GeoPoint, right: GeoPoint) -> f64 {
     let earth_radius_m = 6_371_000.0_f64;
     let lat1 = left.lat.to_radians();
@@ -538,6 +608,54 @@ mod tests {
             )
             .expect("route should exist through merged node");
         assert!(route.len() >= 3);
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn route_polyline_tries_multiple_snap_candidates() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0000, 48.0000], [2.0100, 48.0000], [2.0200, 48.0000], [2.0300, 48.0000]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.02974, 48.0000], [2.02976, 48.0000]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0000,
+                    lon: 2.0001,
+                },
+                GeoPoint {
+                    lat: 48.0000,
+                    lon: 2.02975,
+                },
+            )
+            .expect("route should use reachable snap candidates");
+
+        assert!(route.len() >= 3);
+        assert!(route.iter().any(|point| (point.lon - 2.02).abs() < 0.0002));
 
         let _ = fs::remove_file(path);
     }
