@@ -344,6 +344,8 @@ pub struct PipelineAuthorityDetourCorridorRecord {
     pub min_detour_ratio_x100: u32,
     pub max_detour_ratio_x100: u32,
     pub max_snap_distance_m: u32,
+    pub recommended_policy: String,
+    pub policy_reason: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1959,6 +1961,33 @@ fn build_authority_detour_corridor_records(
         .into_iter()
         .map(|((source_id, _left_id, _right_id, corridor_key), records)| {
             let first = records[0];
+            let max_snap_distance_m = records
+                .iter()
+                .flat_map(|record| {
+                    [
+                        record.start_snap_distance_m.unwrap_or(0),
+                        record.end_snap_distance_m.unwrap_or(0),
+                    ]
+                })
+                .max()
+                .unwrap_or(0);
+            let min_detour_ratio_x100 = records
+                .iter()
+                .filter_map(|record| record.detour_ratio_x100)
+                .min()
+                .unwrap_or(0);
+            let max_detour_ratio_x100 = records
+                .iter()
+                .filter_map(|record| record.detour_ratio_x100)
+                .max()
+                .unwrap_or(0);
+            let (recommended_policy, policy_reason) =
+                classify_authority_detour_corridor_policy(
+                    records.len() as u64,
+                    max_snap_distance_m,
+                    min_detour_ratio_x100,
+                    max_detour_ratio_x100,
+                );
             PipelineAuthorityDetourCorridorRecord {
                 source_id,
                 from_country_code: first.from_country_code.clone(),
@@ -1990,29 +2019,38 @@ fn build_authority_detour_corridor_records(
                     .filter_map(|record| record.routed_authority_distance_km)
                     .max()
                     .unwrap_or(0),
-                min_detour_ratio_x100: records
-                    .iter()
-                    .filter_map(|record| record.detour_ratio_x100)
-                    .min()
-                    .unwrap_or(0),
-                max_detour_ratio_x100: records
-                    .iter()
-                    .filter_map(|record| record.detour_ratio_x100)
-                    .max()
-                    .unwrap_or(0),
-                max_snap_distance_m: records
-                    .iter()
-                    .flat_map(|record| {
-                        [
-                            record.start_snap_distance_m.unwrap_or(0),
-                            record.end_snap_distance_m.unwrap_or(0),
-                        ]
-                    })
-                    .max()
-                    .unwrap_or(0),
+                min_detour_ratio_x100,
+                max_detour_ratio_x100,
+                max_snap_distance_m,
+                recommended_policy: recommended_policy.to_string(),
+                policy_reason: policy_reason.to_string(),
             }
         })
         .collect()
+}
+
+fn classify_authority_detour_corridor_policy(
+    route_count: u64,
+    max_snap_distance_m: u32,
+    min_detour_ratio_x100: u32,
+    max_detour_ratio_x100: u32,
+) -> (&'static str, &'static str) {
+    if max_snap_distance_m > 1_000 {
+        return (
+            "tighten_authority_footprint",
+            "corridor detours are mixed with large snap distances, so attachment or footprint should be fixed before suppressing routing",
+        );
+    }
+    if route_count >= 2 && min_detour_ratio_x100 >= 180 && max_detour_ratio_x100 >= 300 {
+        return (
+            "suppress_authority_until_topology_fixed",
+            "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect",
+        );
+    }
+    (
+        "review_authority_corridor",
+        "corridor has repeated detours but does not yet clearly meet suppression or footprint-tightening criteria",
+    )
 }
 
 fn infer_feed_source_id_from_provenance(provenance: &[String]) -> Option<String> {
@@ -8636,6 +8674,22 @@ mod tests {
         assert_eq!(
             classify_authority_path_failure_reason(Some(42), Some(84), false),
             "authority_topology_no_route"
+        );
+    }
+
+    #[test]
+    fn authority_detour_corridor_policy_prefers_footprint_before_suppression() {
+        assert_eq!(
+            classify_authority_detour_corridor_policy(2, 1500, 500, 900).0,
+            "tighten_authority_footprint"
+        );
+        assert_eq!(
+            classify_authority_detour_corridor_policy(2, 120, 250, 800).0,
+            "suppress_authority_until_topology_fixed"
+        );
+        assert_eq!(
+            classify_authority_detour_corridor_policy(1, 120, 120, 160).0,
+            "review_authority_corridor"
         );
     }
 
