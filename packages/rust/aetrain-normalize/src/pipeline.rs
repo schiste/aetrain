@@ -340,6 +340,24 @@ pub struct PipelineStationAttachmentAuditRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineAuthorityAttachmentCoverageClusterRecord {
+    pub source_id: String,
+    pub country_code: String,
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub city_layer_status: String,
+    pub registry_resolution_status: String,
+    pub attachment_surface: String,
+    pub route_count: u64,
+    pub counterpart_examples: Vec<String>,
+    pub min_direct_distance_km: u32,
+    pub max_direct_distance_km: u32,
+    pub local_candidate_distances_m: Vec<u32>,
+    pub expanded_candidate_distances_m: Vec<u32>,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineAuthorityDetourCorridorRecord {
     pub source_id: String,
     pub from_country_code: String,
@@ -418,6 +436,8 @@ pub struct PipelineQualityReport {
     pub shape_plausibility_defect_details: Vec<PipelineShapePlausibilityDefectRecord>,
     pub promoted_domestic_authority_gap_details: Vec<PipelinePromotedDomesticAuthorityGapRecord>,
     pub promoted_station_attachment_gap_details: Vec<PipelineStationAttachmentAuditRecord>,
+    pub authority_attachment_coverage_clusters:
+        Vec<PipelineAuthorityAttachmentCoverageClusterRecord>,
     pub authority_detour_corridors: Vec<PipelineAuthorityDetourCorridorRecord>,
     pub plain_name_fallback_gap_registry_candidates:
         Vec<PipelinePlainNameFallbackGapRegistryRecord>,
@@ -857,6 +877,10 @@ fn export_pipeline_target(
         &quality_report.promoted_station_attachment_gap_details,
     )?;
     write_json(
+        &quality_dir.join("authority-attachment-coverage-clusters.json"),
+        &quality_report.authority_attachment_coverage_clusters,
+    )?;
+    write_json(
         &quality_dir.join("authority-detour-corridors.json"),
         &quality_report.authority_detour_corridors,
     )?;
@@ -1166,6 +1190,8 @@ fn build_quality_report(
         plain_name_fallback_gap_registry_candidates,
         &authority_networks,
     );
+    let authority_attachment_coverage_clusters =
+        build_authority_attachment_coverage_clusters(&promoted_station_attachment_gap_details);
     let authority_detour_corridors =
         build_authority_detour_corridor_records(&rail_authority_defect_details);
     let promoted_station_attachment_gap_count = promoted_domestic_authority_gap_details
@@ -1464,6 +1490,7 @@ fn build_quality_report(
         shape_plausibility_defect_details,
         promoted_domestic_authority_gap_details,
         promoted_station_attachment_gap_details,
+        authority_attachment_coverage_clusters,
         authority_detour_corridors,
         plain_name_fallback_gap_registry_candidates:
             plain_name_fallback_gap_registry_candidates.to_vec(),
@@ -2041,6 +2068,110 @@ fn build_promoted_station_attachment_gap_details(
             })
         })
         .collect()
+}
+
+fn build_authority_attachment_coverage_clusters(
+    promoted_station_attachment_gap_details: &[PipelineStationAttachmentAuditRecord],
+) -> Vec<PipelineAuthorityAttachmentCoverageClusterRecord> {
+    #[derive(Default)]
+    struct ClusterAccumulator {
+        city_layer_status: String,
+        registry_resolution_status: String,
+        attachment_surface: String,
+        route_count: u64,
+        counterpart_examples: BTreeSet<String>,
+        min_direct_distance_km: u32,
+        max_direct_distance_km: u32,
+        local_candidate_distances_m: Vec<u32>,
+        expanded_candidate_distances_m: Vec<u32>,
+    }
+
+    let mut grouped = BTreeMap::<(String, String, aetrain_domain::CityId, String), ClusterAccumulator>::new();
+    for record in promoted_station_attachment_gap_details {
+        for side in [
+            (
+                &record.from_city_id,
+                &record.from_display_name,
+                &record.from_city_layer_status,
+                &record.from_registry_resolution_status,
+                &record.from_attachment_surface,
+                &record.from_local_candidate_distances_m,
+                &record.from_expanded_candidate_distances_m,
+                &record.to_display_name,
+            ),
+            (
+                &record.to_city_id,
+                &record.to_display_name,
+                &record.to_city_layer_status,
+                &record.to_registry_resolution_status,
+                &record.to_attachment_surface,
+                &record.to_local_candidate_distances_m,
+                &record.to_expanded_candidate_distances_m,
+                &record.from_display_name,
+            ),
+        ] {
+            if side.4 != "no_authority_candidates" {
+                continue;
+            }
+            let key = (
+                record.source_id.clone(),
+                record.country_code.clone(),
+                side.0.clone(),
+                side.1.clone(),
+            );
+            let entry = grouped.entry(key).or_insert_with(|| ClusterAccumulator {
+                city_layer_status: side.2.clone(),
+                registry_resolution_status: side.3.clone(),
+                attachment_surface: side.4.clone(),
+                route_count: 0,
+                counterpart_examples: BTreeSet::new(),
+                min_direct_distance_km: record.direct_distance_km,
+                max_direct_distance_km: record.direct_distance_km,
+                local_candidate_distances_m: side.5.clone(),
+                expanded_candidate_distances_m: side.6.clone(),
+            });
+            entry.route_count += 1;
+            entry.counterpart_examples.insert(side.7.clone());
+            entry.min_direct_distance_km = entry.min_direct_distance_km.min(record.direct_distance_km);
+            entry.max_direct_distance_km = entry.max_direct_distance_km.max(record.direct_distance_km);
+        }
+    }
+
+    let mut clusters = grouped
+        .into_iter()
+        .map(|((source_id, country_code, city_id, display_name), entry)| {
+            let suggested_action = match entry.city_layer_status.as_str() {
+                "authoritative_city" => "expand_authority_source_coverage",
+                "fallback_gap_plain_name_singleton" => "expand_registry_or_authority_coverage",
+                "fallback_gap_pseudo_city" => "review_city_layer_before_authority_expansion",
+                _ => "review_authority_attachment_gap",
+            };
+            PipelineAuthorityAttachmentCoverageClusterRecord {
+                source_id,
+                country_code,
+                city_id,
+                display_name,
+                city_layer_status: entry.city_layer_status,
+                registry_resolution_status: entry.registry_resolution_status,
+                attachment_surface: entry.attachment_surface,
+                route_count: entry.route_count,
+                counterpart_examples: entry.counterpart_examples.into_iter().take(5).collect(),
+                min_direct_distance_km: entry.min_direct_distance_km,
+                max_direct_distance_km: entry.max_direct_distance_km,
+                local_candidate_distances_m: entry.local_candidate_distances_m,
+                expanded_candidate_distances_m: entry.expanded_candidate_distances_m,
+                suggested_action: suggested_action.to_string(),
+            }
+        })
+        .collect::<Vec<_>>();
+    clusters.sort_by(|left, right| {
+        right
+            .route_count
+            .cmp(&left.route_count)
+            .then_with(|| left.display_name.cmp(&right.display_name))
+            .then_with(|| left.city_id.cmp(&right.city_id))
+    });
+    clusters
 }
 
 fn classify_city_layer_status(
@@ -8348,6 +8479,64 @@ mod tests {
             classify_attachment_surface(&[80], &[80, 120]),
             "local_candidates_available"
         );
+    }
+
+    #[test]
+    fn authority_attachment_coverage_clusters_group_no_candidate_cities() {
+        let records = vec![
+            PipelineStationAttachmentAuditRecord {
+                source_id: "sncf-fr-rfn-lines".to_string(),
+                country_code: "FR".to_string(),
+                from_city_id: CityId::new("arcachon-fr-q1").expect("valid city id"),
+                from_display_name: "Arcachon".to_string(),
+                to_city_id: CityId::new("bordeaux-fr-q2").expect("valid city id"),
+                to_display_name: "Bordeaux".to_string(),
+                direct_distance_km: 50,
+                duration_min: Some(45),
+                from_city_layer_status: "authoritative_city".to_string(),
+                to_city_layer_status: "authoritative_city".to_string(),
+                from_registry_resolution_status: "not_applicable".to_string(),
+                to_registry_resolution_status: "not_applicable".to_string(),
+                from_attachment_surface: "no_authority_candidates".to_string(),
+                to_attachment_surface: "local_candidates_available".to_string(),
+                from_local_candidate_distances_m: Vec::new(),
+                to_local_candidate_distances_m: vec![100],
+                from_expanded_candidate_distances_m: Vec::new(),
+                to_expanded_candidate_distances_m: vec![100, 150],
+                provenance: Vec::new(),
+            },
+            PipelineStationAttachmentAuditRecord {
+                source_id: "sncf-fr-rfn-lines".to_string(),
+                country_code: "FR".to_string(),
+                from_city_id: CityId::new("arcachon-fr-q1").expect("valid city id"),
+                from_display_name: "Arcachon".to_string(),
+                to_city_id: CityId::new("la-teste-fr-q3").expect("valid city id"),
+                to_display_name: "La Teste-de-Buch".to_string(),
+                direct_distance_km: 4,
+                duration_min: Some(8),
+                from_city_layer_status: "authoritative_city".to_string(),
+                to_city_layer_status: "authoritative_city".to_string(),
+                from_registry_resolution_status: "not_applicable".to_string(),
+                to_registry_resolution_status: "not_applicable".to_string(),
+                from_attachment_surface: "no_authority_candidates".to_string(),
+                to_attachment_surface: "no_authority_candidates".to_string(),
+                from_local_candidate_distances_m: Vec::new(),
+                to_local_candidate_distances_m: Vec::new(),
+                from_expanded_candidate_distances_m: Vec::new(),
+                to_expanded_candidate_distances_m: Vec::new(),
+                provenance: Vec::new(),
+            },
+        ];
+
+        let clusters = build_authority_attachment_coverage_clusters(&records);
+
+        assert_eq!(clusters.len(), 2);
+        assert_eq!(clusters[0].display_name, "Arcachon");
+        assert_eq!(clusters[0].route_count, 2);
+        assert_eq!(clusters[0].suggested_action, "expand_authority_source_coverage");
+        assert_eq!(clusters[0].counterpart_examples.len(), 2);
+        assert_eq!(clusters[1].display_name, "La Teste-de-Buch");
+        assert_eq!(clusters[1].route_count, 1);
     }
 
     #[test]
