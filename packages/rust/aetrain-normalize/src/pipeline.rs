@@ -92,6 +92,7 @@ pub struct AdapterBuildArtifacts {
     pub edge_geometries: Option<EdgeGeometryArtifact>,
     pub station_mappings: Option<StationMappingReport>,
     pub rejected_city_candidates: Option<crate::RejectedCityCandidateReport>,
+    pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
     pub duplicates: DuplicateCityReport,
     pub issues: Vec<NormalizationIssue>,
     pub counters: BTreeMap<String, u64>,
@@ -304,6 +305,16 @@ pub struct PipelinePromotedDomesticAuthorityGapRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineQuarantinedFallbackGapCityRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub country_code: String,
+    pub station_display_names: Vec<String>,
+    pub classification: String,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -326,6 +337,7 @@ pub struct PipelineQualityReport {
     pub rail_authority_defect_details: Vec<PipelineRailAuthorityDefectRecord>,
     pub shape_plausibility_defect_details: Vec<PipelineShapePlausibilityDefectRecord>,
     pub promoted_domestic_authority_gap_details: Vec<PipelinePromotedDomesticAuthorityGapRecord>,
+    pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -608,6 +620,7 @@ fn export_pipeline_target(
         &artifacts.canonical.edges,
         &resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?,
         artifacts.station_mappings.as_ref(),
+        &artifacts.quarantined_fallback_gap_cities,
         &artifacts.counters,
         artifacts.duplicates.candidates.len(),
         authority_registry.as_ref(),
@@ -751,6 +764,10 @@ fn export_pipeline_target(
         &quality_dir.join("promoted-domestic-authority-gap-details.json"),
         &quality_report.promoted_domestic_authority_gap_details,
     )?;
+    write_json(
+        &quality_dir.join("quarantined-fallback-gap-cities.json"),
+        &quality_report.quarantined_fallback_gap_cities,
+    )?;
     Ok(artifact_manifest)
 }
 
@@ -853,6 +870,7 @@ fn build_quality_report(
     edges: &[aetrain_domain::TravelEdge],
     edge_geometries: &EdgeGeometryArtifact,
     station_mappings: Option<&StationMappingReport>,
+    quarantined_fallback_gap_cities: &[PipelineQuarantinedFallbackGapCityRecord],
     counters: &BTreeMap<String, u64>,
     duplicate_count: usize,
     authority_registry: Option<&GeometryAuthorityRegistry>,
@@ -1176,6 +1194,7 @@ fn build_quality_report(
         rail_authority_defect_details,
         shape_plausibility_defect_details,
         promoted_domestic_authority_gap_details,
+        quarantined_fallback_gap_cities: quarantined_fallback_gap_cities.to_vec(),
     }
 }
 
@@ -3015,7 +3034,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
             .count() as u64,
     );
     merged_cities.aliases = rebuild_alias_records(&merged_cities.cities);
-    let stations = merge_stations(
+    let mut stations = merge_stations(
         &dependency_inputs,
         &merged_cities.city_id_remap,
         request.target.id.as_str(),
@@ -3093,7 +3112,22 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         invalid_gtfs_shape_geometry_rejected_count,
     );
     insert_route_geometry_coverage_counters(&mut counters, &edge_geometries);
-    let station_mappings = merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
+    let mut station_mappings =
+        merge_station_mappings(&dependency_inputs, &merged_cities.city_id_remap);
+    let quarantined_fallback_gap_cities = quarantine_unresolved_fallback_gap_pseudo_cities(
+        &mut merged_cities.cities,
+        &mut merged_cities.aliases,
+        &mut stations,
+        &mut edges,
+        &mut edge_geometries,
+        &mut station_mappings,
+        request.target.id.as_str(),
+        &mut merged_cities.issues,
+    );
+    counters.insert(
+        "quarantined_fallback_gap_city_count".to_string(),
+        quarantined_fallback_gap_cities.len() as u64,
+    );
     apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
     counters.insert(
         "residual_station_like_city_count".to_string(),
@@ -3138,6 +3172,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         edge_geometries: Some(edge_geometries),
         station_mappings: Some(station_mappings),
         rejected_city_candidates: Some(rejected_city_candidates),
+        quarantined_fallback_gap_cities,
         duplicates,
         issues,
         counters,
@@ -4467,15 +4502,20 @@ fn cleanup_station_like_and_zz_residual_cities(
             continue;
         }
 
-        if is_fallback_reference_gap_singleton_city(city, mapping_by_city.get(&city.city_id))
-            && let Some(parent) = best_parent_for_fallback_gap_alias_match(
-                city,
-                &snapshot,
-                mapping_by_city.get(&city.city_id),
-                &effective_country_by_city,
-                &parent_match_keys_by_city,
-            )
-        {
+        if is_fallback_reference_gap_singleton_city(
+            city,
+            mapping_by_city
+                .get(&city.city_id)
+                .map(|records| records.as_slice()),
+        ) && let Some(parent) = best_parent_for_fallback_gap_alias_match(
+            city,
+            &snapshot,
+            mapping_by_city
+                .get(&city.city_id)
+                .map(|records| records.as_slice()),
+            &effective_country_by_city,
+            &parent_match_keys_by_city,
+        ) {
             remap.insert(city.city_id.clone(), parent.city_id.clone());
             issues.push(NormalizationIssue {
                 severity: crate::IssueSeverity::Info,
@@ -4495,7 +4535,12 @@ fn cleanup_station_like_and_zz_residual_cities(
 
         let effective_country = infer_country_code_from_station_mappings(city, station_mappings)
             .unwrap_or_else(|| city.country_code.clone());
-        let child_keys = station_like_parent_keys(city, mapping_by_city.get(&city.city_id));
+        let child_keys = station_like_parent_keys(
+            city,
+            mapping_by_city
+                .get(&city.city_id)
+                .map(|records| records.as_slice()),
+        );
         let allow_nearby_fallback = starts_with_urban_platform_label(&city.display_name);
         let mut candidates = snapshot
             .iter()
@@ -4552,7 +4597,7 @@ fn effective_city_country_code(
 
 fn is_fallback_reference_gap_singleton_city(
     city: &aetrain_domain::City,
-    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+    station_records: Option<&[&crate::StationMappingRecord]>,
 ) -> bool {
     city.wikidata_qid.is_none()
         && city.station_ids.len() == 1
@@ -4567,7 +4612,7 @@ fn is_fallback_reference_gap_singleton_city(
 fn best_parent_for_fallback_gap_alias_match<'a>(
     city: &aetrain_domain::City,
     snapshot: &'a [aetrain_domain::City],
-    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+    station_records: Option<&[&crate::StationMappingRecord]>,
     effective_country_by_city: &BTreeMap<aetrain_domain::CityId, String>,
     parent_match_keys_by_city: &BTreeMap<aetrain_domain::CityId, BTreeSet<String>>,
 ) -> Option<&'a aetrain_domain::City> {
@@ -4621,6 +4666,156 @@ fn fallback_gap_parent_match_score(city: &aetrain_domain::City) -> (u8, usize, u
         city.station_ids.len(),
         city.aliases.len(),
     )
+}
+
+fn quarantine_unresolved_fallback_gap_pseudo_cities(
+    cities: &mut Vec<aetrain_domain::City>,
+    aliases: &mut Vec<aetrain_dataset::AliasRecord>,
+    stations: &mut Vec<aetrain_domain::Station>,
+    edges: &mut Vec<aetrain_domain::TravelEdge>,
+    edge_geometries: &mut EdgeGeometryArtifact,
+    station_mappings: &mut StationMappingReport,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Vec<PipelineQuarantinedFallbackGapCityRecord> {
+    let mapping_by_city = station_mappings.records.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(),
+        |mut acc, record| {
+            acc.entry(record.city_id.clone()).or_default().push(record);
+            acc
+        },
+    );
+
+    let quarantined = cities
+        .iter()
+        .filter_map(|city| {
+            let records = mapping_by_city.get(&city.city_id)?;
+            classify_quarantined_fallback_gap_pseudo_city(city, records).map(
+                |(classification, suggested_action)| PipelineQuarantinedFallbackGapCityRecord {
+                    city_id: city.city_id.clone(),
+                    display_name: city.display_name.clone(),
+                    country_code: city.country_code.clone(),
+                    station_display_names: records
+                        .iter()
+                        .map(|record| record.station_display_name.clone())
+                        .collect(),
+                    classification: classification.to_string(),
+                    suggested_action: suggested_action.to_string(),
+                },
+            )
+        })
+        .collect::<Vec<_>>();
+
+    if quarantined.is_empty() {
+        return quarantined;
+    }
+
+    let quarantined_city_ids = quarantined
+        .iter()
+        .map(|record| record.city_id.clone())
+        .collect::<BTreeSet<_>>();
+    for record in &quarantined {
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Warning,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: record.city_id.to_string(),
+            message: format!(
+                "quarantined unresolved fallback-gap pseudo-city {} ({})",
+                record.display_name, record.classification
+            ),
+        });
+    }
+
+    cities.retain(|city| !quarantined_city_ids.contains(&city.city_id));
+    aliases.retain(|alias| !quarantined_city_ids.contains(&alias.city_id));
+    stations.retain(|station| !quarantined_city_ids.contains(&station.city_id));
+    edges.retain(|edge| {
+        !quarantined_city_ids.contains(&edge.from_city_id)
+            && !quarantined_city_ids.contains(&edge.to_city_id)
+    });
+    edge_geometries.geometries.retain(|geometry| {
+        !quarantined_city_ids.contains(&geometry.from_city_id)
+            && !quarantined_city_ids.contains(&geometry.to_city_id)
+    });
+    station_mappings
+        .records
+        .retain(|record| !quarantined_city_ids.contains(&record.city_id));
+
+    *aliases = rebuild_alias_records(cities);
+    quarantined
+}
+
+fn classify_quarantined_fallback_gap_pseudo_city(
+    city: &aetrain_domain::City,
+    station_records: &[&crate::StationMappingRecord],
+) -> Option<(&'static str, &'static str)> {
+    if !is_fallback_reference_gap_singleton_city(city, Some(station_records)) {
+        return None;
+    }
+
+    let station_names = station_records
+        .iter()
+        .map(|record| record.station_display_name.as_str())
+        .collect::<Vec<_>>();
+    if station_names
+        .iter()
+        .any(|name| fallback_gap_station_name_has_separator(name))
+    {
+        return Some((
+            "fallback_gap_multi_locality_stop_label",
+            "keep as station only until registry coverage provides an authoritative parent municipality",
+        ));
+    }
+    if station_names
+        .iter()
+        .any(|name| fallback_gap_station_name_has_local_stop_qualifier(name))
+        || fallback_gap_station_name_has_local_stop_qualifier(&city.display_name)
+    {
+        return Some((
+            "fallback_gap_local_stop_label",
+            "keep as station only until registry coverage provides an authoritative parent municipality",
+        ));
+    }
+
+    None
+}
+
+fn fallback_gap_station_name_has_separator(value: &str) -> bool {
+    value.contains(" - ")
+}
+
+fn fallback_gap_station_name_has_local_stop_qualifier(value: &str) -> bool {
+    let normalized = normalize_name(value);
+    let tokens = normalized.split_whitespace().collect::<Vec<_>>();
+    tokens.iter().any(|token| {
+        matches!(
+            *token,
+            "abri"
+                | "bondy"
+                | "centre"
+                | "cimetiere"
+                | "croisement"
+                | "eglise"
+                | "feuillee"
+                | "gare"
+                | "lac"
+                | "lotissement"
+                | "mairie"
+                | "maison"
+                | "parking"
+                | "place"
+                | "pont"
+                | "quai"
+                | "rond"
+                | "route"
+                | "routiere"
+                | "salle"
+                | "stade"
+                | "usine"
+                | "vieux"
+                | "village"
+        )
+    }) || normalized.contains("saint anne")
 }
 
 fn cleaned_residual_city_display_name(
@@ -5130,7 +5325,7 @@ fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
 
 fn station_like_parent_keys(
     city: &aetrain_domain::City,
-    station_records: Option<&Vec<&crate::StationMappingRecord>>,
+    station_records: Option<&[&crate::StationMappingRecord]>,
 ) -> BTreeSet<String> {
     let mut keys = BTreeSet::new();
     let mut names = vec![city.display_name.clone()];
@@ -5773,6 +5968,7 @@ impl PipelineAdapter for SncfAdapter {
             edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
             rejected_city_candidates: Some(output.rejected_city_candidates),
+            quarantined_fallback_gap_cities: Vec::new(),
             duplicates: output.duplicates,
             issues: output.issues,
             counters,
@@ -5843,6 +6039,7 @@ impl PipelineAdapter for GtfsBasicAdapter {
             edge_geometries: Some(output.edge_geometries),
             station_mappings: Some(output.station_mappings),
             rejected_city_candidates: Some(output.rejected_city_candidates),
+            quarantined_fallback_gap_cities: Vec::new(),
             duplicates: output.duplicates,
             issues: output.issues,
             counters,
@@ -7467,6 +7664,7 @@ mod tests {
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
             None,
+            &[],
             &counters,
             0,
             None,
@@ -7661,6 +7859,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &counters,
             0,
             None,
@@ -7771,6 +7970,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &BTreeMap::new(),
             0,
             Some(&registry),
@@ -7864,6 +8064,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &BTreeMap::new(),
             0,
             None,
@@ -8282,6 +8483,7 @@ mod tests {
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
             None,
+            &[],
             &counters,
             0,
             None,
