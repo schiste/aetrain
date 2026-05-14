@@ -30,6 +30,14 @@ Manifest structure:
 - `[[source]]`: a raw feed or supplementary dataset with fetch metadata and
   normalization role
 
+Aggregate targets may also declare:
+
+- `registry_overlay_path`: registry-backed city authority used during
+  aggregation
+- `geometry_authority_registry_path`: the infrastructure-geometry authority
+  registry that defines which countries and corridors are merely tracked versus
+  promoted and held to zero-regression gates
+
 The `role` field matters once a target has more than one source of the same
 kind. Adapters should resolve sources by declared role such as `schedule` or
 `stations_reference`, not by positional assumptions.

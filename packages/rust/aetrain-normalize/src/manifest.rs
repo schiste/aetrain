@@ -109,6 +109,8 @@ pub struct TargetDefinition {
     #[serde(default)]
     pub registry_overlay_path: Option<String>,
     #[serde(default)]
+    pub geometry_authority_registry_path: Option<String>,
+    #[serde(default)]
     pub notes: Option<String>,
 }
 
@@ -123,6 +125,102 @@ pub struct SourceManifest {
     pub sources: Vec<SourceDefinition>,
     #[serde(rename = "target", default)]
     pub targets: Vec<TargetDefinition>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GeometryAuthorityStatus {
+    Planned,
+    Ingested,
+    TopologyClean,
+    ProductionReady,
+}
+
+impl GeometryAuthorityStatus {
+    pub fn is_promoted(&self) -> bool {
+        matches!(self, Self::ProductionReady)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GeometryAuthorityLoader {
+    SncfRfnGeojson,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CountryGeometryAuthorityDefinition {
+    pub country_code: String,
+    #[serde(default)]
+    pub source_id: Option<String>,
+    #[serde(default)]
+    pub loader: Option<GeometryAuthorityLoader>,
+    pub status: GeometryAuthorityStatus,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CorridorGeometryAuthorityDefinition {
+    pub corridor_id: String,
+    pub from_country_code: String,
+    pub to_country_code: String,
+    #[serde(default)]
+    pub source_id: Option<String>,
+    #[serde(default)]
+    pub loader: Option<GeometryAuthorityLoader>,
+    pub status: GeometryAuthorityStatus,
+    #[serde(default)]
+    pub allow_shape_fallback: bool,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GeometryAuthorityRegistry {
+    pub dataset_id: String,
+    pub schema_version: u16,
+    pub description: String,
+    #[serde(rename = "country", default)]
+    pub countries: Vec<CountryGeometryAuthorityDefinition>,
+    #[serde(rename = "corridor", default)]
+    pub corridors: Vec<CorridorGeometryAuthorityDefinition>,
+}
+
+impl GeometryAuthorityRegistry {
+    pub fn load(path: &Path) -> Result<Self> {
+        let raw = fs::read_to_string(path)
+            .with_context(|| format!("failed to read authority registry {}", path.display()))?;
+        toml::from_str(&raw)
+            .with_context(|| format!("failed to parse authority registry {}", path.display()))
+    }
+
+    pub fn country(&self, country_code: &str) -> Option<&CountryGeometryAuthorityDefinition> {
+        self.countries
+            .iter()
+            .find(|entry| entry.country_code.eq_ignore_ascii_case(country_code))
+    }
+
+    pub fn corridor(
+        &self,
+        left_country_code: &str,
+        right_country_code: &str,
+    ) -> Option<&CorridorGeometryAuthorityDefinition> {
+        self.corridors.iter().find(|entry| {
+            (entry
+                .from_country_code
+                .eq_ignore_ascii_case(left_country_code)
+                && entry
+                    .to_country_code
+                    .eq_ignore_ascii_case(right_country_code))
+                || (entry
+                    .from_country_code
+                    .eq_ignore_ascii_case(right_country_code)
+                    && entry
+                        .to_country_code
+                        .eq_ignore_ascii_case(left_country_code))
+        })
+    }
 }
 
 impl SourceManifest {
@@ -425,6 +523,7 @@ mod tests {
                     canonical_export: true,
                     web_debug_export: true,
                     registry_overlay_path: None,
+                    geometry_authority_registry_path: None,
                     notes: None,
                 },
                 TargetDefinition {
@@ -436,6 +535,7 @@ mod tests {
                     canonical_export: true,
                     web_debug_export: true,
                     registry_overlay_path: None,
+                    geometry_authority_registry_path: None,
                     notes: None,
                 },
             ],
@@ -466,6 +566,7 @@ mod tests {
                     canonical_export: true,
                     web_debug_export: true,
                     registry_overlay_path: None,
+                    geometry_authority_registry_path: None,
                     notes: None,
                 },
                 TargetDefinition {
@@ -477,6 +578,7 @@ mod tests {
                     canonical_export: true,
                     web_debug_export: true,
                     registry_overlay_path: None,
+                    geometry_authority_registry_path: None,
                     notes: None,
                 },
                 TargetDefinition {
@@ -488,6 +590,7 @@ mod tests {
                     canonical_export: true,
                     web_debug_export: true,
                     registry_overlay_path: None,
+                    geometry_authority_registry_path: None,
                     notes: None,
                 },
             ],

@@ -9,9 +9,10 @@ pub use fetch::{
     load_source_state_registry, resolve_cached_sources,
 };
 pub use manifest::{
-    DirectoryListingStep, IssueSeverity, ManualCityOverride, ManualOverrideRegistry,
-    NormalizationIssue, SourceDefinition, SourceKind, SourceManifest, SourceResolver,
-    TargetDefinition,
+    CorridorGeometryAuthorityDefinition, CountryGeometryAuthorityDefinition, DirectoryListingStep,
+    GeometryAuthorityLoader, GeometryAuthorityRegistry, GeometryAuthorityStatus, IssueSeverity,
+    ManualCityOverride, ManualOverrideRegistry, NormalizationIssue, SourceDefinition, SourceKind,
+    SourceManifest, SourceResolver, TargetDefinition,
 };
 pub use pipeline::{
     AdapterBuildArtifacts, AdapterBuildRequest, PipelineAdapter, PipelineArtifactManifest,

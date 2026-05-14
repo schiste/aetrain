@@ -29,6 +29,7 @@ active = true
 canonical_export = true
 web_debug_export = true
 registry_overlay_path = "../registry/fixtures/fr-wikidata-20/canonical/bundle.json"
+geometry_authority_registry_path = "geometry-authorities.toml"
 notes = "Aggregate Europe target built from the currently validated national rail targets."
 
 [[target]]

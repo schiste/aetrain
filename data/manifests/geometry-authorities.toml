@@ -1,0 +1,70 @@
+dataset_id = "aetrain-geometry-authorities"
+schema_version = 1
+description = "Authority registry for infrastructure-backed route geometry coverage and promotion policy."
+
+[[country]]
+country_code = "FR"
+source_id = "sncf-fr-rfn-lines"
+loader = "sncf_rfn_geojson"
+status = "production_ready"
+notes = "French domestic rail authority backed by SNCF RFN line geometry. Domestic straight lines and rail-authority rejections are treated as regressions."
+
+[[country]]
+country_code = "CH"
+status = "planned"
+notes = "Swiss domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
+
+[[country]]
+country_code = "ES"
+status = "planned"
+notes = "Spanish domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
+
+[[country]]
+country_code = "AT"
+status = "planned"
+notes = "Austrian domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
+
+[[country]]
+country_code = "DE"
+status = "planned"
+notes = "German residual domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
+
+[[corridor]]
+corridor_id = "CH-DE"
+from_country_code = "CH"
+to_country_code = "DE"
+status = "planned"
+allow_shape_fallback = true
+notes = "Swiss-German cross-border corridor backlog. No promoted infrastructure authority yet."
+
+[[corridor]]
+corridor_id = "CH-FR"
+from_country_code = "CH"
+to_country_code = "FR"
+status = "planned"
+allow_shape_fallback = true
+notes = "Swiss-French cross-border corridor backlog. No promoted infrastructure authority yet."
+
+[[corridor]]
+corridor_id = "CH-IT"
+from_country_code = "CH"
+to_country_code = "IT"
+status = "planned"
+allow_shape_fallback = true
+notes = "Swiss-Italian cross-border corridor backlog. No promoted infrastructure authority yet."
+
+[[corridor]]
+corridor_id = "BE-FR"
+from_country_code = "BE"
+to_country_code = "FR"
+status = "planned"
+allow_shape_fallback = true
+notes = "Belgian-French cross-border corridor backlog. No promoted infrastructure authority yet."
+
+[[corridor]]
+corridor_id = "ES-FR"
+from_country_code = "ES"
+to_country_code = "FR"
+status = "planned"
+allow_shape_fallback = true
+notes = "Spanish-French cross-border corridor backlog. No promoted infrastructure authority yet."
