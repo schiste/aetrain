@@ -342,11 +342,16 @@ pub fn build_sncf_dataset(
         overrides,
         &mut issues,
     )?;
+    let city_country_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city.country_code.clone()))
+        .collect::<HashMap<_, _>>();
 
     let (edges, edge_geometries) = build_city_edges(
         BuildCityEdgesInputs {
             gtfs_path,
             gtfs_source_id,
+            source_country_code: "FR",
             trip_descriptors: &trip_descriptors,
             shapes_by_id: &shapes_by_id,
             rail_geometry_network: rail_geometry_network.as_ref(),
@@ -354,6 +359,7 @@ pub fn build_sncf_dataset(
             stop_to_station_key: &stop_to_station_key,
             station_locations: &station_locations,
             station_key_to_city: &station_key_to_city,
+            city_country_by_id: &city_country_by_id,
             station_key_confidence: &station_key_confidence,
         },
         &mut issues,
@@ -445,10 +451,15 @@ pub fn build_gtfs_basic_dataset(
         overrides,
         &mut issues,
     )?;
+    let city_country_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city.country_code.clone()))
+        .collect::<HashMap<_, _>>();
     let (edges, edge_geometries) = build_city_edges(
         BuildCityEdgesInputs {
             gtfs_path,
             gtfs_source_id,
+            source_country_code: country_code,
             trip_descriptors: &trip_descriptors,
             shapes_by_id: &shapes_by_id,
             rail_geometry_network: None,
@@ -456,6 +467,7 @@ pub fn build_gtfs_basic_dataset(
             stop_to_station_key: &stop_to_station_key,
             station_locations: &station_locations,
             station_key_to_city: &station_key_to_city,
+            city_country_by_id: &city_country_by_id,
             station_key_confidence: &station_key_confidence,
         },
         &mut issues,
@@ -1299,6 +1311,7 @@ fn normalize_gtfs_only_stations(
 struct BuildCityEdgesInputs<'a> {
     gtfs_path: &'a Path,
     gtfs_source_id: &'a str,
+    source_country_code: &'a str,
     trip_descriptors: &'a HashMap<String, TripDescriptor>,
     shapes_by_id: &'a HashMap<String, Vec<GeoPoint>>,
     rail_geometry_network: Option<&'a RailGeometryNetwork>,
@@ -1306,6 +1319,7 @@ struct BuildCityEdgesInputs<'a> {
     stop_to_station_key: &'a HashMap<String, String>,
     station_locations: &'a HashMap<String, GeoPoint>,
     station_key_to_city: &'a HashMap<String, CityId>,
+    city_country_by_id: &'a HashMap<CityId, String>,
     station_key_confidence: &'a HashMap<String, u8>,
 }
 
@@ -1316,6 +1330,7 @@ fn build_city_edges(
     let BuildCityEdgesInputs {
         gtfs_path,
         gtfs_source_id,
+        source_country_code,
         trip_descriptors,
         shapes_by_id,
         rail_geometry_network,
@@ -1323,6 +1338,7 @@ fn build_city_edges(
         stop_to_station_key,
         station_locations,
         station_key_to_city,
+        city_country_by_id,
         station_key_confidence,
     } = inputs;
     let file =
@@ -1392,6 +1408,52 @@ fn build_city_edges(
                 continue;
             }
             let duration_min = duration_seconds.div_ceil(60);
+            if direct_edge_speed_is_physically_impossible(previous.location, location, duration_min)
+            {
+                issues.push(NormalizationIssue {
+                    severity: IssueSeverity::Warning,
+                    source_id: gtfs_source_id.to_string(),
+                    entity_ref: format!("{}->{}", previous.city_id, city_id),
+                    message: format!(
+                        "rejected impossible direct edge {} -> {} from {}: {}km in {}min",
+                        previous.city_id,
+                        city_id,
+                        gtfs_source_id,
+                        (haversine_meters(previous.location, location) / 1_000.0).round() as u32,
+                        duration_min
+                    ),
+                });
+                continue;
+            }
+            let previous_country_code = city_country_by_id
+                .get(&previous.city_id)
+                .map(String::as_str)
+                .unwrap_or(source_country_code);
+            let current_country_code = city_country_by_id
+                .get(city_id)
+                .map(String::as_str)
+                .unwrap_or(source_country_code);
+            if is_foreign_domestic_feed_leakage(
+                source_country_code,
+                previous_country_code,
+                current_country_code,
+            ) {
+                issues.push(NormalizationIssue {
+                    severity: IssueSeverity::Warning,
+                    source_id: gtfs_source_id.to_string(),
+                    entity_ref: format!("{}->{}", previous.city_id, city_id),
+                    message: format!(
+                        "rejected foreign-domestic edge {} -> {} from {}: {} -> {} while source country is {}",
+                        previous.city_id,
+                        city_id,
+                        gtfs_source_id,
+                        previous_country_code,
+                        current_country_code,
+                        source_country_code
+                    ),
+                });
+                continue;
+            }
             let confidence = previous
                 .station_key
                 .as_str()
@@ -1535,6 +1597,7 @@ fn build_edge_geometry(
 
     if let Some(shape_points) = ctx.shape_points
         && let Some(points) = extract_shape_segment(shape_points, from_location, to_location)
+        && route_geometry_distance_is_plausible(&points, from_location, to_location)
     {
         return (points, EdgeGeometrySource::GtfsShapeSegment, Vec::new());
     }
@@ -1583,6 +1646,29 @@ fn max_plausible_route_geometry_meters(direct_meters: f64) -> f64 {
         return direct_meters * 3.0;
     }
     direct_meters * 2.5
+}
+
+fn direct_edge_speed_is_physically_impossible(
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+    duration_min: u32,
+) -> bool {
+    if duration_min == 0 {
+        return true;
+    }
+    let direct_km = haversine_meters(from_location, to_location) / 1_000.0;
+    let implied_speed_kmh = direct_km / (duration_min as f64 / 60.0);
+    implied_speed_kmh > 380.0
+}
+
+fn is_foreign_domestic_feed_leakage(
+    source_country_code: &str,
+    from_country_code: &str,
+    to_country_code: &str,
+) -> bool {
+    from_country_code == to_country_code
+        && from_country_code != "ZZ"
+        && !from_country_code.eq_ignore_ascii_case(source_country_code)
 }
 
 fn extract_shape_segment(
@@ -3952,7 +4038,7 @@ T1,10:30:00,10:35:00,AT:SZG,2\n",
                     "stop_times.txt",
                     "trip_id,arrival_time,departure_time,stop_id,stop_sequence                                                                                             \n\
 1026S27616C8b,11:28:00,11:31:00,12006,010                                                                                                             \n\
-1026S27616C8b,11:35:00,11:35:00,12005,011                                                                                                             \n",
+1026S27616C8b,12:35:00,12:35:00,12005,011                                                                                                             \n",
                 ),
             ],
         )
@@ -4291,6 +4377,39 @@ ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
         let _ = fs::remove_file(zip_path);
         let _ = fs::remove_file(stations_csv_path);
         let _ = fs::remove_file(rail_geojson_path);
+    }
+
+    #[test]
+    fn rejects_impossible_direct_edge_speeds() {
+        assert!(direct_edge_speed_is_physically_impossible(
+            GeoPoint {
+                lat: 47.0,
+                lon: 2.0,
+            },
+            GeoPoint {
+                lat: 48.0,
+                lon: 2.0,
+            },
+            10,
+        ));
+        assert!(!direct_edge_speed_is_physically_impossible(
+            GeoPoint {
+                lat: 47.0,
+                lon: 2.0,
+            },
+            GeoPoint {
+                lat: 47.1,
+                lon: 2.0,
+            },
+            10,
+        ));
+    }
+
+    #[test]
+    fn rejects_foreign_domestic_feed_leakage() {
+        assert!(is_foreign_domestic_feed_leakage("CH", "DE", "DE"));
+        assert!(!is_foreign_domestic_feed_leakage("CH", "CH", "DE"));
+        assert!(!is_foreign_domestic_feed_leakage("CH", "ZZ", "ZZ"));
     }
 
     fn write_test_gtfs_zip(

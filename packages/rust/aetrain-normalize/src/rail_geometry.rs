@@ -60,10 +60,7 @@ impl RailGeometryNetwork {
             .and_then(Value::as_array)
             .context("GeoJSON payload is missing features[]")?;
 
-        let mut nodes = Vec::<GeoPoint>::new();
-        let mut adjacency = Vec::<Vec<GraphEdge>>::new();
-        let mut node_index_by_key = HashMap::<(i32, i32), usize>::new();
-        let mut node_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
+        let mut polylines = Vec::<Vec<GeoPoint>>::new();
 
         for feature in features {
             if !feature_is_active(feature.get("properties")) {
@@ -82,26 +79,14 @@ impl RailGeometryNetwork {
             match geometry_type {
                 "LineString" => {
                     if let Some(points) = parse_linestring_coordinates(coordinates) {
-                        add_polyline(
-                            &points,
-                            &mut nodes,
-                            &mut adjacency,
-                            &mut node_index_by_key,
-                            &mut node_indexes_by_bucket,
-                        );
+                        polylines.push(points);
                     }
                 }
                 "MultiLineString" => {
                     if let Some(lines) = coordinates.as_array() {
                         for line in lines {
                             if let Some(points) = parse_linestring_coordinates(line) {
-                                add_polyline(
-                                    &points,
-                                    &mut nodes,
-                                    &mut adjacency,
-                                    &mut node_index_by_key,
-                                    &mut node_indexes_by_bucket,
-                                );
+                                polylines.push(points);
                             }
                         }
                     }
@@ -110,7 +95,7 @@ impl RailGeometryNetwork {
             }
         }
 
-        Ok(Self { nodes, adjacency })
+        Ok(build_network_from_polylines(&polylines))
     }
 
     pub fn route_polyline(&self, from: GeoPoint, to: GeoPoint) -> Option<Vec<GeoPoint>> {
@@ -253,88 +238,155 @@ fn parse_linestring_coordinates(value: &Value) -> Option<Vec<GeoPoint>> {
     Some(points)
 }
 
-fn add_polyline(
-    points: &[GeoPoint],
-    nodes: &mut Vec<GeoPoint>,
-    adjacency: &mut Vec<Vec<GraphEdge>>,
-    node_index_by_key: &mut HashMap<(i32, i32), usize>,
-    node_indexes_by_bucket: &mut HashMap<(i32, i32), Vec<usize>>,
-) {
-    for window in points.windows(2) {
-        let from_index = get_or_insert_node(
-            window[0],
-            nodes,
-            adjacency,
-            node_index_by_key,
-            node_indexes_by_bucket,
-        );
-        let to_index = get_or_insert_node(
-            window[1],
-            nodes,
-            adjacency,
-            node_index_by_key,
-            node_indexes_by_bucket,
-        );
-        if from_index == to_index {
+fn build_network_from_polylines(polylines: &[Vec<GeoPoint>]) -> RailGeometryNetwork {
+    let mut nodes = Vec::<GeoPoint>::new();
+    let mut adjacency = Vec::<Vec<GraphEdge>>::new();
+    let mut node_index_by_key = HashMap::<(i32, i32), usize>::new();
+    let mut endpoint_node_indexes = Vec::<usize>::new();
+
+    for points in polylines {
+        if points.len() < 2 {
             continue;
         }
 
-        let weight_meters = estimate_distance_meters(window[0], window[1]);
-        adjacency[from_index].push(GraphEdge {
-            target: to_index,
-            weight_meters,
-        });
-        adjacency[to_index].push(GraphEdge {
-            target: from_index,
-            weight_meters,
-        });
+        let first_index = get_or_insert_exact_node(
+            points[0],
+            &mut nodes,
+            &mut adjacency,
+            &mut node_index_by_key,
+        );
+        endpoint_node_indexes.push(first_index);
+        let last_index = get_or_insert_exact_node(
+            points[points.len() - 1],
+            &mut nodes,
+            &mut adjacency,
+            &mut node_index_by_key,
+        );
+        endpoint_node_indexes.push(last_index);
+
+        for window in points.windows(2) {
+            let from_index = get_or_insert_exact_node(
+                window[0],
+                &mut nodes,
+                &mut adjacency,
+                &mut node_index_by_key,
+            );
+            let to_index = get_or_insert_exact_node(
+                window[1],
+                &mut nodes,
+                &mut adjacency,
+                &mut node_index_by_key,
+            );
+            add_undirected_edge(&mut adjacency, from_index, to_index, window[0], window[1]);
+        }
+    }
+
+    add_endpoint_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
+
+    RailGeometryNetwork { nodes, adjacency }
+}
+
+fn add_undirected_edge(
+    adjacency: &mut [Vec<GraphEdge>],
+    from_index: usize,
+    to_index: usize,
+    from_point: GeoPoint,
+    to_point: GeoPoint,
+) {
+    if from_index == to_index {
+        return;
+    }
+
+    let weight_meters = estimate_distance_meters(from_point, to_point).max(1);
+    add_directed_edge(adjacency, from_index, to_index, weight_meters);
+    add_directed_edge(adjacency, to_index, from_index, weight_meters);
+}
+
+fn add_directed_edge(
+    adjacency: &mut [Vec<GraphEdge>],
+    from_index: usize,
+    to_index: usize,
+    weight_meters: u32,
+) {
+    if let Some(existing) = adjacency[from_index]
+        .iter_mut()
+        .find(|edge| edge.target == to_index)
+    {
+        if weight_meters < existing.weight_meters {
+            existing.weight_meters = weight_meters;
+        }
+        return;
+    }
+
+    adjacency[from_index].push(GraphEdge {
+        target: to_index,
+        weight_meters,
+    });
+}
+
+fn add_endpoint_stitch_edges(
+    nodes: &[GeoPoint],
+    adjacency: &mut [Vec<GraphEdge>],
+    endpoint_node_indexes: &[usize],
+) {
+    let mut node_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
+    for (index, point) in nodes.iter().enumerate() {
+        node_indexes_by_bucket
+            .entry(quantize_bucket_key(*point))
+            .or_default()
+            .push(index);
+    }
+
+    let mut stitched_pairs = HashMap::<(usize, usize), ()>::new();
+    for endpoint_index in endpoint_node_indexes {
+        let endpoint_index = *endpoint_index;
+        let endpoint = nodes[endpoint_index];
+        let bucket = quantize_bucket_key(endpoint);
+        for lat_bucket in (bucket.0 - 1)..=(bucket.0 + 1) {
+            for lon_bucket in (bucket.1 - 1)..=(bucket.1 + 1) {
+                let Some(candidate_indexes) = node_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
+                else {
+                    continue;
+                };
+                for candidate_index in candidate_indexes {
+                    if endpoint_index == *candidate_index {
+                        continue;
+                    }
+                    let distance = haversine_meters(endpoint, nodes[*candidate_index]);
+                    if distance > NODE_MERGE_TOLERANCE_METERS {
+                        continue;
+                    }
+                    let pair = if endpoint_index < *candidate_index {
+                        (endpoint_index, *candidate_index)
+                    } else {
+                        (*candidate_index, endpoint_index)
+                    };
+                    if stitched_pairs.insert(pair, ()).is_none() {
+                        let weight_meters = distance.round().max(1.0) as u32;
+                        add_directed_edge(adjacency, pair.0, pair.1, weight_meters);
+                        add_directed_edge(adjacency, pair.1, pair.0, weight_meters);
+                    }
+                }
+            }
+        }
     }
 }
 
-fn get_or_insert_node(
+fn get_or_insert_exact_node(
     point: GeoPoint,
     nodes: &mut Vec<GeoPoint>,
     adjacency: &mut Vec<Vec<GraphEdge>>,
     node_index_by_key: &mut HashMap<(i32, i32), usize>,
-    node_indexes_by_bucket: &mut HashMap<(i32, i32), Vec<usize>>,
 ) -> usize {
     let key = quantize_point_key(point);
     if let Some(index) = node_index_by_key.get(&key) {
         return *index;
     }
 
-    let bucket = quantize_bucket_key(point);
-    let mut nearest_existing = None::<(usize, f64)>;
-    for lat_bucket in (bucket.0 - 1)..=(bucket.0 + 1) {
-        for lon_bucket in (bucket.1 - 1)..=(bucket.1 + 1) {
-            let Some(candidates) = node_indexes_by_bucket.get(&(lat_bucket, lon_bucket)) else {
-                continue;
-            };
-            for candidate_index in candidates {
-                let distance = haversine_meters(nodes[*candidate_index], point);
-                if distance > NODE_MERGE_TOLERANCE_METERS {
-                    continue;
-                }
-                match nearest_existing {
-                    Some((_, best_distance)) if distance >= best_distance => {}
-                    _ => nearest_existing = Some((*candidate_index, distance)),
-                }
-            }
-        }
-    }
-    if let Some((index, _)) = nearest_existing {
-        node_index_by_key.insert(key, index);
-        return index;
-    }
-
     let index = nodes.len();
     nodes.push(point);
     adjacency.push(Vec::new());
     node_index_by_key.insert(key, index);
-    node_indexes_by_bucket
-        .entry(bucket)
-        .or_default()
-        .push(index);
     index
 }
 
@@ -481,6 +533,69 @@ mod tests {
             )
             .expect("route should exist through merged node");
         assert!(route.len() >= 3);
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn endpoint_stitching_connects_orleans_style_rfn_gap() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "569301"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [1.904759701091869, 47.90815419278686],
+          [1.905069390420707, 47.9105538218331],
+          [1.905275976552944, 47.91287325882416],
+          [1.911575763677136, 47.914670237997065]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "590000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [1.911902813190106, 47.9144978354483],
+          [1.947676804944898, 47.8200280941227]
+        ]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 47.907891,
+                    lon: 1.904242,
+                },
+                GeoPoint {
+                    lat: 47.819215,
+                    lon: 1.947581,
+                },
+            )
+            .expect("route should cross stitched RFN endpoint gap");
+
+        assert!(route.len() >= 4);
+        assert!(route.iter().any(|point| {
+            (point.lat - 47.914670237997065).abs() < 0.0001
+                && (point.lon - 1.911575763677136).abs() < 0.0001
+        }));
+        assert!(route.iter().any(|point| {
+            (point.lat - 47.9144978354483).abs() < 0.0001
+                && (point.lon - 1.911902813190106).abs() < 0.0001
+        }));
 
         let _ = fs::remove_file(path);
     }
