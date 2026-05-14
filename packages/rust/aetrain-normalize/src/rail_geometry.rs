@@ -1,6 +1,6 @@
 use std::{
     cmp::Ordering,
-    collections::{BinaryHeap, HashMap},
+    collections::{BinaryHeap, HashMap, HashSet},
     fs,
     path::Path,
 };
@@ -17,6 +17,8 @@ const NODE_BUCKET_SCALE: f64 = 1_000.0;
 const SNAP_CANDIDATE_LIMIT: usize = 8;
 const SNAP_LOCALITY_SLACK_METERS: u32 = 300;
 const MAX_SEGMENT_LENGTH_WITHOUT_VERTEX_METERS: u32 = 500;
+const COMPONENT_MICRO_STITCH_TOLERANCE_METERS: f64 = 60.0;
+const COMPONENT_ENDPOINT_STITCH_TOLERANCE_METERS: f64 = 150.0;
 
 #[derive(Clone, Debug)]
 pub struct RailGeometryNetwork {
@@ -160,10 +162,20 @@ impl RailGeometryNetwork {
             return None;
         }
 
+        self.best_route_polyline_for_candidates(from, to, &start_candidates, &end_candidates)
+    }
+
+    fn best_route_polyline_for_candidates(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+        start_candidates: &[(usize, u32)],
+        end_candidates: &[(usize, u32)],
+    ) -> Option<Vec<GeoPoint>> {
         let mut best_route = None::<(u32, Vec<GeoPoint>)>;
         let direct_distance = estimate_distance_meters(from, to);
-        for (start_node, start_distance) in &start_candidates {
-            for (end_node, end_distance) in &end_candidates {
+        for (start_node, start_distance) in start_candidates {
+            for (end_node, end_distance) in end_candidates {
                 if start_node == end_node && direct_distance > ENDPOINT_SNAP_DISTANCE_METERS as u32
                 {
                     continue;
@@ -355,6 +367,7 @@ fn build_network_from_polylines(polylines: &[Vec<GeoPoint>]) -> RailGeometryNetw
     }
 
     add_endpoint_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
+    add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
 
     RailGeometryNetwork { nodes, adjacency }
 }
@@ -447,6 +460,67 @@ fn add_endpoint_stitch_edges(
     }
 }
 
+fn add_component_stitch_edges(
+    nodes: &[GeoPoint],
+    adjacency: &mut [Vec<GraphEdge>],
+    endpoint_node_indexes: &[usize],
+) {
+    let endpoint_node_indexes = endpoint_node_indexes
+        .iter()
+        .copied()
+        .collect::<HashSet<_>>();
+    let components = connected_components(adjacency);
+    let mut node_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
+    for (index, point) in nodes.iter().enumerate() {
+        node_indexes_by_bucket
+            .entry(quantize_bucket_key(*point))
+            .or_default()
+            .push(index);
+    }
+
+    let mut stitched_pairs = HashSet::<(usize, usize)>::new();
+    for (node_index, point) in nodes.iter().enumerate() {
+        let bucket = quantize_bucket_key(*point);
+        for lat_bucket in (bucket.0 - 1)..=(bucket.0 + 1) {
+            for lon_bucket in (bucket.1 - 1)..=(bucket.1 + 1) {
+                let Some(candidate_indexes) = node_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
+                else {
+                    continue;
+                };
+                for candidate_index in candidate_indexes {
+                    if node_index == *candidate_index {
+                        continue;
+                    }
+                    if components[node_index] == components[*candidate_index] {
+                        continue;
+                    }
+                    let distance = haversine_meters(*point, nodes[*candidate_index]);
+                    let endpoint_involved = endpoint_node_indexes.contains(&node_index)
+                        || endpoint_node_indexes.contains(candidate_index);
+                    let tolerance = if endpoint_involved {
+                        COMPONENT_ENDPOINT_STITCH_TOLERANCE_METERS
+                    } else {
+                        COMPONENT_MICRO_STITCH_TOLERANCE_METERS
+                    };
+                    if distance > tolerance {
+                        continue;
+                    }
+                    let pair = if node_index < *candidate_index {
+                        (node_index, *candidate_index)
+                    } else {
+                        (*candidate_index, node_index)
+                    };
+                    if stitched_pairs.insert(pair) {
+                        let weight_meters = distance.round().max(1.0) as u32;
+                        add_directed_edge(adjacency, pair.0, pair.1, weight_meters);
+                        add_directed_edge(adjacency, pair.1, pair.0, weight_meters);
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn get_or_insert_exact_node(
     point: GeoPoint,
     nodes: &mut Vec<GeoPoint>,
@@ -477,6 +551,32 @@ fn quantize_bucket_key(point: GeoPoint) -> (i32, i32) {
         (point.lat * NODE_BUCKET_SCALE).floor() as i32,
         (point.lon * NODE_BUCKET_SCALE).floor() as i32,
     )
+}
+
+fn connected_components(adjacency: &[Vec<GraphEdge>]) -> Vec<usize> {
+    let mut components = vec![usize::MAX; adjacency.len()];
+    let mut next_component = 0usize;
+    let mut stack = Vec::<usize>::new();
+
+    for start in 0..adjacency.len() {
+        if components[start] != usize::MAX {
+            continue;
+        }
+        components[start] = next_component;
+        stack.push(start);
+        while let Some(node) = stack.pop() {
+            for edge in &adjacency[node] {
+                if components[edge.target] != usize::MAX {
+                    continue;
+                }
+                components[edge.target] = next_component;
+                stack.push(edge.target);
+            }
+        }
+        next_component += 1;
+    }
+
+    components
 }
 
 fn reconstruct_path(previous: &[usize], start: usize, end: usize) -> Vec<usize> {
@@ -757,6 +857,114 @@ mod tests {
             (point.lat - 47.9144978354483).abs() < 0.0001
                 && (point.lon - 1.911902813190106).abs() < 0.0001
         }));
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn component_stitching_connects_small_interior_gap() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "500000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [0.00000, 48.00000],
+          [0.00100, 48.00000],
+          [0.00200, 48.00000]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "530000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [0.00155, 48.00002],
+          [0.00255, 48.00002],
+          [0.00355, 48.00002]
+        ]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 0.0,
+                },
+                GeoPoint {
+                    lat: 48.00002,
+                    lon: 0.00355,
+                },
+            )
+            .expect("route should cross small interior topology gap");
+
+        assert!(route.len() >= 4);
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn component_stitching_connects_endpoint_to_nearby_line() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "430000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [0.00000, 48.00000],
+          [0.00100, 48.00000]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "395000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [0.00190, 48.00015],
+          [0.00290, 48.00015]
+        ]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 0.0,
+                },
+                GeoPoint {
+                    lat: 48.00015,
+                    lon: 0.00290,
+                },
+            )
+            .expect("route should cross endpoint-to-line topology gap");
+
+        assert!(route.len() >= 3);
 
         let _ = fs::remove_file(path);
     }
