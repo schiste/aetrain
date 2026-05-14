@@ -18,7 +18,8 @@ use deunicode::deunicode;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
-    DuplicateCityReport, FetchedSource, ManualOverrideRegistry, NormalizationIssue, SourceKind,
+    DuplicateCityReport, FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
+    GeometryAuthorityStatus, ManualOverrideRegistry, NormalizationIssue, SourceKind,
     SourceManifest, StationMappingReport, TargetDefinition, build_gtfs_basic_dataset,
     build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
     rail_geometry::RailGeometryNetwork,
@@ -222,6 +223,67 @@ pub struct PipelineCrossBorderGeometryBacklogRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCountryGeometryAuthorityRecord {
+    pub country_code: String,
+    pub status: String,
+    pub promoted: bool,
+    pub source_id: Option<String>,
+    pub missing_domestic_authority_count: u64,
+    pub rejected_rail_authority_count: u64,
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCorridorGeometryAuthorityRecord {
+    pub corridor_id: String,
+    pub from_country_code: String,
+    pub to_country_code: String,
+    pub status: String,
+    pub promoted: bool,
+    pub source_id: Option<String>,
+    pub cross_border_unresolved_count: u64,
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineRailAuthorityDefectRecord {
+    pub source_id: String,
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub from_country_code: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub to_country_code: String,
+    pub direct_distance_km: u32,
+    pub geometry_distance_km: u32,
+    pub detour_ratio_x100: Option<u32>,
+    pub implied_speed_kmh: Option<u32>,
+    pub start_snap_distance_m: Option<u32>,
+    pub end_snap_distance_m: Option<u32>,
+    pub route_found_in_authority_graph: bool,
+    pub routed_authority_distance_km: Option<u32>,
+    pub routed_authority_point_count: Option<usize>,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineShapePlausibilityDefectRecord {
+    pub source_id: Option<String>,
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub from_country_code: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub to_country_code: String,
+    pub duration_min: Option<u32>,
+    pub direct_distance_km: u32,
+    pub geometry_distance_km: u32,
+    pub detour_ratio_x100: Option<u32>,
+    pub implied_speed_kmh: Option<u32>,
+    pub provenance: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -239,6 +301,10 @@ pub struct PipelineQualityReport {
     pub rejected_shape_plausibility_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub foreign_cross_border_leakage_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub impossible_edge_speed_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
+    pub country_geometry_authorities: Vec<PipelineCountryGeometryAuthorityRecord>,
+    pub corridor_geometry_authorities: Vec<PipelineCorridorGeometryAuthorityRecord>,
+    pub rail_authority_defect_details: Vec<PipelineRailAuthorityDefectRecord>,
+    pub shape_plausibility_defect_details: Vec<PipelineShapePlausibilityDefectRecord>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -278,6 +344,8 @@ const QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES: u64 = 10;
 const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str = "geometry:invalid-railway-path-rejected";
 const INVALID_GTFS_SHAPE_GEOMETRY_REJECTED_PROVENANCE: &str =
     "geometry:invalid-gtfs-shape-rejected";
+const REJECTED_RAIL_METRICS_PROVENANCE_PREFIX: &str = "geometry:rejected-rail-metrics:";
+const REJECTED_SHAPE_METRICS_PROVENANCE_PREFIX: &str = "geometry:rejected-shape-metrics:";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineAttributionFile {
@@ -389,6 +457,7 @@ pub fn build_pipeline_target(
     let source_snapshots = artifacts.canonical.meta.source_snapshots.clone();
     export_pipeline_target(ExportPipelineTargetRequest {
         manifest,
+        manifest_dir,
         target,
         artifacts: &artifacts,
         sources: &sources,
@@ -419,6 +488,7 @@ pub fn sync_web_debug_artifacts(
 
 struct ExportPipelineTargetRequest<'a> {
     manifest: &'a SourceManifest,
+    manifest_dir: &'a Path,
     target: &'a TargetDefinition,
     artifacts: &'a AdapterBuildArtifacts,
     sources: &'a [&'a FetchedSource],
@@ -433,6 +503,7 @@ fn export_pipeline_target(
 ) -> Result<PipelineArtifactManifest> {
     let ExportPipelineTargetRequest {
         manifest,
+        manifest_dir,
         target,
         artifacts,
         sources,
@@ -510,6 +581,7 @@ fn export_pipeline_target(
         None
     };
 
+    let authority_registry = load_geometry_authority_registry(manifest_dir, target)?;
     let quality_report = build_quality_report(
         &artifacts.canonical.cities,
         &artifacts.canonical.edges,
@@ -517,6 +589,9 @@ fn export_pipeline_target(
         artifacts.station_mappings.as_ref(),
         &artifacts.counters,
         artifacts.duplicates.candidates.len(),
+        authority_registry.as_ref(),
+        &attribution.sources,
+        &target_root,
     );
 
     let summary = PipelineBuildSummary {
@@ -635,6 +710,22 @@ fn export_pipeline_target(
         &quality_dir.join("impossible-edge-speed-routes.json"),
         &quality_report.impossible_edge_speed_routes,
     )?;
+    write_json(
+        &quality_dir.join("country-geometry-authorities.json"),
+        &quality_report.country_geometry_authorities,
+    )?;
+    write_json(
+        &quality_dir.join("corridor-geometry-authorities.json"),
+        &quality_report.corridor_geometry_authorities,
+    )?;
+    write_json(
+        &quality_dir.join("rail-authority-defect-details.json"),
+        &quality_report.rail_authority_defect_details,
+    )?;
+    write_json(
+        &quality_dir.join("shape-plausibility-defect-details.json"),
+        &quality_report.shape_plausibility_defect_details,
+    )?;
     Ok(artifact_manifest)
 }
 
@@ -683,6 +774,17 @@ fn relative_path_between(path: &Path, base_dir: &Path) -> Option<PathBuf> {
     Some(relative)
 }
 
+fn load_geometry_authority_registry(
+    manifest_dir: &Path,
+    target: &TargetDefinition,
+) -> Result<Option<GeometryAuthorityRegistry>> {
+    let Some(path) = target.geometry_authority_registry_path.as_deref() else {
+        return Ok(None);
+    };
+    let registry_path = manifest_dir.join(path);
+    GeometryAuthorityRegistry::load(&registry_path).map(Some)
+}
+
 fn export_canonical_bundle(
     output_dir: &Path,
     artifacts: &AdapterBuildArtifacts,
@@ -728,6 +830,9 @@ fn build_quality_report(
     station_mappings: Option<&StationMappingReport>,
     counters: &BTreeMap<String, u64>,
     duplicate_count: usize,
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    source_artifacts: &[PipelineSourceArtifact],
+    target_root: &Path,
 ) -> PipelineQualityReport {
     let cities_by_id = cities
         .iter()
@@ -833,6 +938,17 @@ fn build_quality_report(
         .filter(|record| record.geometry_resolution_status == "impossible_edge_speed")
         .cloned()
         .collect::<Vec<_>>();
+    let authority_networks =
+        load_pipeline_authority_networks(authority_registry, source_artifacts, target_root);
+    let rail_authority_defect_details = build_rail_authority_defect_details(
+        &rejected_rail_authority_routes,
+        cities,
+        edge_geometries,
+        authority_registry,
+        &authority_networks,
+    );
+    let shape_plausibility_defect_details =
+        build_shape_plausibility_defect_details(&rejected_shape_plausibility_routes);
     let domestic_straight_line_fallback_count = route_geometry_anomalies
         .iter()
         .filter(|record| {
@@ -881,6 +997,43 @@ fn build_quality_report(
         .iter()
         .filter(|record| record.geometry_resolution_status == "impossible_edge_speed")
         .count() as u64;
+    let promoted_missing_domestic_authority_count = route_geometry_anomalies
+        .iter()
+        .filter(|record| {
+            record.geometry_resolution_status == "missing_domestic_authority"
+                && authority_registry.is_some_and(|registry| {
+                    registry
+                        .country(&record.from_country_code)
+                        .is_some_and(|entry| entry.status.is_promoted())
+                })
+        })
+        .count() as u64;
+    let promoted_cross_border_unresolved_count = route_geometry_anomalies
+        .iter()
+        .filter(|record| {
+            record.geometry_resolution_status == "cross_border_unresolved"
+                && authority_registry.is_some_and(|registry| {
+                    registry
+                        .corridor(&record.from_country_code, &record.to_country_code)
+                        .is_some_and(|entry| entry.status.is_promoted())
+                })
+        })
+        .count() as u64;
+    let promoted_rejected_rail_authority_count = route_geometry_anomalies
+        .iter()
+        .filter(|record| {
+            record.geometry_resolution_status == "rejected_rail_authority"
+                && authority_registry.is_some_and(|registry| {
+                    registry
+                        .country(&record.from_country_code)
+                        .is_some_and(|entry| entry.status.is_promoted())
+                })
+        })
+        .count() as u64;
+    let country_geometry_authorities =
+        build_country_geometry_authority_records(authority_registry, &route_geometry_anomalies);
+    let corridor_geometry_authorities =
+        build_corridor_geometry_authority_records(authority_registry, &route_geometry_anomalies);
 
     let gate_results = vec![
         quality_gate_equals(
@@ -949,6 +1102,24 @@ fn build_quality_report(
             impossible_edge_speed_count,
             0,
         ),
+        quality_gate_equals(
+            "promoted_domestic_authority_gap_count_zero",
+            "promoted_domestic_authority_gap_count",
+            promoted_missing_domestic_authority_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_cross_border_authority_gap_count_zero",
+            "promoted_cross_border_authority_gap_count",
+            promoted_cross_border_unresolved_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_rejected_rail_authority_count_zero",
+            "promoted_rejected_rail_authority_count",
+            promoted_rejected_rail_authority_count,
+            0,
+        ),
     ];
 
     PipelineQualityReport {
@@ -968,7 +1139,389 @@ fn build_quality_report(
         rejected_shape_plausibility_routes,
         foreign_cross_border_leakage_routes,
         impossible_edge_speed_routes,
+        country_geometry_authorities,
+        corridor_geometry_authorities,
+        rail_authority_defect_details,
+        shape_plausibility_defect_details,
     }
+}
+
+fn build_country_geometry_authority_records(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    route_geometry_anomalies: &[PipelineRouteGeometryAnomalyRecord],
+) -> Vec<PipelineCountryGeometryAuthorityRecord> {
+    let Some(authority_registry) = authority_registry else {
+        return Vec::new();
+    };
+
+    authority_registry
+        .countries
+        .iter()
+        .map(|entry| PipelineCountryGeometryAuthorityRecord {
+            country_code: entry.country_code.clone(),
+            status: geometry_authority_status_label(&entry.status).to_string(),
+            promoted: entry.status.is_promoted(),
+            source_id: entry.source_id.clone(),
+            missing_domestic_authority_count: route_geometry_anomalies
+                .iter()
+                .filter(|record| {
+                    record.geometry_resolution_status == "missing_domestic_authority"
+                        && record.from_country_code == entry.country_code
+                })
+                .count() as u64,
+            rejected_rail_authority_count: route_geometry_anomalies
+                .iter()
+                .filter(|record| {
+                    record.geometry_resolution_status == "rejected_rail_authority"
+                        && record.from_country_code == entry.country_code
+                        && record.to_country_code == entry.country_code
+                })
+                .count() as u64,
+            notes: entry.notes.clone(),
+        })
+        .collect()
+}
+
+fn build_corridor_geometry_authority_records(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    route_geometry_anomalies: &[PipelineRouteGeometryAnomalyRecord],
+) -> Vec<PipelineCorridorGeometryAuthorityRecord> {
+    let Some(authority_registry) = authority_registry else {
+        return Vec::new();
+    };
+
+    authority_registry
+        .corridors
+        .iter()
+        .map(|entry| PipelineCorridorGeometryAuthorityRecord {
+            corridor_id: entry.corridor_id.clone(),
+            from_country_code: entry.from_country_code.clone(),
+            to_country_code: entry.to_country_code.clone(),
+            status: geometry_authority_status_label(&entry.status).to_string(),
+            promoted: entry.status.is_promoted(),
+            source_id: entry.source_id.clone(),
+            cross_border_unresolved_count: route_geometry_anomalies
+                .iter()
+                .filter(|record| {
+                    record.geometry_resolution_status == "cross_border_unresolved"
+                        && countries_match_corridor(
+                            &record.from_country_code,
+                            &record.to_country_code,
+                            &entry.from_country_code,
+                            &entry.to_country_code,
+                        )
+                })
+                .count() as u64,
+            notes: entry.notes.clone(),
+        })
+        .collect()
+}
+
+fn geometry_authority_status_label(status: &GeometryAuthorityStatus) -> &'static str {
+    match status {
+        GeometryAuthorityStatus::Planned => "planned",
+        GeometryAuthorityStatus::Ingested => "ingested",
+        GeometryAuthorityStatus::TopologyClean => "topology_clean",
+        GeometryAuthorityStatus::ProductionReady => "production_ready",
+    }
+}
+
+fn countries_match_corridor(
+    left_from: &str,
+    left_to: &str,
+    right_from: &str,
+    right_to: &str,
+) -> bool {
+    (left_from.eq_ignore_ascii_case(right_from) && left_to.eq_ignore_ascii_case(right_to))
+        || (left_from.eq_ignore_ascii_case(right_to) && left_to.eq_ignore_ascii_case(right_from))
+}
+
+fn load_pipeline_authority_networks(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    source_artifacts: &[PipelineSourceArtifact],
+    target_root: &Path,
+) -> BTreeMap<String, RailGeometryNetwork> {
+    let Some(authority_registry) = authority_registry else {
+        return BTreeMap::new();
+    };
+
+    let sources = authority_registry
+        .countries
+        .iter()
+        .filter_map(|entry| {
+            Some((
+                entry.source_id.as_ref()?.clone(),
+                entry.loader.as_ref()?.clone(),
+            ))
+        })
+        .chain(authority_registry.corridors.iter().filter_map(|entry| {
+            Some((
+                entry.source_id.as_ref()?.clone(),
+                entry.loader.as_ref()?.clone(),
+            ))
+        }))
+        .collect::<BTreeMap<_, _>>();
+    let mut networks = BTreeMap::new();
+
+    for artifact in source_artifacts {
+        let Some(loader) = sources.get(&artifact.source_id) else {
+            continue;
+        };
+        let path =
+            resolve_pipeline_source_artifact_path(artifact, &target_root.display().to_string());
+        let network = match loader {
+            GeometryAuthorityLoader::SncfRfnGeojson => {
+                RailGeometryNetwork::load_sncf_rfn_geojson(&path)
+            }
+        };
+        if let Ok(network) = network {
+            networks.insert(artifact.source_id.clone(), network);
+        }
+    }
+
+    networks
+}
+
+fn build_rail_authority_defect_details(
+    rejected_rail_authority_routes: &[PipelineRouteGeometryAnomalyRecord],
+    cities: &[City],
+    edge_geometries: &EdgeGeometryArtifact,
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    authority_networks: &BTreeMap<String, RailGeometryNetwork>,
+) -> Vec<PipelineRailAuthorityDefectRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let geometries_by_id = edge_geometries
+        .geometries
+        .iter()
+        .map(|geometry| {
+            (
+                (geometry.from_city_id.clone(), geometry.to_city_id.clone()),
+                geometry,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    rejected_rail_authority_routes
+        .iter()
+        .filter_map(|record| {
+            let from_city = cities_by_id.get(&record.from_city_id)?;
+            let to_city = cities_by_id.get(&record.to_city_id)?;
+            let geometry =
+                geometries_by_id.get(&(record.from_city_id.clone(), record.to_city_id.clone()))?;
+            let source_id = infer_authority_source_id(
+                authority_registry,
+                &record.from_country_code,
+                &record.to_country_code,
+                &record.provenance,
+            )?;
+            let (
+                rejected_geometry_distance_km,
+                rejected_direct_distance_km,
+                rejected_detour_ratio_x100,
+                rejected_implied_speed_kmh,
+            ) = parse_rejected_geometry_metrics_provenance(
+                &geometry.provenance,
+                REJECTED_RAIL_METRICS_PROVENANCE_PREFIX,
+            )
+            .unwrap_or((
+                record.geometry_distance_km,
+                record.direct_distance_km,
+                record.detour_ratio_x100,
+                record.implied_speed_kmh,
+            ));
+            let network = authority_networks.get(&source_id);
+            let (
+                start_snap_distance_m,
+                end_snap_distance_m,
+                route_found_in_authority_graph,
+                routed_authority_distance_km,
+                routed_authority_point_count,
+            ) = if let Some(network) = network {
+                let start = network.nearest_node_with_distance(from_city.location);
+                let end = network.nearest_node_with_distance(to_city.location);
+                let route = start.and_then(|(start_node, start_distance)| {
+                    end.map(|(end_node, end_distance)| {
+                        let points = network.route_polyline_between_nodes(
+                            from_city.location,
+                            to_city.location,
+                            start_node,
+                            end_node,
+                        );
+                        (start_distance, end_distance, points)
+                    })
+                });
+                if let Some((start_distance, end_distance, Some(points))) = route {
+                    let points_e5 = points
+                        .into_iter()
+                        .map(scale_geo_point_e5_for_pipeline)
+                        .collect::<Vec<_>>();
+                    (
+                        Some(start_distance),
+                        Some(end_distance),
+                        true,
+                        Some(meters_to_km_u32(edge_geometry_length_meters(&points_e5))),
+                        Some(points_e5.len()),
+                    )
+                } else {
+                    (
+                        start.map(|(_, distance)| distance),
+                        end.map(|(_, distance)| distance),
+                        false,
+                        None,
+                        None,
+                    )
+                }
+            } else {
+                (None, None, false, None, None)
+            };
+
+            Some(PipelineRailAuthorityDefectRecord {
+                source_id,
+                from_city_id: record.from_city_id.clone(),
+                from_display_name: record.from_display_name.clone(),
+                from_country_code: record.from_country_code.clone(),
+                to_city_id: record.to_city_id.clone(),
+                to_display_name: record.to_display_name.clone(),
+                to_country_code: record.to_country_code.clone(),
+                direct_distance_km: rejected_direct_distance_km,
+                geometry_distance_km: rejected_geometry_distance_km,
+                detour_ratio_x100: rejected_detour_ratio_x100,
+                implied_speed_kmh: rejected_implied_speed_kmh,
+                start_snap_distance_m,
+                end_snap_distance_m,
+                route_found_in_authority_graph,
+                routed_authority_distance_km,
+                routed_authority_point_count,
+                provenance: geometry.provenance.clone(),
+            })
+        })
+        .collect()
+}
+
+fn build_shape_plausibility_defect_details(
+    rejected_shape_plausibility_routes: &[PipelineRouteGeometryAnomalyRecord],
+) -> Vec<PipelineShapePlausibilityDefectRecord> {
+    rejected_shape_plausibility_routes
+        .iter()
+        .map(|record| {
+            let (geometry_distance_km, direct_distance_km, detour_ratio_x100, implied_speed_kmh) =
+                parse_rejected_geometry_metrics_provenance(
+                    &record.provenance,
+                    REJECTED_SHAPE_METRICS_PROVENANCE_PREFIX,
+                )
+                .unwrap_or((
+                    record.geometry_distance_km,
+                    record.direct_distance_km,
+                    record.detour_ratio_x100,
+                    record.implied_speed_kmh,
+                ));
+            PipelineShapePlausibilityDefectRecord {
+                source_id: infer_feed_source_id_from_provenance(&record.provenance),
+                from_city_id: record.from_city_id.clone(),
+                from_display_name: record.from_display_name.clone(),
+                from_country_code: record.from_country_code.clone(),
+                to_city_id: record.to_city_id.clone(),
+                to_display_name: record.to_display_name.clone(),
+                to_country_code: record.to_country_code.clone(),
+                duration_min: record.duration_min,
+                direct_distance_km,
+                geometry_distance_km,
+                detour_ratio_x100,
+                implied_speed_kmh,
+                provenance: record.provenance.clone(),
+            }
+        })
+        .collect()
+}
+
+fn infer_feed_source_id_from_provenance(provenance: &[String]) -> Option<String> {
+    provenance.iter().find_map(|entry| {
+        entry.split_once(':').and_then(|(source_id, _)| {
+            (!source_id.starts_with("geometry")).then(|| source_id.to_string())
+        })
+    })
+}
+
+fn infer_authority_source_id(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    from_country_code: &str,
+    to_country_code: &str,
+    provenance: &[String],
+) -> Option<String> {
+    if let Some(source_id) = provenance.iter().find_map(|entry| {
+        entry
+            .strip_prefix("geometry:")
+            .map(str::to_string)
+            .and_then(|value| {
+                (value != "invalid-railway-path-rejected"
+                    && value != "invalid-gtfs-shape-rejected"
+                    && !value.starts_with("rejected-")
+                    && !value.contains('='))
+                .then_some(value)
+            })
+    }) {
+        return Some(source_id);
+    }
+
+    let registry = authority_registry?;
+    if from_country_code == to_country_code {
+        return registry
+            .country(from_country_code)
+            .and_then(|entry| entry.source_id.clone());
+    }
+    registry
+        .corridor(from_country_code, to_country_code)
+        .and_then(|entry| entry.source_id.clone())
+}
+
+fn build_rejected_geometry_metrics_provenance(
+    prefix: &str,
+    metrics: &RouteGeometryMetrics,
+) -> String {
+    format!(
+        "{prefix}geometry_km={};direct_km={};detour_ratio_x100={};implied_speed_kmh={}",
+        meters_to_km_u32(metrics.geometry_meters),
+        meters_to_km_u32(metrics.direct_meters),
+        metrics.detour_ratio_x100.unwrap_or(0),
+        metrics.implied_speed_kmh.unwrap_or(0),
+    )
+}
+
+fn parse_rejected_geometry_metrics_provenance(
+    provenance: &[String],
+    prefix: &str,
+) -> Option<(u32, u32, Option<u32>, Option<u32>)> {
+    let payload = provenance
+        .iter()
+        .find_map(|entry| entry.strip_prefix(prefix))?;
+    let mut geometry_km = None;
+    let mut direct_km = None;
+    let mut detour_ratio_x100 = None;
+    let mut implied_speed_kmh = None;
+    for part in payload.split(';') {
+        let Some((key, value)) = part.split_once('=') else {
+            continue;
+        };
+        let Ok(value) = value.parse::<u32>() else {
+            continue;
+        };
+        match key {
+            "geometry_km" => geometry_km = Some(value),
+            "direct_km" => direct_km = Some(value),
+            "detour_ratio_x100" => detour_ratio_x100 = (value > 0).then_some(value),
+            "implied_speed_kmh" => implied_speed_kmh = (value > 0).then_some(value),
+            _ => {}
+        }
+    }
+    Some((
+        geometry_km?,
+        direct_km?,
+        detour_ratio_x100,
+        implied_speed_kmh,
+    ))
 }
 
 fn build_non_railway_route_geometry_records(
@@ -2165,6 +2718,8 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         .iter()
         .map(|target_id| load_aggregate_target_input(request.output_root, target_id))
         .collect::<Result<Vec<_>>>()?;
+    let authority_registry =
+        load_geometry_authority_registry(request.manifest_dir, request.target)?;
 
     let source_snapshots = merge_source_snapshots(&dependency_inputs);
     let source_artifacts = merge_source_artifacts(&dependency_inputs);
@@ -2361,6 +2916,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         &edges,
         &dependency_inputs,
         request.manifest,
+        authority_registry.as_ref(),
         request.target.id.as_str(),
         &mut merged_cities.issues,
     )?;
@@ -3206,7 +3762,13 @@ fn reject_invalid_railway_layer_geometries(
         geometry.source = EdgeGeometrySource::StraightLineFallback;
         merge_string_vec(
             &mut geometry.provenance,
-            &[INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE.to_string()],
+            &[
+                INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE.to_string(),
+                build_rejected_geometry_metrics_provenance(
+                    REJECTED_RAIL_METRICS_PROVENANCE_PREFIX,
+                    &metrics,
+                ),
+            ],
         );
         rejected_count += 1;
         issues.push(NormalizationIssue {
@@ -3276,7 +3838,13 @@ fn reject_invalid_gtfs_shape_geometries(
         geometry.source = EdgeGeometrySource::StraightLineFallback;
         merge_string_vec(
             &mut geometry.provenance,
-            &[INVALID_GTFS_SHAPE_GEOMETRY_REJECTED_PROVENANCE.to_string()],
+            &[
+                INVALID_GTFS_SHAPE_GEOMETRY_REJECTED_PROVENANCE.to_string(),
+                build_rejected_geometry_metrics_provenance(
+                    REJECTED_SHAPE_METRICS_PROVENANCE_PREFIX,
+                    &metrics,
+                ),
+            ],
         );
         rejected_count += 1;
         issues.push(NormalizationIssue {
@@ -3304,11 +3872,12 @@ fn apply_aggregate_rail_geometry_authority(
     edges: &[aetrain_domain::TravelEdge],
     inputs: &[AggregateTargetInput],
     manifest: &SourceManifest,
+    authority_registry: Option<&GeometryAuthorityRegistry>,
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
 ) -> Result<u64> {
     let Some((rail_geometry_source_id, rail_geometry_network)) =
-        load_aggregate_rail_geometry_network(inputs, manifest)?
+        load_aggregate_rail_geometry_network(inputs, manifest, authority_registry)?
     else {
         return Ok(0);
     };
@@ -3341,7 +3910,12 @@ fn apply_aggregate_rail_geometry_authority(
         let Some(to_city) = cities_by_id.get(&geometry.to_city_id) else {
             continue;
         };
-        if from_city.country_code != "FR" || to_city.country_code != "FR" {
+        if !authority_registry_supports_route(
+            authority_registry,
+            &rail_geometry_source_id,
+            &from_city.country_code,
+            &to_city.country_code,
+        ) {
             continue;
         }
         let Some(points) =
@@ -3395,13 +3969,28 @@ fn apply_aggregate_rail_geometry_authority(
 fn load_aggregate_rail_geometry_network(
     inputs: &[AggregateTargetInput],
     manifest: &SourceManifest,
+    authority_registry: Option<&GeometryAuthorityRegistry>,
 ) -> Result<Option<(String, RailGeometryNetwork)>> {
+    let Some(authority_registry) = authority_registry else {
+        return Ok(None);
+    };
     let rail_geometry_sources = manifest
         .sources
         .iter()
         .filter(|source| source.role.as_deref() == Some("rail_geometry"))
         .map(|source| (source.id.as_str(), source))
         .collect::<BTreeMap<_, _>>();
+    let allowed_source_ids = authority_registry
+        .countries
+        .iter()
+        .filter_map(|entry| entry.source_id.as_ref().cloned())
+        .chain(
+            authority_registry
+                .corridors
+                .iter()
+                .filter_map(|entry| entry.source_id.as_ref().cloned()),
+        )
+        .collect::<BTreeSet<_>>();
 
     for (input, artifact) in inputs.iter().flat_map(|input| {
         input
@@ -3410,6 +3999,9 @@ fn load_aggregate_rail_geometry_network(
             .iter()
             .map(move |artifact| (input, artifact))
     }) {
+        if !allowed_source_ids.contains(&artifact.source_id) {
+            continue;
+        }
         let Some(source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
             continue;
         };
@@ -3429,6 +4021,31 @@ fn load_aggregate_rail_geometry_network(
     }
 
     Ok(None)
+}
+
+fn authority_registry_supports_route(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    source_id: &str,
+    from_country_code: &str,
+    to_country_code: &str,
+) -> bool {
+    let Some(authority_registry) = authority_registry else {
+        return false;
+    };
+
+    if from_country_code == to_country_code {
+        return authority_registry
+            .country(from_country_code)
+            .is_some_and(|entry| {
+                entry.status.is_promoted() && entry.source_id.as_deref() == Some(source_id)
+            });
+    }
+
+    authority_registry
+        .corridor(from_country_code, to_country_code)
+        .is_some_and(|entry| {
+            entry.status.is_promoted() && entry.source_id.as_deref() == Some(source_id)
+        })
 }
 
 fn resolve_pipeline_source_artifact_path(
@@ -6524,13 +7141,16 @@ mod tests {
             None,
             &counters,
             0,
+            None,
+            &[],
+            Path::new("."),
         );
 
         assert_eq!(report.registry_match_report.authoritative_city_count, 0);
         assert_eq!(report.station_like_cities.len(), 1);
         assert_eq!(report.zz_cities.len(), 1);
         assert_eq!(report.route_like_candidates.len(), 0);
-        assert_eq!(report.gate_results.len(), 11);
+        assert_eq!(report.gate_results.len(), 14);
         assert_eq!(
             report
                 .gate_results
@@ -6708,8 +7328,17 @@ mod tests {
         let mut counters = BTreeMap::new();
         insert_route_geometry_coverage_counters(&mut counters, &edge_geometries);
 
-        let report =
-            build_quality_report(&[paris, lyon], &edges, &edge_geometries, None, &counters, 0);
+        let report = build_quality_report(
+            &[paris, lyon],
+            &edges,
+            &edge_geometries,
+            None,
+            &counters,
+            0,
+            None,
+            &[],
+            Path::new("."),
+        );
 
         assert_eq!(report.non_railway_route_geometries.len(), 1);
         assert_eq!(
@@ -6738,6 +7367,102 @@ mod tests {
         assert_eq!(
             report.domestic_geometry_backlog_by_country[0].country_code,
             "FR"
+        );
+    }
+
+    #[test]
+    fn quality_report_applies_promoted_authority_gates() {
+        let paris = City {
+            city_id: CityId::new("paris-fr").expect("valid city id"),
+            slug: "paris".to_string(),
+            display_name: "Paris".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.8566,
+                lon: 2.3522,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let lyon = City {
+            city_id: CityId::new("lyon-fr").expect("valid city id"),
+            slug: "lyon".to_string(),
+            display_name: "Lyon".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 45.7640,
+                lon: 4.8357,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let edges = vec![TravelEdge {
+            from_city_id: paris.city_id.clone(),
+            to_city_id: lyon.city_id.clone(),
+            duration_min: 120,
+            service_kind: ServiceKind::Rail,
+            service_class: ServiceClass::Intercity,
+            change_count_estimate: Some(0),
+            source_confidence: 100,
+            provenance: vec!["sncf-fr-gtfs:FR:test".to_string()],
+        }];
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![EdgeGeometryRecord {
+                from_city_id: paris.city_id.clone(),
+                to_city_id: lyon.city_id.clone(),
+                points: vec![
+                    scale_geo_point_e5_for_pipeline(paris.location),
+                    scale_geo_point_e5_for_pipeline(lyon.location),
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+                provenance: vec!["sncf-fr-gtfs:FR:test".to_string()],
+            }],
+        };
+        let registry = GeometryAuthorityRegistry {
+            dataset_id: "test-authorities".to_string(),
+            schema_version: 1,
+            description: "test".to_string(),
+            countries: vec![crate::CountryGeometryAuthorityDefinition {
+                country_code: "FR".to_string(),
+                source_id: Some("sncf-fr-rfn-lines".to_string()),
+                loader: Some(GeometryAuthorityLoader::SncfRfnGeojson),
+                status: GeometryAuthorityStatus::ProductionReady,
+                notes: None,
+            }],
+            corridors: Vec::new(),
+        };
+
+        let report = build_quality_report(
+            &[paris, lyon],
+            &edges,
+            &edge_geometries,
+            None,
+            &BTreeMap::new(),
+            0,
+            Some(&registry),
+            &[],
+            Path::new("."),
+        );
+
+        assert_eq!(report.country_geometry_authorities.len(), 1);
+        assert_eq!(
+            report.country_geometry_authorities[0].missing_domestic_authority_count,
+            1
+        );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "promoted_domestic_authority_gap_count")
+                .expect("promoted domestic gate")
+                .status,
+            "fail"
         );
     }
 
@@ -6813,6 +7538,9 @@ mod tests {
             None,
             &BTreeMap::new(),
             0,
+            None,
+            &[],
+            Path::new("."),
         );
 
         assert_eq!(report.route_geometry_anomalies.len(), 1);
@@ -7228,6 +7956,9 @@ mod tests {
             None,
             &counters,
             0,
+            None,
+            &[],
+            Path::new("."),
         );
 
         assert_eq!(report.route_like_candidates.len(), 1);

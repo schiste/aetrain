@@ -116,6 +116,11 @@ impl RailGeometryNetwork {
         Some(node_index)
     }
 
+    pub fn nearest_node_with_distance(&self, target: GeoPoint) -> Option<(usize, u32)> {
+        let (node_index, distance) = self.nearest_node(target)?;
+        Some((node_index, distance.round() as u32))
+    }
+
     pub fn route_polyline_between_nodes(
         &self,
         from: GeoPoint,
