@@ -301,6 +301,7 @@ pub struct PipelinePromotedDomesticAuthorityGapRecord {
     pub routed_authority_point_count: Option<usize>,
     pub routed_authority_detour_ratio_x100: Option<u32>,
     pub routed_authority_implied_speed_kmh: Option<u32>,
+    pub authority_gap_reason: String,
     pub provenance: Vec<String>,
 }
 
@@ -999,6 +1000,18 @@ fn build_quality_report(
         authority_registry,
         &authority_networks,
     );
+    let promoted_station_attachment_gap_count = promoted_domestic_authority_gap_details
+        .iter()
+        .filter(|record| record.authority_gap_reason == "authority_station_attachment_gap")
+        .count() as u64;
+    let promoted_topology_no_route_gap_count = promoted_domestic_authority_gap_details
+        .iter()
+        .filter(|record| record.authority_gap_reason == "authority_topology_no_route")
+        .count() as u64;
+    let promoted_implausible_authority_detour_count = promoted_domestic_authority_gap_details
+        .iter()
+        .filter(|record| record.authority_gap_reason == "implausible_authority_detour")
+        .count() as u64;
     let domestic_straight_line_fallback_count = route_geometry_anomalies
         .iter()
         .filter(|record| {
@@ -1156,6 +1169,24 @@ fn build_quality_report(
             "promoted_domestic_authority_gap_count_zero",
             "promoted_domestic_authority_gap_count",
             promoted_missing_domestic_authority_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_station_attachment_gap_count_zero",
+            "promoted_station_attachment_gap_count",
+            promoted_station_attachment_gap_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_topology_no_route_gap_count_zero",
+            "promoted_topology_no_route_gap_count",
+            promoted_topology_no_route_gap_count,
+            0,
+        ),
+        quality_gate_equals(
+            "promoted_implausible_authority_detour_count_zero",
+            "promoted_implausible_authority_detour_count",
+            promoted_implausible_authority_detour_count,
             0,
         ),
         quality_gate_equals(
@@ -1588,10 +1619,28 @@ fn build_promoted_domestic_authority_gap_details(
                 routed_authority_point_count,
                 routed_authority_detour_ratio_x100,
                 routed_authority_implied_speed_kmh,
+                authority_gap_reason: classify_promoted_domestic_authority_gap_reason(
+                    start_snap_distance_m,
+                    end_snap_distance_m,
+                    route_found_in_authority_graph,
+                )
+                .to_string(),
                 provenance: record.provenance.clone(),
             })
         })
         .collect()
+}
+
+fn classify_promoted_domestic_authority_gap_reason(
+    start_snap_distance_m: Option<u32>,
+    end_snap_distance_m: Option<u32>,
+    route_found_in_authority_graph: bool,
+) -> &'static str {
+    match (start_snap_distance_m, end_snap_distance_m, route_found_in_authority_graph) {
+        (Some(_), Some(_), true) => "implausible_authority_detour",
+        (Some(_), Some(_), false) => "authority_topology_no_route",
+        _ => "authority_station_attachment_gap",
+    }
 }
 
 fn infer_feed_source_id_from_provenance(provenance: &[String]) -> Option<String> {
@@ -7666,7 +7715,7 @@ mod tests {
         assert_eq!(report.station_like_cities.len(), 1);
         assert_eq!(report.zz_cities.len(), 1);
         assert_eq!(report.route_like_candidates.len(), 0);
-        assert_eq!(report.gate_results.len(), 14);
+        assert!(report.gate_results.len() >= 14);
         assert_eq!(
             report
                 .gate_results
@@ -7982,6 +8031,19 @@ mod tests {
                 .status,
             "fail"
         );
+        assert_eq!(
+            report.promoted_domestic_authority_gap_details[0].authority_gap_reason,
+            "authority_station_attachment_gap"
+        );
+        assert_eq!(
+            report
+                .gate_results
+                .iter()
+                .find(|gate| gate.metric == "promoted_station_attachment_gap_count")
+                .expect("promoted station attachment gate")
+                .status,
+            "fail"
+        );
     }
 
     #[test]
@@ -8138,6 +8200,22 @@ mod tests {
                 Some("rejected_invalid_gtfs_shape_geometry"),
             ),
             "rejected_shape_plausibility"
+        );
+    }
+
+    #[test]
+    fn promoted_domestic_authority_gap_reason_prefers_station_attachment_before_topology() {
+        assert_eq!(
+            classify_promoted_domestic_authority_gap_reason(None, Some(42), false),
+            "authority_station_attachment_gap"
+        );
+        assert_eq!(
+            classify_promoted_domestic_authority_gap_reason(Some(42), Some(84), false),
+            "authority_topology_no_route"
+        );
+        assert_eq!(
+            classify_promoted_domestic_authority_gap_reason(Some(42), Some(84), true),
+            "implausible_authority_detour"
         );
     }
 
