@@ -71,3 +71,210 @@ to_country_code = "FR"
 status = "planned"
 allow_shape_fallback = true
 notes = "Spanish-French cross-border corridor backlog. No promoted infrastructure authority yet."
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "aeroport-charles-gaulle-fr-93073"
+to_city_id = "marne-la-vallee-chessy-fr-77111"
+action = "tighten_authority_footprint"
+max_snap_distance_m = 500
+notes = "corridor detours are mixed with large snap distances, so attachment or footprint should be fixed before suppressing routing"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "agonac-fr-24002"
+to_city_id = "perigueux-fr-24322"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "besle-fr-44067"
+to_city_id = "redon-fr-35236"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "bischwiller-fr-67046"
+to_city_id = "krimmeri-meinau-fr-67482"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "boulogne-fr-62160"
+to_city_id = "calais-frethun-fr-62360"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "boulogne-fr-62160"
+to_city_id = "les-fontinettes-fr-62193"
+action = "tighten_authority_footprint"
+max_snap_distance_m = 500
+notes = "corridor detours are mixed with large snap distances, so attachment or footprint should be fixed before suppressing routing"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "chalons-en-champagne-fr-51108"
+to_city_id = "troyes-fr-10387"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "chambery-challes-les-eaux-fr-73065"
+to_city_id = "grenoble-fr-q1289"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "chambesy-ch-03211e19"
+to_city_id = "les-tuileries-ch-71c73550"
+action = "tighten_authority_footprint"
+max_snap_distance_m = 500
+notes = "corridor detours are mixed with large snap distances, so attachment or footprint should be fixed before suppressing routing"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "chantenay-fr-44109"
+to_city_id = "redon-fr-35236"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "chateau-l-eveque-fr-24115"
+to_city_id = "perigueux-fr-24322"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "crest-fr-26108"
+to_city_id = "valence-tgv-rhone-alpes-sud-fr-26004"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "dourges-fr-62274"
+to_city_id = "libercourt-fr-62907"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "geneve-ch-aaf44349"
+to_city_id = "lancy-ch-d6e5769b"
+action = "tighten_authority_footprint"
+max_snap_distance_m = 500
+notes = "corridor detours are mixed with large snap distances, so attachment or footprint should be fixed before suppressing routing"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "gien-fr-45155"
+to_city_id = "les-aubrais-fr-45147"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "henin-beaumont-fr-62427"
+to_city_id = "libercourt-fr-62907"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "la-poterie-fr-35238"
+to_city_id = "redon-fr-35236"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "la-poterie-fr-35238"
+to_city_id = "vannes-fr-56260"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "loos-en-gohelle-fr-62498"
+to_city_id = "pont-a-vendin-fr-62666"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "marseillan-plage-fr-34150"
+to_city_id = "sete-fr-34301"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "masserac-fr-44092"
+to_city_id = "redon-fr-35236"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "messac-guipry-fr-35176"
+to_city_id = "redon-fr-35236"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "monterolier-buchy-fr-76445"
+to_city_id = "rouen-fr-q30974"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "morgny-fr-76453"
+to_city_id = "rouen-fr-q30974"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "narbonne-fr-11262"
+to_city_id = "sete-fr-34301"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "perigueux-fr-24322"
+to_city_id = "thiviers-fr-24551"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "pontchateau-fr-44129"
+to_city_id = "savenay-fr-44195"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "ria-fr-66161"
+to_city_id = "villefranche-vernet-les-bains-fr-66085"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"
+
+[[route_policy]]
+source_id = "sncf-fr-rfn-lines"
+from_city_id = "rouen-fr-q30974"
+to_city_id = "serqueux-fr-76672"
+action = "suppress_authority_until_topology_fixed"
+notes = "corridor repeatedly produces implausible authority paths despite close snaps, indicating a stable topology defect"

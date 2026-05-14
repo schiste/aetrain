@@ -10,7 +10,8 @@ pub use fetch::{
 };
 pub use manifest::{
     CorridorGeometryAuthorityDefinition, CountryGeometryAuthorityDefinition, DirectoryListingStep,
-    GeometryAuthorityLoader, GeometryAuthorityRegistry, GeometryAuthorityStatus, IssueSeverity,
+    GeometryAuthorityLoader, GeometryAuthorityRegistry, GeometryAuthorityRoutePolicyAction,
+    GeometryAuthorityRoutePolicyDefinition, GeometryAuthorityStatus, IssueSeverity,
     ManualCityOverride, ManualOverrideRegistry, NormalizationIssue, SourceDefinition, SourceKind,
     SourceManifest, SourceResolver, TargetDefinition,
 };

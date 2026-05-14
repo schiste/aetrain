@@ -19,9 +19,9 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
     DuplicateCityReport, FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
-    GeometryAuthorityStatus, ManualOverrideRegistry, NormalizationIssue, SourceKind,
-    SourceManifest, StationMappingReport, TargetDefinition, build_gtfs_basic_dataset,
-    build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
+    GeometryAuthorityRoutePolicyAction, GeometryAuthorityStatus, ManualOverrideRegistry,
+    NormalizationIssue, SourceKind, SourceManifest, StationMappingReport, TargetDefinition,
+    build_gtfs_basic_dataset, build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
     rail_geometry::RailGeometryNetwork,
 };
 
@@ -4569,6 +4569,17 @@ fn apply_aggregate_rail_geometry_authority(
         ) {
             continue;
         }
+        if !authority_registry_allows_route_repair(
+            authority_registry,
+            &rail_geometry_source_id,
+            &geometry.from_city_id,
+            &geometry.to_city_id,
+            &rail_geometry_network,
+            from_city.location,
+            to_city.location,
+        ) {
+            continue;
+        }
         let Some(points) =
             rail_geometry_network.route_polyline(from_city.location, to_city.location)
         else {
@@ -4697,6 +4708,37 @@ fn authority_registry_supports_route(
         .is_some_and(|entry| {
             entry.status.is_promoted() && entry.source_id.as_deref() == Some(source_id)
         })
+}
+
+fn authority_registry_allows_route_repair(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    source_id: &str,
+    from_city_id: &aetrain_domain::CityId,
+    to_city_id: &aetrain_domain::CityId,
+    rail_geometry_network: &RailGeometryNetwork,
+    from_location: GeoPoint,
+    to_location: GeoPoint,
+) -> bool {
+    let Some(authority_registry) = authority_registry else {
+        return true;
+    };
+    let Some(policy) = authority_registry.route_policy(source_id, from_city_id, to_city_id) else {
+        return true;
+    };
+    match policy.action {
+        GeometryAuthorityRoutePolicyAction::SuppressAuthorityUntilTopologyFixed => false,
+        GeometryAuthorityRoutePolicyAction::TightenAuthorityFootprint => {
+            let max_snap_distance_m = policy.max_snap_distance_m.unwrap_or(500);
+            rail_geometry_network
+                .route_snap_candidates(from_location)
+                .first()
+                .is_some_and(|(_, distance)| *distance <= max_snap_distance_m)
+                && rail_geometry_network
+                    .route_snap_candidates(to_location)
+                    .first()
+                    .is_some_and(|(_, distance)| *distance <= max_snap_distance_m)
+        }
+    }
 }
 
 fn resolve_pipeline_source_artifact_path(
@@ -8434,6 +8476,7 @@ mod tests {
                 notes: None,
             }],
             corridors: Vec::new(),
+            route_policies: Vec::new(),
         };
 
         let report = build_quality_report(

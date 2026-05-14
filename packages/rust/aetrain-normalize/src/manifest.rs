@@ -183,6 +183,25 @@ pub struct CorridorGeometryAuthorityDefinition {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GeometryAuthorityRoutePolicyAction {
+    SuppressAuthorityUntilTopologyFixed,
+    TightenAuthorityFootprint,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GeometryAuthorityRoutePolicyDefinition {
+    pub source_id: String,
+    pub from_city_id: CityId,
+    pub to_city_id: CityId,
+    pub action: GeometryAuthorityRoutePolicyAction,
+    #[serde(default)]
+    pub max_snap_distance_m: Option<u32>,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GeometryAuthorityRegistry {
     pub dataset_id: String,
     pub schema_version: u16,
@@ -191,6 +210,8 @@ pub struct GeometryAuthorityRegistry {
     pub countries: Vec<CountryGeometryAuthorityDefinition>,
     #[serde(rename = "corridor", default)]
     pub corridors: Vec<CorridorGeometryAuthorityDefinition>,
+    #[serde(rename = "route_policy", default)]
+    pub route_policies: Vec<GeometryAuthorityRoutePolicyDefinition>,
 }
 
 impl GeometryAuthorityRegistry {
@@ -225,6 +246,20 @@ impl GeometryAuthorityRegistry {
                     && entry
                         .to_country_code
                         .eq_ignore_ascii_case(left_country_code))
+        })
+    }
+
+    pub fn route_policy(
+        &self,
+        source_id: &str,
+        left_city_id: &CityId,
+        right_city_id: &CityId,
+    ) -> Option<&GeometryAuthorityRoutePolicyDefinition> {
+        self.route_policies.iter().find(|entry| {
+            entry.source_id == source_id
+                && ((&entry.from_city_id == left_city_id && &entry.to_city_id == right_city_id)
+                    || (&entry.from_city_id == right_city_id
+                        && &entry.to_city_id == left_city_id))
         })
     }
 }
