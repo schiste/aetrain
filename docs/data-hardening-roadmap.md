@@ -251,6 +251,13 @@ The following artifacts should become first-class outputs:
 - `station-like-cities.json`
 - `zz-cities.json`
 - `abbreviation-candidates.json`
+- `route-geometry-anomalies.json`
+- `domestic-geometry-backlog-by-country.json`
+- `cross-border-geometry-backlog-by-corridor.json`
+- `rejected-rail-authority-routes.json`
+- `rejected-shape-plausibility-routes.json`
+- `foreign-cross-border-leakage-routes.json`
+- `impossible-edge-speed-routes.json`
 
 These are not optional niceties. They are the operator surface for deciding
 whether a country is ready for broader onboarding.
