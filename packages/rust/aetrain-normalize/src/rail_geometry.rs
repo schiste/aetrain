@@ -10,10 +10,13 @@ use anyhow::{Context, Result};
 use serde_json::Value;
 
 const DEFAULT_SNAP_DISTANCE_METERS: f64 = 25_000.0;
+const ROUTE_SNAP_DISTANCE_METERS: f64 = 5_000.0;
 const ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
 const NODE_MERGE_TOLERANCE_METERS: f64 = 120.0;
 const NODE_BUCKET_SCALE: f64 = 1_000.0;
 const SNAP_CANDIDATE_LIMIT: usize = 8;
+const SNAP_LOCALITY_SLACK_METERS: u32 = 300;
+const MAX_SEGMENT_LENGTH_WITHOUT_VERTEX_METERS: u32 = 500;
 
 #[derive(Clone, Debug)]
 pub struct RailGeometryNetwork {
@@ -143,16 +146,16 @@ impl RailGeometryNetwork {
         from: GeoPoint,
         to: GeoPoint,
     ) -> Option<Vec<GeoPoint>> {
-        let start_candidates = self.nearest_nodes_with_distance(
+        let start_candidates = filter_local_snap_candidates(self.nearest_nodes_with_distance(
             from,
-            DEFAULT_SNAP_DISTANCE_METERS.round() as u32,
+            ROUTE_SNAP_DISTANCE_METERS.round() as u32,
             SNAP_CANDIDATE_LIMIT,
-        );
-        let end_candidates = self.nearest_nodes_with_distance(
+        ));
+        let end_candidates = filter_local_snap_candidates(self.nearest_nodes_with_distance(
             to,
-            DEFAULT_SNAP_DISTANCE_METERS.round() as u32,
+            ROUTE_SNAP_DISTANCE_METERS.round() as u32,
             SNAP_CANDIDATE_LIMIT,
-        );
+        ));
         if start_candidates.is_empty() || end_candidates.is_empty() {
             return None;
         }
@@ -193,8 +196,7 @@ impl RailGeometryNetwork {
     ) -> Option<Vec<GeoPoint>> {
         let start_distance = haversine_meters(self.nodes[start_node], from);
         let end_distance = haversine_meters(self.nodes[end_node], to);
-        if start_distance > DEFAULT_SNAP_DISTANCE_METERS
-            || end_distance > DEFAULT_SNAP_DISTANCE_METERS
+        if start_distance > ROUTE_SNAP_DISTANCE_METERS || end_distance > ROUTE_SNAP_DISTANCE_METERS
         {
             return None;
         }
@@ -333,19 +335,22 @@ fn build_network_from_polylines(polylines: &[Vec<GeoPoint>]) -> RailGeometryNetw
         endpoint_node_indexes.push(last_index);
 
         for window in points.windows(2) {
-            let from_index = get_or_insert_exact_node(
-                window[0],
-                &mut nodes,
-                &mut adjacency,
-                &mut node_index_by_key,
-            );
-            let to_index = get_or_insert_exact_node(
-                window[1],
-                &mut nodes,
-                &mut adjacency,
-                &mut node_index_by_key,
-            );
-            add_undirected_edge(&mut adjacency, from_index, to_index, window[0], window[1]);
+            let densified = densify_segment(window[0], window[1]);
+            for segment in densified.windows(2) {
+                let from_index = get_or_insert_exact_node(
+                    segment[0],
+                    &mut nodes,
+                    &mut adjacency,
+                    &mut node_index_by_key,
+                );
+                let to_index = get_or_insert_exact_node(
+                    segment[1],
+                    &mut nodes,
+                    &mut adjacency,
+                    &mut node_index_by_key,
+                );
+                add_undirected_edge(&mut adjacency, from_index, to_index, segment[0], segment[1]);
+            }
         }
     }
 
@@ -397,12 +402,13 @@ fn add_endpoint_stitch_edges(
     adjacency: &mut [Vec<GraphEdge>],
     endpoint_node_indexes: &[usize],
 ) {
-    let mut node_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
-    for (index, point) in nodes.iter().enumerate() {
-        node_indexes_by_bucket
-            .entry(quantize_bucket_key(*point))
+    let mut endpoint_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
+    for endpoint_index in endpoint_node_indexes {
+        let endpoint_index = *endpoint_index;
+        endpoint_indexes_by_bucket
+            .entry(quantize_bucket_key(nodes[endpoint_index]))
             .or_default()
-            .push(index);
+            .push(endpoint_index);
     }
 
     let mut stitched_pairs = HashMap::<(usize, usize), ()>::new();
@@ -412,7 +418,8 @@ fn add_endpoint_stitch_edges(
         let bucket = quantize_bucket_key(endpoint);
         for lat_bucket in (bucket.0 - 1)..=(bucket.0 + 1) {
             for lon_bucket in (bucket.1 - 1)..=(bucket.1 + 1) {
-                let Some(candidate_indexes) = node_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
+                let Some(candidate_indexes) =
+                    endpoint_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
                 else {
                     continue;
                 };
@@ -496,6 +503,37 @@ fn polyline_distance_meters(points: &[GeoPoint]) -> u32 {
         .windows(2)
         .map(|window| estimate_distance_meters(window[0], window[1]))
         .sum()
+}
+
+fn densify_segment(from: GeoPoint, to: GeoPoint) -> Vec<GeoPoint> {
+    let distance = estimate_distance_meters(from, to);
+    if distance <= MAX_SEGMENT_LENGTH_WITHOUT_VERTEX_METERS {
+        return vec![from, to];
+    }
+
+    let steps = ((distance as f64 / MAX_SEGMENT_LENGTH_WITHOUT_VERTEX_METERS as f64).ceil()
+        as usize)
+        .max(1);
+    let mut points = Vec::with_capacity(steps + 1);
+    for step in 0..=steps {
+        let t = step as f64 / steps as f64;
+        points.push(GeoPoint {
+            lat: from.lat + (to.lat - from.lat) * t,
+            lon: from.lon + (to.lon - from.lon) * t,
+        });
+    }
+    points
+}
+
+fn filter_local_snap_candidates(candidates: Vec<(usize, u32)>) -> Vec<(usize, u32)> {
+    let Some((_, nearest_distance)) = candidates.first() else {
+        return candidates;
+    };
+    let distance_limit = nearest_distance.saturating_add(SNAP_LOCALITY_SLACK_METERS);
+    candidates
+        .into_iter()
+        .filter(|(_, distance)| *distance <= distance_limit)
+        .collect()
 }
 
 fn haversine_meters(left: GeoPoint, right: GeoPoint) -> f64 {
