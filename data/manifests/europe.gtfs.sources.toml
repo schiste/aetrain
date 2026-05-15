@@ -101,7 +101,7 @@ notes = "Official Germany-wide DELFI GTFS resolved from the archive directory li
 [[target]]
 id = "ch-national"
 adapter = "gtfs_basic"
-source_ids = ["ch-gtfs"]
+source_ids = ["ch-gtfs", "ch-geofabrik-railways-gpkg"]
 active = true
 canonical_export = true
 web_debug_export = false
@@ -120,22 +120,48 @@ notes = "Inactive after live validation on 2026-05-09: the documented Current_la
 [[target]]
 id = "es-renfe-mainline"
 adapter = "gtfs_basic"
-source_ids = ["es-renfe-mainline-gtfs"]
+source_ids = [
+  "es-renfe-mainline-gtfs",
+  "es-geofabrik-andalucia-railways-gpkg",
+  "es-geofabrik-aragon-railways-gpkg",
+  "es-geofabrik-asturias-railways-gpkg",
+  "es-geofabrik-cantabria-railways-gpkg",
+  "es-geofabrik-castilla-la-mancha-railways-gpkg",
+  "es-geofabrik-castilla-y-leon-railways-gpkg",
+  "es-geofabrik-cataluna-railways-gpkg",
+  "es-geofabrik-galicia-railways-gpkg",
+  "es-geofabrik-madrid-railways-gpkg",
+  "es-geofabrik-pais-vasco-railways-gpkg",
+  "es-geofabrik-valencia-railways-gpkg",
+]
 active = true
 canonical_export = true
 web_debug_export = false
 geometry_authority_registry_path = "geometry-authorities.toml"
-notes = "Spain official Renfe GTFS for high-speed, long-distance, and medium-distance services. Validated on 2026-05-09."
+notes = "Spain official Renfe GTFS for high-speed, long-distance, and medium-distance services. The authority path uses a hotspot-driven composite of regional Geofabrik GeoPackages because Geofabrik does not publish a single country GeoPackage for Spain."
 
 [[target]]
 id = "es-renfe-cercanias"
 adapter = "gtfs_basic"
-source_ids = ["es-renfe-cercanias-gtfs"]
+source_ids = [
+  "es-renfe-cercanias-gtfs",
+  "es-geofabrik-andalucia-railways-gpkg",
+  "es-geofabrik-aragon-railways-gpkg",
+  "es-geofabrik-asturias-railways-gpkg",
+  "es-geofabrik-cantabria-railways-gpkg",
+  "es-geofabrik-castilla-la-mancha-railways-gpkg",
+  "es-geofabrik-castilla-y-leon-railways-gpkg",
+  "es-geofabrik-cataluna-railways-gpkg",
+  "es-geofabrik-galicia-railways-gpkg",
+  "es-geofabrik-madrid-railways-gpkg",
+  "es-geofabrik-pais-vasco-railways-gpkg",
+  "es-geofabrik-valencia-railways-gpkg",
+]
 active = true
 canonical_export = true
 web_debug_export = false
 geometry_authority_registry_path = "geometry-authorities.toml"
-notes = "Spain official Renfe GTFS for Cercanías and Rodalies services. Validated on 2026-05-09 after adding CSV trimming for padded official headers/values."
+notes = "Spain official Renfe GTFS for Cercanías and Rodalies services. Validated on 2026-05-09 after adding CSV trimming for padded official headers/values. The authority path uses a hotspot-driven composite of regional Geofabrik GeoPackages because Geofabrik does not publish a single country GeoPackage for Spain."
 
 [[source]]
 id = "sncf-fr-gtfs"
@@ -258,8 +284,129 @@ adapter = "gtfs_basic"
 role = "rail_geometry"
 url = "https://download.geofabrik.de/europe/switzerland-latest-free.gpkg.zip"
 file_name = "ch-geofabrik-railways.gpkg.zip"
-active = false
-notes = "Planned Swiss domestic rail-geometry authority source using Geofabrik's country GeoPackage. The pipeline can now load zipped .gpkg rail layers, but this source is left inactive until we explicitly promote CH authority onboarding."
+active = true
+notes = "Swiss domestic rail-geometry authority source using Geofabrik's country GeoPackage. Activated on 2026-05-15 for the first generic non-French authority onboarding pass."
+
+[[source]]
+id = "es-geofabrik-andalucia-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/andalucia-latest-free.gpkg.zip"
+file_name = "es-geofabrik-andalucia-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Andalucia."
+
+[[source]]
+id = "es-geofabrik-aragon-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/aragon-latest-free.gpkg.zip"
+file_name = "es-geofabrik-aragon-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Aragon."
+
+[[source]]
+id = "es-geofabrik-asturias-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/asturias-latest-free.gpkg.zip"
+file_name = "es-geofabrik-asturias-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Asturias."
+
+[[source]]
+id = "es-geofabrik-cantabria-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/cantabria-latest-free.gpkg.zip"
+file_name = "es-geofabrik-cantabria-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Cantabria."
+
+[[source]]
+id = "es-geofabrik-castilla-la-mancha-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/castilla-la-mancha-latest-free.gpkg.zip"
+file_name = "es-geofabrik-castilla-la-mancha-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Castilla-La Mancha."
+
+[[source]]
+id = "es-geofabrik-castilla-y-leon-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/castilla-y-leon-latest-free.gpkg.zip"
+file_name = "es-geofabrik-castilla-y-leon-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Castilla y Leon."
+
+[[source]]
+id = "es-geofabrik-cataluna-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/cataluna-latest-free.gpkg.zip"
+file_name = "es-geofabrik-cataluna-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Catalunya."
+
+[[source]]
+id = "es-geofabrik-galicia-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/galicia-latest-free.gpkg.zip"
+file_name = "es-geofabrik-galicia-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Galicia."
+
+[[source]]
+id = "es-geofabrik-madrid-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/madrid-latest-free.gpkg.zip"
+file_name = "es-geofabrik-madrid-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Madrid."
+
+[[source]]
+id = "es-geofabrik-pais-vasco-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/pais-vasco-latest-free.gpkg.zip"
+file_name = "es-geofabrik-pais-vasco-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Pais Vasco."
+
+[[source]]
+id = "es-geofabrik-valencia-railways-gpkg"
+kind = "supplementary"
+country_code = "ES"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/spain/valencia-latest-free.gpkg.zip"
+file_name = "es-geofabrik-valencia-railways.gpkg.zip"
+active = true
+notes = "Spain regional rail-geometry authority source for Valencia."
 
 [[source]]
 id = "no-entur-gtfs"

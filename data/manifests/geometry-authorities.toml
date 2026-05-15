@@ -2,6 +2,66 @@ dataset_id = "aetrain-geometry-authorities"
 schema_version = 1
 description = "Authority registry for infrastructure-backed route geometry coverage and promotion policy."
 
+[[source]]
+source_id = "ch-geofabrik-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Swiss domestic Geofabrik GeoPackage authority source."
+
+[[source]]
+source_id = "es-geofabrik-andalucia-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Andalucia."
+
+[[source]]
+source_id = "es-geofabrik-aragon-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Aragon."
+
+[[source]]
+source_id = "es-geofabrik-asturias-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Asturias."
+
+[[source]]
+source_id = "es-geofabrik-cantabria-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Cantabria."
+
+[[source]]
+source_id = "es-geofabrik-castilla-la-mancha-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Castilla-La Mancha."
+
+[[source]]
+source_id = "es-geofabrik-castilla-y-leon-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Castilla y Leon."
+
+[[source]]
+source_id = "es-geofabrik-cataluna-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Catalunya."
+
+[[source]]
+source_id = "es-geofabrik-galicia-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Galicia."
+
+[[source]]
+source_id = "es-geofabrik-madrid-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Madrid."
+
+[[source]]
+source_id = "es-geofabrik-pais-vasco-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Pais Vasco."
+
+[[source]]
+source_id = "es-geofabrik-valencia-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Spain regional Geofabrik GeoPackage authority source for Valencia."
+
 [[country]]
 country_code = "FR"
 source_id = "sncf-fr-rfn-lines"
@@ -16,16 +76,15 @@ notes = "French domestic rail authority backed by SNCF RFN line geometry. Domest
 [[country]]
 country_code = "CH"
 source_id = "ch-geofabrik-railways-gpkg"
-loader = "geofabrik_railways_gpkg"
-status = "planned"
+status = "ingested"
 customer_facing = false
-notes = "Swiss domestic geometry backlog is tracked and now has a planned Geofabrik GeoPackage authority source, but no onboarded authority layer is promoted yet."
+notes = "Swiss domestic geometry backlog is tracked through a Geofabrik country GeoPackage authority source. It is activated for ingestion, but not yet promoted until the quality gates are measured."
 
 [[country]]
 country_code = "ES"
-status = "planned"
+status = "ingested"
 customer_facing = false
-notes = "Spanish domestic geometry backlog is tracked, but no single promoted country-scale authority source is wired yet. Current next step is source acquisition, not more routing heuristics."
+notes = "Spanish domestic geometry backlog is tracked through a hotspot-driven composite of regional Geofabrik GeoPackage authority sources. It is activated for ingestion, but not yet promoted until the quality gates are measured."
 
 [[country]]
 country_code = "AT"

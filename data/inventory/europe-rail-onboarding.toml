@@ -98,7 +98,7 @@ schedule_source_status = "official_gtfs_dynamic_catalog"
 schedule_source_url = "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/"
 geometry_source_status = "official_station_or_stop_registry_verified"
 pipeline_readiness = "onboarded_manifest_ready"
-notes = "Official national GTFS built successfully on 2026-05-09. The public dataset page resolves to a short-lived signed download URL, so fully unattended fetches need a redirect-aware download path. Domestic authority onboarding path is now defined around a planned Geofabrik country GeoPackage rail layer."
+notes = "Official national GTFS built successfully on 2026-05-09. The public dataset page resolves to a short-lived signed download URL, so fully unattended fetches need a redirect-aware download path. Domestic authority onboarding is now activated around a Geofabrik country GeoPackage rail layer and awaits quality measurement."
 
 [[country]]
 code = "CY"
@@ -159,7 +159,7 @@ schedule_source_url = "https://data.renfe.com/dataset?res_format=GTFS"
 geometry_source_status = "official_infrastructure_portal_only"
 infrastructure_source_url = "https://www.adif.es/en/web/adif/sobre-adif/red-ferroviaria"
 pipeline_readiness = "onboarded_manifest_ready"
-notes = "Renfe's official mainline GTFS and Cercanías GTFS both built successfully on 2026-05-09 as separate targets. The Cercanías export required tolerant CSV trimming because the official files pad headers and values. The remaining blocker is geometry-source acquisition: a single country-scale authority feed is not yet wired, so Spain remains schedule-onboarded but authority-incomplete."
+notes = "Renfe's official mainline GTFS and Cercanías GTFS both built successfully on 2026-05-09 as separate targets. The Cercanías export required tolerant CSV trimming because the official files pad headers and values. Spain authority onboarding now uses a hotspot-driven composite of regional Geofabrik GeoPackages because Geofabrik does not publish a single country GeoPackage for Spain."
 
 [[country]]
 code = "FI"
