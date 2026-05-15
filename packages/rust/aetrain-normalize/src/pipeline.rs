@@ -385,6 +385,44 @@ pub struct PipelineAuthorityDetourCorridorRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCustomerFacingCountryBacklogRecord {
+    pub country_code: String,
+    pub source_id: Option<String>,
+    pub release_blocked: bool,
+    pub blocker_score: u64,
+    pub blocker_reasons: Vec<String>,
+    pub next_actions: Vec<String>,
+    pub missing_domestic_authority_count: u64,
+    pub station_attachment_gap_count: u64,
+    pub topology_no_route_gap_count: u64,
+    pub rejected_implausible_authority_detour_count: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCustomerFacingCorridorBacklogRecord {
+    pub corridor_id: String,
+    pub source_id: Option<String>,
+    pub release_blocked: bool,
+    pub blocker_score: u64,
+    pub blocker_reasons: Vec<String>,
+    pub next_actions: Vec<String>,
+    pub cross_border_unresolved_count: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCustomerFacingReleaseBacklogSummary {
+    pub customer_facing_target_enabled: bool,
+    pub customer_facing_edge_count: u64,
+    pub release_ready_country_count: u64,
+    pub blocked_country_count: u64,
+    pub release_ready_corridor_count: u64,
+    pub blocked_corridor_count: u64,
+    pub highest_priority_country: Option<String>,
+    pub highest_priority_corridor: Option<String>,
+    pub recommended_next_steps: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQuarantinedFallbackGapCityRecord {
     pub city_id: aetrain_domain::CityId,
     pub display_name: String,
@@ -447,6 +485,9 @@ pub struct PipelineQualityReport {
     pub authority_attachment_coverage_clusters:
         Vec<PipelineAuthorityAttachmentCoverageClusterRecord>,
     pub authority_detour_corridors: Vec<PipelineAuthorityDetourCorridorRecord>,
+    pub customer_facing_country_backlog: Vec<PipelineCustomerFacingCountryBacklogRecord>,
+    pub customer_facing_corridor_backlog: Vec<PipelineCustomerFacingCorridorBacklogRecord>,
+    pub customer_facing_release_backlog_summary: PipelineCustomerFacingReleaseBacklogSummary,
     pub plain_name_fallback_gap_registry_candidates:
         Vec<PipelinePlainNameFallbackGapRegistryRecord>,
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
@@ -893,6 +934,18 @@ fn export_pipeline_target(
         &quality_report.authority_detour_corridors,
     )?;
     write_json(
+        &quality_dir.join("customer-facing-country-backlog.json"),
+        &quality_report.customer_facing_country_backlog,
+    )?;
+    write_json(
+        &quality_dir.join("customer-facing-corridor-backlog.json"),
+        &quality_report.customer_facing_corridor_backlog,
+    )?;
+    write_json(
+        &quality_dir.join("customer-facing-release-backlog-summary.json"),
+        &quality_report.customer_facing_release_backlog_summary,
+    )?;
+    write_json(
         &quality_dir.join("plain-name-fallback-gap-registry-candidates.json"),
         &quality_report.plain_name_fallback_gap_registry_candidates,
     )?;
@@ -1303,6 +1356,15 @@ fn build_quality_report(
     );
     let corridor_geometry_authorities =
         build_corridor_geometry_authority_records(authority_registry, &route_geometry_anomalies);
+    let customer_facing_country_backlog =
+        build_customer_facing_country_backlog(&country_geometry_authorities);
+    let customer_facing_corridor_backlog =
+        build_customer_facing_corridor_backlog(&corridor_geometry_authorities);
+    let customer_facing_release_backlog_summary = build_customer_facing_release_backlog_summary(
+        counters,
+        &customer_facing_country_backlog,
+        &customer_facing_corridor_backlog,
+    );
 
     let gate_results = vec![
         quality_gate_equals(
@@ -1508,6 +1570,9 @@ fn build_quality_report(
         promoted_station_attachment_gap_details,
         authority_attachment_coverage_clusters,
         authority_detour_corridors,
+        customer_facing_country_backlog,
+        customer_facing_corridor_backlog,
+        customer_facing_release_backlog_summary,
         plain_name_fallback_gap_registry_candidates:
             plain_name_fallback_gap_registry_candidates.to_vec(),
         quarantined_fallback_gap_cities: quarantined_fallback_gap_cities.to_vec(),
@@ -1688,6 +1753,162 @@ fn build_corridor_customer_facing_blockers(
         blockers.push("cross_border_unresolved".to_string());
     }
     blockers
+}
+
+fn build_customer_facing_country_backlog(
+    country_geometry_authorities: &[PipelineCountryGeometryAuthorityRecord],
+) -> Vec<PipelineCustomerFacingCountryBacklogRecord> {
+    let mut records = country_geometry_authorities
+        .iter()
+        .map(|record| {
+            let blocker_score = record.missing_domestic_authority_count
+                + record.promoted_station_attachment_gap_count
+                + record.promoted_topology_no_route_gap_count
+                + record.promoted_rejected_implausible_authority_detour_count;
+            let next_actions = build_customer_facing_country_next_actions(record);
+            PipelineCustomerFacingCountryBacklogRecord {
+                country_code: record.country_code.clone(),
+                source_id: record.source_id.clone(),
+                release_blocked: !record.customer_facing_ready,
+                blocker_score,
+                blocker_reasons: record.customer_facing_blockers.clone(),
+                next_actions,
+                missing_domestic_authority_count: record.missing_domestic_authority_count,
+                station_attachment_gap_count: record.promoted_station_attachment_gap_count,
+                topology_no_route_gap_count: record.promoted_topology_no_route_gap_count,
+                rejected_implausible_authority_detour_count: record
+                    .promoted_rejected_implausible_authority_detour_count,
+            }
+        })
+        .collect::<Vec<_>>();
+    records.sort_by(|left, right| {
+        right
+            .release_blocked
+            .cmp(&left.release_blocked)
+            .then_with(|| right.blocker_score.cmp(&left.blocker_score))
+            .then_with(|| left.country_code.cmp(&right.country_code))
+    });
+    records
+}
+
+fn build_customer_facing_country_next_actions(
+    record: &PipelineCountryGeometryAuthorityRecord,
+) -> Vec<String> {
+    let mut actions = Vec::new();
+    if !record.customer_facing {
+        actions.push("do_not_mark_customer_facing_until_quality_gates_pass".to_string());
+    }
+    if !record.promoted {
+        actions.push("onboard_and_promote_domestic_authority_layer".to_string());
+    }
+    if record.missing_domestic_authority_count > 0 {
+        actions.push("close_missing_domestic_authority_backlog".to_string());
+    }
+    if record.promoted_station_attachment_gap_count > 0 {
+        actions.push("fix_station_attachment_coverage_clusters".to_string());
+    }
+    if record.promoted_topology_no_route_gap_count > 0 {
+        actions.push("repair_authority_topology_no_route_gaps".to_string());
+    }
+    if record.promoted_rejected_implausible_authority_detour_count > 0 {
+        actions.push("resolve_implausible_authority_detour_corridors".to_string());
+    }
+    actions
+}
+
+fn build_customer_facing_corridor_backlog(
+    corridor_geometry_authorities: &[PipelineCorridorGeometryAuthorityRecord],
+) -> Vec<PipelineCustomerFacingCorridorBacklogRecord> {
+    let mut records = corridor_geometry_authorities
+        .iter()
+        .map(|record| {
+            let mut next_actions = Vec::new();
+            if !record.customer_facing {
+                next_actions.push("do_not_mark_customer_facing_until_corridor_is_promoted".to_string());
+            }
+            if !record.promoted {
+                next_actions.push("onboard_and_promote_corridor_authority".to_string());
+            }
+            if record.cross_border_unresolved_count > 0 {
+                next_actions.push("resolve_cross_border_geometry_backlog".to_string());
+            }
+            PipelineCustomerFacingCorridorBacklogRecord {
+                corridor_id: record.corridor_id.clone(),
+                source_id: record.source_id.clone(),
+                release_blocked: !record.customer_facing_ready,
+                blocker_score: record.cross_border_unresolved_count,
+                blocker_reasons: record.customer_facing_blockers.clone(),
+                next_actions,
+                cross_border_unresolved_count: record.cross_border_unresolved_count,
+            }
+        })
+        .collect::<Vec<_>>();
+    records.sort_by(|left, right| {
+        right
+            .release_blocked
+            .cmp(&left.release_blocked)
+            .then_with(|| right.blocker_score.cmp(&left.blocker_score))
+            .then_with(|| left.corridor_id.cmp(&right.corridor_id))
+    });
+    records
+}
+
+fn build_customer_facing_release_backlog_summary(
+    counters: &BTreeMap<String, u64>,
+    country_backlog: &[PipelineCustomerFacingCountryBacklogRecord],
+    corridor_backlog: &[PipelineCustomerFacingCorridorBacklogRecord],
+) -> PipelineCustomerFacingReleaseBacklogSummary {
+    let customer_facing_target_enabled = counters.contains_key("customer_facing_scope_edge_count");
+    let customer_facing_edge_count = counter_value(counters, "customer_facing_scope_edge_count");
+    let release_ready_country_count = country_backlog
+        .iter()
+        .filter(|record| !record.release_blocked)
+        .count() as u64;
+    let blocked_country_count = country_backlog
+        .iter()
+        .filter(|record| record.release_blocked)
+        .count() as u64;
+    let release_ready_corridor_count = corridor_backlog
+        .iter()
+        .filter(|record| !record.release_blocked)
+        .count() as u64;
+    let blocked_corridor_count = corridor_backlog
+        .iter()
+        .filter(|record| record.release_blocked)
+        .count() as u64;
+    let highest_priority_country = country_backlog
+        .iter()
+        .filter(|record| record.release_blocked)
+        .max_by_key(|record| record.blocker_score)
+        .map(|record| record.country_code.clone());
+    let highest_priority_corridor = corridor_backlog
+        .iter()
+        .filter(|record| record.release_blocked)
+        .max_by_key(|record| record.blocker_score)
+        .map(|record| record.corridor_id.clone());
+    let mut recommended_next_steps = Vec::new();
+    if customer_facing_target_enabled && customer_facing_edge_count == 0 {
+        recommended_next_steps.push(
+            "do_not_enable_customer_facing_release_until_nonzero_edge_scope_exists".to_string(),
+        );
+    }
+    if highest_priority_country.is_some() {
+        recommended_next_steps.push("finish_highest_priority_country_backlog_first".to_string());
+    }
+    if highest_priority_corridor.is_some() {
+        recommended_next_steps.push("keep_cross_border_corridors_out_of_scope_until_promoted".to_string());
+    }
+    PipelineCustomerFacingReleaseBacklogSummary {
+        customer_facing_target_enabled,
+        customer_facing_edge_count,
+        release_ready_country_count,
+        blocked_country_count,
+        release_ready_corridor_count,
+        blocked_corridor_count,
+        highest_priority_country,
+        highest_priority_corridor,
+        recommended_next_steps,
+    }
 }
 
 fn geometry_authority_status_label(status: &GeometryAuthorityStatus) -> &'static str {
@@ -8778,6 +8999,60 @@ mod tests {
         assert_eq!(clusters[0].counterpart_examples.len(), 2);
         assert_eq!(clusters[1].display_name, "La Teste-de-Buch");
         assert_eq!(clusters[1].route_count, 1);
+    }
+
+    #[test]
+    fn customer_facing_release_backlog_summary_prioritizes_largest_blocker() {
+        let country_backlog = vec![
+            PipelineCustomerFacingCountryBacklogRecord {
+                country_code: "FR".to_string(),
+                source_id: Some("sncf-fr-rfn-lines".to_string()),
+                release_blocked: true,
+                blocker_score: 111,
+                blocker_reasons: vec!["implausible_authority_detour".to_string()],
+                next_actions: vec!["resolve_implausible_authority_detour_corridors".to_string()],
+                missing_domestic_authority_count: 24,
+                station_attachment_gap_count: 20,
+                topology_no_route_gap_count: 4,
+                rejected_implausible_authority_detour_count: 67,
+            },
+            PipelineCustomerFacingCountryBacklogRecord {
+                country_code: "CH".to_string(),
+                source_id: None,
+                release_blocked: true,
+                blocker_score: 4000,
+                blocker_reasons: vec!["missing_domestic_authority".to_string()],
+                next_actions: vec!["onboard_and_promote_domestic_authority_layer".to_string()],
+                missing_domestic_authority_count: 4000,
+                station_attachment_gap_count: 0,
+                topology_no_route_gap_count: 0,
+                rejected_implausible_authority_detour_count: 0,
+            },
+        ];
+        let corridor_backlog = vec![PipelineCustomerFacingCorridorBacklogRecord {
+            corridor_id: "CH-DE".to_string(),
+            source_id: None,
+            release_blocked: true,
+            blocker_score: 43,
+            blocker_reasons: vec!["cross_border_unresolved".to_string()],
+            next_actions: vec!["resolve_cross_border_geometry_backlog".to_string()],
+            cross_border_unresolved_count: 43,
+        }];
+        let counters = BTreeMap::from([("customer_facing_scope_edge_count".to_string(), 0)]);
+
+        let summary = build_customer_facing_release_backlog_summary(
+            &counters,
+            &country_backlog,
+            &corridor_backlog,
+        );
+
+        assert!(summary.customer_facing_target_enabled);
+        assert_eq!(summary.customer_facing_edge_count, 0);
+        assert_eq!(summary.highest_priority_country.as_deref(), Some("CH"));
+        assert_eq!(summary.highest_priority_corridor.as_deref(), Some("CH-DE"));
+        assert!(summary
+            .recommended_next_steps
+            .contains(&"do_not_enable_customer_facing_release_until_nonzero_edge_scope_exists".to_string()));
     }
 
     #[test]
