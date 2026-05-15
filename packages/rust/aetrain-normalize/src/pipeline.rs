@@ -230,6 +230,20 @@ pub struct PipelineCrossBorderGeometryBacklogRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineDomesticAuthorityOnboardingHotspotRecord {
+    pub country_code: String,
+    pub authority_status: String,
+    pub source_id: Option<String>,
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub route_count: u64,
+    pub counterpart_examples: Vec<String>,
+    pub min_direct_distance_km: u32,
+    pub max_direct_distance_km: u32,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineCountryGeometryAuthorityRecord {
     pub country_code: String,
     pub status: String,
@@ -472,6 +486,7 @@ pub struct PipelineQualityReport {
     pub route_geometry_anomalies: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub domestic_geometry_backlog_by_country: Vec<PipelineDomesticGeometryBacklogRecord>,
     pub cross_border_geometry_backlog_by_corridor: Vec<PipelineCrossBorderGeometryBacklogRecord>,
+    pub domestic_authority_onboarding_hotspots: Vec<PipelineDomesticAuthorityOnboardingHotspotRecord>,
     pub rejected_rail_authority_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub rejected_shape_plausibility_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub foreign_cross_border_leakage_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
@@ -886,6 +901,10 @@ fn export_pipeline_target(
         &quality_report.cross_border_geometry_backlog_by_corridor,
     )?;
     write_json(
+        &quality_dir.join("domestic-authority-onboarding-hotspots.json"),
+        &quality_report.domestic_authority_onboarding_hotspots,
+    )?;
+    write_json(
         &quality_dir.join("rejected-rail-authority-routes.json"),
         &quality_report.rejected_rail_authority_routes,
     )?;
@@ -1170,6 +1189,10 @@ fn build_quality_report(
         build_domestic_geometry_backlog_by_country(&route_geometry_anomalies);
     let cross_border_geometry_backlog_by_corridor =
         build_cross_border_geometry_backlog_by_corridor(&route_geometry_anomalies);
+    let domestic_authority_onboarding_hotspots = build_domestic_authority_onboarding_hotspots(
+        &route_geometry_anomalies,
+        authority_registry,
+    );
     let rejected_rail_authority_routes = route_geometry_anomalies
         .iter()
         .filter(|record| record.geometry_resolution_status == "rejected_rail_authority")
@@ -1558,6 +1581,7 @@ fn build_quality_report(
         route_geometry_anomalies,
         domestic_geometry_backlog_by_country,
         cross_border_geometry_backlog_by_corridor,
+        domestic_authority_onboarding_hotspots,
         rejected_rail_authority_routes,
         rejected_shape_plausibility_routes,
         foreign_cross_border_leakage_routes,
@@ -2908,6 +2932,94 @@ fn build_cross_border_geometry_backlog_by_corridor(
             }
         })
         .collect()
+}
+
+fn build_domestic_authority_onboarding_hotspots(
+    route_geometry_anomalies: &[PipelineRouteGeometryAnomalyRecord],
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+) -> Vec<PipelineDomesticAuthorityOnboardingHotspotRecord> {
+    #[derive(Default)]
+    struct HotspotAccumulator {
+        route_count: u64,
+        counterpart_examples: BTreeSet<String>,
+        min_direct_distance_km: u32,
+        max_direct_distance_km: u32,
+    }
+
+    let mut grouped =
+        BTreeMap::<(String, aetrain_domain::CityId, String), HotspotAccumulator>::new();
+    for record in route_geometry_anomalies {
+        if record.geometry_resolution_status != "missing_domestic_authority"
+            || record.from_country_code != record.to_country_code
+        {
+            continue;
+        }
+        for (city_id, display_name, counterpart) in [
+            (
+                &record.from_city_id,
+                &record.from_display_name,
+                &record.to_display_name,
+            ),
+            (
+                &record.to_city_id,
+                &record.to_display_name,
+                &record.from_display_name,
+            ),
+        ] {
+            let key = (
+                record.from_country_code.clone(),
+                city_id.clone(),
+                display_name.clone(),
+            );
+            let entry = grouped.entry(key).or_insert_with(|| HotspotAccumulator {
+                route_count: 0,
+                counterpart_examples: BTreeSet::new(),
+                min_direct_distance_km: record.direct_distance_km,
+                max_direct_distance_km: record.direct_distance_km,
+            });
+            entry.route_count += 1;
+            entry.counterpart_examples.insert(counterpart.clone());
+            entry.min_direct_distance_km = entry.min_direct_distance_km.min(record.direct_distance_km);
+            entry.max_direct_distance_km = entry.max_direct_distance_km.max(record.direct_distance_km);
+        }
+    }
+
+    let mut records = grouped
+        .into_iter()
+        .map(|((country_code, city_id, display_name), entry)| {
+            let authority = authority_registry.and_then(|registry| registry.country(&country_code));
+            let authority_status = authority
+                .map(|entry| geometry_authority_status_label(&entry.status).to_string())
+                .unwrap_or_else(|| "untracked".to_string());
+            let source_id = authority.and_then(|entry| entry.source_id.clone());
+            let suggested_action = if authority.is_some_and(|entry| entry.status.is_promoted()) {
+                "repair_existing_authority_coverage"
+            } else {
+                "onboard_domestic_authority_layer"
+            };
+            PipelineDomesticAuthorityOnboardingHotspotRecord {
+                country_code,
+                authority_status,
+                source_id,
+                city_id,
+                display_name,
+                route_count: entry.route_count,
+                counterpart_examples: entry.counterpart_examples.into_iter().take(5).collect(),
+                min_direct_distance_km: entry.min_direct_distance_km,
+                max_direct_distance_km: entry.max_direct_distance_km,
+                suggested_action: suggested_action.to_string(),
+            }
+        })
+        .collect::<Vec<_>>();
+    records.sort_by(|left, right| {
+        right
+            .route_count
+            .cmp(&left.route_count)
+            .then_with(|| left.country_code.cmp(&right.country_code))
+            .then_with(|| left.display_name.cmp(&right.display_name))
+            .then_with(|| left.city_id.cmp(&right.city_id))
+    });
+    records
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -9053,6 +9165,54 @@ mod tests {
         assert!(summary
             .recommended_next_steps
             .contains(&"do_not_enable_customer_facing_release_until_nonzero_edge_scope_exists".to_string()));
+    }
+
+    #[test]
+    fn domestic_authority_onboarding_hotspots_group_by_city() {
+        let anomalies = vec![
+            PipelineRouteGeometryAnomalyRecord {
+                anomaly_type: "straight_line_fallback".to_string(),
+                geometry_resolution_status: "missing_domestic_authority".to_string(),
+                geometry_source: EdgeGeometrySource::StraightLineFallback,
+                from_city_id: CityId::new("zurich-ch-q1").expect("valid city id"),
+                from_display_name: "Zurich".to_string(),
+                from_country_code: "CH".to_string(),
+                to_city_id: CityId::new("bern-ch-q2").expect("valid city id"),
+                to_display_name: "Bern".to_string(),
+                to_country_code: "CH".to_string(),
+                duration_min: Some(60),
+                direct_distance_km: 95,
+                geometry_distance_km: 95,
+                detour_ratio_x100: Some(100),
+                implied_speed_kmh: Some(95),
+                provenance: vec!["ch-gtfs:CH:test".to_string()],
+            },
+            PipelineRouteGeometryAnomalyRecord {
+                anomaly_type: "straight_line_fallback".to_string(),
+                geometry_resolution_status: "missing_domestic_authority".to_string(),
+                geometry_source: EdgeGeometrySource::StraightLineFallback,
+                from_city_id: CityId::new("zurich-ch-q1").expect("valid city id"),
+                from_display_name: "Zurich".to_string(),
+                from_country_code: "CH".to_string(),
+                to_city_id: CityId::new("olten-ch-q3").expect("valid city id"),
+                to_display_name: "Olten".to_string(),
+                to_country_code: "CH".to_string(),
+                duration_min: Some(30),
+                direct_distance_km: 40,
+                geometry_distance_km: 40,
+                detour_ratio_x100: Some(100),
+                implied_speed_kmh: Some(80),
+                provenance: vec!["ch-gtfs:CH:test".to_string()],
+            },
+        ];
+
+        let records = build_domestic_authority_onboarding_hotspots(&anomalies, None);
+
+        assert_eq!(records[0].country_code, "CH");
+        assert_eq!(records[0].display_name, "Zurich");
+        assert_eq!(records[0].route_count, 2);
+        assert_eq!(records[0].suggested_action, "onboard_domestic_authority_layer");
+        assert_eq!(records[0].counterpart_examples.len(), 2);
     }
 
     #[test]
