@@ -105,6 +105,7 @@ source_ids = ["ch-gtfs"]
 active = true
 canonical_export = true
 web_debug_export = false
+geometry_authority_registry_path = "geometry-authorities.toml"
 notes = "Switzerland GTFS resolved from the public opentransportdata dataset page and validated on 2026-05-09. The host issues short-lived signed download redirects, so unattended fetches need a redirect-aware download path."
 
 [[target]]
@@ -123,6 +124,7 @@ source_ids = ["es-renfe-mainline-gtfs"]
 active = true
 canonical_export = true
 web_debug_export = false
+geometry_authority_registry_path = "geometry-authorities.toml"
 notes = "Spain official Renfe GTFS for high-speed, long-distance, and medium-distance services. Validated on 2026-05-09."
 
 [[target]]
@@ -132,6 +134,7 @@ source_ids = ["es-renfe-cercanias-gtfs"]
 active = true
 canonical_export = true
 web_debug_export = false
+geometry_authority_registry_path = "geometry-authorities.toml"
 notes = "Spain official Renfe GTFS for Cercanías and Rodalies services. Validated on 2026-05-09 after adding CSV trimming for padded official headers/values."
 
 [[source]]
@@ -246,6 +249,17 @@ role = "schedule"
 resolver = { kind = "html_latest_match", page_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020", href_pattern = '^https://data\.opentransportdata\.swiss/dataset/[0-9a-f-]+/resource/[0-9a-f-]+/download/gtfs_fp2026_\d{8}\.zip$' }
 include_service_classes = ["intercity", "regional", "ferry"]
 notes = "Official Swiss GTFS static feed resolved from the public dataset page. The public dataset redirects to a short-lived signed download URL."
+
+[[source]]
+id = "ch-geofabrik-railways-gpkg"
+kind = "supplementary"
+country_code = "CH"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/switzerland-latest-free.gpkg.zip"
+file_name = "ch-geofabrik-railways.gpkg.zip"
+active = false
+notes = "Planned Swiss domestic rail-geometry authority source using Geofabrik's country GeoPackage. The pipeline can now load zipped .gpkg rail layers, but this source is left inactive until we explicitly promote CH authority onboarding."
 
 [[source]]
 id = "no-entur-gtfs"

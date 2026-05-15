@@ -15,15 +15,17 @@ notes = "French domestic rail authority backed by SNCF RFN line geometry. Domest
 
 [[country]]
 country_code = "CH"
+source_id = "ch-geofabrik-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
 status = "planned"
 customer_facing = false
-notes = "Swiss domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
+notes = "Swiss domestic geometry backlog is tracked and now has a planned Geofabrik GeoPackage authority source, but no onboarded authority layer is promoted yet."
 
 [[country]]
 country_code = "ES"
 status = "planned"
 customer_facing = false
-notes = "Spanish domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
+notes = "Spanish domestic geometry backlog is tracked, but no single promoted country-scale authority source is wired yet. Current next step is source acquisition, not more routing heuristics."
 
 [[country]]
 country_code = "AT"
