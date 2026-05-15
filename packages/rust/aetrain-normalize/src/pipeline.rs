@@ -23,8 +23,9 @@ use crate::{
     FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
     GeometryAuthorityRoutePolicyAction, GeometryAuthorityStatus, ManualOverrideRegistry,
     NormalizationIssue, SourceKind, SourceManifest, StationMappingReport, TargetDefinition,
-    build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset, bundle_from_basic_output,
-    bundle_from_output, rail_geometry::RailGeometryNetwork,
+    build_gtfs_basic_dataset_with_loaded_rail_geometry, build_gtfs_basic_dataset_with_rail_geometry,
+    build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
+    rail_geometry::RailGeometryNetwork,
 };
 
 pub trait PipelineAdapter {
@@ -85,6 +86,14 @@ impl<'a> AdapterBuildRequest<'a> {
             .iter()
             .copied()
             .find(|source| source.definition.role.as_deref() == Some(role))
+    }
+
+    pub fn sources_by_role(&self, role: &str) -> Vec<&'a FetchedSource> {
+        self.sources
+            .iter()
+            .copied()
+            .filter(|source| source.definition.role.as_deref() == Some(role))
+            .collect()
     }
 }
 
@@ -5667,6 +5676,11 @@ fn authority_loader_for_source_id(
     source_id: &str,
 ) -> Option<GeometryAuthorityLoader> {
     authority_registry
+        .sources
+        .iter()
+        .find_map(|entry| (entry.source_id == source_id).then(|| entry.loader.clone()))
+        .or_else(|| {
+    authority_registry
         .countries
         .iter()
         .find_map(|entry| {
@@ -5680,6 +5694,7 @@ fn authority_loader_for_source_id(
                     .then(|| entry.loader.as_ref().cloned())
                     .flatten()
             })
+        })
         })
 }
 
@@ -7822,26 +7837,79 @@ impl PipelineAdapter for GtfsBasicAdapter {
     fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
         let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
         let country_code = gtfs.definition.country_code.clone();
-        let rail_geometry = request.optional_source_by_role("rail_geometry");
+        let rail_geometry_sources = request.sources_by_role("rail_geometry");
         let authority_registry =
             load_geometry_authority_registry(request.manifest_dir, request.target)?;
-        let rail_geometry_loader = rail_geometry.and_then(|source| {
-            authority_registry
-                .as_ref()
-                .and_then(|registry| authority_loader_for_source_id(registry, &source.definition.id))
-        });
-        let output = build_gtfs_basic_dataset_with_rail_geometry(
-            &gtfs.local_path,
-            &gtfs.definition.id,
-            &country_code,
-            rail_geometry.map(|source| source.local_path.as_path()),
-            rail_geometry_loader,
-            rail_geometry.map(|source| source.definition.id.as_str()),
-            request.dataset_version,
-            request.generated_at,
-            request.source_snapshots,
-            request.overrides,
-        )?;
+        let output = if rail_geometry_sources.is_empty() {
+            build_gtfs_basic_dataset_with_rail_geometry(
+                &gtfs.local_path,
+                &gtfs.definition.id,
+                &country_code,
+                None,
+                None,
+                None,
+                request.dataset_version,
+                request.generated_at,
+                request.source_snapshots,
+                request.overrides,
+            )?
+        } else {
+            let mut loaded_networks = Vec::new();
+            let mut loaded_network_refs = Vec::new();
+            let mut source_ids = Vec::new();
+            for source in rail_geometry_sources {
+                let loader = authority_registry
+                    .as_ref()
+                    .and_then(|registry| authority_loader_for_source_id(registry, &source.definition.id))
+                    .with_context(|| {
+                        format!(
+                            "target {} is missing an authority loader for {}",
+                            request.target.id, source.definition.id
+                        )
+                    })?;
+                let network = match loader {
+                    GeometryAuthorityLoader::SncfRfnGeojson => {
+                        RailGeometryNetwork::load_sncf_rfn_geojson(&source.local_path)
+                    }
+                    GeometryAuthorityLoader::GeofabrikRailwaysGpkg => {
+                        RailGeometryNetwork::load_geofabrik_railways_gpkg(&source.local_path)
+                    }
+                }
+                .with_context(|| {
+                    format!(
+                        "failed to load rail geometry authority {} for target {}",
+                        source.definition.id, request.target.id
+                    )
+                })?;
+                source_ids.push(source.definition.id.clone());
+                loaded_networks.push(network);
+            }
+            let single_source_id = (source_ids.len() == 1).then(|| source_ids[0].clone());
+            for network in &loaded_networks {
+                loaded_network_refs.push(network);
+            }
+            let merged_network = (loaded_networks.len() > 1)
+                .then(|| RailGeometryNetwork::merge(&loaded_network_refs));
+            let merged_source_id = if let Some(source_id) = single_source_id.clone() {
+                source_id
+            } else {
+                format!("composite:{}", source_ids.join("+"))
+            };
+            build_gtfs_basic_dataset_with_loaded_rail_geometry(
+                &gtfs.local_path,
+                &gtfs.definition.id,
+                &country_code,
+                single_source_id
+                    .as_ref()
+                    .and_then(|_| loaded_networks.first())
+                    .or(merged_network.as_ref()),
+                Some(&merged_source_id),
+                request.dataset_version,
+                request.generated_at,
+                request.source_snapshots,
+                request.overrides,
+            )?
+        };
 
         let counters = BTreeMap::from([
             (
@@ -10079,6 +10147,7 @@ mod tests {
             dataset_id: "test-authorities".to_string(),
             schema_version: 1,
             description: "test".to_string(),
+            sources: Vec::new(),
             countries: vec![crate::CountryGeometryAuthorityDefinition {
                 country_code: "FR".to_string(),
                 source_id: Some("sncf-fr-rfn-lines".to_string()),

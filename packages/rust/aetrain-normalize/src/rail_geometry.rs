@@ -60,6 +60,21 @@ impl PartialOrd for QueueState {
 }
 
 impl RailGeometryNetwork {
+    pub fn merge(networks: &[&RailGeometryNetwork]) -> Self {
+        let mut polylines = Vec::<Vec<GeoPoint>>::new();
+        for network in networks {
+            for (from_node, edges) in network.adjacency.iter().enumerate() {
+                for edge in edges {
+                    if from_node >= edge.target {
+                        continue;
+                    }
+                    polylines.push(vec![network.nodes[from_node], network.nodes[edge.target]]);
+                }
+            }
+        }
+        build_network_from_polylines(&polylines)
+    }
+
     pub fn load_sncf_rfn_geojson(path: &Path) -> Result<Self> {
         let raw = fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display()))?;
@@ -110,8 +125,14 @@ impl RailGeometryNetwork {
 
     pub fn load_geofabrik_railways_gpkg(path: &Path) -> Result<Self> {
         let (connection, extracted_path) = open_gpkg_connection(path)?;
+        let railways_table = resolve_geofabrik_railways_table(&connection).with_context(|| {
+            format!(
+                "failed to resolve railways table from GeoPackage {}",
+                path.display()
+            )
+        })?;
         let mut statement = connection
-            .prepare("SELECT geom, fclass FROM gis_osm_railways_free_1")
+            .prepare(&format!("SELECT geom, fclass FROM {railways_table}"))
             .with_context(|| {
                 format!(
                     "failed to prepare railways query against GeoPackage {}",
@@ -367,6 +388,19 @@ fn open_gpkg_connection(path: &Path) -> Result<(Connection, Option<std::path::Pa
             .with_context(|| format!("failed to open GeoPackage {}", path.display()))?;
         Ok((connection, None))
     }
+}
+
+fn resolve_geofabrik_railways_table(connection: &Connection) -> Result<String> {
+    let mut statement = connection.prepare(
+        "SELECT table_name FROM gpkg_contents WHERE table_name LIKE 'gis_osm_railways_free%' ORDER BY CASE WHEN table_name = 'gis_osm_railways_free' THEN 0 ELSE 1 END, table_name",
+    )?;
+    let mut rows = statement.query([])?;
+    let table_name = rows
+        .next()?
+        .map(|row| row.get::<_, String>(0))
+        .transpose()?
+        .context("GeoPackage does not expose a gis_osm_railways_free* table")?;
+    Ok(table_name)
 }
 
 fn extract_first_gpkg_from_zip(path: &Path) -> Result<std::path::PathBuf> {
@@ -1260,7 +1294,19 @@ mod tests {
         let connection = Connection::open(&path)
             .with_context(|| format!("failed to create {}", path.display()))?;
         connection.execute_batch(
-            "CREATE TABLE gis_osm_railways_free_1 (
+            "CREATE TABLE gpkg_contents (
+                table_name TEXT NOT NULL PRIMARY KEY,
+                data_type TEXT NOT NULL,
+                identifier TEXT UNIQUE,
+                description TEXT DEFAULT '',
+                last_change DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+                min_x DOUBLE,
+                min_y DOUBLE,
+                max_x DOUBLE,
+                max_y DOUBLE,
+                srs_id INTEGER
+            );
+            CREATE TABLE gis_osm_railways_free (
                 osm_id INTEGER,
                 code INTEGER,
                 fclass TEXT,
@@ -1274,7 +1320,11 @@ mod tests {
             );",
         )?;
         connection.execute(
-            "INSERT INTO gis_osm_railways_free_1 (osm_id, code, fclass, geom) VALUES (?1, ?2, ?3, ?4)",
+            "INSERT INTO gpkg_contents (table_name, data_type, identifier, srs_id) VALUES (?1, 'features', ?1, 4326)",
+            ("gis_osm_railways_free",),
+        )?;
+        connection.execute(
+            "INSERT INTO gis_osm_railways_free (osm_id, code, fclass, geom) VALUES (?1, ?2, ?3, ?4)",
             (
                 1i64,
                 6101i64,
@@ -1283,7 +1333,7 @@ mod tests {
             ),
         )?;
         connection.execute(
-            "INSERT INTO gis_osm_railways_free_1 (osm_id, code, fclass, geom) VALUES (?1, ?2, ?3, ?4)",
+            "INSERT INTO gis_osm_railways_free (osm_id, code, fclass, geom) VALUES (?1, ?2, ?3, ?4)",
             (
                 2i64,
                 6102i64,

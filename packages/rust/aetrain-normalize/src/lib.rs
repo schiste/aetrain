@@ -11,9 +11,10 @@ pub use fetch::{
 pub use manifest::{
     CorridorGeometryAuthorityDefinition, CountryGeometryAuthorityDefinition, DirectoryListingStep,
     GeometryAuthorityLoader, GeometryAuthorityRegistry, GeometryAuthorityRoutePolicyAction,
-    GeometryAuthorityRoutePolicyDefinition, GeometryAuthorityStatus, IssueSeverity,
-    ManualCityOverride, ManualOverrideRegistry, NormalizationIssue, SourceDefinition, SourceKind,
-    SourceManifest, SourceResolver, TargetDefinition,
+    GeometryAuthorityRoutePolicyDefinition, GeometryAuthoritySourceDefinition,
+    GeometryAuthorityStatus, IssueSeverity, ManualCityOverride, ManualOverrideRegistry,
+    NormalizationIssue, SourceDefinition, SourceKind, SourceManifest, SourceResolver,
+    TargetDefinition,
 };
 pub use pipeline::{
     AdapterBuildArtifacts, AdapterBuildRequest, PipelineAdapter, PipelineArtifactManifest,
@@ -25,6 +26,7 @@ pub use sncf::{
     DuplicateCityCandidate, DuplicateCityReport, RejectedCityCandidateRecord,
     RejectedCityCandidateReport, RejectedCityCandidateResolution, SncfBuildOutput,
     SncfBuildSummary, StationMappingRecord, StationMappingReport, StationMappingStrategy,
-    build_gtfs_basic_dataset, build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset,
-    bundle_from_basic_output, bundle_from_output,
+    build_gtfs_basic_dataset, build_gtfs_basic_dataset_with_loaded_rail_geometry,
+    build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset, bundle_from_basic_output,
+    bundle_from_output,
 };

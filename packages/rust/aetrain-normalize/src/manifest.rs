@@ -190,6 +190,14 @@ pub struct CorridorGeometryAuthorityDefinition {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GeometryAuthoritySourceDefinition {
+    pub source_id: String,
+    pub loader: GeometryAuthorityLoader,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GeometryAuthorityRoutePolicyAction {
     SuppressAuthorityUntilTopologyFixed,
@@ -213,6 +221,8 @@ pub struct GeometryAuthorityRegistry {
     pub dataset_id: String,
     pub schema_version: u16,
     pub description: String,
+    #[serde(rename = "source", default)]
+    pub sources: Vec<GeometryAuthoritySourceDefinition>,
     #[serde(rename = "country", default)]
     pub countries: Vec<CountryGeometryAuthorityDefinition>,
     #[serde(rename = "corridor", default)]
