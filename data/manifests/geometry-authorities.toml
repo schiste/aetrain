@@ -7,6 +7,7 @@ country_code = "FR"
 source_id = "sncf-fr-rfn-lines"
 loader = "sncf_rfn_geojson"
 status = "production_ready"
+customer_facing = false
 max_promoted_station_attachment_gap_count = 0
 max_promoted_topology_no_route_gap_count = 0
 max_promoted_rejected_implausible_authority_detour_count = 0
@@ -15,21 +16,25 @@ notes = "French domestic rail authority backed by SNCF RFN line geometry. Domest
 [[country]]
 country_code = "CH"
 status = "planned"
+customer_facing = false
 notes = "Swiss domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
 
 [[country]]
 country_code = "ES"
 status = "planned"
+customer_facing = false
 notes = "Spanish domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
 
 [[country]]
 country_code = "AT"
 status = "planned"
+customer_facing = false
 notes = "Austrian domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
 
 [[country]]
 country_code = "DE"
 status = "planned"
+customer_facing = false
 notes = "German residual domestic geometry backlog is tracked, but no onboarded authority layer is promoted yet."
 
 [[corridor]]
@@ -37,6 +42,7 @@ corridor_id = "CH-DE"
 from_country_code = "CH"
 to_country_code = "DE"
 status = "planned"
+customer_facing = false
 allow_shape_fallback = true
 notes = "Swiss-German cross-border corridor backlog. No promoted infrastructure authority yet."
 
@@ -45,6 +51,7 @@ corridor_id = "CH-FR"
 from_country_code = "CH"
 to_country_code = "FR"
 status = "planned"
+customer_facing = false
 allow_shape_fallback = true
 notes = "Swiss-French cross-border corridor backlog. No promoted infrastructure authority yet."
 
@@ -53,6 +60,7 @@ corridor_id = "CH-IT"
 from_country_code = "CH"
 to_country_code = "IT"
 status = "planned"
+customer_facing = false
 allow_shape_fallback = true
 notes = "Swiss-Italian cross-border corridor backlog. No promoted infrastructure authority yet."
 
@@ -61,6 +69,7 @@ corridor_id = "BE-FR"
 from_country_code = "BE"
 to_country_code = "FR"
 status = "planned"
+customer_facing = false
 allow_shape_fallback = true
 notes = "Belgian-French cross-border corridor backlog. No promoted infrastructure authority yet."
 
@@ -69,6 +78,7 @@ corridor_id = "ES-FR"
 from_country_code = "ES"
 to_country_code = "FR"
 status = "planned"
+customer_facing = false
 allow_shape_fallback = true
 notes = "Spanish-French cross-border corridor backlog. No promoted infrastructure authority yet."
 

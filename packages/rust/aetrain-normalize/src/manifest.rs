@@ -107,6 +107,8 @@ pub struct TargetDefinition {
     #[serde(default = "default_true")]
     pub web_debug_export: bool,
     #[serde(default)]
+    pub customer_facing_scope_only: bool,
+    #[serde(default)]
     pub registry_overlay_path: Option<String>,
     #[serde(default)]
     pub geometry_authority_registry_path: Option<String>,
@@ -157,6 +159,8 @@ pub struct CountryGeometryAuthorityDefinition {
     pub loader: Option<GeometryAuthorityLoader>,
     pub status: GeometryAuthorityStatus,
     #[serde(default)]
+    pub customer_facing: bool,
+    #[serde(default)]
     pub max_promoted_station_attachment_gap_count: Option<u64>,
     #[serde(default)]
     pub max_promoted_topology_no_route_gap_count: Option<u64>,
@@ -176,6 +180,8 @@ pub struct CorridorGeometryAuthorityDefinition {
     #[serde(default)]
     pub loader: Option<GeometryAuthorityLoader>,
     pub status: GeometryAuthorityStatus,
+    #[serde(default)]
+    pub customer_facing: bool,
     #[serde(default)]
     pub allow_shape_fallback: bool,
     #[serde(default)]
@@ -563,6 +569,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    customer_facing_scope_only: false,
                     registry_overlay_path: None,
                     geometry_authority_registry_path: None,
                     notes: None,
@@ -575,6 +582,7 @@ mod tests {
                     active: false,
                     canonical_export: true,
                     web_debug_export: true,
+                    customer_facing_scope_only: false,
                     registry_overlay_path: None,
                     geometry_authority_registry_path: None,
                     notes: None,
@@ -606,6 +614,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    customer_facing_scope_only: false,
                     registry_overlay_path: None,
                     geometry_authority_registry_path: None,
                     notes: None,
@@ -618,6 +627,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    customer_facing_scope_only: false,
                     registry_overlay_path: None,
                     geometry_authority_registry_path: None,
                     notes: None,
@@ -630,6 +640,7 @@ mod tests {
                     active: true,
                     canonical_export: true,
                     web_debug_export: true,
+                    customer_facing_scope_only: false,
                     registry_overlay_path: None,
                     geometry_authority_registry_path: None,
                     notes: None,

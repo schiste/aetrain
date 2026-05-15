@@ -5,8 +5,9 @@ use std::{
 };
 
 use aetrain_dataset::{
-    DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord, EdgeGeometrySource,
-    PolylinePointE5, RuntimeAliasIndex, RuntimeAliasRecord, RuntimeCountryRecord,
+    AliasRecord, DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord,
+    EdgeGeometrySource, PolylinePointE5, RuntimeAliasIndex, RuntimeAliasRecord,
+    RuntimeCountryRecord,
     RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeEdgeGeometryArtifact,
     RuntimeEdgeGeometryRecord, RuntimeGraph, RuntimeStationArtifact, RuntimeStationRecord,
     SourceSnapshot,
@@ -18,7 +19,8 @@ use deunicode::deunicode;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
-    DuplicateCityReport, FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
+    CorridorGeometryAuthorityDefinition, CountryGeometryAuthorityDefinition, DuplicateCityReport,
+    FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
     GeometryAuthorityRoutePolicyAction, GeometryAuthorityStatus, ManualOverrideRegistry,
     NormalizationIssue, SourceKind, SourceManifest, StationMappingReport, TargetDefinition,
     build_gtfs_basic_dataset, build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
@@ -232,6 +234,9 @@ pub struct PipelineCountryGeometryAuthorityRecord {
     pub country_code: String,
     pub status: String,
     pub promoted: bool,
+    pub customer_facing: bool,
+    pub customer_facing_ready: bool,
+    pub customer_facing_blockers: Vec<String>,
     pub source_id: Option<String>,
     pub missing_domestic_authority_count: u64,
     pub promoted_station_attachment_gap_count: u64,
@@ -251,6 +256,9 @@ pub struct PipelineCorridorGeometryAuthorityRecord {
     pub to_country_code: String,
     pub status: String,
     pub promoted: bool,
+    pub customer_facing: bool,
+    pub customer_facing_ready: bool,
+    pub customer_facing_blockers: Vec<String>,
     pub source_id: Option<String>,
     pub cross_border_unresolved_count: u64,
     pub notes: Option<String>,
@@ -1419,6 +1427,14 @@ fn build_quality_report(
         ),
     ];
     let mut gate_results = gate_results;
+    if counters.contains_key("customer_facing_scope_edge_count") {
+        gate_results.push(quality_gate_greater_than(
+            "customer_facing_scope_edge_count_nonzero",
+            "customer_facing_scope_edge_count",
+            counter_value(counters, "customer_facing_scope_edge_count"),
+            0,
+        ));
+    }
     for country in &country_geometry_authorities {
         if !country.promoted {
             continue;
@@ -1544,10 +1560,21 @@ fn build_country_geometry_authority_records(
                             && record.authority_defect_reason == "implausible_authority_detour"
                     })
                     .count() as u64;
+            let customer_facing_blockers =
+                build_country_customer_facing_blockers(
+                    entry,
+                    missing_domestic_authority_count,
+                    promoted_station_attachment_gap_count,
+                    promoted_topology_no_route_gap_count,
+                    promoted_rejected_implausible_authority_detour_count,
+                );
             PipelineCountryGeometryAuthorityRecord {
                 country_code: entry.country_code.clone(),
                 status: geometry_authority_status_label(&entry.status).to_string(),
                 promoted: entry.status.is_promoted(),
+                customer_facing: entry.customer_facing,
+                customer_facing_ready: entry.customer_facing && customer_facing_blockers.is_empty(),
+                customer_facing_blockers,
                 source_id: entry.source_id.clone(),
                 missing_domestic_authority_count,
                 promoted_station_attachment_gap_count,
@@ -1584,14 +1611,8 @@ fn build_corridor_geometry_authority_records(
     authority_registry
         .corridors
         .iter()
-        .map(|entry| PipelineCorridorGeometryAuthorityRecord {
-            corridor_id: entry.corridor_id.clone(),
-            from_country_code: entry.from_country_code.clone(),
-            to_country_code: entry.to_country_code.clone(),
-            status: geometry_authority_status_label(&entry.status).to_string(),
-            promoted: entry.status.is_promoted(),
-            source_id: entry.source_id.clone(),
-            cross_border_unresolved_count: route_geometry_anomalies
+        .map(|entry| {
+            let cross_border_unresolved_count = route_geometry_anomalies
                 .iter()
                 .filter(|record| {
                     record.geometry_resolution_status == "cross_border_unresolved"
@@ -1602,10 +1623,71 @@ fn build_corridor_geometry_authority_records(
                             &entry.to_country_code,
                         )
                 })
-                .count() as u64,
-            notes: entry.notes.clone(),
+                .count() as u64;
+            let customer_facing_blockers =
+                build_corridor_customer_facing_blockers(entry, cross_border_unresolved_count);
+            PipelineCorridorGeometryAuthorityRecord {
+                corridor_id: entry.corridor_id.clone(),
+                from_country_code: entry.from_country_code.clone(),
+                to_country_code: entry.to_country_code.clone(),
+                status: geometry_authority_status_label(&entry.status).to_string(),
+                promoted: entry.status.is_promoted(),
+                customer_facing: entry.customer_facing,
+                customer_facing_ready: entry.customer_facing
+                    && customer_facing_blockers.is_empty(),
+                customer_facing_blockers,
+                source_id: entry.source_id.clone(),
+                cross_border_unresolved_count,
+                notes: entry.notes.clone(),
+            }
         })
         .collect()
+}
+
+fn build_country_customer_facing_blockers(
+    entry: &CountryGeometryAuthorityDefinition,
+    missing_domestic_authority_count: u64,
+    promoted_station_attachment_gap_count: u64,
+    promoted_topology_no_route_gap_count: u64,
+    promoted_rejected_implausible_authority_detour_count: u64,
+) -> Vec<String> {
+    let mut blockers = Vec::new();
+    if !entry.customer_facing {
+        blockers.push("not_marked_customer_facing".to_string());
+    }
+    if !entry.status.is_promoted() {
+        blockers.push("authority_not_promoted".to_string());
+    }
+    if missing_domestic_authority_count > 0 {
+        blockers.push("missing_domestic_authority".to_string());
+    }
+    if promoted_station_attachment_gap_count > 0 {
+        blockers.push("authority_station_attachment_gap".to_string());
+    }
+    if promoted_topology_no_route_gap_count > 0 {
+        blockers.push("authority_topology_no_route".to_string());
+    }
+    if promoted_rejected_implausible_authority_detour_count > 0 {
+        blockers.push("implausible_authority_detour".to_string());
+    }
+    blockers
+}
+
+fn build_corridor_customer_facing_blockers(
+    entry: &CorridorGeometryAuthorityDefinition,
+    cross_border_unresolved_count: u64,
+) -> Vec<String> {
+    let mut blockers = Vec::new();
+    if !entry.customer_facing {
+        blockers.push("not_marked_customer_facing".to_string());
+    }
+    if !entry.status.is_promoted() {
+        blockers.push("authority_not_promoted".to_string());
+    }
+    if cross_border_unresolved_count > 0 {
+        blockers.push("cross_border_unresolved".to_string());
+    }
+    blockers
 }
 
 fn geometry_authority_status_label(status: &GeometryAuthorityStatus) -> &'static str {
@@ -2956,6 +3038,25 @@ fn quality_gate_less_than_or_equal(
     }
 }
 
+fn quality_gate_greater_than(
+    gate_id: &str,
+    metric: &str,
+    actual: u64,
+    threshold: u64,
+) -> PipelineQualityGateResult {
+    PipelineQualityGateResult {
+        gate_id: gate_id.to_string(),
+        metric: metric.to_string(),
+        actual,
+        target: format!("> {}", threshold),
+        status: if actual > threshold {
+            "pass".to_string()
+        } else {
+            "fail".to_string()
+        },
+    }
+}
+
 fn city_quality_record(city: &aetrain_domain::City) -> PipelineCityQualityRecord {
     PipelineCityQualityRecord {
         city_id: city.city_id.clone(),
@@ -3649,7 +3750,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     let source_snapshots = merge_source_snapshots(&dependency_inputs);
     let source_artifacts = merge_source_artifacts(&dependency_inputs);
     let rejected_city_candidates = merge_rejected_city_candidates(&dependency_inputs);
-    let notes = vec![format!(
+    let mut notes = vec![format!(
         "Aggregated canonical outputs from {} validated targets.",
         dependency_inputs.len()
     )];
@@ -3923,6 +4024,49 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         "quarantined_promoted_attachment_gap_city_count".to_string(),
         quarantined_promoted_attachment_gap_cities.len() as u64,
     );
+    if request.target.customer_facing_scope_only {
+        let customer_facing_scope_stats = apply_customer_facing_release_scope(
+            &mut merged_cities.cities,
+            &mut merged_cities.aliases,
+            &mut stations,
+            &mut edges,
+            &mut edge_geometries,
+            &mut station_mappings,
+            authority_registry.as_ref(),
+            request.target.id.as_str(),
+            &mut merged_cities.issues,
+        )?;
+        counters.insert(
+            "customer_facing_scope_city_count".to_string(),
+            customer_facing_scope_stats.kept_city_count,
+        );
+        counters.insert(
+            "customer_facing_scope_station_count".to_string(),
+            customer_facing_scope_stats.kept_station_count,
+        );
+        counters.insert(
+            "customer_facing_scope_edge_count".to_string(),
+            customer_facing_scope_stats.kept_edge_count,
+        );
+        counters.insert(
+            "customer_facing_scope_removed_city_count".to_string(),
+            customer_facing_scope_stats.removed_city_count,
+        );
+        counters.insert(
+            "customer_facing_scope_removed_station_count".to_string(),
+            customer_facing_scope_stats.removed_station_count,
+        );
+        counters.insert(
+            "customer_facing_scope_removed_edge_count".to_string(),
+            customer_facing_scope_stats.removed_edge_count,
+        );
+        notes.push(format!(
+            "Customer-facing scope retained {} cities, {} stations, and {} edges.",
+            customer_facing_scope_stats.kept_city_count,
+            customer_facing_scope_stats.kept_station_count,
+            customer_facing_scope_stats.kept_edge_count
+        ));
+    }
     apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
     counters.insert(
         "residual_station_like_city_count".to_string(),
@@ -3975,6 +4119,103 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         counters,
         notes,
         source_artifacts,
+    })
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct CustomerFacingScopeStats {
+    kept_city_count: u64,
+    kept_station_count: u64,
+    kept_edge_count: u64,
+    removed_city_count: u64,
+    removed_station_count: u64,
+    removed_edge_count: u64,
+}
+
+fn apply_customer_facing_release_scope(
+    cities: &mut Vec<City>,
+    aliases: &mut Vec<AliasRecord>,
+    stations: &mut Vec<aetrain_domain::Station>,
+    edges: &mut Vec<aetrain_domain::TravelEdge>,
+    edge_geometries: &mut EdgeGeometryArtifact,
+    station_mappings: &mut StationMappingReport,
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Result<CustomerFacingScopeStats> {
+    let Some(authority_registry) = authority_registry else {
+        bail!(
+            "aggregate target {} requires geometry_authority_registry_path when customer_facing_scope_only is enabled",
+            aggregate_source_id
+        );
+    };
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let original_edge_count = edges.len();
+    edges.retain(|edge| {
+        cities_by_id
+            .get(&edge.from_city_id)
+            .zip(cities_by_id.get(&edge.to_city_id))
+            .is_some_and(|(from_city, to_city)| {
+                if from_city.country_code == to_city.country_code {
+                    authority_registry
+                        .country(&from_city.country_code)
+                        .is_some_and(|entry| entry.customer_facing)
+                } else {
+                    authority_registry
+                        .corridor(&from_city.country_code, &to_city.country_code)
+                        .is_some_and(|entry| entry.customer_facing)
+                }
+            })
+    });
+    let kept_city_ids = edges
+        .iter()
+        .flat_map(|edge| [edge.from_city_id.clone(), edge.to_city_id.clone()])
+        .collect::<BTreeSet<_>>();
+    let original_city_count = cities.len();
+    cities.retain(|city| kept_city_ids.contains(&city.city_id));
+    let original_station_count = stations.len();
+    stations.retain(|station| kept_city_ids.contains(&station.city_id));
+    aliases.retain(|alias| kept_city_ids.contains(&alias.city_id));
+    station_mappings
+        .records
+        .retain(|record| kept_city_ids.contains(&record.city_id));
+    let kept_edge_keys = edges
+        .iter()
+        .map(|edge| (edge.from_city_id.clone(), edge.to_city_id.clone()))
+        .collect::<BTreeSet<_>>();
+    edge_geometries
+        .geometries
+        .retain(|geometry| kept_edge_keys.contains(&(geometry.from_city_id.clone(), geometry.to_city_id.clone())));
+    let kept_city_count = cities.len() as u64;
+    let kept_station_count = stations.len() as u64;
+    let kept_edge_count = edges.len() as u64;
+    let removed_city_count = original_city_count.saturating_sub(cities.len()) as u64;
+    let removed_station_count = original_station_count.saturating_sub(stations.len()) as u64;
+    let removed_edge_count = original_edge_count.saturating_sub(edges.len()) as u64;
+    issues.push(NormalizationIssue {
+        severity: crate::IssueSeverity::Info,
+        source_id: aggregate_source_id.to_string(),
+        entity_ref: "customer-facing-release-scope".to_string(),
+        message: format!(
+            "applied customer-facing release scope: kept {} cities, {} stations, {} edges; removed {} cities, {} stations, {} edges",
+            kept_city_count,
+            kept_station_count,
+            kept_edge_count,
+            removed_city_count,
+            removed_station_count,
+            removed_edge_count
+        ),
+    });
+    Ok(CustomerFacingScopeStats {
+        kept_city_count,
+        kept_station_count,
+        kept_edge_count,
+        removed_city_count,
+        removed_station_count,
+        removed_edge_count,
     })
 }
 
@@ -9367,6 +9608,7 @@ mod tests {
                 source_id: Some("sncf-fr-rfn-lines".to_string()),
                 loader: Some(GeometryAuthorityLoader::SncfRfnGeojson),
                 status: GeometryAuthorityStatus::ProductionReady,
+                customer_facing: false,
                 max_promoted_station_attachment_gap_count: Some(0),
                 max_promoted_topology_no_route_gap_count: Some(0),
                 max_promoted_rejected_implausible_authority_detour_count: Some(0),
