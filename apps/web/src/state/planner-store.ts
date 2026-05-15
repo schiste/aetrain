@@ -14,6 +14,13 @@ export interface PlannerState {
   distFromLast: PlannerReachableDistances;
   filterInterest: number;
   filterPop: number;
+  /**
+   * False until the user explicitly touches the population slider /
+   * inline edit. While false, the shell auto-adjusts filterPop based
+   * on the map zoom level (see auto-pop-scale.ts). The Reset button
+   * flips it back to false and re-derives from the current zoom.
+   */
+  popFilterManual: boolean;
   legDynMax: number;
   legMax: number;
   legMin: number;
@@ -28,6 +35,13 @@ export interface PlannerStoreSnapshot {
   trip?: string[];
   filterInterest?: number | string;
   filterPop?: number | string;
+  /**
+   * When omitted from the snapshot we treat the pop filter as
+   * "auto" — sharing a link with someone shouldn't pin them to a
+   * specific population threshold unless the sender explicitly chose
+   * one. The URL-state codec only serializes this when true.
+   */
+  popFilterManual?: boolean;
   legMin?: number | string;
   legMax?: number | string;
   searchQuery?: string;
@@ -65,6 +79,14 @@ export interface PlannerStore {
   setSearchQuery(value: string): Promise<boolean>;
   setFilterInterest(value: number | string): void;
   setFilterPop(value: number | string): void;
+  /**
+   * Auto-mode write: updates filterPop without flipping popFilterManual,
+   * so the user's "auto" intent is preserved across view-change events.
+   * No-op when popFilterManual is already true.
+   */
+  setAutoFilterPop(value: number | string): void;
+  /** Restore "auto" mode for the pop filter and re-emit state. */
+  clearManualFilterPop(): void;
   setLegRange(args: { min: number | string; max: number | string }): void;
   /**
    * Re-run the derive pipeline for the current trip without otherwise
@@ -85,6 +107,7 @@ export function createPlannerStore({
     distFromLast: {},
     filterInterest: 5,
     filterPop: 100,
+    popFilterManual: false,
     legDynMax: DEFAULT_MAX_LEG_MINUTES,
     legMax: DEFAULT_MAX_LEG_MINUTES,
     legMin: 0,
@@ -274,6 +297,9 @@ export function createPlannerStore({
       state.trip.splice(0, state.trip.length, ...nextTrip);
       state.filterInterest = clampInteger(snapshot?.filterInterest, 1, 10);
       state.filterPop = clampInteger(snapshot?.filterPop, 0, 1000);
+      // Treat the pop filter as "auto" unless the sender of the snapshot
+      // explicitly marked it manual. See the popFilterManual JSDoc.
+      state.popFilterManual = snapshot?.popFilterManual === true;
       state.searchQuery = String(snapshot?.searchQuery || "");
 
       await syncTripState();
@@ -366,10 +392,43 @@ export function createPlannerStore({
       emitStateChange();
     },
     setFilterPop(value: number | string): void {
+      const previous = state.filterPop;
       state.filterPop = clampInteger(value, 0, 1000);
-      diagnostics.debug("updated population filter", {
+      // Any explicit setFilterPop call is a manual override — slider
+      // drag, inline edit, or restoring a manual-mode snapshot. Even
+      // if the resulting value matches what auto would produce, the
+      // user has expressed intent.
+      const flipped = !state.popFilterManual;
+      state.popFilterManual = true;
+      diagnostics.debug("updated population filter (manual)", {
+        filter_pop: state.filterPop,
+        previous,
+        flipped_to_manual: flipped
+      });
+      emitStateChange();
+    },
+    setAutoFilterPop(value: number | string): void {
+      // Honour the user's manual override — auto writes are ignored
+      // once popFilterManual is true. This keeps the per-frame
+      // view-change listener cheap (no setState churn) and prevents
+      // accidental zoom-driven nudges from undoing a slider drag.
+      if (state.popFilterManual) {
+        return;
+      }
+      const next = clampInteger(value, 0, 1000);
+      if (next === state.filterPop) {
+        return;
+      }
+      state.filterPop = next;
+      diagnostics.debug("updated population filter (auto)", {
         filter_pop: state.filterPop
       });
+      emitStateChange();
+    },
+    clearManualFilterPop(): void {
+      if (!state.popFilterManual) return;
+      state.popFilterManual = false;
+      diagnostics.debug("restored auto-mode population filter");
       emitStateChange();
     },
     async refreshDerivedState(): Promise<boolean> {
@@ -423,6 +482,7 @@ function summarizePlannerState(state: PlannerState): Record<string, unknown> {
     trip_length: state.trip.length,
     filter_interest: state.filterInterest,
     filter_pop: state.filterPop,
+    pop_filter_manual: state.popFilterManual,
     leg_min: state.legMin,
     leg_max: state.legMax,
     leg_dyn_max: state.legDynMax,

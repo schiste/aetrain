@@ -64,10 +64,10 @@ defineComponent("ae-filters", (host) => {
     resetBtn.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const state = ctx.state.peek();
-      ctx.store.setFilterInterest(5);
-      ctx.store.setFilterPop(100);
-      ctx.store.setLegRange({ min: 0, max: state.legDynMax });
+      // Delegate to the shell — only it can pair clearing the manual
+      // override with an immediate zoom-derived re-application, since
+      // the map surface is the source of truth for the current zoom.
+      ctx.onResetFilters();
     });
     summary.append(summaryLabel, resetBtn);
     details.appendChild(summary);
@@ -264,7 +264,12 @@ defineComponent("ae-filters", (host) => {
       syncInputAria(s.intInput, "aria-valuetext", `${state.filterInterest} or higher`);
 
       syncInputValue(s.popInput, state.filterPop);
-      syncInputAria(s.popInput, "aria-valuetext", state.filterPop === 0 ? "All populations" : `${state.filterPop} thousand or higher`);
+      // Surface the auto/manual distinction to screen readers via the
+      // value text — without this, an SR user has no way to know the
+      // slider will move on its own when they pan the map.
+      const popValueLabel = state.filterPop === 0 ? "All populations" : `${state.filterPop} thousand or higher`;
+      const popValueSuffix = state.popFilterManual ? "" : " (auto-adjusting with zoom)";
+      syncInputAria(s.popInput, "aria-valuetext", popValueLabel + popValueSuffix);
 
       const dynMaxStr = String(state.legDynMax);
       if (s.legMinInput.max !== dynMaxStr) s.legMinInput.max = dynMaxStr;
@@ -279,7 +284,14 @@ defineComponent("ae-filters", (host) => {
         s.intSpan.textContent = `${state.filterInterest}+`;
       }
       if (s.popSpan.querySelector("input") === null) {
-        s.popSpan.textContent = state.filterPop === 0 ? "All" : `${state.filterPop}k+`;
+        // Append a small "auto" tag when the filter is being driven
+        // by zoom rather than the user. Sighted hint that the value
+        // will move on its own; screen readers get the same info via
+        // aria-valuetext on the slider below.
+        const base = state.filterPop === 0 ? "All" : `${state.filterPop}k+`;
+        const autoTag = state.popFilterManual ? "" : " auto";
+        s.popSpan.textContent = base + autoTag;
+        s.popSpan.classList.toggle("fv-auto", !state.popFilterManual);
       }
       if (s.legSpan.querySelector("input") === null) {
         s.legSpan.textContent = `${formatLeg(state.legMin)} — ${formatLeg(state.legMax)}`;
@@ -301,9 +313,13 @@ defineComponent("ae-filters", (host) => {
 
       s.statusEl.textContent = status;
 
+      // The pop filter is now considered "at defaults" whenever it's
+      // in auto mode (regardless of the current value, which is just
+      // whatever the zoom-derived function returned). The Reset
+      // button still appears for any other filter that's off-default.
       const isAtDefaults =
         state.filterInterest === 5
-        && state.filterPop === 100
+        && !state.popFilterManual
         && state.legMin === 0
         && state.legMax === state.legDynMax;
       s.resetBtn.hidden = isAtDefaults;

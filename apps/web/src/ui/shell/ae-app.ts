@@ -20,6 +20,7 @@ import {
 import { createLeafletMapSurface } from "../../map/leaflet-map-surface.ts";
 import type { LabelThresholdValue } from "../../map/render-model.ts";
 import type { RawBorderRecord } from "../../map/landmass-model.ts";
+import { derivePopThresholdForZoom } from "../../state/auto-pop-scale.ts";
 import { createPlannerStore } from "../../state/planner-store.ts";
 import type { PlannerState } from "../../state/planner-store.ts";
 import { bindPlannerUrlState } from "../../state/planner-url-state.ts";
@@ -312,6 +313,19 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
         void plannerStore.clearTrip().catch((error: unknown) => {
           diagnostics.error("clearTrip failed", { error: summarizeError(error) });
         });
+      },
+      onResetFilters() {
+        diagnostics.info("filters reset requested");
+        const snapshot = plannerStore.getState();
+        plannerStore.setFilterInterest(5);
+        // Order matters: clear the manual override first, then write
+        // the zoom-derived value via the auto setter. Doing it in this
+        // sequence avoids a transient render frame where filterPop is
+        // back at the default 100 between writes.
+        plannerStore.clearManualFilterPop();
+        const view = mapSurface.getViewState();
+        plannerStore.setAutoFilterPop(derivePopThresholdForZoom(view.zoom));
+        plannerStore.setLegRange({ min: 0, max: snapshot.legDynMax });
       }
     };
 
@@ -374,9 +388,23 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       });
     });
 
+    // Auto-adjust the population filter to match the current zoom
+    // level. The store's setAutoFilterPop is a no-op when the user has
+    // manually overridden the slider, so we can listen unconditionally
+    // here. Also fire once at boot so the initial zoom drives the
+    // first threshold, not the store's hard-coded default of 100.
+    const applyAutoPopFromZoom = () => {
+      const view = mapSurface.getViewState();
+      const next = derivePopThresholdForZoom(view.zoom);
+      plannerStore.setAutoFilterPop(next);
+    };
+    applyAutoPopFromZoom();
+    const stopAutoPop = mapSurface.subscribeViewChange(applyAutoPopFromZoom);
+
     const onBeforeUnload = () => {
       diagnostics.info("ae-app beforeunload cleanup");
       stopGeometryRefetch();
+      stopAutoPop();
       planner.close();
       stopUrlSync();
     };
@@ -475,6 +503,7 @@ function createSeedState(): PlannerState {
     distFromLast: {},
     filterInterest: 5,
     filterPop: 100,
+    popFilterManual: false,
     legDynMax: 1440,
     legMax: 1440,
     legMin: 0,

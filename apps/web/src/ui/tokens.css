@@ -179,8 +179,12 @@ ae-app, ae-sidebar { display: contents; }
 .fg label { font-size: 10px; color: var(--ae-fg-muted); width: 56px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .3px; }
 .fg input[type=range] { flex: 1; -webkit-appearance: none; height: 4px; background: var(--ae-border-soft); border-radius: 2px; outline: none; }
 .fg input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--ae-accent); cursor: pointer; border: 2px solid var(--ae-bg); }
-.fg .fv { font-family: var(--ae-font-mono); font-size: 11px; color: var(--ae-accent); width: 42px; text-align: right; flex-shrink: 0; cursor: pointer; user-select: none; }
+.fg .fv { font-family: var(--ae-font-mono); font-size: 11px; color: var(--ae-accent); width: 70px; text-align: right; flex-shrink: 0; cursor: pointer; user-select: none; }
 .fg .fv:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* Tint the pop value chip when it's being driven by zoom rather than
+   the user, so the "100k+ auto" suffix reads as intentional and not
+   as a typo. The hue stays in the accent family but desaturates. */
+.fg .fv-auto { color: var(--ae-suggest); font-weight: 400; opacity: .85; }
 .fg .fv-input { font-family: var(--ae-font-mono); font-size: 11px; color: var(--ae-accent); width: 42px; text-align: right; flex-shrink: 0; background: transparent; border: none; border-bottom: 1px solid var(--ae-accent); outline: none; padding: 0; margin: 0; -moz-appearance: textfield; }
 .fg .fv-input::-webkit-outer-spin-button, .fg .fv-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .fi { font-size: 10px; color: var(--ae-fg-dim); margin-top: 4px; font-style: italic; }

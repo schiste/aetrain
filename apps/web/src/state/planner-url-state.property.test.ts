@@ -21,6 +21,7 @@ interface PlannerStateInput {
   trip: string[];
   filterInterest: number;
   filterPop: number;
+  popFilterManual: boolean;
   legMin: number;
   legMax: number;
   searchQuery: string;
@@ -60,13 +61,15 @@ const plannerStateArb: fc.Arbitrary<PlannerStateInput> = fc
     trip: tripArb,
     filterInterest: fc.integer({ min: 1, max: 10 }),
     filterPop: fc.integer({ min: 0, max: 1000 }),
+    popFilterManual: fc.boolean(),
     legRange: legRangeArb,
     searchQuery: searchQueryArb
   })
-  .map(({ trip, filterInterest, filterPop, legRange, searchQuery }) => ({
+  .map(({ trip, filterInterest, filterPop, popFilterManual, legRange, searchQuery }) => ({
     trip,
     filterInterest,
     filterPop,
+    popFilterManual,
     legMin: legRange.legMin,
     legMax: legRange.legMax,
     searchQuery
@@ -126,6 +129,7 @@ function expectedParse(input: CodecInput): ParsedPlannerUrlState {
     trip: [...input.plannerState.trip],
     filterInterest: input.plannerState.filterInterest,
     filterPop: input.plannerState.filterPop,
+    popFilterManual: input.plannerState.popFilterManual,
     legMin: input.plannerState.legMin,
     legMax: input.plannerState.legMax,
     searchQuery: trimmed,
@@ -160,6 +164,7 @@ test("write(parse(write(state))) === write(state) (idempotent on second pass)", 
           trip: parsed.trip,
           filterInterest: parsed.filterInterest,
           filterPop: parsed.filterPop,
+          popFilterManual: parsed.popFilterManual,
           legMin: parsed.legMin,
           legMax: parsed.legMax,
           searchQuery: parsed.searchQuery

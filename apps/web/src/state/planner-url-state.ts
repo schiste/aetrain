@@ -16,6 +16,12 @@ export interface ParsedPlannerUrlState {
   trip: string[];
   filterInterest: number;
   filterPop: number;
+  /**
+   * True when the URL encodes an explicit `fpm=1` flag (= the sender
+   * had manually pinned the pop slider before sharing). Absence or
+   * `fpm=0` parses as false, which the store maps back to auto mode.
+   */
+  popFilterManual: boolean;
   legMin: number;
   legMax: number;
   searchQuery: string;
@@ -33,6 +39,7 @@ export interface WritePlannerUrlHashArgs {
     trip: string[];
     filterInterest: number;
     filterPop: number;
+    popFilterManual: boolean;
     legMin: number;
     legMax: number;
     searchQuery: string;
@@ -62,6 +69,7 @@ export function parsePlannerUrlHash(
     trip: [],
     filterInterest: 5,
     filterPop: 100,
+    popFilterManual: false,
     legMin: 0,
     legMax: 1440,
     searchQuery: "",
@@ -85,6 +93,12 @@ export function parsePlannerUrlHash(
         break;
       case "fp":
         state.filterPop = parseInteger(value, state.filterPop);
+        break;
+      case "fpm":
+        // fpm=1 means the snapshot's pop filter is a user-pinned
+        // value. Anything else (absent, fpm=0, garbage) parses as
+        // "auto", which is the safer default for shared links.
+        state.popFilterManual = value === "1";
         break;
       case "ll": {
         const [min = "", max = ""] = value.split("-");
@@ -117,6 +131,12 @@ export function writePlannerUrlHash({
   );
   segments.push(`fi=${plannerState.filterInterest}`);
   segments.push(`fp=${plannerState.filterPop}`);
+  // Only serialize the manual flag when it's actually set — keeps
+  // auto-mode URLs short and prevents shared links from accidentally
+  // pinning the recipient to an obsolete population threshold.
+  if (plannerState.popFilterManual) {
+    segments.push(`fpm=1`);
+  }
   segments.push(`ll=${plannerState.legMin}-${plannerState.legMax}`);
 
   if (plannerState.searchQuery?.trim()) {
@@ -210,6 +230,7 @@ export function bindPlannerUrlState({
           trip: parsed.trip,
           filterInterest: parsed.filterInterest,
           filterPop: parsed.filterPop,
+          popFilterManual: parsed.popFilterManual,
           legMin: parsed.legMin,
           legMax: parsed.legMax,
           searchQuery: parsed.searchQuery,

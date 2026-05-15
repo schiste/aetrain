@@ -51,6 +51,13 @@ export interface AppContext {
   };
   onShareTrip(): Promise<void>;
   onClearTrip(): void;
+  /**
+   * Reset map filters to defaults. Lives on the context (not directly
+   * on the store) because the pop filter reset has to round-trip the
+   * map surface: clear the manual flag, then re-derive the threshold
+   * from the current zoom. Only the shell holds both references.
+   */
+  onResetFilters(): void;
   copyButtonLabel: Signal<string>;
 }
 
