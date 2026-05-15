@@ -148,6 +148,7 @@ impl GeometryAuthorityStatus {
 #[serde(rename_all = "snake_case")]
 pub enum GeometryAuthorityLoader {
     SncfRfnGeojson,
+    GeofabrikRailwaysGpkg,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

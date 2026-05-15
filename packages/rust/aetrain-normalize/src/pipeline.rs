@@ -23,8 +23,8 @@ use crate::{
     FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
     GeometryAuthorityRoutePolicyAction, GeometryAuthorityStatus, ManualOverrideRegistry,
     NormalizationIssue, SourceKind, SourceManifest, StationMappingReport, TargetDefinition,
-    build_gtfs_basic_dataset, build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
-    rail_geometry::RailGeometryNetwork,
+    build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset, bundle_from_basic_output,
+    bundle_from_output, rail_geometry::RailGeometryNetwork,
 };
 
 pub trait PipelineAdapter {
@@ -1990,6 +1990,9 @@ fn load_pipeline_authority_networks(
         let network = match loader {
             GeometryAuthorityLoader::SncfRfnGeojson => {
                 RailGeometryNetwork::load_sncf_rfn_geojson(&path)
+            }
+            GeometryAuthorityLoader::GeofabrikRailwaysGpkg => {
+                RailGeometryNetwork::load_geofabrik_railways_gpkg(&path)
             }
         };
         if let Ok(network) = network {
@@ -5567,15 +5570,21 @@ fn load_aggregate_rail_geometry_network(
         if !allowed_source_ids.contains(&artifact.source_id) {
             continue;
         }
-        let Some(source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
+        let Some(_source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
             continue;
         };
-        if source_definition.adapter != "sncf_fr" {
-            continue;
-        }
         let path =
             resolve_pipeline_source_artifact_path(artifact, &input.manifest.outputs.target_root);
-        let network = RailGeometryNetwork::load_sncf_rfn_geojson(&path).with_context(|| {
+        let network = match authority_loader_for_source_id(authority_registry, &artifact.source_id) {
+            Some(GeometryAuthorityLoader::SncfRfnGeojson) => {
+                RailGeometryNetwork::load_sncf_rfn_geojson(&path)
+            }
+            Some(GeometryAuthorityLoader::GeofabrikRailwaysGpkg) => {
+                RailGeometryNetwork::load_geofabrik_railways_gpkg(&path)
+            }
+            None => continue,
+        }
+        .with_context(|| {
             format!(
                 "failed to load aggregate rail geometry authority {} from {}",
                 artifact.source_id,
@@ -5625,17 +5634,17 @@ fn load_aggregate_promoted_country_authority_networks(
         let Some(loader) = promoted_country_sources.get(&artifact.source_id) else {
             continue;
         };
-        let Some(source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
+        let Some(_source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
             continue;
         };
         let path =
             resolve_pipeline_source_artifact_path(artifact, &input.manifest.outputs.target_root);
         let network = match loader {
             GeometryAuthorityLoader::SncfRfnGeojson => {
-                if source_definition.adapter != "sncf_fr" {
-                    continue;
-                }
                 RailGeometryNetwork::load_sncf_rfn_geojson(&path)
+            }
+            GeometryAuthorityLoader::GeofabrikRailwaysGpkg => {
+                RailGeometryNetwork::load_geofabrik_railways_gpkg(&path)
             }
         }
         .with_context(|| {
@@ -5651,6 +5660,27 @@ fn load_aggregate_promoted_country_authority_networks(
     }
 
     Ok(networks)
+}
+
+fn authority_loader_for_source_id(
+    authority_registry: &GeometryAuthorityRegistry,
+    source_id: &str,
+) -> Option<GeometryAuthorityLoader> {
+    authority_registry
+        .countries
+        .iter()
+        .find_map(|entry| {
+            (entry.source_id.as_deref() == Some(source_id))
+                .then(|| entry.loader.as_ref().cloned())
+                .flatten()
+        })
+        .or_else(|| {
+            authority_registry.corridors.iter().find_map(|entry| {
+                (entry.source_id.as_deref() == Some(source_id))
+                    .then(|| entry.loader.as_ref().cloned())
+                    .flatten()
+            })
+        })
 }
 
 fn authority_registry_supports_route(
@@ -7792,10 +7822,21 @@ impl PipelineAdapter for GtfsBasicAdapter {
     fn build(&self, request: AdapterBuildRequest<'_>) -> Result<AdapterBuildArtifacts> {
         let gtfs = request.source_by_role_or_kind("schedule", SourceKind::Gtfs)?;
         let country_code = gtfs.definition.country_code.clone();
-        let output = build_gtfs_basic_dataset(
+        let rail_geometry = request.optional_source_by_role("rail_geometry");
+        let authority_registry =
+            load_geometry_authority_registry(request.manifest_dir, request.target)?;
+        let rail_geometry_loader = rail_geometry.and_then(|source| {
+            authority_registry
+                .as_ref()
+                .and_then(|registry| authority_loader_for_source_id(registry, &source.definition.id))
+        });
+        let output = build_gtfs_basic_dataset_with_rail_geometry(
             &gtfs.local_path,
             &gtfs.definition.id,
             &country_code,
+            rail_geometry.map(|source| source.local_path.as_path()),
+            rail_geometry_loader,
+            rail_geometry.map(|source| source.definition.id.as_str()),
             request.dataset_version,
             request.generated_at,
             request.source_snapshots,

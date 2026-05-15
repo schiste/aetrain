@@ -19,7 +19,8 @@ use serde::{Deserialize, Serialize};
 use zip::ZipArchive;
 
 use crate::{
-    IssueSeverity, ManualOverrideRegistry, NormalizationIssue, rail_geometry::RailGeometryNetwork,
+    GeometryAuthorityLoader, IssueSeverity, ManualOverrideRegistry, NormalizationIssue,
+    rail_geometry::RailGeometryNetwork,
 };
 
 pub const DEFAULT_DUPLICATE_DISTANCE_METERS: u32 = 25_000;
@@ -421,6 +422,32 @@ pub fn build_gtfs_basic_dataset(
     source_snapshots: Vec<SourceSnapshot>,
     overrides: &ManualOverrideRegistry,
 ) -> Result<BasicGtfsBuildOutput> {
+    build_gtfs_basic_dataset_with_rail_geometry(
+        gtfs_path,
+        gtfs_source_id,
+        country_code,
+        None,
+        None,
+        None,
+        dataset_version,
+        generated_at,
+        source_snapshots,
+        overrides,
+    )
+}
+
+pub fn build_gtfs_basic_dataset_with_rail_geometry(
+    gtfs_path: &Path,
+    gtfs_source_id: &str,
+    country_code: &str,
+    rail_geometry_path: Option<&Path>,
+    rail_geometry_loader: Option<GeometryAuthorityLoader>,
+    rail_geometry_source_id: Option<&str>,
+    dataset_version: &str,
+    generated_at: &str,
+    source_snapshots: Vec<SourceSnapshot>,
+    overrides: &ManualOverrideRegistry,
+) -> Result<BasicGtfsBuildOutput> {
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
     let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path, gtfs_source_id)?;
     let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
@@ -455,6 +482,17 @@ pub fn build_gtfs_basic_dataset(
         .iter()
         .map(|city| (city.city_id.clone(), city.country_code.clone()))
         .collect::<HashMap<_, _>>();
+    let rail_geometry_network = rail_geometry_path
+        .zip(rail_geometry_loader.as_ref())
+        .map(|(path, loader)| match loader {
+            GeometryAuthorityLoader::SncfRfnGeojson => {
+                RailGeometryNetwork::load_sncf_rfn_geojson(path)
+            }
+            GeometryAuthorityLoader::GeofabrikRailwaysGpkg => {
+                RailGeometryNetwork::load_geofabrik_railways_gpkg(path)
+            }
+        })
+        .transpose()?;
     let (edges, edge_geometries) = build_city_edges(
         BuildCityEdgesInputs {
             gtfs_path,
@@ -462,8 +500,8 @@ pub fn build_gtfs_basic_dataset(
             source_country_code: country_code,
             trip_descriptors: &trip_descriptors,
             shapes_by_id: &shapes_by_id,
-            rail_geometry_network: None,
-            rail_geometry_source_id: None,
+            rail_geometry_network: rail_geometry_network.as_ref(),
+            rail_geometry_source_id,
             stop_to_station_key: &stop_to_station_key,
             station_locations: &station_locations,
             station_key_to_city: &station_key_to_city,

@@ -1,13 +1,16 @@
 use std::{
     cmp::Ordering,
     collections::{BinaryHeap, HashMap, HashSet},
-    fs,
+    fs::{self, File},
+    io::Write,
     path::Path,
 };
 
 use aetrain_domain::GeoPoint;
 use anyhow::{Context, Result};
+use rusqlite::Connection;
 use serde_json::Value;
+use zip::ZipArchive;
 
 const ROUTE_SNAP_DISTANCE_METERS: f64 = 5_000.0;
 const ENDPOINT_SNAP_DISTANCE_METERS: f64 = 350.0;
@@ -100,6 +103,43 @@ impl RailGeometryNetwork {
                 }
                 _ => {}
             }
+        }
+
+        Ok(build_network_from_polylines(&polylines))
+    }
+
+    pub fn load_geofabrik_railways_gpkg(path: &Path) -> Result<Self> {
+        let (connection, extracted_path) = open_gpkg_connection(path)?;
+        let mut statement = connection
+            .prepare("SELECT geom, fclass FROM gis_osm_railways_free_1")
+            .with_context(|| {
+                format!(
+                    "failed to prepare railways query against GeoPackage {}",
+                    path.display()
+                )
+            })?;
+        let mut rows = statement.query([]).with_context(|| {
+            format!(
+                "failed to query railways layer from GeoPackage {}",
+                path.display()
+            )
+        })?;
+        let mut polylines = Vec::<Vec<GeoPoint>>::new();
+
+        while let Some(row) = rows.next()? {
+            let fclass = row.get::<_, Option<String>>(1)?.unwrap_or_default();
+            if !geofabrik_fclass_is_supported_railway(&fclass) {
+                continue;
+            }
+            let geom = row.get::<_, Vec<u8>>(0)?;
+            polylines.extend(parse_gpkg_lines(&geom)?);
+        }
+
+        drop(rows);
+        drop(statement);
+        drop(connection);
+        if let Some(extracted_path) = extracted_path {
+            let _ = fs::remove_file(extracted_path);
         }
 
         Ok(build_network_from_polylines(&polylines))
@@ -306,6 +346,182 @@ impl RailGeometryNetwork {
 
         None
     }
+}
+
+fn open_gpkg_connection(path: &Path) -> Result<(Connection, Option<std::path::PathBuf>)> {
+    if path
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("zip"))
+    {
+        let extracted_path = extract_first_gpkg_from_zip(path)?;
+        let connection = Connection::open(&extracted_path).with_context(|| {
+            format!(
+                "failed to open extracted GeoPackage {} from {}",
+                extracted_path.display(),
+                path.display()
+            )
+        })?;
+        Ok((connection, Some(extracted_path)))
+    } else {
+        let connection = Connection::open(path)
+            .with_context(|| format!("failed to open GeoPackage {}", path.display()))?;
+        Ok((connection, None))
+    }
+}
+
+fn extract_first_gpkg_from_zip(path: &Path) -> Result<std::path::PathBuf> {
+    let file = File::open(path).with_context(|| format!("failed to open {}", path.display()))?;
+    let mut archive =
+        ZipArchive::new(file).with_context(|| format!("failed to parse {}", path.display()))?;
+    let mut member_index = None;
+    for index in 0..archive.len() {
+        let is_gpkg = archive
+            .by_index(index)
+            .ok()
+            .and_then(|entry| entry.enclosed_name().map(|name| name.to_path_buf()))
+            .is_some_and(|name| {
+                name.extension()
+                    .is_some_and(|extension| extension.eq_ignore_ascii_case("gpkg"))
+            });
+        if is_gpkg {
+            member_index = Some(index);
+            break;
+        }
+    }
+    let member_index = member_index.context("GeoPackage zip does not contain a .gpkg member")?;
+    let mut member = archive.by_index(member_index).with_context(|| {
+        format!(
+            "failed to open GeoPackage member {} from {}",
+            member_index,
+            path.display()
+        )
+    })?;
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("current time should be after epoch")
+        .as_nanos();
+    let extracted_path =
+        std::env::temp_dir().join(format!("{timestamp}-aetrain-rail-authority.gpkg"));
+    let mut output = File::create(&extracted_path)
+        .with_context(|| format!("failed to create {}", extracted_path.display()))?;
+    std::io::copy(&mut member, &mut output).with_context(|| {
+        format!(
+            "failed to extract GeoPackage member from {} to {}",
+            path.display(),
+            extracted_path.display()
+        )
+    })?;
+    output.flush()?;
+    Ok(extracted_path)
+}
+
+fn geofabrik_fclass_is_supported_railway(fclass: &str) -> bool {
+    matches!(
+        fclass,
+        "rail" | "narrow_gauge"
+    )
+}
+
+fn parse_gpkg_lines(blob: &[u8]) -> Result<Vec<Vec<GeoPoint>>> {
+    let wkb = gpkg_wkb_payload(blob)?;
+    let mut cursor = 0usize;
+    parse_wkb_lines(wkb, &mut cursor)
+}
+
+fn gpkg_wkb_payload(blob: &[u8]) -> Result<&[u8]> {
+    if blob.len() < 8 || &blob[0..2] != b"GP" {
+        anyhow::bail!("invalid GeoPackage geometry header");
+    }
+    let flags = blob[3];
+    let envelope_code = (flags >> 1) & 0b111;
+    let envelope_bytes = match envelope_code {
+        0 => 0usize,
+        1 => 32,
+        2 | 3 => 48,
+        4 => 64,
+        _ => anyhow::bail!("unsupported GeoPackage envelope code {envelope_code}"),
+    };
+    let header_len = 8usize + envelope_bytes;
+    if blob.len() < header_len {
+        anyhow::bail!("truncated GeoPackage geometry header");
+    }
+    Ok(&blob[header_len..])
+}
+
+fn parse_wkb_lines(wkb: &[u8], cursor: &mut usize) -> Result<Vec<Vec<GeoPoint>>> {
+    let byte_order = read_u8(wkb, cursor)?;
+    let little_endian = match byte_order {
+        0 => false,
+        1 => true,
+        _ => anyhow::bail!("unsupported WKB byte order {byte_order}"),
+    };
+    let geometry_type = read_u32(wkb, cursor, little_endian)?;
+    match geometry_type {
+        2 => Ok(vec![parse_wkb_linestring(wkb, cursor, little_endian)?]),
+        5 => {
+            let count = read_u32(wkb, cursor, little_endian)? as usize;
+            let mut lines = Vec::with_capacity(count);
+            for _ in 0..count {
+                lines.extend(parse_wkb_lines(wkb, cursor)?);
+            }
+            Ok(lines)
+        }
+        _ => anyhow::bail!("unsupported WKB geometry type {geometry_type}"),
+    }
+}
+
+fn parse_wkb_linestring(
+    wkb: &[u8],
+    cursor: &mut usize,
+    little_endian: bool,
+) -> Result<Vec<GeoPoint>> {
+    let count = read_u32(wkb, cursor, little_endian)? as usize;
+    let mut points = Vec::with_capacity(count);
+    for _ in 0..count {
+        let lon = read_f64(wkb, cursor, little_endian)?;
+        let lat = read_f64(wkb, cursor, little_endian)?;
+        points.push(GeoPoint { lat, lon });
+    }
+    Ok(points)
+}
+
+fn read_u8(bytes: &[u8], cursor: &mut usize) -> Result<u8> {
+    if *cursor >= bytes.len() {
+        anyhow::bail!("unexpected end of WKB payload");
+    }
+    let value = bytes[*cursor];
+    *cursor += 1;
+    Ok(value)
+}
+
+fn read_u32(bytes: &[u8], cursor: &mut usize, little_endian: bool) -> Result<u32> {
+    if bytes.len().saturating_sub(*cursor) < 4 {
+        anyhow::bail!("unexpected end of WKB payload");
+    }
+    let chunk: [u8; 4] = bytes[*cursor..*cursor + 4]
+        .try_into()
+        .expect("slice length checked");
+    *cursor += 4;
+    Ok(if little_endian {
+        u32::from_le_bytes(chunk)
+    } else {
+        u32::from_be_bytes(chunk)
+    })
+}
+
+fn read_f64(bytes: &[u8], cursor: &mut usize, little_endian: bool) -> Result<f64> {
+    if bytes.len().saturating_sub(*cursor) < 8 {
+        anyhow::bail!("unexpected end of WKB payload");
+    }
+    let chunk: [u8; 8] = bytes[*cursor..*cursor + 8]
+        .try_into()
+        .expect("slice length checked");
+    *cursor += 8;
+    Ok(if little_endian {
+        f64::from_le_bytes(chunk)
+    } else {
+        f64::from_be_bytes(chunk)
+    })
 }
 
 fn feature_is_active(properties: Option<&Value>) -> bool {
@@ -670,6 +886,7 @@ fn haversine_meters(left: GeoPoint, right: GeoPoint) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rusqlite::Connection;
     use std::{
         env, fs,
         time::{SystemTime, UNIX_EPOCH},
@@ -987,6 +1204,42 @@ mod tests {
         let _ = fs::remove_file(path);
     }
 
+    #[test]
+    fn geofabrik_gpkg_loader_keeps_rail_and_drops_tram() {
+        let path = write_test_gpkg().expect("gpkg should be created");
+        let network =
+            RailGeometryNetwork::load_geofabrik_railways_gpkg(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.0,
+                },
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 4.0,
+                },
+            )
+            .expect("rail route should be present");
+
+        assert!(route.len() >= 2);
+        assert!(network
+            .route_polyline(
+                GeoPoint {
+                    lat: 49.0,
+                    lon: 2.0,
+                },
+                GeoPoint {
+                    lat: 49.0,
+                    lon: 3.0,
+                },
+            )
+            .is_none());
+
+        let _ = fs::remove_file(path);
+    }
+
     fn write_test_geojson(contents: &str) -> Result<std::path::PathBuf> {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -996,5 +1249,64 @@ mod tests {
         fs::write(&path, contents)
             .with_context(|| format!("failed to write {}", path.display()))?;
         Ok(path)
+    }
+
+    fn write_test_gpkg() -> Result<std::path::PathBuf> {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("current time should be after epoch")
+            .as_nanos();
+        let path = env::temp_dir().join(format!("{timestamp}-aetrain-rail-test.gpkg"));
+        let connection = Connection::open(&path)
+            .with_context(|| format!("failed to create {}", path.display()))?;
+        connection.execute_batch(
+            "CREATE TABLE gis_osm_railways_free_1 (
+                osm_id INTEGER,
+                code INTEGER,
+                fclass TEXT,
+                name TEXT,
+                ref TEXT,
+                type TEXT,
+                service TEXT,
+                bridge TEXT,
+                tunnel TEXT,
+                geom BLOB
+            );",
+        )?;
+        connection.execute(
+            "INSERT INTO gis_osm_railways_free_1 (osm_id, code, fclass, geom) VALUES (?1, ?2, ?3, ?4)",
+            (
+                1i64,
+                6101i64,
+                "rail",
+                encode_gpkg_linestring(&[(2.0, 48.0), (3.0, 48.0), (4.0, 48.0)]),
+            ),
+        )?;
+        connection.execute(
+            "INSERT INTO gis_osm_railways_free_1 (osm_id, code, fclass, geom) VALUES (?1, ?2, ?3, ?4)",
+            (
+                2i64,
+                6102i64,
+                "tram",
+                encode_gpkg_linestring(&[(2.0, 49.0), (3.0, 49.0)]),
+            ),
+        )?;
+        Ok(path)
+    }
+
+    fn encode_gpkg_linestring(points: &[(f64, f64)]) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"GP");
+        bytes.push(0);
+        bytes.push(1);
+        bytes.extend_from_slice(&4326i32.to_le_bytes());
+        bytes.push(1);
+        bytes.extend_from_slice(&2u32.to_le_bytes());
+        bytes.extend_from_slice(&(points.len() as u32).to_le_bytes());
+        for (lon, lat) in points {
+            bytes.extend_from_slice(&lon.to_le_bytes());
+            bytes.extend_from_slice(&lat.to_le_bytes());
+        }
+        bytes
     }
 }
