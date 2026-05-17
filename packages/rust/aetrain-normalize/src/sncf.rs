@@ -13,7 +13,7 @@ use aetrain_domain::{
     City, CityId, GeoPoint, ServiceClass, ServiceKind, SourceRef, Station, StationId, TravelEdge,
 };
 use anyhow::{Context, Result};
-use csv::{ReaderBuilder, Trim};
+use csv::{ReaderBuilder, StringRecord, Trim};
 use deunicode::deunicode;
 use serde::{Deserialize, Serialize};
 use zip::ZipArchive;
@@ -2027,19 +2027,40 @@ fn collect_used_station_keys(
         .by_name(&stop_times_entry)
         .context("missing stop_times.txt in GTFS archive")?;
     let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(stop_times);
+    let headers = reader
+        .headers()
+        .context("failed to read GTFS stop_times headers")?
+        .clone();
+    let trip_id_idx = csv_header_index(&headers, "trip_id")
+        .context("missing trip_id column in GTFS stop_times")?;
+    let stop_id_idx = csv_header_index(&headers, "stop_id")
+        .context("missing stop_id column in GTFS stop_times")?;
     let mut station_keys = HashSet::new();
+    let mut record = StringRecord::new();
 
-    for row in reader.deserialize::<GtfsStopTimeRow>() {
-        let row = row.context("failed to parse GTFS stop time")?;
-        if !trip_descriptors.contains_key(&row.trip_id) {
+    while reader
+        .read_record(&mut record)
+        .context("failed to read GTFS stop time record")?
+    {
+        let Some(trip_id) = record.get(trip_id_idx) else {
+            continue;
+        };
+        if !trip_descriptors.contains_key(trip_id) {
             continue;
         }
-        if let Some(station_key) = stop_to_station_key.get(&row.stop_id) {
+        let Some(stop_id) = record.get(stop_id_idx) else {
+            continue;
+        };
+        if let Some(station_key) = stop_to_station_key.get(stop_id) {
             station_keys.insert(station_key.clone());
         }
     }
 
     Ok(station_keys)
+}
+
+fn csv_header_index(headers: &StringRecord, name: &str) -> Option<usize> {
+    headers.iter().position(|header| header.trim() == name)
 }
 
 fn build_override_lookup(
