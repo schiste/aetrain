@@ -28,6 +28,7 @@ const COMPONENT_ENDPOINT_STITCH_TOLERANCE_METERS: f64 = 150.0;
 pub struct RailGeometryNetwork {
     nodes: Vec<GeoPoint>,
     adjacency: Vec<Vec<GraphEdge>>,
+    endpoint_node_indexes: Vec<usize>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -61,18 +62,50 @@ impl PartialOrd for QueueState {
 
 impl RailGeometryNetwork {
     pub fn merge(networks: &[&RailGeometryNetwork]) -> Self {
-        let mut polylines = Vec::<Vec<GeoPoint>>::new();
+        let mut nodes = Vec::<GeoPoint>::new();
+        let mut adjacency = Vec::<Vec<GraphEdge>>::new();
+        let mut node_index_by_key = HashMap::<(i32, i32), usize>::new();
+        let mut endpoint_node_indexes = Vec::<usize>::new();
+
         for network in networks {
+            let mut index_map = vec![0usize; network.nodes.len()];
+            for (node_index, point) in network.nodes.iter().enumerate() {
+                index_map[node_index] = get_or_insert_exact_node(
+                    *point,
+                    &mut nodes,
+                    &mut adjacency,
+                    &mut node_index_by_key,
+                );
+            }
+
+            for endpoint_index in &network.endpoint_node_indexes {
+                endpoint_node_indexes.push(index_map[*endpoint_index]);
+            }
+
             for (from_node, edges) in network.adjacency.iter().enumerate() {
                 for edge in edges {
                     if from_node >= edge.target {
                         continue;
                     }
-                    polylines.push(vec![network.nodes[from_node], network.nodes[edge.target]]);
+                    add_undirected_edge(
+                        &mut adjacency,
+                        index_map[from_node],
+                        index_map[edge.target],
+                        network.nodes[from_node],
+                        network.nodes[edge.target],
+                    );
                 }
             }
         }
-        build_network_from_polylines(&polylines)
+
+        add_endpoint_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
+        add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
+
+        RailGeometryNetwork {
+            nodes,
+            adjacency,
+            endpoint_node_indexes,
+        }
     }
 
     pub fn load_sncf_rfn_geojson(path: &Path) -> Result<Self> {
@@ -382,7 +415,7 @@ fn open_gpkg_connection(path: &Path) -> Result<(Connection, Option<std::path::Pa
                 path.display()
             )
         })?;
-        Ok((connection, Some(extracted_path)))
+        Ok((connection, None))
     } else {
         let connection = Connection::open(path)
             .with_context(|| format!("failed to open GeoPackage {}", path.display()))?;
@@ -408,21 +441,28 @@ fn extract_first_gpkg_from_zip(path: &Path) -> Result<std::path::PathBuf> {
     let mut archive =
         ZipArchive::new(file).with_context(|| format!("failed to parse {}", path.display()))?;
     let mut member_index = None;
+    let mut member_path = None;
     for index in 0..archive.len() {
-        let is_gpkg = archive
+        let entry_path = archive
             .by_index(index)
             .ok()
-            .and_then(|entry| entry.enclosed_name().map(|name| name.to_path_buf()))
-            .is_some_and(|name| {
-                name.extension()
-                    .is_some_and(|extension| extension.eq_ignore_ascii_case("gpkg"))
-            });
+            .and_then(|entry| entry.enclosed_name().map(|name| name.to_path_buf()));
+        let is_gpkg = entry_path.as_ref().is_some_and(|name| {
+            name.extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("gpkg"))
+        });
         if is_gpkg {
             member_index = Some(index);
+            member_path = entry_path;
             break;
         }
     }
     let member_index = member_index.context("GeoPackage zip does not contain a .gpkg member")?;
+    let member_path = member_path.expect("member path should be captured for .gpkg entry");
+    let extracted_path = cached_gpkg_path(path, &member_path);
+    if extracted_gpkg_is_fresh(path, &extracted_path)? {
+        return Ok(extracted_path);
+    }
     let mut member = archive.by_index(member_index).with_context(|| {
         format!(
             "failed to open GeoPackage member {} from {}",
@@ -430,23 +470,56 @@ fn extract_first_gpkg_from_zip(path: &Path) -> Result<std::path::PathBuf> {
             path.display()
         )
     })?;
-    let timestamp = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .expect("current time should be after epoch")
-        .as_nanos();
-    let extracted_path =
-        std::env::temp_dir().join(format!("{timestamp}-aetrain-rail-authority.gpkg"));
-    let mut output = File::create(&extracted_path)
-        .with_context(|| format!("failed to create {}", extracted_path.display()))?;
+    let partial_path = extracted_path.with_extension("gpkg.partial");
+    let mut output = File::create(&partial_path)
+        .with_context(|| format!("failed to create {}", partial_path.display()))?;
     std::io::copy(&mut member, &mut output).with_context(|| {
         format!(
             "failed to extract GeoPackage member from {} to {}",
             path.display(),
-            extracted_path.display()
+            partial_path.display()
         )
     })?;
     output.flush()?;
+    fs::rename(&partial_path, &extracted_path).with_context(|| {
+        format!(
+            "failed to move extracted GeoPackage from {} to {}",
+            partial_path.display(),
+            extracted_path.display()
+        )
+    })?;
     Ok(extracted_path)
+}
+
+fn cached_gpkg_path(zip_path: &Path, member_path: &Path) -> std::path::PathBuf {
+    let default_path = zip_path.with_extension("");
+    if default_path
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("gpkg"))
+    {
+        return default_path;
+    }
+
+    let member_file_name = member_path
+        .file_name()
+        .expect("GeoPackage member should have a file name");
+    zip_path.with_file_name(member_file_name)
+}
+
+fn extracted_gpkg_is_fresh(zip_path: &Path, extracted_path: &Path) -> Result<bool> {
+    if !extracted_path.exists() {
+        return Ok(false);
+    }
+
+    let zip_modified = fs::metadata(zip_path)
+        .with_context(|| format!("failed to stat {}", zip_path.display()))?
+        .modified()
+        .with_context(|| format!("failed to read mtime for {}", zip_path.display()))?;
+    let extracted_modified = fs::metadata(extracted_path)
+        .with_context(|| format!("failed to stat {}", extracted_path.display()))?
+        .modified()
+        .with_context(|| format!("failed to read mtime for {}", extracted_path.display()))?;
+    Ok(extracted_modified >= zip_modified)
 }
 
 fn geofabrik_fclass_is_supported_railway(fclass: &str) -> bool {
@@ -637,7 +710,11 @@ fn build_network_from_polylines(polylines: &[Vec<GeoPoint>]) -> RailGeometryNetw
     add_endpoint_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
     add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
 
-    RailGeometryNetwork { nodes, adjacency }
+    RailGeometryNetwork {
+        nodes,
+        adjacency,
+        endpoint_node_indexes,
+    }
 }
 
 fn add_undirected_edge(
@@ -1272,6 +1349,66 @@ mod tests {
             .is_none());
 
         let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn merge_reuses_existing_network_topology() {
+        let left = RailGeometryNetwork::load_sncf_rfn_geojson(
+            &write_test_geojson(
+                r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0000, 48.0000], [2.0100, 48.0000], [2.0200, 48.0000]]
+      }
+    }
+  ]
+}"#,
+            )
+            .expect("left geojson should be created"),
+        )
+        .expect("left network should parse");
+        let right = RailGeometryNetwork::load_sncf_rfn_geojson(
+            &write_test_geojson(
+                r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0207, 48.0002], [2.0300, 48.0000], [2.0400, 48.0000]]
+      }
+    }
+  ]
+}"#,
+            )
+            .expect("right geojson should be created"),
+        )
+        .expect("right network should parse");
+        let merged = RailGeometryNetwork::merge(&[&left, &right]);
+
+        let route = merged
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.0000,
+                },
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.0400,
+                },
+            )
+            .expect("merged route should cross source boundary");
+
+        assert!(route.len() >= 4);
+        assert!(route.iter().any(|point| (point.lon - 2.0200).abs() < 0.0002));
+        assert!(route.iter().any(|point| (point.lon - 2.0300).abs() < 0.0002));
     }
 
     fn write_test_geojson(contents: &str) -> Result<std::path::PathBuf> {
