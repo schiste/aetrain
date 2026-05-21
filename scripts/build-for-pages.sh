@@ -27,6 +27,15 @@ WASM_CRATE_DIR="packages/rust/aetrain-routing-wasm"
 
 log() { printf '[build-for-pages] %s\n' "$*"; }
 
+# ---- 0. diagnostics ---------------------------------------------------------
+# Dump Rust-related env vars + rustup presence so failures of the CF Pages
+# auto-install (triggered by setting RUST_VERSION as a build-time env var) are
+# observable from the build log. Cheap to keep; fits the project's
+# diagnostics-first convention.
+log "RUST_VERSION=${RUST_VERSION:-<unset>}"
+log "rustup on PATH: $(command -v rustup 2>/dev/null || echo '<missing>')"
+log "cargo on PATH:  $(command -v cargo 2>/dev/null || echo '<missing>')"
+
 # wasm-pack invokes `cargo build --message-format=json-render-diagnostics`
 # and parses the JSON stream. Some dev environments install a `cargo`
 # shim earlier on PATH (e.g. CTO wrappers that mangle stdout) which
