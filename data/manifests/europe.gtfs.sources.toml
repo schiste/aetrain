@@ -19,6 +19,8 @@ source_ids = []
 input_target_ids = [
   "sncf-fr",
   "lu-national",
+  "be-national",
+  "nl-national",
   "at-national",
   "de-national",
   "ch-national",
@@ -39,6 +41,8 @@ source_ids = []
 input_target_ids = [
   "sncf-fr",
   "lu-national",
+  "be-national",
+  "nl-national",
   "at-national",
   "de-national",
   "ch-national",
@@ -97,6 +101,40 @@ active = true
 canonical_export = true
 web_debug_export = false
 notes = "Official Germany-wide DELFI GTFS resolved from the archive directory listing and validated on 2026-05-09."
+
+[[target]]
+id = "be-national"
+adapter = "gtfs_basic"
+source_ids = ["be-sncb-gtfs", "be-geofabrik-railways-gpkg"]
+active = true
+canonical_export = true
+web_debug_export = false
+geometry_authority_registry_path = "geometry-authorities.toml"
+notes = "Belgium national rail GTFS with a Geofabrik country GeoPackage rail-geometry authority source. The target is active for ingestion, but authority promotion remains gated by quality audits."
+
+[[target]]
+id = "nl-national"
+adapter = "gtfs_basic"
+source_ids = [
+  "nl-ovapi-gtfs",
+  "nl-geofabrik-drenthe-railways-gpkg",
+  "nl-geofabrik-flevoland-railways-gpkg",
+  "nl-geofabrik-friesland-railways-gpkg",
+  "nl-geofabrik-gelderland-railways-gpkg",
+  "nl-geofabrik-groningen-railways-gpkg",
+  "nl-geofabrik-limburg-railways-gpkg",
+  "nl-geofabrik-noord-brabant-railways-gpkg",
+  "nl-geofabrik-noord-holland-railways-gpkg",
+  "nl-geofabrik-overijssel-railways-gpkg",
+  "nl-geofabrik-utrecht-railways-gpkg",
+  "nl-geofabrik-zeeland-railways-gpkg",
+  "nl-geofabrik-zuid-holland-railways-gpkg",
+]
+active = true
+canonical_export = true
+web_debug_export = false
+geometry_authority_registry_path = "geometry-authorities.toml"
+notes = "Netherlands national aggregate GTFS with a composite provincial Geofabrik rail-geometry authority source. Geofabrik does not publish a current country-level Netherlands GeoPackage, so the pipeline uses the 12 province GeoPackages."
 
 [[target]]
 id = "ch-national"
@@ -264,6 +302,30 @@ include_service_classes = ["intercity", "regional", "ferry"]
 notes = "Official Germany-wide GTFS archive resolved from the DELFI directory listing."
 
 [[source]]
+id = "be-sncb-gtfs"
+kind = "gtfs"
+country_code = "BE"
+adapter = "gtfs_basic"
+url = "https://gtfs.irail.be/nmbs/gtfs/latest.zip"
+file_name = "be-sncb-gtfs.zip"
+active = true
+role = "schedule"
+include_service_classes = ["intercity", "regional"]
+notes = "Public NMBS/SNCB static GTFS endpoint indexed by Transitland and linked from Belgian public-data listings. Rail-only route filtering is applied by the pipeline."
+
+[[source]]
+id = "nl-ovapi-gtfs"
+kind = "gtfs"
+country_code = "NL"
+adapter = "gtfs_basic"
+url = "https://gtfs.ovapi.nl/gtfs-nl.zip"
+file_name = "nl-ovapi-gtfs.zip"
+active = true
+role = "schedule"
+include_service_classes = ["intercity", "regional", "ferry"]
+notes = "OVapi Netherlands aggregate GTFS. The feed is multimodal, so rail-only route filtering is applied by the pipeline."
+
+[[source]]
 id = "ch-gtfs"
 kind = "gtfs"
 country_code = "CH"
@@ -286,6 +348,149 @@ url = "https://download.geofabrik.de/europe/switzerland-latest-free.gpkg.zip"
 file_name = "ch-geofabrik-railways.gpkg.zip"
 active = true
 notes = "Swiss domestic rail-geometry authority source using Geofabrik's country GeoPackage. Activated on 2026-05-15 for the first generic non-French authority onboarding pass."
+
+[[source]]
+id = "be-geofabrik-railways-gpkg"
+kind = "supplementary"
+country_code = "BE"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/belgium-latest-free.gpkg.zip"
+file_name = "be-geofabrik-railways.gpkg.zip"
+active = true
+notes = "Belgian domestic rail-geometry authority source using Geofabrik's country GeoPackage."
+
+[[source]]
+id = "nl-geofabrik-drenthe-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/drenthe-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-drenthe-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Drenthe."
+
+[[source]]
+id = "nl-geofabrik-flevoland-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/flevoland-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-flevoland-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Flevoland."
+
+[[source]]
+id = "nl-geofabrik-friesland-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/friesland-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-friesland-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Friesland."
+
+[[source]]
+id = "nl-geofabrik-gelderland-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/gelderland-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-gelderland-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Gelderland."
+
+[[source]]
+id = "nl-geofabrik-groningen-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/groningen-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-groningen-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Groningen."
+
+[[source]]
+id = "nl-geofabrik-limburg-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/limburg-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-limburg-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Limburg."
+
+[[source]]
+id = "nl-geofabrik-noord-brabant-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/noord-brabant-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-noord-brabant-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Noord-Brabant."
+
+[[source]]
+id = "nl-geofabrik-noord-holland-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/noord-holland-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-noord-holland-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Noord-Holland."
+
+[[source]]
+id = "nl-geofabrik-overijssel-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/overijssel-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-overijssel-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Overijssel."
+
+[[source]]
+id = "nl-geofabrik-utrecht-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/utrecht-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-utrecht-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Utrecht."
+
+[[source]]
+id = "nl-geofabrik-zeeland-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/zeeland-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-zeeland-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Zeeland."
+
+[[source]]
+id = "nl-geofabrik-zuid-holland-railways-gpkg"
+kind = "supplementary"
+country_code = "NL"
+adapter = "gtfs_basic"
+role = "rail_geometry"
+url = "https://download.geofabrik.de/europe/netherlands/zuid-holland-latest-free.gpkg.zip"
+file_name = "nl-geofabrik-zuid-holland-railways.gpkg.zip"
+active = true
+notes = "Netherlands provincial rail-geometry authority source for Zuid-Holland."
 
 [[source]]
 id = "es-geofabrik-andalucia-railways-gpkg"

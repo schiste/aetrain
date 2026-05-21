@@ -3668,6 +3668,12 @@ fn infer_home_country_code_from_provenance(provenance: &[String]) -> Option<&'st
         if entry.starts_with("de-delfi-gtfs:") {
             return Some("DE");
         }
+        if entry.starts_with("be-sncb-gtfs:") {
+            return Some("BE");
+        }
+        if entry.starts_with("nl-ovapi-gtfs:") {
+            return Some("NL");
+        }
         if entry.starts_with("es-renfe-mainline-gtfs:")
             || entry.starts_with("es-renfe-cercanias-gtfs:")
         {
@@ -9239,6 +9245,7 @@ mod tests {
     fn infer_country_code_from_uic_station_ids_works_for_foreign_sncf_rows() {
         let berlin = vec![StationId::new("station-uic-80077990").expect("valid station id")];
         let bruxelles = vec![StationId::new("station-uic-88140010").expect("valid station id")];
+        let amsterdam = vec![StationId::new("station-uic-8400058").expect("valid station id")];
         let barcelone = vec![StationId::new("station-uic-71718010").expect("valid station id")];
         let mixed = vec![
             StationId::new("station-uic-80077990").expect("valid station id"),
@@ -9254,10 +9261,26 @@ mod tests {
             Some("BE")
         );
         assert_eq!(
+            infer_country_code_from_station_ids(&amsterdam).as_deref(),
+            Some("NL")
+        );
+        assert_eq!(
             infer_country_code_from_station_ids(&barcelone).as_deref(),
             Some("ES")
         );
         assert_eq!(infer_country_code_from_station_ids(&mixed), None);
+    }
+
+    #[test]
+    fn infer_home_country_code_from_provenance_covers_benelux_feeds() {
+        assert_eq!(
+            infer_home_country_code_from_provenance(&["be-sncb-gtfs:R1".to_string()]),
+            Some("BE")
+        );
+        assert_eq!(
+            infer_home_country_code_from_provenance(&["nl-ovapi-gtfs:R1".to_string()]),
+            Some("NL")
+        );
     }
 
     #[test]

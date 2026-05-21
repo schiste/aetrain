@@ -8,6 +8,71 @@ loader = "geofabrik_railways_gpkg"
 notes = "Swiss domestic Geofabrik GeoPackage authority source."
 
 [[source]]
+source_id = "be-geofabrik-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Belgian domestic Geofabrik GeoPackage authority source."
+
+[[source]]
+source_id = "nl-geofabrik-drenthe-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Drenthe."
+
+[[source]]
+source_id = "nl-geofabrik-flevoland-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Flevoland."
+
+[[source]]
+source_id = "nl-geofabrik-friesland-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Friesland."
+
+[[source]]
+source_id = "nl-geofabrik-gelderland-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Gelderland."
+
+[[source]]
+source_id = "nl-geofabrik-groningen-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Groningen."
+
+[[source]]
+source_id = "nl-geofabrik-limburg-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Limburg."
+
+[[source]]
+source_id = "nl-geofabrik-noord-brabant-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Noord-Brabant."
+
+[[source]]
+source_id = "nl-geofabrik-noord-holland-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Noord-Holland."
+
+[[source]]
+source_id = "nl-geofabrik-overijssel-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Overijssel."
+
+[[source]]
+source_id = "nl-geofabrik-utrecht-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Utrecht."
+
+[[source]]
+source_id = "nl-geofabrik-zeeland-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Zeeland."
+
+[[source]]
+source_id = "nl-geofabrik-zuid-holland-railways-gpkg"
+loader = "geofabrik_railways_gpkg"
+notes = "Netherlands provincial Geofabrik GeoPackage authority source for Zuid-Holland."
+
+[[source]]
 source_id = "es-geofabrik-andalucia-railways-gpkg"
 loader = "geofabrik_railways_gpkg"
 notes = "Spain regional Geofabrik GeoPackage authority source for Andalucia."
@@ -74,6 +139,13 @@ max_promoted_rejected_implausible_authority_detour_count = 0
 notes = "French domestic rail authority backed by SNCF RFN line geometry. Domestic straight lines and rail-authority rejections are treated as regressions."
 
 [[country]]
+country_code = "BE"
+source_id = "be-geofabrik-railways-gpkg"
+status = "ingested"
+customer_facing = false
+notes = "Belgian domestic geometry backlog is tracked through a Geofabrik country GeoPackage authority source. It is activated for ingestion, but not yet promoted until quality gates are measured."
+
+[[country]]
 country_code = "CH"
 source_id = "ch-geofabrik-railways-gpkg"
 status = "ingested"
@@ -98,6 +170,26 @@ source_ids = [
 status = "ingested"
 customer_facing = false
 notes = "Spanish domestic geometry backlog is tracked through a hotspot-driven composite of regional Geofabrik GeoPackage authority sources. It is activated for ingestion, but not yet promoted until the quality gates are measured."
+
+[[country]]
+country_code = "NL"
+source_ids = [
+  "nl-geofabrik-drenthe-railways-gpkg",
+  "nl-geofabrik-flevoland-railways-gpkg",
+  "nl-geofabrik-friesland-railways-gpkg",
+  "nl-geofabrik-gelderland-railways-gpkg",
+  "nl-geofabrik-groningen-railways-gpkg",
+  "nl-geofabrik-limburg-railways-gpkg",
+  "nl-geofabrik-noord-brabant-railways-gpkg",
+  "nl-geofabrik-noord-holland-railways-gpkg",
+  "nl-geofabrik-overijssel-railways-gpkg",
+  "nl-geofabrik-utrecht-railways-gpkg",
+  "nl-geofabrik-zeeland-railways-gpkg",
+  "nl-geofabrik-zuid-holland-railways-gpkg",
+]
+status = "ingested"
+customer_facing = false
+notes = "Dutch domestic geometry backlog is tracked through a composite of provincial Geofabrik GeoPackage authority sources because the current country-level Netherlands GeoPackage is not published. It is activated for ingestion, but not yet promoted until quality gates are measured."
 
 [[country]]
 country_code = "AT"
