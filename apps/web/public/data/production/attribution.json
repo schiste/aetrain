@@ -1,8 +1,8 @@
 {
   "dataset_id": "stage1-europe-gtfs",
   "target_id": "europe-validated",
-  "dataset_version": "20260521-123439.960049",
-  "generated_at": "2026-05-21T12:34:39.960049Z",
+  "dataset_version": "20260521-142847.61775",
+  "generated_at": "2026-05-21T14:28:47.61775Z",
   "sources": [
     {
       "source_id": "at-oebb-gtfs",
@@ -10,6 +10,20 @@
       "fetched_at": "2026-05-12T15:51:00.088877+00:00",
       "sha256": "a1ace21ca33ff5d6c740a1467252a44f7b9bece2692ca9d96e167f639d5ab633",
       "version_hint": "Fri, 12 Dec 2025 09:02:01 GMT"
+    },
+    {
+      "source_id": "be-geofabrik-railways-gpkg",
+      "local_path": "../../../cache/raw/be-geofabrik-railways-gpkg/be-geofabrik-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:04.967547Z",
+      "sha256": "362178e59a97a678787319b4af1a5f8f51bab20229069a3ee860bfb1e09c433c",
+      "version_hint": "\"4eb20375-6524c6e003b16\""
+    },
+    {
+      "source_id": "be-sncb-gtfs",
+      "local_path": "../../../cache/raw/be-sncb-gtfs/be-sncb-gtfs.zip",
+      "fetched_at": "2026-05-21T14:03:57.701402Z",
+      "sha256": "98afd2e9f3846798b51fc59dcf9b583afce4a84113728f5d9747738b2d76d48e",
+      "version_hint": "\"6a0ea675-b62022\""
     },
     {
       "source_id": "ch-geofabrik-railways-gpkg",
@@ -129,6 +143,97 @@
       "fetched_at": "2026-05-09T04:50:57.432897Z",
       "sha256": "6f5baad0282a0198e6f69c4880678be6edbf46ba73a541b3c61d1bccfb436deb",
       "version_hint": "2026-05-07T04:33:17.174000+00:00"
+    },
+    {
+      "source_id": "nl-geofabrik-drenthe-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-drenthe-railways-gpkg/nl-geofabrik-drenthe-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:09.146294Z",
+      "sha256": "029bd7bfd6d2eb38622eaa1bc26df5e0b81dde32e0d149338832f3e20a31be4e",
+      "version_hint": "\"68ea357-6524a643db9a4\""
+    },
+    {
+      "source_id": "nl-geofabrik-flevoland-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-flevoland-railways-gpkg/nl-geofabrik-flevoland-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:11.265954Z",
+      "sha256": "6ef20f7b112ee8fc9339290667cf127fb4adac40f05a90f738bd3ed1b10fe927",
+      "version_hint": "\"39dcc83-6524a4bb33281\""
+    },
+    {
+      "source_id": "nl-geofabrik-friesland-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-friesland-railways-gpkg/nl-geofabrik-friesland-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:18.015666Z",
+      "sha256": "dbad38b07e4faf18efd030364fbbec30c3d1af9942494606e910d87cf4768cfb",
+      "version_hint": "\"a463f41-6524c442644b6\""
+    },
+    {
+      "source_id": "nl-geofabrik-gelderland-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-gelderland-railways-gpkg/nl-geofabrik-gelderland-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:30.912815Z",
+      "sha256": "96128b53d27cf8811b9468ef67ef2a3d99ce1a005879671ea4eb8f2dfc4ef57e",
+      "version_hint": "\"132412aa-6524acf983bb1\""
+    },
+    {
+      "source_id": "nl-geofabrik-groningen-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-groningen-railways-gpkg/nl-geofabrik-groningen-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:34.441133Z",
+      "sha256": "cbe2368953cbcaa2199ee25bb8b7012b439b6d59a524f43e4004cdedfa465d53",
+      "version_hint": "\"5b7b051-6524a6ff79d5b\""
+    },
+    {
+      "source_id": "nl-geofabrik-limburg-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-limburg-railways-gpkg/nl-geofabrik-limburg-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:41.595933Z",
+      "sha256": "c480f1763c57fcf784075cf31b5291683e3857c6e8371b6bf0b0026b56b90ec1",
+      "version_hint": "\"a0ece52-6524b81ad6053\""
+    },
+    {
+      "source_id": "nl-geofabrik-noord-brabant-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-noord-brabant-railways-gpkg/nl-geofabrik-noord-brabant-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:08:56.83734Z",
+      "sha256": "6a69c774f579c1355bedf1a26d50c54cc82634bbae9165815d336518faa2ddab",
+      "version_hint": "\"151da352-6524c750fc5c4\""
+    },
+    {
+      "source_id": "nl-geofabrik-noord-holland-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-noord-holland-railways-gpkg/nl-geofabrik-noord-holland-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:09:25.137124Z",
+      "sha256": "047067da4f32aa4806992a5dcb6d8c8ad601144a36b7372715ba5dda88a4ed27",
+      "version_hint": "\"12ad7572-6524b18aade8a\""
+    },
+    {
+      "source_id": "nl-geofabrik-overijssel-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-overijssel-railways-gpkg/nl-geofabrik-overijssel-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:09:41.292016Z",
+      "sha256": "138a46e61fe65f2e671ae9ad6f7831fea8d7eb2114482be0964da868e07d0edd",
+      "version_hint": "\"bf7620b-6524baf70288b\""
+    },
+    {
+      "source_id": "nl-geofabrik-utrecht-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-utrecht-railways-gpkg/nl-geofabrik-utrecht-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:09:48.724822Z",
+      "sha256": "828aaa409ad7bfe9fc382a84ad0ed683a1fedf72ec9e5f325c020c53a39d9662",
+      "version_hint": "\"9ab5057-6524bf784644a\""
+    },
+    {
+      "source_id": "nl-geofabrik-zeeland-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-zeeland-railways-gpkg/nl-geofabrik-zeeland-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:09:51.65689Z",
+      "sha256": "5e8e746ff23c09bfa6f3718dd58e99b8b5387de36ef226eccfed05b9c6611cde",
+      "version_hint": "\"4c5ebf6-6524b1d623778\""
+    },
+    {
+      "source_id": "nl-geofabrik-zuid-holland-railways-gpkg",
+      "local_path": "../../../cache/raw/nl-geofabrik-zuid-holland-railways-gpkg/nl-geofabrik-zuid-holland-railways.gpkg.zip",
+      "fetched_at": "2026-05-21T14:10:05.249066Z",
+      "sha256": "c000a84693ae09553edc0840f41e69fd13ccc8e19584986b7dde698c73ad648c",
+      "version_hint": "\"14505d24-6524b6e4465f5\""
+    },
+    {
+      "source_id": "nl-ovapi-gtfs",
+      "local_path": "../../../cache/raw/nl-ovapi-gtfs/nl-ovapi-gtfs.zip",
+      "fetched_at": "2026-05-21T14:04:39.281043Z",
+      "sha256": "195db6b0283d0f5781458f40995e8c4ba05ed88ae2b81a2d84379210dfce0e34",
+      "version_hint": "\"6a0e328c=cfc3cff\""
     },
     {
       "source_id": "sncf-fr-gtfs",
