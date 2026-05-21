@@ -186,6 +186,15 @@ interface PreparedEdge {
    *  polyline test. Recomputed when geometry is augmented. */
   worldBbox: WorldBoundingBox;
   renderPriority: number;
+  /** True when the edge has no real shape data (null geometry, or a
+   *  geometry stub of ≤ 3 points — usually fromCity/midpoint/toCity).
+   *  The background network draw uses this to render the edge with a
+   *  dotted, thinner, lower-opacity stroke that signals "inferred
+   *  straight-line, not authoritative geometry". Cached once at prep
+   *  time so the hot draw loop avoids the array-length check per
+   *  frame. Recomputed when geometry is augmented (see refresh-
+   *  geometry path in setupDeferredGeometry). */
+  isLowConfidence: boolean;
 }
 
 interface ZoomControls {
@@ -457,6 +466,7 @@ export function createLeafletMapSurface({
         geometryWorld,
         worldBbox: computeEdgeWorldBbox(fromWorld, toWorld, geometryWorld),
         renderPriority: edgeRenderPriority(fromCity, toCity),
+        isLowConfidence: !geometryWorld || geometryWorld.length <= 3,
         toCity,
         toWorld
       };
@@ -669,6 +679,10 @@ export function createLeafletMapSurface({
           prepared.toWorld,
           prepared.geometryWorld
         );
+        // Geometry was augmented from the deferred chunk loader. An edge
+        // that used to be a 2-point stub may now have a real polyline,
+        // so re-evaluate the low-confidence flag.
+        prepared.isLowConfidence = prepared.geometryWorld.length <= 3;
         updated += 1;
       }
       diagnostics.info("map surface refreshed geometry", {
@@ -1518,10 +1532,39 @@ export function createLeafletMapSurface({
   function drawBackgroundNetwork(frame: MapFrame): void {
     clearCanvas(networkContext, networkCanvas);
     networkContext.save();
-    networkContext.strokeStyle = "rgba(30,41,59,0.5)";
-    networkContext.lineWidth = 0.6;
+    networkContext.lineCap = "butt";
+
+    // Edge styling has two flavors: high-confidence (solid, 0.5 alpha,
+    // 0.6 px) and low-confidence (dotted, 0.3 alpha, 0.4 px). The flag
+    // lives on PreparedEdge, set at prep time from geometry shape. We
+    // switch canvas state lazily — only when the flag flips between
+    // adjacent edges — to keep the 39k-edge hot loop cheap. The edge
+    // list is sorted by renderPriority, not confidence, so flips happen
+    // but are uncorrelated with screen position; this is still cheaper
+    // than per-edge state writes, and the lazy switch reads cleaner
+    // than batching into two passes (which would also disturb the
+    // render-priority paint order).
+    let currentIsLowConfidence: boolean | null = null;
+    const applyConfidenceStyle = (isLowConfidence: boolean): void => {
+      if (isLowConfidence === currentIsLowConfidence) {
+        return;
+      }
+      currentIsLowConfidence = isLowConfidence;
+      if (isLowConfidence) {
+        networkContext.strokeStyle = "rgba(30,41,59,0.3)";
+        networkContext.lineWidth = 0.4;
+        // Tight 1px-on / 2px-off pattern — reads as dots at this line
+        // width without looking like a long dash.
+        networkContext.setLineDash([1, 2]);
+      } else {
+        networkContext.strokeStyle = "rgba(30,41,59,0.5)";
+        networkContext.lineWidth = 0.6;
+        networkContext.setLineDash([]);
+      }
+    };
 
     let drawnEdges = 0;
+    let drawnLowConfidence = 0;
     // Force straight-line geometry during active interaction — the
     // multi-point projections per edge are the dominant cost on the
     // hot wheel/pan path. Visual fidelity restores on settle.
@@ -1555,14 +1598,19 @@ export function createLeafletMapSurface({
         continue;
       }
 
+      applyConfidenceStyle(edge.isLowConfidence);
       networkContext.beginPath();
       tracePoints(networkContext, points);
       networkContext.stroke();
       drawnEdges += 1;
+      if (edge.isLowConfidence) {
+        drawnLowConfidence += 1;
+      }
     }
     networkContext.restore();
     diagnostics.metric("network-layer-draw", drawnEdges, {
       drawn_edges: drawnEdges,
+      drawn_low_confidence: drawnLowConfidence,
       zoom: frame.zoom
     });
   }
