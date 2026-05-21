@@ -2079,6 +2079,9 @@ export function createLeafletMapSurface({
       candidate_count: lastVisibleCities.length
     });
     renderKeyboardFocus(best);
+    // Draw the focus ring for the first time. renderKeyboardFocus only
+    // touches the tooltip DOM; the ring lives on the cities canvas.
+    invalidateAnimationFrame("keyboard-nav-enter");
   }
 
   function exitKeyboardNav(): void {
@@ -2131,14 +2134,21 @@ export function createLeafletMapSurface({
       dy
     });
     renderKeyboardFocus(best);
+    // Redraw the cities layer so the focus ring moves to the new city.
+    invalidateAnimationFrame("keyboard-nav-step");
   }
 
   /**
-   * Draw the focus ring around `target` and re-anchor the live tooltip
-   * to its position. Reuses the cities canvas via invalidateAnimation-
-   * Frame so we only repaint the cheap layer. The tooltip swap is what
-   * actually announces the focused city to screen readers (aria-live
-   * polite + aria-atomic).
+   * Re-anchor the live tooltip to `target`'s current screen position and
+   * refresh its HTML. Pure DOM work — does NOT schedule a canvas render.
+   * Callers that change which city is focused (enterKeyboardNav,
+   * stepKeyboardNav) trigger the cities-layer redraw explicitly; the
+   * reanchor path inside flushRender is already mid-render, so the focus
+   * ring is up to date by the time this runs. Scheduling a render here
+   * would re-enter flushRender → reanchor → renderKeyboardFocus → ... at
+   * frame rate (confirmed 110 renders/sec in nav mode before the split).
+   * The tooltip swap is also what announces the focused city to screen
+   * readers via aria-live polite + aria-atomic.
    */
   function renderKeyboardFocus(target: VisibleCity): void {
     // Take ownership of the tooltip's "dismissed-by-Escape" state so a
@@ -2156,7 +2166,6 @@ export function createLeafletMapSurface({
     tooltip.style.left = `${Math.round(target.x)}px`;
     tooltip.style.top = `${Math.round(target.y - 12)}px`;
     tooltip.style.transform = "translate(-50%, -100%)";
-    invalidateAnimationFrame("keyboard-nav-focus");
   }
 
   function selectKeyboardFocusedCity(): boolean {
