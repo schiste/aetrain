@@ -58,7 +58,28 @@ elif command -v rustup >/dev/null 2>&1; then
   fi
 fi
 
-# ---- 1. wasm-pack -----------------------------------------------------------
+# ---- 1. rustup --------------------------------------------------------------
+# rustup is required for both the wasm32 target install and wasm-pack's own
+# installer. CF Pages can auto-install it when RUST_VERSION is set as a
+# build-time env var, but that hand-off has proven unreliable for this
+# project, so we bootstrap rustup ourselves if it isn't on PATH. Locally on
+# a dev box, rustup is already present and this branch is a no-op.
+if ! command -v rustup >/dev/null 2>&1; then
+  log "rustup not found — installing toolchain via rustup.rs (--profile minimal)"
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
+  export PATH="${HOME}/.cargo/bin:${PATH}"
+  log "rustup installed: $(command -v rustup)"
+fi
+
+# `rustup target add` is idempotent — it prints "already installed" and exits 0
+# when the target is present, so we can call it unconditionally.
+log "ensuring wasm32-unknown-unknown rustup target is installed"
+rustup target add wasm32-unknown-unknown >/dev/null
+
+# ---- 2. wasm-pack -----------------------------------------------------------
+# Must run after rustup is on PATH: the precompiled wasm-pack installer
+# (wasm-pack-init) refuses to run without a detectable Rust installation.
 if command -v wasm-pack >/dev/null 2>&1; then
   log "wasm-pack already installed: $(command -v wasm-pack)"
 else
@@ -80,22 +101,6 @@ else
   fi
   log "wasm-pack installed: $(command -v wasm-pack)"
 fi
-
-# ---- 2. wasm32 target -------------------------------------------------------
-# rustup is a hard requirement here. Both CF Pages (with RUST_VERSION set) and
-# developer machines using rust-toolchain.toml have it; if it's missing we
-# fail loudly rather than silently producing a broken wasm crate.
-if ! command -v rustup >/dev/null 2>&1; then
-  log "ERROR: rustup not found on PATH. On Cloudflare Pages set the"
-  log "       RUST_VERSION environment variable (e.g. 1.92.0) to install it."
-  log "       Locally, see https://rustup.rs/."
-  exit 1
-fi
-
-# `rustup target add` is idempotent — it prints "already installed" and exits 0
-# when the target is present, so we can call it unconditionally.
-log "ensuring wasm32-unknown-unknown rustup target is installed"
-rustup target add wasm32-unknown-unknown >/dev/null
 
 # ---- 3. wasm-pack build -----------------------------------------------------
 log "building ${WASM_CRATE_DIR} (release, target=web)"
