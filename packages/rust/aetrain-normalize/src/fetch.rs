@@ -1,6 +1,8 @@
 use std::{
-    fs,
+    fs::{self, File},
+    io::{Read, Write},
     path::{Path, PathBuf},
+    time::Duration,
 };
 
 use anyhow::{Context, Result, anyhow, bail};
@@ -142,6 +144,8 @@ pub fn fetch_sources(
 
     let client = Client::builder()
         .user_agent("aetrain-pipeline/0.1 (+https://github.com/schiste/aetrain)")
+        .connect_timeout(Duration::from_secs(60))
+        .timeout(Duration::from_secs(6 * 60 * 60))
         .build()
         .context("failed to build HTTP client")?;
 
@@ -280,20 +284,13 @@ fn fetch_one(
         });
     }
 
-    let response = client
+    let mut response = client
         .get(&resolved.download_url)
         .send()
         .with_context(|| format!("failed to download {}", resolved.download_url))?
         .error_for_status()
         .with_context(|| format!("received error response for {}", resolved.download_url))?;
     let response_headers = response.headers().clone();
-    let bytes = response.bytes().context("failed to read response body")?;
-    validate_downloaded_payload(
-        definition,
-        &resolved.download_url,
-        &resolved_file_name,
-        &bytes,
-    )?;
 
     let parent = local_path
         .parent()
@@ -301,8 +298,19 @@ fn fetch_one(
     fs::create_dir_all(parent).with_context(|| format!("failed to create {}", parent.display()))?;
 
     let tmp_path = local_path.with_extension("tmp");
-    fs::write(&tmp_path, &bytes)
-        .with_context(|| format!("failed to write {}", tmp_path.display()))?;
+    let sha256 = match stream_download_to_file(
+        &mut response,
+        definition,
+        &resolved.download_url,
+        &resolved_file_name,
+        &tmp_path,
+    ) {
+        Ok(sha256) => sha256,
+        Err(error) => {
+            let _ = fs::remove_file(&tmp_path);
+            return Err(error);
+        }
+    };
     fs::rename(&tmp_path, &local_path)
         .with_context(|| format!("failed to move {} into place", local_path.display()))?;
 
@@ -318,9 +326,56 @@ fn fetch_one(
             .get(header::CONTENT_LENGTH)
             .and_then(|value| value.to_str().ok())
             .and_then(|value| value.parse::<u64>().ok()),
-        sha256: sha256_hex(bytes.as_ref()),
+        sha256,
         status: FetchStatus::Downloaded,
     })
+}
+
+fn stream_download_to_file(
+    response: &mut impl Read,
+    definition: &SourceDefinition,
+    resolved_url: &str,
+    resolved_file_name: &str,
+    path: &Path,
+) -> Result<String> {
+    let mut file =
+        File::create(path).with_context(|| format!("failed to create {}", path.display()))?;
+    let mut hasher = Sha256::new();
+    let mut prefix = Vec::with_capacity(8);
+    let mut payload_validated = false;
+    let mut buffer = [0u8; 1024 * 1024];
+
+    loop {
+        let read = response
+            .read(&mut buffer)
+            .context("failed to read response body")?;
+        if read == 0 {
+            break;
+        }
+
+        if prefix.len() < 8 {
+            let remaining = 8 - prefix.len();
+            let take = read.min(remaining);
+            prefix.extend_from_slice(&buffer[..take]);
+        }
+
+        if !payload_validated && prefix.len() >= 4 {
+            validate_downloaded_payload(definition, resolved_url, resolved_file_name, &prefix)?;
+            payload_validated = true;
+        }
+
+        hasher.update(&buffer[..read]);
+        file.write_all(&buffer[..read])
+            .with_context(|| format!("failed to write {}", path.display()))?;
+    }
+
+    if !payload_validated {
+        validate_downloaded_payload(definition, resolved_url, resolved_file_name, &prefix)?;
+    }
+
+    file.flush()
+        .with_context(|| format!("failed to flush {}", path.display()))?;
+    Ok(hex::encode(hasher.finalize()))
 }
 
 fn probe_remote_state(client: &Client, url: &str) -> Result<RemoteSourceState> {
@@ -733,12 +788,6 @@ fn header_to_string(headers: &header::HeaderMap, name: header::HeaderName) -> Op
         .get(name)
         .and_then(|value| value.to_str().ok())
         .map(ToString::to_string)
-}
-
-fn sha256_hex(bytes: &[u8]) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    hex::encode(hasher.finalize())
 }
 
 fn now_utc_rfc3339() -> Result<String> {
