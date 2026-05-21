@@ -13,7 +13,7 @@ use aetrain_domain::{
     City, CityId, GeoPoint, ServiceClass, ServiceKind, SourceRef, Station, StationId, TravelEdge,
 };
 use anyhow::{Context, Result};
-use csv::{ReaderBuilder, StringRecord, Trim};
+use csv::{ByteRecord, ReaderBuilder, StringRecord, Trim};
 use deunicode::deunicode;
 use serde::{Deserialize, Serialize};
 use zip::ZipArchive;
@@ -2026,7 +2026,7 @@ fn collect_used_station_keys(
     let stop_times = archive
         .by_name(&stop_times_entry)
         .context("missing stop_times.txt in GTFS archive")?;
-    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(stop_times);
+    let mut reader = ReaderBuilder::new().from_reader(stop_times);
     let headers = reader
         .headers()
         .context("failed to read GTFS stop_times headers")?
@@ -2036,19 +2036,25 @@ fn collect_used_station_keys(
     let stop_id_idx = csv_header_index(&headers, "stop_id")
         .context("missing stop_id column in GTFS stop_times")?;
     let mut station_keys = HashSet::new();
-    let mut record = StringRecord::new();
+    let mut record = ByteRecord::new();
 
     while reader
-        .read_record(&mut record)
+        .read_byte_record(&mut record)
         .context("failed to read GTFS stop time record")?
     {
-        let Some(trip_id) = record.get(trip_id_idx) else {
+        let Some(trip_id) = record
+            .get(trip_id_idx)
+            .and_then(trim_ascii_bytes_to_str)
+        else {
             continue;
         };
         if !trip_descriptors.contains_key(trip_id) {
             continue;
         }
-        let Some(stop_id) = record.get(stop_id_idx) else {
+        let Some(stop_id) = record
+            .get(stop_id_idx)
+            .and_then(trim_ascii_bytes_to_str)
+        else {
             continue;
         };
         if let Some(station_key) = stop_to_station_key.get(stop_id) {
@@ -2061,6 +2067,22 @@ fn collect_used_station_keys(
 
 fn csv_header_index(headers: &StringRecord, name: &str) -> Option<usize> {
     headers.iter().position(|header| header.trim() == name)
+}
+
+fn trim_ascii_bytes_to_str(bytes: &[u8]) -> Option<&str> {
+    std::str::from_utf8(trim_ascii_bytes(bytes)).ok()
+}
+
+fn trim_ascii_bytes(bytes: &[u8]) -> &[u8] {
+    let mut start = 0usize;
+    let mut end = bytes.len();
+    while start < end && bytes[start].is_ascii_whitespace() {
+        start += 1;
+    }
+    while end > start && bytes[end - 1].is_ascii_whitespace() {
+        end -= 1;
+    }
+    &bytes[start..end]
 }
 
 fn build_override_lookup(

@@ -29,6 +29,7 @@ pub struct RailGeometryNetwork {
     nodes: Vec<GeoPoint>,
     adjacency: Vec<Vec<GraphEdge>>,
     endpoint_node_indexes: Vec<usize>,
+    node_indexes_by_bucket: HashMap<(i32, i32), Vec<usize>>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -102,6 +103,7 @@ impl RailGeometryNetwork {
         add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
 
         RailGeometryNetwork {
+            node_indexes_by_bucket: build_node_bucket_index(&nodes),
             nodes,
             adjacency,
             endpoint_node_indexes,
@@ -213,13 +215,26 @@ impl RailGeometryNetwork {
         max_distance_meters: u32,
         limit: usize,
     ) -> Vec<(usize, u32)> {
-        let mut candidates = self
-            .nodes
-            .iter()
-            .enumerate()
-            .map(|(index, point)| (index, haversine_meters(*point, target).round() as u32))
-            .filter(|(_, distance)| *distance <= max_distance_meters)
-            .collect::<Vec<_>>();
+        let mut candidates = Vec::<(usize, u32)>::new();
+        let bucket = quantize_bucket_key(target);
+        let (lat_radius, lon_radius) =
+            bucket_search_radius(target, max_distance_meters as f64);
+        for lat_bucket in (bucket.0 - lat_radius)..=(bucket.0 + lat_radius) {
+            for lon_bucket in (bucket.1 - lon_radius)..=(bucket.1 + lon_radius) {
+                let Some(node_indexes) =
+                    self.node_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
+                else {
+                    continue;
+                };
+                for node_index in node_indexes {
+                    let distance =
+                        haversine_meters(self.nodes[*node_index], target).round() as u32;
+                    if distance <= max_distance_meters {
+                        candidates.push((*node_index, distance));
+                    }
+                }
+            }
+        }
         candidates.sort_by_key(|(_, distance)| *distance);
         candidates.truncate(limit);
         candidates
@@ -711,6 +726,7 @@ fn build_network_from_polylines(polylines: &[Vec<GeoPoint>]) -> RailGeometryNetw
     add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
 
     RailGeometryNetwork {
+        node_indexes_by_bucket: build_node_bucket_index(&nodes),
         nodes,
         adjacency,
         endpoint_node_indexes,
@@ -896,6 +912,28 @@ fn quantize_bucket_key(point: GeoPoint) -> (i32, i32) {
         (point.lat * NODE_BUCKET_SCALE).floor() as i32,
         (point.lon * NODE_BUCKET_SCALE).floor() as i32,
     )
+}
+
+fn build_node_bucket_index(nodes: &[GeoPoint]) -> HashMap<(i32, i32), Vec<usize>> {
+    let mut node_indexes_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
+    for (index, point) in nodes.iter().enumerate() {
+        node_indexes_by_bucket
+            .entry(quantize_bucket_key(*point))
+            .or_default()
+            .push(index);
+    }
+    node_indexes_by_bucket
+}
+
+fn bucket_search_radius(target: GeoPoint, max_distance_meters: f64) -> (i32, i32) {
+    let meters_per_lat_degree = 111_320.0;
+    let lat_radius =
+        ((max_distance_meters / meters_per_lat_degree) * NODE_BUCKET_SCALE).ceil() as i32 + 1;
+    let lon_degree_scale = target.lat.to_radians().cos().abs().max(0.1);
+    let meters_per_lon_degree = meters_per_lat_degree * lon_degree_scale;
+    let lon_radius =
+        ((max_distance_meters / meters_per_lon_degree) * NODE_BUCKET_SCALE).ceil() as i32 + 1;
+    (lat_radius.max(1), lon_radius.max(1))
 }
 
 fn connected_components(adjacency: &[Vec<GraphEdge>]) -> Vec<usize> {
@@ -1409,6 +1447,42 @@ mod tests {
         assert!(route.len() >= 4);
         assert!(route.iter().any(|point| (point.lon - 2.0200).abs() < 0.0002));
         assert!(route.iter().any(|point| (point.lon - 2.0300).abs() < 0.0002));
+    }
+
+    #[test]
+    fn nearest_node_lookup_searches_multiple_spatial_buckets() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[7.0000, 46.0000], [7.0100, 46.0000]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let candidates = network.nearest_nodes_with_distance(
+            GeoPoint {
+                lat: 46.0350,
+                lon: 7.0050,
+            },
+            5_000,
+            4,
+        );
+
+        assert!(!candidates.is_empty());
+        assert!(candidates.iter().all(|(_, distance)| *distance <= 5_000));
+
+        let _ = fs::remove_file(path);
     }
 
     fn write_test_geojson(contents: &str) -> Result<std::path::PathBuf> {
