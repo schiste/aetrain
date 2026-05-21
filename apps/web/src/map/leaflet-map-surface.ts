@@ -195,15 +195,21 @@ interface PreparedEdge {
    *  frame. Recomputed when geometry is augmented (see refresh-
    *  geometry path in setupDeferredGeometry). */
   isLowConfidence: boolean;
-  /** True when the edge is BOTH long enough to span a real region
-   *  (chord > STRAIGHT_LINE_MIN_CHORD_WORLD ≈ 130 km at 50°N) AND
-   *  near-collinear (path/chord ratio < STRAIGHT_LINE_MAX_PATH_CHORD_RATIO).
-   *  The background draw skips these entirely — they're almost always
-   *  upstream straight-line interpolations (sparse-shape providers, the
-   *  Rust pipeline's "stub then maybe upgrade" pattern, deferred-chunk
-   *  no-ops), and rendering them as long straight strokes implies a
-   *  level of geometric authority the data doesn't have. Cached at
-   *  prep time and re-evaluated when geometry is augmented. */
+  /** True when the planner edge was tagged at the dataset boundary as a
+   *  synthesized 2-point endpoint stub (no chunk-backed polyline yet).
+   *  The background draw skips these entirely so we never render grey
+   *  straight-line edges that imply geometric authority the data
+   *  doesn't have. Flipped to false in-place when augmentGeometry
+   *  upgrades the edge with real chunk geometry. Distinct from
+   *  isStraightLineSuspect: a stub is a known absence of data; a
+   *  suspect is real geometry that happens to be near-collinear. */
+  isStubGeometry: boolean;
+  /** True when the edge has real geometry but it's BOTH long enough to
+   *  span a real region (chord > STRAIGHT_LINE_MIN_CHORD_WORLD ≈ 130 km
+   *  at 50°N) AND near-collinear (path/chord ratio < STRAIGHT_LINE_MAX_PATH_CHORD_RATIO).
+   *  Used as a *low-confidence hint* (dotted/thin stroke) rather than a
+   *  hard cull — long flat HSR corridors deserve to be drawn, just
+   *  honestly. Cached at prep time, re-evaluated on geometry augment. */
   isStraightLineSuspect: boolean;
 }
 
@@ -493,6 +499,7 @@ export function createLeafletMapSurface({
         geometryWorld,
         worldBbox: computeEdgeWorldBbox(fromWorld, toWorld, geometryWorld),
         renderPriority: edgeRenderPriority(fromCity, toCity),
+        isStubGeometry: edge.isStubGeometry === true,
         isLowConfidence: !geometryWorld || geometryWorld.length <= 3,
         isStraightLineSuspect: isStraightLineSuspect(fromWorld, toWorld, geometryWorld),
         toCity,
@@ -709,9 +716,10 @@ export function createLeafletMapSurface({
         );
         // Geometry was augmented from the deferred chunk loader. An edge
         // that used to be a 2-point stub may now have a real polyline,
-        // so re-evaluate the low-confidence flag — and the straight-line
-        // suspect flag, since some chunk upgrades just replace a 2-point
-        // stub with a denser (still collinear) interpolation.
+        // so re-read the provenance flag from the upstream planner edge
+        // (augmentGeometry flipped it to false where it merged a chunk)
+        // and recompute the render-side confidence/suspect flags.
+        prepared.isStubGeometry = edge.isStubGeometry === true;
         prepared.isLowConfidence = prepared.geometryWorld.length <= 3;
         prepared.isStraightLineSuspect = isStraightLineSuspect(
           prepared.fromWorld,
@@ -1600,7 +1608,7 @@ export function createLeafletMapSurface({
 
     let drawnEdges = 0;
     let drawnLowConfidence = 0;
-    let culledStraightLines = 0;
+    let culledStubEdges = 0;
     // Force straight-line geometry during active interaction — the
     // multi-point projections per edge are the dominant cost on the
     // hot wheel/pan path. Visual fidelity restores on settle.
@@ -1626,15 +1634,14 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      // Long, near-collinear edges are almost always upstream straight-
-      // line interpolations (sparse-shape providers, 2-point stubs, or
-      // deferred-chunk upgrades that just densified the stub). Drawing
-      // them as long straight strokes overstates the data's authority,
-      // so hide them entirely. The flag was computed at prep/refresh,
-      // gated by a chord threshold that protects legitimate short
-      // straight runs.
-      if (edge.isStraightLineSuspect) {
-        culledStraightLines += 1;
+      // Hide synthesized 2-point endpoint stubs — these are routes whose
+      // chunk-backed polyline hasn't loaded (or never will, for cities
+      // outside any chunk). Drawing them as long grey straight strokes
+      // overstates the data's authority. Real-but-collinear geometries
+      // (long flat HSR corridors) fall through to the low-confidence
+      // dotted style below via isStraightLineSuspect.
+      if (edge.isStubGeometry) {
+        culledStubEdges += 1;
         continue;
       }
 
@@ -1646,12 +1653,17 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      applyConfidenceStyle(edge.isLowConfidence);
+      // Downgrade collinear-but-real geometries to the low-confidence
+      // dotted style rather than hiding them. isLowConfidence already
+      // covers ≤3-point polylines; isStraightLineSuspect catches longer
+      // edges whose chord ratio + length make their authority dubious.
+      const isLowConfidence = edge.isLowConfidence || edge.isStraightLineSuspect;
+      applyConfidenceStyle(isLowConfidence);
       networkContext.beginPath();
       tracePoints(networkContext, points);
       networkContext.stroke();
       drawnEdges += 1;
-      if (edge.isLowConfidence) {
+      if (isLowConfidence) {
         drawnLowConfidence += 1;
       }
     }
@@ -1659,7 +1671,7 @@ export function createLeafletMapSurface({
     diagnostics.metric("network-layer-draw", drawnEdges, {
       drawn_edges: drawnEdges,
       drawn_low_confidence: drawnLowConfidence,
-      culled_straight_lines: culledStraightLines,
+      culled_stub_edges: culledStubEdges,
       zoom: frame.zoom
     });
   }

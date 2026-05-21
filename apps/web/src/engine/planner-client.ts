@@ -304,6 +304,9 @@ async function attachPlannerClient(
           const fresh = byKey.get(edge.key);
           if (fresh && fresh.geometry) {
             edge.geometry = fresh.geometry;
+            // The worker flipped isStubGeometry to false on its side; mirror
+            // that on the main-thread edge so the map surface culls correctly.
+            edge.isStubGeometry = fresh.isStubGeometry ?? false;
           }
         }
       }

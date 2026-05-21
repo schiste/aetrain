@@ -27,6 +27,10 @@ export interface RoutePair {
   to: string;
   minutes: number;
   geometry?: GeoPoint[];
+  // True when geometry is a synthesized 2-point endpoint stub rather than a
+  // real polyline. The map surface uses this to hide grey straight-line
+  // edges for routes whose chunk hasn't loaded (or never will).
+  isStubGeometry?: boolean;
 }
 
 export interface SearchIndexEntry {

@@ -401,6 +401,7 @@ export async function createWasmPlannerModel(
       const directGeometry = geometryByName.get(geometryKey(edge.from, edge.to));
       if (directGeometry) {
         edge.geometry = directGeometry;
+        edge.isStubGeometry = false;
         edgeGeometryIndex.set(geometryKey(edge.from, edge.to), directGeometry);
         const reversed = reverseGeometry(directGeometry);
         if (reversed) {
@@ -416,6 +417,7 @@ export async function createWasmPlannerModel(
           const forward = reverseGeometry(reverseDirectGeometry);
           if (forward) {
             edge.geometry = forward;
+            edge.isStubGeometry = false;
             edgeGeometryIndex.set(geometryKey(edge.from, edge.to), forward);
           }
           edgeGeometryIndex.set(reversedKey, reverseDirectGeometry);
@@ -435,6 +437,7 @@ export async function createWasmPlannerModel(
         for (const entry of fromAdj) {
           if (entry.toIndex === edge.toIndex) {
             entry.geometry = edge.geometry;
+            entry.isStubGeometry = false;
             updatedAdjacency += 1;
             break;
           }
@@ -446,6 +449,7 @@ export async function createWasmPlannerModel(
           for (const entry of toAdj) {
             if (entry.toIndex === edge.fromIndex) {
               entry.geometry = reversed;
+              entry.isStubGeometry = false;
               updatedAdjacency += 1;
               break;
             }

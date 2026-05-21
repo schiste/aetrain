@@ -137,7 +137,8 @@ export function buildProductionPlannerData({
       from,
       minutes: edge.duration_min,
       to,
-      geometry
+      geometry,
+      isStubGeometry: !directGeometry
     });
     const routeKey = from.localeCompare(to) <= 0 ? `${from}-${to}` : `${to}-${from}`;
     routeData[routeKey] = Math.min(routeData[routeKey] ?? Infinity, edge.duration_min);

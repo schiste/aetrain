@@ -20,12 +20,17 @@ export interface PlannerEdge {
   minutes: number;
   key: string;
   geometry?: GeoPoint[];
+  // True when geometry is a 2-point endpoint stub synthesized by the data
+  // adapter (no real polyline available for this corridor yet). Flipped to
+  // false in augmentGeometry once a chunk-backed polyline is merged.
+  isStubGeometry?: boolean;
 }
 
 export interface PlannerAdjacencyEntry {
   toIndex: number;
   t: number;
   geometry?: GeoPoint[];
+  isStubGeometry?: boolean;
 }
 
 export interface PlannerSearchIndexEntry {

@@ -126,7 +126,8 @@ export function buildPlannerGraph(
         routePair.to,
         routePair.minutes,
         `${routePair.from}-${routePair.to}`,
-        routePair.geometry
+        routePair.geometry,
+        routePair.isStubGeometry === true
       );
     }
   } else {
@@ -137,7 +138,9 @@ export function buildPlannerGraph(
         continue;
       }
 
-      addRoute(endpoints[0], endpoints[1], travelMinutes, routeKey);
+      // routeData-only entries have no geometry at all; treat them as stubs
+      // so the map surface culls the implicit straight-line render.
+      addRoute(endpoints[0], endpoints[1], travelMinutes, routeKey, undefined, true);
     }
   }
 
@@ -158,7 +161,8 @@ export function buildPlannerGraph(
     toName: string,
     travelMinutes: number,
     routeKey: string,
-    geometry?: GeoPoint[]
+    geometry?: GeoPoint[],
+    isStubGeometry: boolean = false
   ): void {
     const fromIndex = cityIndexByName.get(fromName);
     const toIndex = cityIndexByName.get(toName);
@@ -173,9 +177,10 @@ export function buildPlannerGraph(
       return;
     }
 
-    fromAdj.push({ geometry, t: travelMinutes, toIndex });
+    fromAdj.push({ geometry, isStubGeometry, t: travelMinutes, toIndex });
     toAdj.push({
       geometry: reverseGeometry(geometry),
+      isStubGeometry,
       t: travelMinutes,
       toIndex: fromIndex
     });
@@ -183,6 +188,7 @@ export function buildPlannerGraph(
       from: fromName,
       fromIndex,
       geometry,
+      isStubGeometry,
       key: routeKey,
       minutes: travelMinutes,
       to: toName,
@@ -408,11 +414,13 @@ export function createPlannerModel(
       const directGeometry = geometryByName.get(`${edge.from} ${edge.to}`);
       if (directGeometry) {
         edge.geometry = directGeometry;
+        edge.isStubGeometry = false;
         const fromAdj = adjacency[edge.fromIndex];
         if (fromAdj) {
           for (const entry of fromAdj) {
             if (entry.toIndex === edge.toIndex) {
               entry.geometry = directGeometry;
+              entry.isStubGeometry = false;
               break;
             }
           }
@@ -423,6 +431,7 @@ export function createPlannerModel(
           for (const entry of toAdj) {
             if (entry.toIndex === edge.fromIndex) {
               entry.geometry = reversed;
+              entry.isStubGeometry = false;
               break;
             }
           }
@@ -434,11 +443,13 @@ export function createPlannerModel(
           const forward = reverseGeometry(reverseGeo);
           if (forward) {
             edge.geometry = forward;
+            edge.isStubGeometry = false;
             const fromAdj = adjacency[edge.fromIndex];
             if (fromAdj) {
               for (const entry of fromAdj) {
                 if (entry.toIndex === edge.toIndex) {
                   entry.geometry = forward;
+                  entry.isStubGeometry = false;
                   break;
                 }
               }
@@ -449,6 +460,7 @@ export function createPlannerModel(
             for (const entry of toAdj) {
               if (entry.toIndex === edge.fromIndex) {
                 entry.geometry = reverseGeo;
+                entry.isStubGeometry = false;
                 break;
               }
             }
