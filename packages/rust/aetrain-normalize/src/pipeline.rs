@@ -253,6 +253,25 @@ pub struct PipelineDomesticAuthorityOnboardingHotspotRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineDomesticAuthorityGapClusterRecord {
+    pub country_code: String,
+    pub inferred_feed_home_country_code: Option<String>,
+    pub feed_source_family: Option<String>,
+    pub scope_classification: String,
+    pub geometry_resolution_status: String,
+    pub authority_status: String,
+    pub source_id: Option<String>,
+    pub geometry_source: EdgeGeometrySource,
+    pub route_count: u64,
+    pub total_direct_distance_km: u64,
+    pub max_direct_distance_km: u32,
+    pub example_routes: Vec<String>,
+    pub city_examples: Vec<String>,
+    pub provenance_examples: Vec<String>,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineCountryGeometryAuthorityRecord {
     pub country_code: String,
     pub status: String,
@@ -496,6 +515,7 @@ pub struct PipelineQualityReport {
     pub domestic_geometry_backlog_by_country: Vec<PipelineDomesticGeometryBacklogRecord>,
     pub cross_border_geometry_backlog_by_corridor: Vec<PipelineCrossBorderGeometryBacklogRecord>,
     pub domestic_authority_onboarding_hotspots: Vec<PipelineDomesticAuthorityOnboardingHotspotRecord>,
+    pub domestic_authority_gap_clusters: Vec<PipelineDomesticAuthorityGapClusterRecord>,
     pub rejected_rail_authority_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub rejected_shape_plausibility_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub foreign_cross_border_leakage_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
@@ -914,6 +934,10 @@ fn export_pipeline_target(
         &quality_report.domestic_authority_onboarding_hotspots,
     )?;
     write_json(
+        &quality_dir.join("domestic-authority-gap-clusters.json"),
+        &quality_report.domestic_authority_gap_clusters,
+    )?;
+    write_json(
         &quality_dir.join("rejected-rail-authority-routes.json"),
         &quality_report.rejected_rail_authority_routes,
     )?;
@@ -1202,6 +1226,8 @@ fn build_quality_report(
         &route_geometry_anomalies,
         authority_registry,
     );
+    let domestic_authority_gap_clusters =
+        build_domestic_authority_gap_clusters(&route_geometry_anomalies, authority_registry);
     let rejected_rail_authority_routes = route_geometry_anomalies
         .iter()
         .filter(|record| record.geometry_resolution_status == "rejected_rail_authority")
@@ -1591,6 +1617,7 @@ fn build_quality_report(
         domestic_geometry_backlog_by_country,
         cross_border_geometry_backlog_by_corridor,
         domestic_authority_onboarding_hotspots,
+        domestic_authority_gap_clusters,
         rejected_rail_authority_routes,
         rejected_shape_plausibility_routes,
         foreign_cross_border_leakage_routes,
@@ -3032,6 +3059,182 @@ fn build_domestic_authority_onboarding_hotspots(
             .then_with(|| left.city_id.cmp(&right.city_id))
     });
     records
+}
+
+fn build_domestic_authority_gap_clusters(
+    route_geometry_anomalies: &[PipelineRouteGeometryAnomalyRecord],
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+) -> Vec<PipelineDomesticAuthorityGapClusterRecord> {
+    #[derive(Default)]
+    struct ClusterAccumulator {
+        route_count: u64,
+        total_direct_distance_km: u64,
+        max_direct_distance_km: u32,
+        example_routes: BTreeSet<String>,
+        city_examples: BTreeSet<String>,
+        provenance_examples: BTreeSet<String>,
+    }
+
+    let mut grouped = BTreeMap::<
+        (
+            String,
+            Option<String>,
+            Option<String>,
+            String,
+            String,
+            String,
+            Option<String>,
+        ),
+        ClusterAccumulator,
+    >::new();
+
+    for record in route_geometry_anomalies {
+        if !is_domestic_authority_gap_cluster_candidate(record) {
+            continue;
+        }
+
+        let country_code = record.from_country_code.clone();
+        let home_country_code =
+            infer_home_country_code_from_provenance(&record.provenance).map(str::to_string);
+        let feed_source_family = infer_feed_source_family_from_provenance(&record.provenance);
+        let scope_classification = classify_domestic_authority_gap_scope(
+            &country_code,
+            home_country_code.as_deref(),
+        )
+        .to_string();
+        let authority = authority_registry.and_then(|registry| registry.country(&country_code));
+        let authority_status = authority
+            .map(|entry| geometry_authority_status_label(&entry.status).to_string())
+            .unwrap_or_else(|| "untracked".to_string());
+        let source_id = authority.and_then(|entry| entry.source_id.clone());
+        let key = (
+            country_code,
+            home_country_code,
+            feed_source_family,
+            scope_classification,
+            record.geometry_resolution_status.clone(),
+            authority_status,
+            source_id,
+        );
+        let entry = grouped.entry(key).or_default();
+        entry.route_count += 1;
+        entry.total_direct_distance_km += u64::from(record.direct_distance_km);
+        entry.max_direct_distance_km = entry.max_direct_distance_km.max(record.direct_distance_km);
+        entry.example_routes.insert(format!(
+            "{} -> {}",
+            record.from_display_name, record.to_display_name
+        ));
+        entry.city_examples.insert(record.from_display_name.clone());
+        entry.city_examples.insert(record.to_display_name.clone());
+        for provenance in &record.provenance {
+            entry.provenance_examples.insert(provenance.clone());
+        }
+    }
+
+    let mut records = grouped
+        .into_iter()
+        .map(
+            |(
+                (
+                    country_code,
+                    inferred_feed_home_country_code,
+                    feed_source_family,
+                    scope_classification,
+                    geometry_resolution_status,
+                    authority_status,
+                    source_id,
+                ),
+                entry,
+            )| PipelineDomesticAuthorityGapClusterRecord {
+                country_code,
+                inferred_feed_home_country_code,
+                feed_source_family,
+                suggested_action: domestic_authority_gap_cluster_suggested_action(
+                    &scope_classification,
+                    &authority_status,
+                )
+                .to_string(),
+                scope_classification,
+                geometry_resolution_status,
+                authority_status,
+                source_id,
+                geometry_source: EdgeGeometrySource::StraightLineFallback,
+                route_count: entry.route_count,
+                total_direct_distance_km: entry.total_direct_distance_km,
+                max_direct_distance_km: entry.max_direct_distance_km,
+                example_routes: entry.example_routes.into_iter().take(8).collect(),
+                city_examples: entry.city_examples.into_iter().take(12).collect(),
+                provenance_examples: entry.provenance_examples.into_iter().take(12).collect(),
+            },
+        )
+        .collect::<Vec<_>>();
+    records.sort_by(|left, right| {
+        right
+            .route_count
+            .cmp(&left.route_count)
+            .then_with(|| left.country_code.cmp(&right.country_code))
+            .then_with(|| {
+                left.scope_classification
+                    .cmp(&right.scope_classification)
+            })
+            .then_with(|| {
+                left.feed_source_family
+                    .cmp(&right.feed_source_family)
+            })
+    });
+    records
+}
+
+fn is_domestic_authority_gap_cluster_candidate(
+    record: &PipelineRouteGeometryAnomalyRecord,
+) -> bool {
+    record.from_country_code == record.to_country_code
+        && record.anomaly_type == "straight_line_fallback"
+        && record.geometry_source == EdgeGeometrySource::StraightLineFallback
+        && matches!(
+            record.geometry_resolution_status.as_str(),
+            "missing_domestic_authority"
+                | "foreign_domestic_leakage"
+                | "unclassified_straight_line"
+        )
+}
+
+fn classify_domestic_authority_gap_scope(
+    country_code: &str,
+    home_country_code: Option<&str>,
+) -> &'static str {
+    match home_country_code {
+        Some(home_country_code) if home_country_code.eq_ignore_ascii_case(country_code) => {
+            "home_domestic_authority_gap"
+        }
+        Some(_) => "foreign_feed_domestic_scope_leak",
+        None => "unknown_feed_scope",
+    }
+}
+
+fn domestic_authority_gap_cluster_suggested_action(
+    scope_classification: &str,
+    authority_status: &str,
+) -> &'static str {
+    match scope_classification {
+        "foreign_feed_domestic_scope_leak" => "reject_or_reassign_foreign_feed_scope",
+        "unknown_feed_scope" => "inspect_provenance_scope_before_onboarding",
+        _ if authority_status == "production_ready" => "repair_existing_authority_coverage",
+        _ if authority_status != "untracked" => "complete_domestic_authority_onboarding",
+        _ => "onboard_domestic_authority_layer",
+    }
+}
+
+fn infer_feed_source_family_from_provenance(provenance: &[String]) -> Option<String> {
+    let families = provenance
+        .iter()
+        .filter_map(|entry| entry.split_once(':').map(|(family, _)| family.to_string()))
+        .collect::<BTreeSet<_>>();
+    if families.is_empty() {
+        None
+    } else {
+        Some(families.into_iter().collect::<Vec<_>>().join("+"))
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -9322,6 +9525,126 @@ mod tests {
         assert_eq!(records[0].route_count, 2);
         assert_eq!(records[0].suggested_action, "onboard_domestic_authority_layer");
         assert_eq!(records[0].counterpart_examples.len(), 2);
+    }
+
+    #[test]
+    fn domestic_authority_gap_clusters_classify_home_authority_gaps() {
+        let anomalies = vec![
+            PipelineRouteGeometryAnomalyRecord {
+                anomaly_type: "straight_line_fallback".to_string(),
+                geometry_resolution_status: "missing_domestic_authority".to_string(),
+                geometry_source: EdgeGeometrySource::StraightLineFallback,
+                from_city_id: CityId::new("madrid-es-q2807").expect("valid city id"),
+                from_display_name: "Madrid".to_string(),
+                from_country_code: "ES".to_string(),
+                to_city_id: CityId::new("segovia-es-q15684").expect("valid city id"),
+                to_display_name: "Segovia".to_string(),
+                to_country_code: "ES".to_string(),
+                duration_min: Some(31),
+                direct_distance_km: 67,
+                geometry_distance_km: 67,
+                detour_ratio_x100: Some(100),
+                implied_speed_kmh: Some(130),
+                provenance: vec!["es-renfe-mainline-gtfs:8010071100VRE".to_string()],
+            },
+            PipelineRouteGeometryAnomalyRecord {
+                anomaly_type: "straight_line_fallback".to_string(),
+                geometry_resolution_status: "missing_domestic_authority".to_string(),
+                geometry_source: EdgeGeometrySource::StraightLineFallback,
+                from_city_id: CityId::new("madrid-es-q2807").expect("valid city id"),
+                from_display_name: "Madrid".to_string(),
+                from_country_code: "ES".to_string(),
+                to_city_id: CityId::new("toledo-es-q5836").expect("valid city id"),
+                to_display_name: "Toledo".to_string(),
+                to_country_code: "ES".to_string(),
+                duration_min: Some(35),
+                direct_distance_km: 68,
+                geometry_distance_km: 68,
+                detour_ratio_x100: Some(100),
+                implied_speed_kmh: Some(117),
+                provenance: vec!["es-renfe-mainline-gtfs:8010071100VRE".to_string()],
+            },
+        ];
+        let authority_registry = GeometryAuthorityRegistry {
+            dataset_id: "test".to_string(),
+            schema_version: 1,
+            description: "test registry".to_string(),
+            sources: Vec::new(),
+            countries: vec![CountryGeometryAuthorityDefinition {
+                country_code: "ES".to_string(),
+                source_id: Some("osm-es-railways".to_string()),
+                loader: Some(GeometryAuthorityLoader::GeofabrikRailwaysGpkg),
+                status: GeometryAuthorityStatus::ProductionReady,
+                customer_facing: false,
+                max_promoted_station_attachment_gap_count: None,
+                max_promoted_topology_no_route_gap_count: None,
+                max_promoted_rejected_implausible_authority_detour_count: None,
+                notes: None,
+            }],
+            corridors: Vec::new(),
+            route_policies: Vec::new(),
+        };
+
+        let records = build_domestic_authority_gap_clusters(&anomalies, Some(&authority_registry));
+
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].country_code, "ES");
+        assert_eq!(
+            records[0].inferred_feed_home_country_code.as_deref(),
+            Some("ES")
+        );
+        assert_eq!(
+            records[0].feed_source_family.as_deref(),
+            Some("es-renfe-mainline-gtfs")
+        );
+        assert_eq!(
+            records[0].scope_classification,
+            "home_domestic_authority_gap"
+        );
+        assert_eq!(records[0].route_count, 2);
+        assert_eq!(
+            records[0].suggested_action,
+            "repair_existing_authority_coverage"
+        );
+    }
+
+    #[test]
+    fn domestic_authority_gap_clusters_classify_foreign_feed_scope_leaks() {
+        let anomalies = vec![PipelineRouteGeometryAnomalyRecord {
+            anomaly_type: "straight_line_fallback".to_string(),
+            geometry_resolution_status: "foreign_domestic_leakage".to_string(),
+            geometry_source: EdgeGeometrySource::StraightLineFallback,
+            from_city_id: CityId::new("karlsruhe-de-q1040").expect("valid city id"),
+            from_display_name: "Karlsruhe".to_string(),
+            from_country_code: "DE".to_string(),
+            to_city_id: CityId::new("mannheim-de-q2119").expect("valid city id"),
+            to_display_name: "Mannheim".to_string(),
+            to_country_code: "DE".to_string(),
+            duration_min: Some(24),
+            direct_distance_km: 54,
+            geometry_distance_km: 54,
+            detour_ratio_x100: Some(100),
+            implied_speed_kmh: Some(135),
+            provenance: vec!["ch-gtfs:91-50-C-j26-1".to_string()],
+        }];
+
+        let records = build_domestic_authority_gap_clusters(&anomalies, None);
+
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].country_code, "DE");
+        assert_eq!(
+            records[0].inferred_feed_home_country_code.as_deref(),
+            Some("CH")
+        );
+        assert_eq!(records[0].feed_source_family.as_deref(), Some("ch-gtfs"));
+        assert_eq!(
+            records[0].scope_classification,
+            "foreign_feed_domestic_scope_leak"
+        );
+        assert_eq!(
+            records[0].suggested_action,
+            "reject_or_reassign_foreign_feed_scope"
+        );
     }
 
     #[test]
