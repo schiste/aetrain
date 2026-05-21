@@ -49,12 +49,25 @@
  * (debounced by the map surface to ~50ms).
  */
 export function derivePopThresholdForZoom(zoom: number): number {
-  // TODO(user): author the mapping. A starter step function is below —
-  // tweak the breakpoints and values, or rewrite as a smooth function.
-  if (zoom < 5) return 500;     // continent view: only major capitals
-  if (zoom < 6) return 250;     // country view: large cities
-  if (zoom < 7) return 100;     // region view: today's default
-  if (zoom < 8) return 50;      // sub-region: smaller towns
-  if (zoom < 9) return 20;      // metro: most towns
+  // Breakpoints sit at half-zooms (4.5, 5.5, …) so the user settles
+  // *into* a zoom level with the new threshold already applied, rather
+  // than experiencing the threshold change exactly as the wheel crosses
+  // an integer. Values progress in roughly 2× ratios, which keeps the
+  // visible-city count roughly constant as zoom progresses across the
+  // European dataset's heavy-tailed population distribution
+  // (~70 cities ≥ 500k, ~250 ≥ 250k, ~700 ≥ 100k, ~1500 ≥ 50k,
+  // ~3000 ≥ 30k, ~6000 ≥ 10k, 8929 total).
+  //
+  // The 10k step before zero matters: at zoom 9 in dense regions
+  // (Ruhr, BeNeLux), dropping straight to "show everything" floods the
+  // map with overlapping village dots; keeping a 10k floor until
+  // zoom 9.5 holds the density manageable until the user is genuinely
+  // city-scale.
+  if (zoom < 4.5) return 500;   // continent view: only multi-million hubs
+  if (zoom < 5.5) return 300;   // sub-continent: national capitals + majors
+  if (zoom < 6.5) return 150;   // country view: large cities
+  if (zoom < 7.5) return 70;    // multi-region: mid-sized cities
+  if (zoom < 8.5) return 30;    // region: small cities + larger towns
+  if (zoom < 9.5) return 10;    // metro: most towns
   return 0;                     // city view: everything
 }
