@@ -157,6 +157,8 @@ pub struct CountryGeometryAuthorityDefinition {
     #[serde(default)]
     pub source_id: Option<String>,
     #[serde(default)]
+    pub source_ids: Vec<String>,
+    #[serde(default)]
     pub loader: Option<GeometryAuthorityLoader>,
     pub status: GeometryAuthorityStatus,
     #[serde(default)]

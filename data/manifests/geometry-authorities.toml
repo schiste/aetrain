@@ -82,6 +82,19 @@ notes = "Swiss domestic geometry backlog is tracked through a Geofabrik country 
 
 [[country]]
 country_code = "ES"
+source_ids = [
+  "es-geofabrik-andalucia-railways-gpkg",
+  "es-geofabrik-aragon-railways-gpkg",
+  "es-geofabrik-asturias-railways-gpkg",
+  "es-geofabrik-cantabria-railways-gpkg",
+  "es-geofabrik-castilla-la-mancha-railways-gpkg",
+  "es-geofabrik-castilla-y-leon-railways-gpkg",
+  "es-geofabrik-cataluna-railways-gpkg",
+  "es-geofabrik-galicia-railways-gpkg",
+  "es-geofabrik-madrid-railways-gpkg",
+  "es-geofabrik-pais-vasco-railways-gpkg",
+  "es-geofabrik-valencia-railways-gpkg",
+]
 status = "ingested"
 customer_facing = false
 notes = "Spanish domestic geometry backlog is tracked through a hotspot-driven composite of regional Geofabrik GeoPackage authority sources. It is activated for ingestion, but not yet promoted until the quality gates are measured."
