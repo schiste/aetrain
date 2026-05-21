@@ -45,6 +45,57 @@ struct QueueState {
     estimated_total_meters: u32,
 }
 
+#[derive(Debug)]
+struct ShortestPathScratch {
+    distance_meters: Vec<u32>,
+    previous: Vec<usize>,
+    seen_generation: Vec<u32>,
+    generation: u32,
+    queue: BinaryHeap<QueueState>,
+}
+
+impl ShortestPathScratch {
+    fn with_node_count(node_count: usize) -> Self {
+        Self {
+            distance_meters: vec![0; node_count],
+            previous: vec![usize::MAX; node_count],
+            seen_generation: vec![0; node_count],
+            generation: 0,
+            queue: BinaryHeap::new(),
+        }
+    }
+
+    fn begin(&mut self) -> u32 {
+        self.generation = self.generation.wrapping_add(1);
+        if self.generation == 0 {
+            self.seen_generation.fill(0);
+            self.generation = 1;
+        }
+        self.queue.clear();
+        self.generation
+    }
+
+    fn distance(&self, node: usize, generation: u32) -> u32 {
+        if self.seen_generation[node] == generation {
+            self.distance_meters[node]
+        } else {
+            u32::MAX
+        }
+    }
+
+    fn set_distance(
+        &mut self,
+        node: usize,
+        distance_meters: u32,
+        previous: usize,
+        generation: u32,
+    ) {
+        self.seen_generation[node] = generation;
+        self.distance_meters[node] = distance_meters;
+        self.previous[node] = previous;
+    }
+}
+
 impl Ord for QueueState {
     fn cmp(&self, other: &Self) -> Ordering {
         other
@@ -309,14 +360,20 @@ impl RailGeometryNetwork {
     ) -> Option<Vec<GeoPoint>> {
         let mut best_route = None::<(u32, Vec<GeoPoint>)>;
         let direct_distance = estimate_distance_meters(from, to);
+        let mut scratch = ShortestPathScratch::with_node_count(self.nodes.len());
         for (start_node, start_distance) in start_candidates {
             for (end_node, end_distance) in end_candidates {
                 if start_node == end_node && direct_distance > ENDPOINT_SNAP_DISTANCE_METERS as u32
                 {
                     continue;
                 }
-                let Some(points) =
-                    self.route_polyline_between_nodes(from, to, *start_node, *end_node)
+                let Some(points) = self.route_polyline_between_nodes_with_scratch(
+                    from,
+                    to,
+                    *start_node,
+                    *end_node,
+                    &mut scratch,
+                )
                 else {
                     continue;
                 };
@@ -341,13 +398,25 @@ impl RailGeometryNetwork {
         start_node: usize,
         end_node: usize,
     ) -> Option<Vec<GeoPoint>> {
+        let mut scratch = ShortestPathScratch::with_node_count(self.nodes.len());
+        self.route_polyline_between_nodes_with_scratch(from, to, start_node, end_node, &mut scratch)
+    }
+
+    fn route_polyline_between_nodes_with_scratch(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+        start_node: usize,
+        end_node: usize,
+        scratch: &mut ShortestPathScratch,
+    ) -> Option<Vec<GeoPoint>> {
         let start_distance = haversine_meters(self.nodes[start_node], from);
         let end_distance = haversine_meters(self.nodes[end_node], to);
         if start_distance > ROUTE_SNAP_DISTANCE_METERS || end_distance > ROUTE_SNAP_DISTANCE_METERS
         {
             return None;
         }
-        let node_path = self.shortest_path(start_node, end_node)?;
+        let node_path = self.shortest_path(start_node, end_node, scratch)?;
         let mut points = node_path
             .into_iter()
             .map(|node_index| self.nodes[node_index])
@@ -372,38 +441,40 @@ impl RailGeometryNetwork {
         Some(points)
     }
 
-    fn shortest_path(&self, start: usize, end: usize) -> Option<Vec<usize>> {
+    fn shortest_path(
+        &self,
+        start: usize,
+        end: usize,
+        scratch: &mut ShortestPathScratch,
+    ) -> Option<Vec<usize>> {
         if start == end {
             return Some(vec![start, end]);
         }
 
-        let mut distance = vec![u32::MAX; self.nodes.len()];
-        let mut previous = vec![usize::MAX; self.nodes.len()];
-        let mut queue = BinaryHeap::<QueueState>::new();
-        distance[start] = 0;
-        queue.push(QueueState {
+        let generation = scratch.begin();
+        scratch.set_distance(start, 0, usize::MAX, generation);
+        scratch.queue.push(QueueState {
             node: start,
             distance_meters: 0,
             estimated_total_meters: estimate_distance_meters(self.nodes[start], self.nodes[end]),
         });
 
-        while let Some(state) = queue.pop() {
+        while let Some(state) = scratch.queue.pop() {
             if state.node == end {
-                return Some(reconstruct_path(&previous, start, end));
+                return Some(reconstruct_path(&scratch.previous, start, end));
             }
-            if state.distance_meters > distance[state.node] {
+            if state.distance_meters > scratch.distance(state.node, generation) {
                 continue;
             }
 
             for edge in &self.adjacency[state.node] {
                 let candidate_distance = state.distance_meters.saturating_add(edge.weight_meters);
-                if candidate_distance >= distance[edge.target] {
+                if candidate_distance >= scratch.distance(edge.target, generation) {
                     continue;
                 }
 
-                distance[edge.target] = candidate_distance;
-                previous[edge.target] = state.node;
-                queue.push(QueueState {
+                scratch.set_distance(edge.target, candidate_distance, state.node, generation);
+                scratch.queue.push(QueueState {
                     node: edge.target,
                     distance_meters: candidate_distance,
                     estimated_total_meters: candidate_distance.saturating_add(
