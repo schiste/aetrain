@@ -168,6 +168,45 @@ pub struct PipelineCityQualityRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCloseNodeWithoutEdgeRecord {
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub from_country_code: String,
+    pub from_station_count: usize,
+    pub from_station_like: bool,
+    pub from_zero_coordinate: bool,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub to_country_code: String,
+    pub to_station_count: usize,
+    pub to_station_like: bool,
+    pub to_zero_coordinate: bool,
+    pub distance_meters: u32,
+    pub distance_band: String,
+    pub same_country: bool,
+    pub graph_connection: String,
+    pub name_relation: String,
+    pub classification: String,
+    pub priority: String,
+    pub automation_tier: String,
+    pub owner_area: String,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCloseNodeWithoutEdgeSummaryRecord {
+    pub classification: String,
+    pub candidate_count: u64,
+    pub min_distance_meters: u32,
+    pub max_distance_meters: u32,
+    pub same_country_count: u64,
+    pub cross_country_count: u64,
+    pub connected_within_2_hops_count: u64,
+    pub connected_within_3_hops_count: u64,
+    pub example_pairs: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineAbbreviationCandidateRecord {
     pub city_id: aetrain_domain::CityId,
     pub display_name: String,
@@ -535,6 +574,8 @@ pub struct PipelineQualityReport {
     pub country_quality: Vec<PipelineCountryQualityRecord>,
     pub station_like_cities: Vec<PipelineCityQualityRecord>,
     pub zz_cities: Vec<PipelineCityQualityRecord>,
+    pub close_node_without_edge_summary: Vec<PipelineCloseNodeWithoutEdgeSummaryRecord>,
+    pub close_node_without_edge_candidates: Vec<PipelineCloseNodeWithoutEdgeRecord>,
     pub abbreviation_candidates: Vec<PipelineAbbreviationCandidateRecord>,
     pub route_like_candidates: Vec<PipelineAbbreviationCandidateRecord>,
     pub route_like_residuals: Vec<PipelineRouteLikeResidualRecord>,
@@ -602,6 +643,7 @@ pub struct PipelineArtifactManifest {
 const QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES: u64 = 100;
 const QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES: u64 = 250;
 const QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES: u64 = 10;
+const CLOSE_NODE_WITHOUT_EDGE_MAX_DISTANCE_METERS: u32 = 5_000;
 const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str = "geometry:invalid-railway-path-rejected";
 const INVALID_GTFS_SHAPE_GEOMETRY_REJECTED_PROVENANCE: &str =
     "geometry:invalid-gtfs-shape-rejected";
@@ -931,6 +973,14 @@ fn export_pipeline_target(
         &quality_report.zz_cities,
     )?;
     write_json(
+        &quality_dir.join("close-node-without-edge-summary.json"),
+        &quality_report.close_node_without_edge_summary,
+    )?;
+    write_json(
+        &quality_dir.join("close-node-without-edge-candidates.json"),
+        &quality_report.close_node_without_edge_candidates,
+    )?;
+    write_json(
         &quality_dir.join("abbreviation-candidates.json"),
         &quality_report.abbreviation_candidates,
     )?;
@@ -1235,6 +1285,10 @@ fn build_quality_report(
         .filter(|city| city.country_code == "ZZ")
         .map(city_quality_record)
         .collect::<Vec<_>>();
+    let close_node_without_edge_candidates =
+        build_close_node_without_edge_records(cities, edges);
+    let close_node_without_edge_summary =
+        build_close_node_without_edge_summary(&close_node_without_edge_candidates);
     let low_signal_candidates = cities
         .iter()
         .filter_map(abbreviation_candidate_record)
@@ -1649,6 +1703,8 @@ fn build_quality_report(
         country_quality: grouped.into_values().collect(),
         station_like_cities,
         zz_cities,
+        close_node_without_edge_summary,
+        close_node_without_edge_candidates,
         abbreviation_candidates,
         route_like_candidates,
         route_like_residuals,
@@ -3946,6 +4002,428 @@ fn city_quality_record(city: &aetrain_domain::City) -> PipelineCityQualityRecord
         wikidata_qid: city.wikidata_qid.clone(),
         population: city.population,
     }
+}
+
+fn build_close_node_without_edge_records(
+    cities: &[aetrain_domain::City],
+    edges: &[aetrain_domain::TravelEdge],
+) -> Vec<PipelineCloseNodeWithoutEdgeRecord> {
+    let direct_edge_pairs = edges
+        .iter()
+        .map(|edge| ordered_city_pair(&edge.from_city_id, &edge.to_city_id))
+        .collect::<BTreeSet<_>>();
+    let adjacency = build_city_adjacency(edges);
+    let max_distance_meters = CLOSE_NODE_WITHOUT_EDGE_MAX_DISTANCE_METERS;
+    let cell_degrees = f64::from(max_distance_meters) / 111_000.0;
+    let mut buckets = BTreeMap::<(i32, i32), Vec<usize>>::new();
+    for (index, city) in cities.iter().enumerate() {
+        buckets
+            .entry(close_node_bucket_key(city.location, cell_degrees))
+            .or_default()
+            .push(index);
+    }
+
+    let mut records = Vec::new();
+    for ((lat_bucket, lon_bucket), indexes) in &buckets {
+        let mut candidate_indexes = Vec::new();
+        for lat_delta in -4..=4 {
+            for lon_delta in -4..=4 {
+                if let Some(bucket_indexes) =
+                    buckets.get(&(lat_bucket + lat_delta, lon_bucket + lon_delta))
+                {
+                    candidate_indexes.extend(bucket_indexes.iter().copied());
+                }
+            }
+        }
+
+        for left_index in indexes {
+            let left = &cities[*left_index];
+            for right_index in &candidate_indexes {
+                if right_index <= left_index {
+                    continue;
+                }
+                let right = &cities[*right_index];
+                if (left.location.lat - right.location.lat).abs()
+                    > f64::from(max_distance_meters) / 111_000.0 * 1.1
+                {
+                    continue;
+                }
+                let distance_meters =
+                    geo_distance_meters(left.location, right.location).round() as u32;
+                if distance_meters > max_distance_meters {
+                    continue;
+                }
+                let pair = ordered_city_pair(&left.city_id, &right.city_id);
+                if direct_edge_pairs.contains(&pair) {
+                    continue;
+                }
+
+                let graph_connection =
+                    close_node_graph_connection(&left.city_id, &right.city_id, &adjacency);
+                let name_relation = close_node_name_relation(left, right);
+                let (classification, suggested_action) = classify_close_node_without_edge(
+                    left,
+                    right,
+                    distance_meters,
+                    &graph_connection,
+                    &name_relation,
+                );
+                let management = close_node_management_policy(classification, distance_meters);
+                records.push(PipelineCloseNodeWithoutEdgeRecord {
+                    from_city_id: left.city_id.clone(),
+                    from_display_name: left.display_name.clone(),
+                    from_country_code: left.country_code.clone(),
+                    from_station_count: left.station_ids.len(),
+                    from_station_like: is_station_qualified_city_name(&left.display_name),
+                    from_zero_coordinate: is_zero_coordinate(left.location),
+                    to_city_id: right.city_id.clone(),
+                    to_display_name: right.display_name.clone(),
+                    to_country_code: right.country_code.clone(),
+                    to_station_count: right.station_ids.len(),
+                    to_station_like: is_station_qualified_city_name(&right.display_name),
+                    to_zero_coordinate: is_zero_coordinate(right.location),
+                    distance_meters,
+                    distance_band: close_node_distance_band(distance_meters).to_string(),
+                    same_country: left.country_code == right.country_code,
+                    graph_connection: graph_connection.to_string(),
+                    name_relation: name_relation.to_string(),
+                    classification: classification.to_string(),
+                    priority: management.priority.to_string(),
+                    automation_tier: management.automation_tier.to_string(),
+                    owner_area: management.owner_area.to_string(),
+                    suggested_action: suggested_action.to_string(),
+                });
+            }
+        }
+    }
+
+    records.sort_by(|left, right| {
+        left.distance_meters
+            .cmp(&right.distance_meters)
+            .then_with(|| left.from_display_name.cmp(&right.from_display_name))
+            .then_with(|| left.to_display_name.cmp(&right.to_display_name))
+    });
+    records
+}
+
+fn build_close_node_without_edge_summary(
+    records: &[PipelineCloseNodeWithoutEdgeRecord],
+) -> Vec<PipelineCloseNodeWithoutEdgeSummaryRecord> {
+    #[derive(Default)]
+    struct SummaryAccumulator {
+        candidate_count: u64,
+        min_distance_meters: Option<u32>,
+        max_distance_meters: u32,
+        same_country_count: u64,
+        cross_country_count: u64,
+        connected_within_2_hops_count: u64,
+        connected_within_3_hops_count: u64,
+        example_pairs: Vec<String>,
+    }
+
+    let mut grouped = BTreeMap::<String, SummaryAccumulator>::new();
+    for record in records {
+        let entry = grouped
+            .entry(record.classification.clone())
+            .or_default();
+        entry.candidate_count += 1;
+        entry.min_distance_meters = Some(
+            entry
+                .min_distance_meters
+                .map_or(record.distance_meters, |current| current.min(record.distance_meters)),
+        );
+        entry.max_distance_meters = entry.max_distance_meters.max(record.distance_meters);
+        if record.same_country {
+            entry.same_country_count += 1;
+        } else {
+            entry.cross_country_count += 1;
+        }
+        match record.graph_connection.as_str() {
+            "connected_within_2_hops" => {
+                entry.connected_within_2_hops_count += 1;
+                entry.connected_within_3_hops_count += 1;
+            }
+            "connected_within_3_hops" => {
+                entry.connected_within_3_hops_count += 1;
+            }
+            _ => {}
+        }
+        if entry.example_pairs.len() < 5 {
+            entry.example_pairs.push(format!(
+                "{} <-> {} ({}m)",
+                record.from_display_name, record.to_display_name, record.distance_meters
+            ));
+        }
+    }
+
+    let mut summary = grouped
+        .into_iter()
+        .map(|(classification, entry)| PipelineCloseNodeWithoutEdgeSummaryRecord {
+            classification,
+            candidate_count: entry.candidate_count,
+            min_distance_meters: entry.min_distance_meters.unwrap_or(0),
+            max_distance_meters: entry.max_distance_meters,
+            same_country_count: entry.same_country_count,
+            cross_country_count: entry.cross_country_count,
+            connected_within_2_hops_count: entry.connected_within_2_hops_count,
+            connected_within_3_hops_count: entry.connected_within_3_hops_count,
+            example_pairs: entry.example_pairs,
+        })
+        .collect::<Vec<_>>();
+    summary.sort_by(|left, right| {
+        right
+            .candidate_count
+            .cmp(&left.candidate_count)
+            .then_with(|| left.classification.cmp(&right.classification))
+    });
+    summary
+}
+
+fn ordered_city_pair(
+    left: &aetrain_domain::CityId,
+    right: &aetrain_domain::CityId,
+) -> (aetrain_domain::CityId, aetrain_domain::CityId) {
+    if left <= right {
+        (left.clone(), right.clone())
+    } else {
+        (right.clone(), left.clone())
+    }
+}
+
+#[derive(Clone, Copy)]
+struct CloseNodeManagementPolicy {
+    priority: &'static str,
+    automation_tier: &'static str,
+    owner_area: &'static str,
+}
+
+fn close_node_management_policy(
+    classification: &str,
+    distance_meters: u32,
+) -> CloseNodeManagementPolicy {
+    match classification {
+        "invalid_coordinate_overlap" => CloseNodeManagementPolicy {
+            priority: "P0",
+            automation_tier: "block_export_until_coordinate_fixed_or_rejected",
+            owner_area: "source_adapter",
+        },
+        "probable_duplicate_same_position" => CloseNodeManagementPolicy {
+            priority: "P0",
+            automation_tier: "auto_merge_candidate_after_registry_or_station_evidence",
+            owner_area: "city_registry",
+        },
+        "cross_feed_duplicate_same_position" => CloseNodeManagementPolicy {
+            priority: "P0",
+            automation_tier: "human_review_before_merge",
+            owner_area: "country_inference",
+        },
+        "probable_duplicate_near_position" => CloseNodeManagementPolicy {
+            priority: "P1",
+            automation_tier: "merge_candidate_requires_registry_or_authority_evidence",
+            owner_area: "city_registry",
+        },
+        "nearby_name_variant" => CloseNodeManagementPolicy {
+            priority: "P2",
+            automation_tier: "alias_or_membership_candidate_requires_review",
+            owner_area: "city_registry",
+        },
+        "nearby_indirect_graph_connection" => CloseNodeManagementPolicy {
+            priority: if distance_meters <= 100 { "P1" } else { "P3" },
+            automation_tier: "do_not_add_edge_review_city_cluster_or_transfer_model",
+            owner_area: "graph_model",
+        },
+        "nearby_unconnected_same_country" => CloseNodeManagementPolicy {
+            priority: if distance_meters <= 100 { "P1" } else { "P3" },
+            automation_tier: "edge_candidate_only_with_gtfs_or_rail_authority_evidence",
+            owner_area: "rail_topology",
+        },
+        "nearby_unconnected_cross_country" => CloseNodeManagementPolicy {
+            priority: if distance_meters <= 100 { "P1" } else { "P3" },
+            automation_tier: "corridor_candidate_only_with_gtfs_or_authority_evidence",
+            owner_area: "corridor_scope",
+        },
+        _ => CloseNodeManagementPolicy {
+            priority: "P3",
+            automation_tier: "manual_review",
+            owner_area: "data_quality",
+        },
+    }
+}
+
+fn build_city_adjacency(
+    edges: &[aetrain_domain::TravelEdge],
+) -> BTreeMap<aetrain_domain::CityId, BTreeSet<aetrain_domain::CityId>> {
+    let mut adjacency = BTreeMap::<aetrain_domain::CityId, BTreeSet<aetrain_domain::CityId>>::new();
+    for edge in edges {
+        adjacency
+            .entry(edge.from_city_id.clone())
+            .or_default()
+            .insert(edge.to_city_id.clone());
+        adjacency
+            .entry(edge.to_city_id.clone())
+            .or_default()
+            .insert(edge.from_city_id.clone());
+    }
+    adjacency
+}
+
+fn close_node_bucket_key(location: GeoPoint, cell_degrees: f64) -> (i32, i32) {
+    (
+        (location.lat / cell_degrees).floor() as i32,
+        (location.lon / cell_degrees).floor() as i32,
+    )
+}
+
+fn close_node_graph_connection(
+    from_city_id: &aetrain_domain::CityId,
+    to_city_id: &aetrain_domain::CityId,
+    adjacency: &BTreeMap<aetrain_domain::CityId, BTreeSet<aetrain_domain::CityId>>,
+) -> &'static str {
+    let Some(from_neighbors) = adjacency.get(from_city_id) else {
+        return "no_graph_path_within_3_hops";
+    };
+    if from_neighbors.contains(to_city_id) {
+        return "direct_edge_present";
+    }
+    let Some(to_neighbors) = adjacency.get(to_city_id) else {
+        return "no_graph_path_within_3_hops";
+    };
+    if !from_neighbors.is_disjoint(to_neighbors) {
+        return "connected_within_2_hops";
+    }
+    if from_neighbors.iter().any(|neighbor| {
+        adjacency
+            .get(neighbor)
+            .is_some_and(|second_hop| !second_hop.is_disjoint(to_neighbors))
+    }) {
+        return "connected_within_3_hops";
+    }
+    "no_graph_path_within_3_hops"
+}
+
+fn close_node_name_relation(
+    left: &aetrain_domain::City,
+    right: &aetrain_domain::City,
+) -> &'static str {
+    let left_identity = city_identity_key(&left.display_name);
+    let right_identity = city_identity_key(&right.display_name);
+    if left_identity == right_identity {
+        return "same_identity_key";
+    }
+
+    let left_normalized = normalize_name(&left.display_name);
+    let right_normalized = normalize_name(&right.display_name);
+    if left_normalized == right_normalized {
+        return "same_normalized_name";
+    }
+
+    if non_empty_prefix_name_match(&left_identity, &right_identity)
+        || non_empty_prefix_name_match(&left_normalized, &right_normalized)
+    {
+        return "prefix_name_variant";
+    }
+
+    if token_overlap_relation(&left_identity, &right_identity) {
+        return "token_overlap";
+    }
+
+    "unrelated_names"
+}
+
+fn classify_close_node_without_edge(
+    left: &aetrain_domain::City,
+    right: &aetrain_domain::City,
+    distance_meters: u32,
+    graph_connection: &str,
+    name_relation: &str,
+) -> (&'static str, &'static str) {
+    let same_country = left.country_code == right.country_code;
+    let name_related = name_relation != "unrelated_names";
+    if is_zero_coordinate(left.location) || is_zero_coordinate(right.location) {
+        return (
+            "invalid_coordinate_overlap",
+            "fix_or_reject_zero_coordinate_city_before_edge_inference",
+        );
+    }
+    if distance_meters <= 10 && same_country && name_related {
+        return (
+            "probable_duplicate_same_position",
+            "merge_or_alias_city_records_before_edge_inference",
+        );
+    }
+    if distance_meters <= 10 && !same_country && name_related {
+        return (
+            "cross_feed_duplicate_same_position",
+            "fix_country_inference_or_merge_cross_feed_duplicate",
+        );
+    }
+    if distance_meters <= 100 && name_related {
+        return (
+            "probable_duplicate_near_position",
+            "merge_or_alias_city_records_before_edge_inference",
+        );
+    }
+    if distance_meters <= 1_000 && name_related {
+        return (
+            "nearby_name_variant",
+            "review_city_registry_alias_or_station_membership",
+        );
+    }
+    if matches!(
+        graph_connection,
+        "connected_within_2_hops" | "connected_within_3_hops"
+    ) {
+        return (
+            "nearby_indirect_graph_connection",
+            "review_transfer_or_city_cluster_split_before_adding_edges",
+        );
+    }
+    if same_country {
+        (
+            "nearby_unconnected_same_country",
+            "audit_against_gtfs_and_rail_authority_before_adding_edge",
+        )
+    } else {
+        (
+            "nearby_unconnected_cross_country",
+            "audit_corridor_scope_and_country_inference_before_adding_edge",
+        )
+    }
+}
+
+fn close_node_distance_band(distance_meters: u32) -> &'static str {
+    match distance_meters {
+        0..=10 => "0000_0010m",
+        11..=50 => "0011_0050m",
+        51..=100 => "0051_0100m",
+        101..=250 => "0101_0250m",
+        251..=500 => "0251_0500m",
+        501..=1_000 => "0501_1000m",
+        1_001..=2_000 => "1001_2000m",
+        _ => "2001_5000m",
+    }
+}
+
+fn is_zero_coordinate(location: GeoPoint) -> bool {
+    location.lat.abs() < 0.000001 && location.lon.abs() < 0.000001
+}
+
+fn non_empty_prefix_name_match(left: &str, right: &str) -> bool {
+    if left.is_empty() || right.is_empty() {
+        return false;
+    }
+    let min_len = left.len().min(right.len());
+    min_len >= 4 && (left.starts_with(right) || right.starts_with(left))
+}
+
+fn token_overlap_relation(left: &str, right: &str) -> bool {
+    let left_tokens = left.split_whitespace().collect::<BTreeSet<_>>();
+    let right_tokens = right.split_whitespace().collect::<BTreeSet<_>>();
+    if left_tokens.len().min(right_tokens.len()) < 2 {
+        return false;
+    }
+    let shared = left_tokens.intersection(&right_tokens).count();
+    shared >= 2 && shared * 2 >= left_tokens.len().min(right_tokens.len())
 }
 
 fn abbreviation_candidate_record(
@@ -9281,6 +9759,150 @@ mod tests {
             infer_home_country_code_from_provenance(&["nl-ovapi-gtfs:R1".to_string()]),
             Some("NL")
         );
+    }
+
+    #[test]
+    fn close_node_without_edge_audit_classifies_duplicates_coordinates_and_indirect_links() {
+        let roubaix = City {
+            city_id: CityId::new("roubaix-fr").expect("valid city id"),
+            slug: "roubaix".to_string(),
+            display_name: "Roubaix".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 50.6927,
+                lon: 3.1778,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-8728600").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let roubaix_fr = City {
+            city_id: CityId::new("roubaix-fr-be").expect("valid city id"),
+            slug: "roubaix-fr".to_string(),
+            display_name: "Roubaix Fr".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 50.692705,
+                lon: 3.1778,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![StationId::new("station-uic-8828600").expect("valid station id")],
+            aliases: Vec::new(),
+        };
+        let zero_a = City {
+            city_id: CityId::new("zero-a-nl").expect("valid city id"),
+            slug: "zero-a".to_string(),
+            display_name: "Zero A".to_string(),
+            country_code: "NL".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let zero_b = City {
+            city_id: CityId::new("zero-b-nl").expect("valid city id"),
+            slug: "zero-b".to_string(),
+            display_name: "Zero B".to_string(),
+            country_code: "NL".to_string(),
+            location: GeoPoint { lat: 0.0, lon: 0.0 },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let near_a = City {
+            city_id: CityId::new("near-a-fr").expect("valid city id"),
+            slug: "near-a".to_string(),
+            display_name: "Alpha".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 45.0,
+                lon: 3.0,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let near_b = City {
+            city_id: CityId::new("near-b-fr").expect("valid city id"),
+            slug: "near-b".to_string(),
+            display_name: "Beta".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 45.004,
+                lon: 3.0,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let far_hub = City {
+            city_id: CityId::new("far-hub-fr").expect("valid city id"),
+            slug: "far-hub".to_string(),
+            display_name: "Far Hub".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 46.0,
+                lon: 3.0,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let edges = vec![
+            TravelEdge {
+                from_city_id: near_a.city_id.clone(),
+                to_city_id: far_hub.city_id.clone(),
+                duration_min: 20,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Regional,
+                change_count_estimate: Some(0),
+                source_confidence: 100,
+                provenance: Vec::new(),
+            },
+            TravelEdge {
+                from_city_id: far_hub.city_id.clone(),
+                to_city_id: near_b.city_id.clone(),
+                duration_min: 20,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Regional,
+                change_count_estimate: Some(0),
+                source_confidence: 100,
+                provenance: Vec::new(),
+            },
+        ];
+        let records = build_close_node_without_edge_records(
+            &[roubaix, roubaix_fr, zero_a, zero_b, near_a, near_b, far_hub],
+            &edges,
+        );
+
+        assert!(records.iter().any(|record| {
+            record.classification == "probable_duplicate_same_position"
+                && record.from_display_name == "Roubaix"
+                && record.to_display_name == "Roubaix Fr"
+        }));
+        assert!(records.iter().any(|record| {
+            record.classification == "invalid_coordinate_overlap"
+                && record.from_zero_coordinate
+                && record.to_zero_coordinate
+        }));
+        assert!(records.iter().any(|record| {
+            record.classification == "nearby_indirect_graph_connection"
+                && record.graph_connection == "connected_within_2_hops"
+        }));
     }
 
     #[test]

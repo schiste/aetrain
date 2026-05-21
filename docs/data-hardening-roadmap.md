@@ -262,6 +262,8 @@ The following artifacts should become first-class outputs:
 - `corridor-geometry-authorities.json`
 - `rail-authority-defect-details.json`
 - `shape-plausibility-defect-details.json`
+- `close-node-without-edge-summary.json`
+- `close-node-without-edge-candidates.json`
 
 These are not optional niceties. They are the operator surface for deciding
 whether a country is ready for broader onboarding.
