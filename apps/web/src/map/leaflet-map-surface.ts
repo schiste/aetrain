@@ -195,6 +195,16 @@ interface PreparedEdge {
    *  frame. Recomputed when geometry is augmented (see refresh-
    *  geometry path in setupDeferredGeometry). */
   isLowConfidence: boolean;
+  /** True when the edge is BOTH long enough to span a real region
+   *  (chord > STRAIGHT_LINE_MIN_CHORD_WORLD ≈ 130 km at 50°N) AND
+   *  near-collinear (path/chord ratio < STRAIGHT_LINE_MAX_PATH_CHORD_RATIO).
+   *  The background draw skips these entirely — they're almost always
+   *  upstream straight-line interpolations (sparse-shape providers, the
+   *  Rust pipeline's "stub then maybe upgrade" pattern, deferred-chunk
+   *  no-ops), and rendering them as long straight strokes implies a
+   *  level of geometric authority the data doesn't have. Cached at
+   *  prep time and re-evaluated when geometry is augmented. */
+  isStraightLineSuspect: boolean;
 }
 
 interface ZoomControls {
@@ -289,6 +299,23 @@ const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
 const BUTTON_ZOOM_DELTA = 0.35;
 const BACKGROUND_NETWORK_SIMPLIFIED_ZOOM = 6.5;
+
+// Straight-line suspect-edge thresholds. An edge is hidden from the
+// background network when BOTH conditions hold:
+//   - chord (from→to in mercator world units) > LONG threshold
+//   - path/chord ratio                          < STRAIGHT threshold
+// World units are normalized mercator (1.0 = world circumference at
+// equator ≈ 40,075 km). At ~50°N (Northern Europe) cos(lat) ≈ 0.64,
+// so 0.005 world units ≈ 130 km of ground distance. Real rail between
+// major hubs has ratios of 1.05–1.30; values under 1.02 are almost
+// always upstream straight-line interpolations rather than authored
+// shape data — see why we still see so many in commit message for
+// the change that introduced these constants.
+//
+// Tuned conservatively so short legitimate straight runs (commuter
+// segments, tunnel approaches, dead-flat coastal track) survive.
+const STRAIGHT_LINE_MIN_CHORD_WORLD = 0.005;
+const STRAIGHT_LINE_MAX_PATH_CHORD_RATIO = 1.02;
 const ARRIVAL_PULSE_DURATION_MS = 600;
 const ARRIVAL_PULSE_MIN_RADIUS_PX = 8;
 const ARRIVAL_PULSE_MAX_RADIUS_PX = 28;
@@ -467,6 +494,7 @@ export function createLeafletMapSurface({
         worldBbox: computeEdgeWorldBbox(fromWorld, toWorld, geometryWorld),
         renderPriority: edgeRenderPriority(fromCity, toCity),
         isLowConfidence: !geometryWorld || geometryWorld.length <= 3,
+        isStraightLineSuspect: isStraightLineSuspect(fromWorld, toWorld, geometryWorld),
         toCity,
         toWorld
       };
@@ -681,8 +709,15 @@ export function createLeafletMapSurface({
         );
         // Geometry was augmented from the deferred chunk loader. An edge
         // that used to be a 2-point stub may now have a real polyline,
-        // so re-evaluate the low-confidence flag.
+        // so re-evaluate the low-confidence flag — and the straight-line
+        // suspect flag, since some chunk upgrades just replace a 2-point
+        // stub with a denser (still collinear) interpolation.
         prepared.isLowConfidence = prepared.geometryWorld.length <= 3;
+        prepared.isStraightLineSuspect = isStraightLineSuspect(
+          prepared.fromWorld,
+          prepared.toWorld,
+          prepared.geometryWorld
+        );
         updated += 1;
       }
       diagnostics.info("map surface refreshed geometry", {
@@ -1565,6 +1600,7 @@ export function createLeafletMapSurface({
 
     let drawnEdges = 0;
     let drawnLowConfidence = 0;
+    let culledStraightLines = 0;
     // Force straight-line geometry during active interaction — the
     // multi-point projections per edge are the dominant cost on the
     // hot wheel/pan path. Visual fidelity restores on settle.
@@ -1590,6 +1626,18 @@ export function createLeafletMapSurface({
         continue;
       }
 
+      // Long, near-collinear edges are almost always upstream straight-
+      // line interpolations (sparse-shape providers, 2-point stubs, or
+      // deferred-chunk upgrades that just densified the stub). Drawing
+      // them as long straight strokes overstates the data's authority,
+      // so hide them entirely. The flag was computed at prep/refresh,
+      // gated by a chord threshold that protects legitimate short
+      // straight runs.
+      if (edge.isStraightLineSuspect) {
+        culledStraightLines += 1;
+        continue;
+      }
+
       const worldPoints: WorldPoint[] = shouldSimplifyGeometry
         ? [edge.fromWorld, edge.toWorld]
         : edge.geometryWorld || [edge.fromWorld, edge.toWorld];
@@ -1611,6 +1659,7 @@ export function createLeafletMapSurface({
     diagnostics.metric("network-layer-draw", drawnEdges, {
       drawn_edges: drawnEdges,
       drawn_low_confidence: drawnLowConfidence,
+      culled_straight_lines: culledStraightLines,
       zoom: frame.zoom
     });
   }
@@ -2601,6 +2650,59 @@ function computeEdgeWorldBbox(
     }
   }
   return { minX, maxX, minY, maxY };
+}
+
+/**
+ * Heuristic: returns true when the edge is long AND nearly perfectly
+ * straight, which is the signature of an upstream straight-line
+ * interpolation rather than authored shape data. The background draw
+ * uses this to skip the worst offenders entirely.
+ *
+ * "Long" is measured by the chord (from→to) in mercator world units —
+ * 1.0 is the world's circumference at the equator, so the threshold
+ * around 0.005 lands at roughly 130 km of ground distance at 50°N.
+ * "Straight" is path-length / chord-length: a perfect straight line is
+ * 1.000, a moderately curved one is 1.05–1.30, and authored European
+ * rail between major hubs almost always sits above 1.05. Anything under
+ * 1.02 is suspect.
+ *
+ * The two-condition guard ("long AND straight") matters: legitimate
+ * short straight runs exist (commuter segments, tunnel approaches,
+ * dead-flat coastal track) and must not get hidden. The chord threshold
+ * is the safety net.
+ */
+function isStraightLineSuspect(
+  fromWorld: WorldPoint,
+  toWorld: WorldPoint,
+  geometryWorld: WorldPoint[] | null
+): boolean {
+  const chordDx = toWorld.x - fromWorld.x;
+  const chordDy = toWorld.y - fromWorld.y;
+  const chord = Math.sqrt(chordDx * chordDx + chordDy * chordDy);
+  if (chord <= STRAIGHT_LINE_MIN_CHORD_WORLD) {
+    return false;
+  }
+  const points = geometryWorld && geometryWorld.length >= 2
+    ? geometryWorld
+    : [fromWorld, toWorld];
+  let pathLength = 0;
+  let previous = points[0];
+  if (!previous) {
+    // Unreachable given the `length >= 2` guard above, but the type
+    // checker needs the narrowing.
+    return false;
+  }
+  for (let i = 1; i < points.length; i += 1) {
+    const current = points[i];
+    if (!current) continue;
+    const dx = current.x - previous.x;
+    const dy = current.y - previous.y;
+    pathLength += Math.sqrt(dx * dx + dy * dy);
+    previous = current;
+  }
+  // A degenerate (zero-chord) edge never reaches here — the chord check
+  // above guards it — so the divide is safe.
+  return pathLength / chord < STRAIGHT_LINE_MAX_PATH_CHORD_RATIO;
 }
 
 function computeViewportWorldBbox(
