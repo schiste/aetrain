@@ -1420,7 +1420,10 @@ fn build_city_edges(
         station_locations
             .iter()
             .map(|(station_key, location)| {
-                (station_key.clone(), network.route_snap_candidates(*location))
+                (
+                    station_key.clone(),
+                    network.route_snap_candidates(*location),
+                )
             })
             .collect::<HashMap<_, _>>()
     });
@@ -1632,8 +1635,7 @@ struct EdgeGeometryContext<'a> {
     expanded_station_snap_candidates: Option<&'a HashMap<String, Vec<(usize, u32)>>>,
 }
 
-const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str =
-    "geometry:invalid-railway-path-rejected";
+const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str = "geometry:invalid-railway-path-rejected";
 const REJECTED_RAIL_METRICS_PROVENANCE_PREFIX: &str = "geometry:rejected-rail-metrics:";
 
 fn build_edge_geometry(
@@ -1647,6 +1649,10 @@ fn build_edge_geometry(
     let mut rejected_rail_provenance = Vec::<String>::new();
     if let Some(rail_geometry_network) = ctx.rail_geometry_network {
         let cache_key = (from_station_key.to_string(), to_station_key.to_string());
+        let max_geometry_distance_meters =
+            max_plausible_route_geometry_meters(haversine_meters(from_location, to_location))
+                .ceil()
+                .min(u32::MAX as f64) as u32;
         let start_candidates = ctx
             .station_snap_candidates
             .and_then(|snap_candidates| snap_candidates.get(from_station_key));
@@ -1666,16 +1672,17 @@ fn build_edge_geometry(
                 (Some(start_candidates), Some(end_candidates))
                     if !start_candidates.is_empty() && !end_candidates.is_empty() =>
                 {
-                    let local_route = rail_geometry_network.route_polyline_for_snap_candidates(
-                        from_location,
-                        to_location,
-                        start_candidates,
-                        end_candidates,
-                    );
+                    let local_route = rail_geometry_network
+                        .route_polyline_for_snap_candidates_bounded(
+                            from_location,
+                            to_location,
+                            start_candidates,
+                            end_candidates,
+                            max_geometry_distance_meters,
+                        );
                     if local_route.as_ref().is_some_and(|points| {
                         route_geometry_distance_is_plausible(points, from_location, to_location)
-                    })
-                    {
+                    }) {
                         local_route
                     } else {
                         match (expanded_start_candidates, expanded_end_candidates) {
@@ -1683,11 +1690,12 @@ fn build_edge_geometry(
                                 if !expanded_start_candidates.is_empty()
                                     && !expanded_end_candidates.is_empty() =>
                             {
-                                rail_geometry_network.route_polyline_for_snap_candidates(
+                                rail_geometry_network.route_polyline_for_snap_candidates_bounded(
                                     from_location,
                                     to_location,
                                     expanded_start_candidates,
                                     expanded_end_candidates,
+                                    max_geometry_distance_meters,
                                 )
                             }
                             _ => local_route,
@@ -1699,11 +1707,12 @@ fn build_edge_geometry(
                         if !expanded_start_candidates.is_empty()
                             && !expanded_end_candidates.is_empty() =>
                     {
-                        rail_geometry_network.route_polyline_for_snap_candidates(
+                        rail_geometry_network.route_polyline_for_snap_candidates_bounded(
                             from_location,
                             to_location,
                             expanded_start_candidates,
                             expanded_end_candidates,
+                            max_geometry_distance_meters,
                         )
                     }
                     _ => rail_geometry_network.route_polyline(from_location, to_location),
@@ -1764,8 +1773,8 @@ fn route_geometry_metrics(
         .map(|window| haversine_meters(window[0], window[1]))
         .sum::<f64>();
     let direct_meters = haversine_meters(from_location, to_location);
-    let detour_ratio_x100 = (direct_meters > 0.0)
-        .then(|| ((geometry_meters / direct_meters) * 100.0).round() as u32);
+    let detour_ratio_x100 =
+        (direct_meters > 0.0).then(|| ((geometry_meters / direct_meters) * 100.0).round() as u32);
     let implied_speed_kmh = duration_min.and_then(|minutes| {
         (minutes > 0 && geometry_meters > 0.0)
             .then(|| ((geometry_meters / 1000.0) / (minutes as f64 / 60.0)).round() as u32)
@@ -2042,19 +2051,13 @@ fn collect_used_station_keys(
         .read_byte_record(&mut record)
         .context("failed to read GTFS stop time record")?
     {
-        let Some(trip_id) = record
-            .get(trip_id_idx)
-            .and_then(trim_ascii_bytes_to_str)
-        else {
+        let Some(trip_id) = record.get(trip_id_idx).and_then(trim_ascii_bytes_to_str) else {
             continue;
         };
         if !trip_descriptors.contains_key(trip_id) {
             continue;
         }
-        let Some(stop_id) = record
-            .get(stop_id_idx)
-            .and_then(trim_ascii_bytes_to_str)
-        else {
+        let Some(stop_id) = record.get(stop_id_idx).and_then(trim_ascii_bytes_to_str) else {
             continue;
         };
         if let Some(station_key) = stop_to_station_key.get(stop_id) {

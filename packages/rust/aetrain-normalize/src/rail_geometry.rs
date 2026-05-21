@@ -268,18 +268,15 @@ impl RailGeometryNetwork {
     ) -> Vec<(usize, u32)> {
         let mut candidates = Vec::<(usize, u32)>::new();
         let bucket = quantize_bucket_key(target);
-        let (lat_radius, lon_radius) =
-            bucket_search_radius(target, max_distance_meters as f64);
+        let (lat_radius, lon_radius) = bucket_search_radius(target, max_distance_meters as f64);
         for lat_bucket in (bucket.0 - lat_radius)..=(bucket.0 + lat_radius) {
             for lon_bucket in (bucket.1 - lon_radius)..=(bucket.1 + lon_radius) {
-                let Some(node_indexes) =
-                    self.node_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
+                let Some(node_indexes) = self.node_indexes_by_bucket.get(&(lat_bucket, lon_bucket))
                 else {
                     continue;
                 };
                 for node_index in node_indexes {
-                    let distance =
-                        haversine_meters(self.nodes[*node_index], target).round() as u32;
+                    let distance = haversine_meters(self.nodes[*node_index], target).round() as u32;
                     if distance <= max_distance_meters {
                         candidates.push((*node_index, distance));
                     }
@@ -302,7 +299,7 @@ impl RailGeometryNetwork {
             return None;
         }
 
-        self.best_route_polyline_for_candidates(from, to, &start_candidates, &end_candidates)
+        self.best_route_polyline_for_candidates(from, to, &start_candidates, &end_candidates, None)
     }
 
     pub fn route_snap_candidates(&self, target: GeoPoint) -> Vec<(usize, u32)> {
@@ -328,6 +325,40 @@ impl RailGeometryNetwork {
         start_candidates: &[(usize, u32)],
         end_candidates: &[(usize, u32)],
     ) -> Option<Vec<GeoPoint>> {
+        self.route_polyline_for_snap_candidates_with_max_distance(
+            from,
+            to,
+            start_candidates,
+            end_candidates,
+            None,
+        )
+    }
+
+    pub fn route_polyline_for_snap_candidates_bounded(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+        start_candidates: &[(usize, u32)],
+        end_candidates: &[(usize, u32)],
+        max_geometry_distance_meters: u32,
+    ) -> Option<Vec<GeoPoint>> {
+        self.route_polyline_for_snap_candidates_with_max_distance(
+            from,
+            to,
+            start_candidates,
+            end_candidates,
+            Some(max_geometry_distance_meters),
+        )
+    }
+
+    fn route_polyline_for_snap_candidates_with_max_distance(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+        start_candidates: &[(usize, u32)],
+        end_candidates: &[(usize, u32)],
+        max_geometry_distance_meters: Option<u32>,
+    ) -> Option<Vec<GeoPoint>> {
         let start_candidates =
             filter_local_snap_candidates(start_candidates.to_vec(), SNAP_LOCALITY_SLACK_METERS);
         let end_candidates =
@@ -336,7 +367,13 @@ impl RailGeometryNetwork {
             return None;
         }
 
-        self.best_route_polyline_for_candidates(from, to, &start_candidates, &end_candidates)
+        self.best_route_polyline_for_candidates(
+            from,
+            to,
+            &start_candidates,
+            &end_candidates,
+            max_geometry_distance_meters,
+        )
     }
 
     fn route_snap_candidates_with_params(
@@ -346,7 +383,11 @@ impl RailGeometryNetwork {
         slack_meters: u32,
     ) -> Vec<(usize, u32)> {
         filter_local_snap_candidates(
-            self.nearest_nodes_with_distance(target, ROUTE_SNAP_DISTANCE_METERS.round() as u32, limit),
+            self.nearest_nodes_with_distance(
+                target,
+                ROUTE_SNAP_DISTANCE_METERS.round() as u32,
+                limit,
+            ),
             slack_meters,
         )
     }
@@ -357,6 +398,7 @@ impl RailGeometryNetwork {
         to: GeoPoint,
         start_candidates: &[(usize, u32)],
         end_candidates: &[(usize, u32)],
+        max_geometry_distance_meters: Option<u32>,
     ) -> Option<Vec<GeoPoint>> {
         let mut best_route = None::<(u32, Vec<GeoPoint>)>;
         let direct_distance = estimate_distance_meters(from, to);
@@ -367,14 +409,22 @@ impl RailGeometryNetwork {
                 {
                     continue;
                 }
+                let max_node_distance = max_geometry_distance_meters.map(|max_distance| {
+                    max_distance
+                        .saturating_sub(*start_distance)
+                        .saturating_sub(*end_distance)
+                });
+                if max_node_distance.is_some_and(|max_distance| max_distance == 0) {
+                    continue;
+                }
                 let Some(points) = self.route_polyline_between_nodes_with_scratch(
                     from,
                     to,
                     *start_node,
                     *end_node,
                     &mut scratch,
-                )
-                else {
+                    max_node_distance,
+                ) else {
                     continue;
                 };
                 let route_distance = polyline_distance_meters(&points);
@@ -399,7 +449,14 @@ impl RailGeometryNetwork {
         end_node: usize,
     ) -> Option<Vec<GeoPoint>> {
         let mut scratch = ShortestPathScratch::with_node_count(self.nodes.len());
-        self.route_polyline_between_nodes_with_scratch(from, to, start_node, end_node, &mut scratch)
+        self.route_polyline_between_nodes_with_scratch(
+            from,
+            to,
+            start_node,
+            end_node,
+            &mut scratch,
+            None,
+        )
     }
 
     fn route_polyline_between_nodes_with_scratch(
@@ -409,6 +466,7 @@ impl RailGeometryNetwork {
         start_node: usize,
         end_node: usize,
         scratch: &mut ShortestPathScratch,
+        max_node_distance_meters: Option<u32>,
     ) -> Option<Vec<GeoPoint>> {
         let start_distance = haversine_meters(self.nodes[start_node], from);
         let end_distance = haversine_meters(self.nodes[end_node], to);
@@ -416,7 +474,8 @@ impl RailGeometryNetwork {
         {
             return None;
         }
-        let node_path = self.shortest_path(start_node, end_node, scratch)?;
+        let node_path =
+            self.shortest_path(start_node, end_node, scratch, max_node_distance_meters)?;
         let mut points = node_path
             .into_iter()
             .map(|node_index| self.nodes[node_index])
@@ -446,6 +505,7 @@ impl RailGeometryNetwork {
         start: usize,
         end: usize,
         scratch: &mut ShortestPathScratch,
+        max_distance_meters: Option<u32>,
     ) -> Option<Vec<usize>> {
         if start == end {
             return Some(vec![start, end]);
@@ -460,6 +520,10 @@ impl RailGeometryNetwork {
         });
 
         while let Some(state) = scratch.queue.pop() {
+            if max_distance_meters.is_some_and(|max_distance| state.distance_meters > max_distance)
+            {
+                continue;
+            }
             if state.node == end {
                 return Some(reconstruct_path(&scratch.previous, start, end));
             }
@@ -469,6 +533,10 @@ impl RailGeometryNetwork {
 
             for edge in &self.adjacency[state.node] {
                 let candidate_distance = state.distance_meters.saturating_add(edge.weight_meters);
+                if max_distance_meters.is_some_and(|max_distance| candidate_distance > max_distance)
+                {
+                    continue;
+                }
                 if candidate_distance >= scratch.distance(edge.target, generation) {
                     continue;
                 }
@@ -609,10 +677,7 @@ fn extracted_gpkg_is_fresh(zip_path: &Path, extracted_path: &Path) -> Result<boo
 }
 
 fn geofabrik_fclass_is_supported_railway(fclass: &str) -> bool {
-    matches!(
-        fclass,
-        "rail" | "narrow_gauge"
-    )
+    matches!(fclass, "rail" | "narrow_gauge")
 }
 
 fn parse_gpkg_lines(blob: &[u8]) -> Result<Vec<Vec<GeoPoint>>> {
@@ -1079,7 +1144,10 @@ fn densify_segment(from: GeoPoint, to: GeoPoint) -> Vec<GeoPoint> {
     points
 }
 
-fn filter_local_snap_candidates(candidates: Vec<(usize, u32)>, slack_meters: u32) -> Vec<(usize, u32)> {
+fn filter_local_snap_candidates(
+    candidates: Vec<(usize, u32)>,
+    slack_meters: u32,
+) -> Vec<(usize, u32)> {
     let Some((_, nearest_distance)) = candidates.first() else {
         return candidates;
     };
@@ -1444,18 +1512,20 @@ mod tests {
             .expect("rail route should be present");
 
         assert!(route.len() >= 2);
-        assert!(network
-            .route_polyline(
-                GeoPoint {
-                    lat: 49.0,
-                    lon: 2.0,
-                },
-                GeoPoint {
-                    lat: 49.0,
-                    lon: 3.0,
-                },
-            )
-            .is_none());
+        assert!(
+            network
+                .route_polyline(
+                    GeoPoint {
+                        lat: 49.0,
+                        lon: 2.0,
+                    },
+                    GeoPoint {
+                        lat: 49.0,
+                        lon: 3.0,
+                    },
+                )
+                .is_none()
+        );
 
         let _ = fs::remove_file(path);
     }
@@ -1516,8 +1586,16 @@ mod tests {
             .expect("merged route should cross source boundary");
 
         assert!(route.len() >= 4);
-        assert!(route.iter().any(|point| (point.lon - 2.0200).abs() < 0.0002));
-        assert!(route.iter().any(|point| (point.lon - 2.0300).abs() < 0.0002));
+        assert!(
+            route
+                .iter()
+                .any(|point| (point.lon - 2.0200).abs() < 0.0002)
+        );
+        assert!(
+            route
+                .iter()
+                .any(|point| (point.lon - 2.0300).abs() < 0.0002)
+        );
     }
 
     #[test]
