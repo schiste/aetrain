@@ -44,25 +44,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-46c3ce08"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "a-cuqueria-es-305f5b9d",
-    "slug": "a-cuqueria",
-    "display_name": "A Cuqueria",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.6078292,
-      "lon": -7.9219389
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-46c3ce08",
       "station-es-renfe-mainline-gtfs-46c3ce08"
     ],
     "aliases": []
@@ -799,9 +783,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-75a1b279"
+      "station-es-renfe-cercanias-gtfs-75a1b279",
+      "station-es-renfe-mainline-gtfs-75a1b279"
     ],
     "aliases": []
   },
@@ -1113,6 +1098,23 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-9c46a3a0"
+    ],
+    "aliases": []
+  },
+  {
+    "city_id": "agurain-salvatierra-de-alava-es-30f488f8",
+    "slug": "agurain-salvatierra-de-alava",
+    "display_name": "Agurain Salvatierra De Alava",
+    "country_code": "ES",
+    "location": {
+      "lat": 42.84643,
+      "lon": -2.38921
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-518f2ea3"
     ],
     "aliases": []
   },
@@ -1547,8 +1549,8 @@
     "display_name": "Aix En Provence",
     "country_code": "FR",
     "location": {
-      "lat": 43.46364551,
-      "lon": 5.333276745000001
+      "lat": 43.459456755,
+      "lon": 5.325253372500001
     },
     "wikidata_qid": null,
     "population": null,
@@ -1669,9 +1671,9 @@
     "aliases": []
   },
   {
-    "city_id": "alar-del-rey-san-quirce-es-7a10ceb1",
-    "slug": "alar-del-rey-san-quirce",
-    "display_name": "Alar Del Rey San Quirce",
+    "city_id": "alar-del-rey-es-43a6acd5",
+    "slug": "alar-del-rey",
+    "display_name": "Alar Del Rey",
     "country_code": "ES",
     "location": {
       "lat": 42.656837,
@@ -1733,23 +1735,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-78664693"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "albatera-catral-es-6d47e8b2",
-    "slug": "albatera-catral",
-    "display_name": "Albatera Catral",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.1670209,
-      "lon": -0.8380854
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-29e327b7"
     ],
     "aliases": []
   },
@@ -1963,9 +1948,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-3f8b0b0e"
+      "station-es-renfe-cercanias-gtfs-3f8b0b0e",
+      "station-es-renfe-mainline-gtfs-3f8b0b0e"
     ],
     "aliases": []
   },
@@ -1980,51 +1966,16 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 7,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-1b9c0af3",
-      "station-es-renfe-cercanias-gtfs-43f24080"
-    ],
-    "aliases": [
-      "Alcalá De Henares-Universidad"
-    ]
-  },
-  {
-    "city_id": "alcala-de-xivert-es-8e4d0fc4",
-    "slug": "alcala-de-xivert",
-    "display_name": "Alcala De Xivert",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.30469,
-      "lon": 0.228717
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-3f8b0b0e"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "alcala-es-fa16032f",
-    "slug": "alcala",
-    "display_name": "Alcala",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.49725585,
-      "lon": -3.35078575
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-43f24080",
       "station-es-renfe-mainline-gtfs-1b9c0af3",
       "station-es-renfe-mainline-gtfs-43f24080"
     ],
     "aliases": [
-      "Alcala De Henares",
-      "Alcalá Henares-Universidad (apd)"
+      "Alcalá De Henares-Universidad",
+      "Alcalá de Henares-Universidad"
     ]
   },
   {
@@ -2079,9 +2030,26 @@
     "aliases": []
   },
   {
-    "city_id": "alcolea-de-cordoba-apt-es-0c185641",
-    "slug": "alcolea-de-cordoba-apt",
-    "display_name": "Alcolea De Cordoba Apt",
+    "city_id": "alcoi-es-0f25c5d3",
+    "slug": "alcoi",
+    "display_name": "Alcoi",
+    "country_code": "ES",
+    "location": {
+      "lat": 38.709349,
+      "lon": -0.470247
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-d7e1f73b"
+    ],
+    "aliases": []
+  },
+  {
+    "city_id": "alcolea-de-cordoba-es-2043b789",
+    "slug": "alcolea-de-cordoba",
+    "display_name": "Alcolea De Cordoba",
     "country_code": "ES",
     "location": {
       "lat": 37.922326,
@@ -2148,23 +2116,6 @@
     "aliases": []
   },
   {
-    "city_id": "alcoy-alcoi-es-2b082774",
-    "slug": "alcoy-alcoi",
-    "display_name": "Alcoy Alcoi",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.709349,
-      "lon": -0.470247
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-d7e1f73b"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "aldealengua-es-14c90ba3",
     "slug": "aldealengua",
     "display_name": "Aldealengua",
@@ -2199,9 +2150,9 @@
     "aliases": []
   },
   {
-    "city_id": "alegria-de-alava-dulantzi-es-d53858ac",
-    "slug": "alegria-de-alava-dulantzi",
-    "display_name": "Alegria De Alava Dulantzi",
+    "city_id": "alegria-dulantzi-es-82c7e187",
+    "slug": "alegria-dulantzi",
+    "display_name": "Alegria Dulantzi",
     "country_code": "ES",
     "location": {
       "lat": 42.848723,
@@ -2448,23 +2399,6 @@
     "aliases": []
   },
   {
-    "city_id": "alicante-alacant-es-85d2cb21",
-    "slug": "alicante-alacant",
-    "display_name": "Alicante Alacant",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.3447127,
-      "lon": -0.4955241
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-390c6dc1"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "alicante-alacant-terminal-es-e0870e06",
     "slug": "alicante-alacant-terminal",
     "display_name": "Alicante Alacant Terminal",
@@ -2475,9 +2409,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-390c6dc1"
+      "station-es-renfe-cercanias-gtfs-390c6dc1",
+      "station-es-renfe-mainline-gtfs-390c6dc1"
     ],
     "aliases": []
   },
@@ -2886,23 +2821,6 @@
     "aliases": []
   },
   {
-    "city_id": "almassora-almazora-es-0dc2bf4a",
-    "slug": "almassora-almazora",
-    "display_name": "Almassora Almazora",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.9549079,
-      "lon": -0.0767713
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-84c11951"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "almassora-es-92b90122",
     "slug": "almassora",
     "display_name": "Almassora",
@@ -2913,16 +2831,17 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-84c11951"
+      "station-es-renfe-cercanias-gtfs-84c11951",
+      "station-es-renfe-mainline-gtfs-84c11951"
     ],
     "aliases": []
   },
   {
-    "city_id": "almazan-es-9f0dd31f",
-    "slug": "almazan",
-    "display_name": "Almazan",
+    "city_id": "almazan-villa-es-68dc3403",
+    "slug": "almazan-villa",
+    "display_name": "Almazan Villa",
     "country_code": "ES",
     "location": {
       "lat": 41.489019,
@@ -3102,25 +3021,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-af6a6df2"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "alpedrete-mataespesa-es-26a5d6c6",
-    "slug": "alpedrete-mataespesa",
-    "display_name": "Alpedrete Mataespesa",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.6581044,
-      "lon": -4.0349719
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-af6a6df2",
       "station-es-renfe-mainline-gtfs-af6a6df2"
     ],
     "aliases": []
@@ -3795,25 +3698,38 @@
     "aliases": []
   },
   {
-    "city_id": "altsasu-alsasua-es-dc342246",
-    "slug": "altsasu-alsasua",
-    "display_name": "Altsasu Alsasua",
+    "city_id": "altsasu-es-63be5d86",
+    "slug": "altsasu",
+    "display_name": "Altsasu",
     "country_code": "ES",
     "location": {
-      "lat": 42.894065,
-      "lon": -2.174333
+      "lat": 42.894847,
+      "lon": -2.181237
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-es-renfe-mainline-gtfs-636c2fb5",
       "station-es-renfe-mainline-gtfs-dea2848f"
     ],
-    "aliases": [
-      "Altsasu/Alsasua-Estación",
-      "Altsasu/Alsasua-Pueblo"
-    ]
+    "aliases": []
+  },
+  {
+    "city_id": "altsasu-pueblo-es-d5889b1f",
+    "slug": "altsasu-pueblo",
+    "display_name": "Altsasu Pueblo",
+    "country_code": "ES",
+    "location": {
+      "lat": 42.893283,
+      "lon": -2.167429
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-636c2fb5"
+    ],
+    "aliases": []
   },
   {
     "city_id": "altshausen-ch-59f60c31",
@@ -4483,23 +4399,6 @@
     ]
   },
   {
-    "city_id": "andoain-centro-erdia-es-9754b2fc",
-    "slug": "andoain-centro-erdia",
-    "display_name": "Andoain Centro Erdia",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.2155738,
-      "lon": -2.0204595
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-68d6e05a"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "andoain-centro-es-c9797f96",
     "slug": "andoain-centro",
     "display_name": "Andoain Centro",
@@ -4510,9 +4409,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-68d6e05a"
+      "station-es-renfe-cercanias-gtfs-68d6e05a",
+      "station-es-renfe-mainline-gtfs-68d6e05a"
     ],
     "aliases": []
   },
@@ -5360,23 +5260,6 @@
     "aliases": []
   },
   {
-    "city_id": "aravaca-apd-cgd-es-725bd764",
-    "slug": "aravaca-apd-cgd",
-    "display_name": "Aravaca Apd Cgd",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.4484551,
-      "lon": -3.7855547
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-b79381f3"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "aravaca-es-5289a197",
     "slug": "aravaca",
     "display_name": "Aravaca",
@@ -5387,9 +5270,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-b79381f3"
+      "station-es-renfe-cercanias-gtfs-b79381f3",
+      "station-es-renfe-mainline-gtfs-b79381f3"
     ],
     "aliases": []
   },
@@ -6338,9 +6222,9 @@
     "aliases": []
   },
   {
-    "city_id": "arroyo-malpartida-es-16b00111",
-    "slug": "arroyo-malpartida",
-    "display_name": "Arroyo Malpartida",
+    "city_id": "arroyo-de-malpartida-es-be6cbebb",
+    "slug": "arroyo-de-malpartida",
+    "display_name": "Arroyo De Malpartida",
     "country_code": "ES",
     "location": {
       "lat": 39.468078,
@@ -6473,9 +6357,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-e6e3488b"
+      "station-es-renfe-cercanias-gtfs-e6e3488b",
+      "station-es-renfe-mainline-gtfs-e6e3488b"
     ],
     "aliases": []
   },
@@ -6511,23 +6396,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8501494"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "arzentales-es-aaca0642",
-    "slug": "arzentales",
-    "display_name": "Arzentales",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.25,
-      "lon": -3.22
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-e6e3488b"
     ],
     "aliases": []
   },
@@ -6569,23 +6437,6 @@
     "aliases": []
   },
   {
-    "city_id": "asamblea-de-mad-entrevias-es-6507b9ae",
-    "slug": "asamblea-de-mad-entrevias",
-    "display_name": "Asamblea De Mad Entrevias",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.3818618,
-      "lon": -3.6680454
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-8d157769"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "asamblea-de-madrid-entrevias-es-ce016322",
     "slug": "asamblea-de-madrid-entrevias",
     "display_name": "Asamblea De Madrid Entrevias",
@@ -6596,9 +6447,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-8d157769"
+      "station-es-renfe-cercanias-gtfs-8d157769",
+      "station-es-renfe-mainline-gtfs-8d157769"
     ],
     "aliases": []
   },
@@ -6835,23 +6687,6 @@
     "aliases": []
   },
   {
-    "city_id": "ategorrieta-apd-es-3aec9076",
-    "slug": "ategorrieta-apd",
-    "display_name": "Ategorrieta Apd",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3203225,
-      "lon": -1.9598127
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-98e6a254"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ategorrieta-es-8c8c6e1f",
     "slug": "ategorrieta",
     "display_name": "Ategorrieta",
@@ -6862,9 +6697,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-98e6a254"
+      "station-es-renfe-cercanias-gtfs-98e6a254",
+      "station-es-renfe-mainline-gtfs-98e6a254"
     ],
     "aliases": []
   },
@@ -7928,8 +7764,8 @@
     "display_name": "Avignon",
     "country_code": "FR",
     "location": {
-      "lat": 43.927058833333334,
-      "lon": 4.803929500000001
+      "lat": 43.924498416666665,
+      "lon": 4.79487125
     },
     "wikidata_qid": "Q6397",
     "population": 94200,
@@ -10849,12 +10685,12 @@
     ],
     "aliases": [
       "Barcelona Estació De França",
+      "Barcelona Estació de França",
       "Barcelona-Arc De Triomf",
       "Barcelona-El Clot",
-      "Barcelona-Estació De França",
       "Barcelona-La Sagrera-Meridiana",
-      "Barcelona-Passeig De Gracia",
       "Barcelona-Passeig De Gràcia",
+      "Barcelona-Passeig de Gràcia",
       "Barcelona-Plaça De Catalunya",
       "Barcelona-Sant Andreu",
       "Barcelona-Sants"
@@ -12942,6 +12778,23 @@
     "aliases": []
   },
   {
+    "city_id": "belmonte-de-pria-es-124f82f5",
+    "slug": "belmonte-de-pria",
+    "display_name": "Belmonte De Pria",
+    "country_code": "ES",
+    "location": {
+      "lat": 43.4398,
+      "lon": -4.98228
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-279deab2"
+    ],
+    "aliases": []
+  },
+  {
     "city_id": "belmonte-es-e8ce3dce",
     "slug": "belmonte",
     "display_name": "Belmonte",
@@ -13365,23 +13218,6 @@
     "aliases": []
   },
   {
-    "city_id": "benifaio-almussafes-es-e3ac56fa",
-    "slug": "benifaio-almussafes",
-    "display_name": "Benifaio Almussafes",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.2843027,
-      "lon": -0.4299537
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-da4cddd0"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "benifaio-es-a969dcda",
     "slug": "benifaio",
     "display_name": "Benifaio",
@@ -13392,9 +13228,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-da4cddd0"
+      "station-es-renfe-cercanias-gtfs-da4cddd0",
+      "station-es-renfe-mainline-gtfs-da4cddd0"
     ],
     "aliases": []
   },
@@ -15926,7 +15763,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 7,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-b8e52211",
       "station-es-renfe-cercanias-gtfs-c0f4a0fb",
@@ -15936,7 +15773,6 @@
     "aliases": [
       "Bilbao La Concordia",
       "Bilbao la Concordia",
-      "Bilbao-Abando Indalecio Prieto",
       "Bilbao-Intermod. Abando Indalecio Prieto"
     ]
   },
@@ -15970,9 +15806,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-d1c2aaa2"
+      "station-es-renfe-cercanias-gtfs-d1c2aaa2",
+      "station-es-renfe-mainline-gtfs-d1c2aaa2"
     ],
     "aliases": []
   },
@@ -20475,25 +20312,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-eb1b1bec"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "brinkola-onyati-es-2bc1ee82",
-    "slug": "brinkola-onyati",
-    "display_name": "Brinkola Onyati",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.0189865,
-      "lon": -2.3346811
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-eb1b1bec",
       "station-es-renfe-mainline-gtfs-eb1b1bec"
     ],
     "aliases": []
@@ -22776,23 +22597,6 @@
     "aliases": []
   },
   {
-    "city_id": "cabanas-areal-es-c0c4cc46",
-    "slug": "cabanas-areal",
-    "display_name": "Cabanas Areal",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.415585,
-      "lon": -8.168828
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-52ca22e1"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "cabanas-de-aliste-es-59cffc72",
     "slug": "cabanas-de-aliste",
     "display_name": "Cabanas De Aliste",
@@ -22806,6 +22610,23 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-030a11b9"
+    ],
+    "aliases": []
+  },
+  {
+    "city_id": "cabanas-de-ebro-es-7ef55f74",
+    "slug": "cabanas-de-ebro",
+    "display_name": "Cabanas De Ebro",
+    "country_code": "ES",
+    "location": {
+      "lat": 41.788065,
+      "lon": -1.167533
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-bc43c5a6"
     ],
     "aliases": []
   },
@@ -22828,26 +22649,26 @@
     "aliases": []
   },
   {
-    "city_id": "cabanyas-de-ebro-es-caa979e7",
-    "slug": "cabanyas-de-ebro",
-    "display_name": "Cabanyas De Ebro",
+    "city_id": "cabanas-es-a5815adf",
+    "slug": "cabanas",
+    "display_name": "Cabanas",
     "country_code": "ES",
     "location": {
-      "lat": 41.788065,
-      "lon": -1.167533
+      "lat": 43.415585,
+      "lon": -8.168828
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-es-renfe-mainline-gtfs-bc43c5a6"
+      "station-es-renfe-mainline-gtfs-52ca22e1"
     ],
     "aliases": []
   },
   {
-    "city_id": "cabeza-de-buey-es-60b8e632",
-    "slug": "cabeza-de-buey",
-    "display_name": "Cabeza De Buey",
+    "city_id": "cabeza-del-buey-es-c012fe2c",
+    "slug": "cabeza-del-buey",
+    "display_name": "Cabeza Del Buey",
     "country_code": "ES",
     "location": {
       "lat": 38.72389,
@@ -23227,9 +23048,9 @@
     "aliases": []
   },
   {
-    "city_id": "calamocha-nueva-es-8111441d",
-    "slug": "calamocha-nueva",
-    "display_name": "Calamocha Nueva",
+    "city_id": "calamocha-es-f3a61c2a",
+    "slug": "calamocha",
+    "display_name": "Calamocha",
     "country_code": "ES",
     "location": {
       "lat": 40.903864,
@@ -23451,7 +23272,7 @@
       "station-es-renfe-mainline-gtfs-624ab7c6"
     ],
     "aliases": [
-      "CALLOSA DE SEGURA - COX"
+      "Callosa de Segura-Cox"
     ]
   },
   {
@@ -23504,9 +23325,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-10f27812"
+      "station-es-renfe-cercanias-gtfs-10f27812",
+      "station-es-renfe-mainline-gtfs-10f27812"
     ],
     "aliases": []
   },
@@ -23701,6 +23523,23 @@
     "aliases": []
   },
   {
+    "city_id": "camp-de-tarragona-es-b7ce42bd",
+    "slug": "camp-de-tarragona",
+    "display_name": "Camp De Tarragona",
+    "country_code": "ES",
+    "location": {
+      "lat": 41.192066,
+      "lon": 1.272666
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-965a4308"
+    ],
+    "aliases": []
+  },
+  {
     "city_id": "camp-redo-es-9784a9db",
     "slug": "camp-redo",
     "display_name": "Camp Redo",
@@ -23715,23 +23554,6 @@
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-bce70e46",
       "station-es-renfe-mainline-gtfs-bce70e46"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "camp-tarragona-es-3588632b",
-    "slug": "camp-tarragona",
-    "display_name": "Camp Tarragona",
-    "country_code": "ES",
-    "location": {
-      "lat": 41.192066,
-      "lon": 1.272666
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-965a4308"
     ],
     "aliases": []
   },
@@ -23934,33 +23756,17 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-2b146274"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "campumanes-es-b57eda37",
-    "slug": "campumanes",
-    "display_name": "Campumanes",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.1100681,
-      "lon": -5.8164466
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-2b146274",
       "station-es-renfe-mainline-gtfs-2b146274"
     ],
     "aliases": []
   },
   {
-    "city_id": "campus-universitario-rabanales-cordoba-es-0c52441b",
-    "slug": "campus-universitario-rabanales-cordoba",
-    "display_name": "Campus Universitario Rabanales Cordoba",
+    "city_id": "campus-universitario-de-rabanales-es-5f13b07a",
+    "slug": "campus-universitario-de-rabanales",
+    "display_name": "Campus Universitario De Rabanales",
     "country_code": "ES",
     "location": {
       "lat": 37.91256,
@@ -23975,9 +23781,9 @@
     "aliases": []
   },
   {
-    "city_id": "canabal-es-cb336ff3",
-    "slug": "canabal",
-    "display_name": "Canabal",
+    "city_id": "canaval-es-b513680d",
+    "slug": "canaval",
+    "display_name": "Canaval",
     "country_code": "ES",
     "location": {
       "lat": 42.482882,
@@ -25128,25 +24934,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-f3c6a53c"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "castello-es-35011adc",
-    "slug": "castello",
-    "display_name": "Castello",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.9884736,
-      "lon": -0.0523456
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-f3c6a53c",
       "station-es-renfe-mainline-gtfs-f3c6a53c"
     ],
     "aliases": []
@@ -28568,23 +28358,6 @@
     "aliases": []
   },
   {
-    "city_id": "chilches-es-3e2edaf9",
-    "slug": "chilches",
-    "display_name": "Chilches",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.7826726,
-      "lon": -0.1903295
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-c6631ac0"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "chilches-xilxes-es-4394577c",
     "slug": "chilches-xilxes",
     "display_name": "Chilches Xilxes",
@@ -28595,9 +28368,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-c6631ac0"
+      "station-es-renfe-cercanias-gtfs-c6631ac0",
+      "station-es-renfe-mainline-gtfs-c6631ac0"
     ],
     "aliases": []
   },
@@ -30520,9 +30294,9 @@
     "aliases": []
   },
   {
-    "city_id": "cordoba-es-631d56e1",
-    "slug": "cordoba",
-    "display_name": "Cordoba",
+    "city_id": "cordoba-julio-anguita-es-311d3f95",
+    "slug": "cordoba-julio-anguita",
+    "display_name": "Cordoba Julio Anguita",
     "country_code": "ES",
     "location": {
       "lat": 37.888291,
@@ -30827,23 +30601,6 @@
     "aliases": []
   },
   {
-    "city_id": "coslada-apd-es-a8683d24",
-    "slug": "coslada-apd",
-    "display_name": "Coslada Apd",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.423237,
-      "lon": -3.5611109
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-94478a2d"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "coslada-es-a75d1d22",
     "slug": "coslada",
     "display_name": "Coslada",
@@ -30854,9 +30611,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-94478a2d"
+      "station-es-renfe-cercanias-gtfs-94478a2d",
+      "station-es-renfe-mainline-gtfs-94478a2d"
     ],
     "aliases": []
   },
@@ -31775,23 +31533,6 @@
     "aliases": []
   },
   {
-    "city_id": "crevillent-es-b70b9cbe",
-    "slug": "crevillent",
-    "display_name": "Crevillent",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.2245622,
-      "lon": -0.7815283
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-44b6fa27"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "crevillente-es-1fb29772",
     "slug": "crevillente",
     "display_name": "Crevillente",
@@ -31802,9 +31543,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-44b6fa27"
+      "station-es-renfe-cercanias-gtfs-44b6fa27",
+      "station-es-renfe-mainline-gtfs-44b6fa27"
     ],
     "aliases": []
   },
@@ -38664,9 +38406,9 @@
     "aliases": []
   },
   {
-    "city_id": "el-chorro-es-866389cd",
-    "slug": "el-chorro",
-    "display_name": "El Chorro",
+    "city_id": "el-chorro-caminito-del-rey-es-8e4afd2a",
+    "slug": "el-chorro-caminito-del-rey",
+    "display_name": "El Chorro Caminito Del Rey",
     "country_code": "ES",
     "location": {
       "lat": 36.907335,
@@ -38801,9 +38543,9 @@
     "aliases": []
   },
   {
-    "city_id": "el-higueron-apt-es-c02344a6",
-    "slug": "el-higueron-apt",
-    "display_name": "El Higueron Apt",
+    "city_id": "el-higueron-es-233a6ccf",
+    "slug": "el-higueron",
+    "display_name": "El Higueron",
     "country_code": "ES",
     "location": {
       "lat": 37.870271,
@@ -39138,40 +38880,23 @@
     "display_name": "Elche Elx",
     "country_code": "ES",
     "location": {
-      "lat": 38.2703796,
-      "lon": -0.70080925
+      "lat": 38.26623466666667,
+      "lon": -0.711799375
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 8,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-4c794f73",
-      "station-es-renfe-cercanias-gtfs-9d8e93ee"
+      "station-es-renfe-cercanias-gtfs-9d8e93ee",
+      "station-es-renfe-mainline-gtfs-4c794f73",
+      "station-es-renfe-mainline-gtfs-9d8e93ee",
+      "station-es-renfe-mainline-gtfs-c4248769"
     ],
     "aliases": [
+      "Elche/Elx AV",
       "Elche/Elx-Carrús",
       "Elche/Elx-Parc"
-    ]
-  },
-  {
-    "city_id": "elche-es-63d330fb",
-    "slug": "elche",
-    "display_name": "Elche",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.2703796,
-      "lon": -0.70080925
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-4c794f73",
-      "station-es-renfe-mainline-gtfs-9d8e93ee"
-    ],
-    "aliases": [
-      "Elche Parque/Elx Parc",
-      "Elche/Elx Carrús"
     ]
   },
   {
@@ -39419,23 +39144,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-10e60975"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "elx-av-es-ad8fa3e9",
-    "slug": "elx-av",
-    "display_name": "Elx Av",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.24551,
-      "lon": -0.76675
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-c4248769"
     ],
     "aliases": []
   },
@@ -41309,9 +41017,9 @@
     "aliases": []
   },
   {
-    "city_id": "espinosa-de-villagonzalo-apd-es-ce7a23b7",
-    "slug": "espinosa-de-villagonzalo-apd",
-    "display_name": "Espinosa De Villagonzalo Apd",
+    "city_id": "espinosa-de-villagonzalo-es-3eebf77c",
+    "slug": "espinosa-de-villagonzalo",
+    "display_name": "Espinosa De Villagonzalo",
     "country_code": "ES",
     "location": {
       "lat": 42.452373,
@@ -42578,25 +42286,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-e251401e"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "faio-la-pobla-de-massaluca-fayon-es-13f5c009",
-    "slug": "faio-la-pobla-de-massaluca-fayon",
-    "display_name": "Faio La Pobla De Massaluca Fayon",
-    "country_code": "ES",
-    "location": {
-      "lat": 41.2250555,
-      "lon": 0.35110259
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-e251401e",
       "station-es-renfe-mainline-gtfs-e251401e"
     ],
     "aliases": []
@@ -43576,57 +43268,6 @@
     "aliases": []
   },
   {
-    "city_id": "feve-belmonte-de-pria-es-e9d397b8",
-    "slug": "feve-belmonte-de-pria",
-    "display_name": "Feve Belmonte De Pria",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.4398,
-      "lon": -4.98228
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-279deab2"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "feve-fuente-santa-de-nava-es-f9b1d272",
-    "slug": "feve-fuente-santa-de-nava",
-    "display_name": "Feve Fuente Santa De Nava",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3555699,
-      "lon": -5.478379
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-0a8f4a7e"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "feve-las-rozas-de-valdearroyo-es-d205dbb5",
-    "slug": "feve-las-rozas-de-valdearroyo",
-    "display_name": "Feve Las Rozas De Valdearroyo",
-    "country_code": "ES",
-    "location": {
-      "lat": 42.973605,
-      "lon": -4.029864
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-c4b68b12"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "feve-leon-es-80259aba",
     "slug": "feve-leon",
     "display_name": "Feve Leon",
@@ -43641,40 +43282,6 @@
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-ea433274",
       "station-es-renfe-mainline-gtfs-ea433274"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "feve-penaflor-de-grado-es-11cc7fcb",
-    "slug": "feve-penaflor-de-grado",
-    "display_name": "Feve Penaflor De Grado",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.4029267,
-      "lon": -6.0453921
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-08e7101e"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "feve-zorroza-zorrozgoiti-es-977ba80d",
-    "slug": "feve-zorroza-zorrozgoiti",
-    "display_name": "Feve Zorroza Zorrozgoiti",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.2740398,
-      "lon": -2.9740116
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-5e0f678e"
     ],
     "aliases": []
   },
@@ -43748,23 +43355,6 @@
     "aliases": [
       "Fieberbrunn Bahnhof"
     ]
-  },
-  {
-    "city_id": "fierros-es-b5fbb98f",
-    "slug": "fierros",
-    "display_name": "Fierros",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.0715986,
-      "lon": -5.769465
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-5c57d34a"
-    ],
-    "aliases": []
   },
   {
     "city_id": "fiesch-ch-1b27c90c",
@@ -47292,9 +46882,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-0a8f4a7e"
+      "station-es-renfe-cercanias-gtfs-0a8f4a7e",
+      "station-es-renfe-mainline-gtfs-0a8f4a7e"
     ],
     "aliases": []
   },
@@ -49983,25 +49574,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-a010eb12"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "gijon-xixon-es-daed0602",
-    "slug": "gijon-xixon",
-    "display_name": "Gijon Xixon",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.5377329,
-      "lon": -5.6758089
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-a010eb12",
       "station-es-renfe-mainline-gtfs-a010eb12"
     ],
     "aliases": []
@@ -53758,9 +53333,9 @@
     "aliases": []
   },
   {
-    "city_id": "guadiana-del-caudillo-es-1e989100",
-    "slug": "guadiana-del-caudillo",
-    "display_name": "Guadiana Del Caudillo",
+    "city_id": "guadiana-es-8df83d4b",
+    "slug": "guadiana",
+    "display_name": "Guadiana",
     "country_code": "ES",
     "location": {
       "lat": 38.922099,
@@ -53827,23 +53402,6 @@
     "aliases": []
   },
   {
-    "city_id": "guardo-apdro-es-799f775c",
-    "slug": "guardo-apdro",
-    "display_name": "Guardo Apdro",
-    "country_code": "ES",
-    "location": {
-      "lat": 42.7877378,
-      "lon": -4.845133
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-5088e91d"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "guardo-apeadero-es-58f40408",
     "slug": "guardo-apeadero",
     "display_name": "Guardo Apeadero",
@@ -53854,9 +53412,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5088e91d"
+      "station-es-renfe-cercanias-gtfs-5088e91d",
+      "station-es-renfe-mainline-gtfs-5088e91d"
     ],
     "aliases": []
   },
@@ -59190,23 +58749,6 @@
     "aliases": []
   },
   {
-    "city_id": "hernani-centro-es-bfb81d82",
-    "slug": "hernani-centro",
-    "display_name": "Hernani Centro",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.2664779,
-      "lon": -1.9726232
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-634cdb16"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "hernani-erdia-es-3a3fee2b",
     "slug": "hernani-erdia",
     "display_name": "Hernani Erdia",
@@ -59217,9 +58759,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-634cdb16"
+      "station-es-renfe-cercanias-gtfs-634cdb16",
+      "station-es-renfe-mainline-gtfs-634cdb16"
     ],
     "aliases": []
   },
@@ -59333,23 +58876,6 @@
     "aliases": []
   },
   {
-    "city_id": "herrera-apd-es-a6469c14",
-    "slug": "herrera-apd",
-    "display_name": "Herrera Apd",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3193537,
-      "lon": -1.9370173
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-77cbcc5b"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "herrera-de-pisuerga-es-c901df3f",
     "slug": "herrera-de-pisuerga",
     "display_name": "Herrera De Pisuerga",
@@ -59377,9 +58903,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-77cbcc5b"
+      "station-es-renfe-cercanias-gtfs-77cbcc5b",
+      "station-es-renfe-mainline-gtfs-77cbcc5b"
     ],
     "aliases": []
   },
@@ -61880,8 +61407,8 @@
     "display_name": "Huelva",
     "country_code": "ES",
     "location": {
-      "lat": 37.253079,
-      "lon": -6.950971
+      "lat": 37.2525922,
+      "lon": -6.9448154
     },
     "wikidata_qid": null,
     "population": null,
@@ -62801,23 +62328,6 @@
     "aliases": []
   },
   {
-    "city_id": "infiesto-apdro-es-449602e1",
-    "slug": "infiesto-apdro",
-    "display_name": "Infiesto Apdro",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3440407,
-      "lon": -5.3606414
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-6374af63"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "infiesto-apeadero-es-4d8e0320",
     "slug": "infiesto-apeadero",
     "display_name": "Infiesto Apeadero",
@@ -62828,9 +62338,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-6374af63"
+      "station-es-renfe-cercanias-gtfs-6374af63",
+      "station-es-renfe-mainline-gtfs-6374af63"
     ],
     "aliases": []
   },
@@ -64399,32 +63910,12 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-cercanias-gtfs-fc00a051"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "jerez-es-239e06c5",
-    "slug": "jerez",
-    "display_name": "Jerez",
-    "country_code": "ES",
-    "location": {
-      "lat": 36.7158053,
-      "lon": -6.0962708
-    },
-    "wikidata_qid": null,
-    "population": null,
     "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-mainline-gtfs-75a1b279",
+      "station-es-renfe-cercanias-gtfs-fc00a051",
       "station-es-renfe-mainline-gtfs-fc00a051"
     ],
-    "aliases": [
-      "Jerez Aeropuerto",
-      "Jerez De La Frontera"
-    ]
+    "aliases": []
   },
   {
     "city_id": "jerice-de-af9c79ea",
@@ -71803,23 +71294,6 @@
     "aliases": []
   },
   {
-    "city_id": "l-aldea-amposta-es-da120658",
-    "slug": "l-aldea-amposta",
-    "display_name": "L Aldea Amposta",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.753564,
-      "lon": 0.61430923
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-bf6f4a96"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "l-aldea-amposta-tortosa-es-b6b3b84d",
     "slug": "l-aldea-amposta-tortosa",
     "display_name": "L Aldea Amposta Tortosa",
@@ -71830,9 +71304,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-bf6f4a96"
+      "station-es-renfe-cercanias-gtfs-bf6f4a96",
+      "station-es-renfe-mainline-gtfs-bf6f4a96"
     ],
     "aliases": []
   },
@@ -71865,25 +71340,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-361443e3"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "l-ampolla-perello-deltebre-es-5e286571",
-    "slug": "l-ampolla-perello-deltebre",
-    "display_name": "L Ampolla Perello Deltebre",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.8119898,
-      "lon": 0.70826336
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-361443e3",
       "station-es-renfe-mainline-gtfs-361443e3"
     ],
     "aliases": []
@@ -71975,23 +71434,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8501069"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "l-enova-manuel-es-c4e84b72",
-    "slug": "l-enova-manuel",
-    "display_name": "L Enova Manuel",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.0500727,
-      "lon": -0.4776036
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-4a8dc245"
     ],
     "aliases": []
   },
@@ -72521,15 +71963,14 @@
     "display_name": "La Calzada",
     "country_code": "ES",
     "location": {
-      "lat": 43.3627501,
-      "lon": -4.44727845
+      "lat": 43.1901154,
+      "lon": -3.1974062
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-b453ef7d",
-      "station-es-renfe-mainline-gtfs-10f27812"
+      "station-es-renfe-cercanias-gtfs-b453ef7d"
     ],
     "aliases": []
   },
@@ -73713,9 +73154,9 @@
     "aliases": []
   },
   {
-    "city_id": "la-granja-de-san-vicente-es-d8b3ca7d",
-    "slug": "la-granja-de-san-vicente",
-    "display_name": "La Granja De San Vicente",
+    "city_id": "la-granja-es-72c09371",
+    "slug": "la-granja",
+    "display_name": "La Granja",
     "country_code": "ES",
     "location": {
       "lat": 42.614874,
@@ -74524,8 +73965,8 @@
       "station-es-renfe-mainline-gtfs-8cda6c20"
     ],
     "aliases": [
-      "La Pobla Del Duc",
-      "La Pobla Llarga"
+      "La Pobla Llarga",
+      "La Pobla del Duc"
     ]
   },
   {
@@ -76402,9 +75843,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5b4a5846"
+      "station-es-renfe-cercanias-gtfs-5b4a5846",
+      "station-es-renfe-mainline-gtfs-5b4a5846"
     ],
     "aliases": []
   },
@@ -78122,23 +77564,6 @@
     "aliases": []
   },
   {
-    "city_id": "las-rozas-apd-es-144959c0",
-    "slug": "las-rozas-apd",
-    "display_name": "Las Rozas Apd",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.4942887,
-      "lon": -3.8681747
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-f017d8ef"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "las-rozas-de-valdearroyo-es-15a31b27",
     "slug": "las-rozas-de-valdearroyo",
     "display_name": "Las Rozas De Valdearroyo",
@@ -78149,9 +77574,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-c4b68b12"
+      "station-es-renfe-cercanias-gtfs-c4b68b12",
+      "station-es-renfe-mainline-gtfs-c4b68b12"
     ],
     "aliases": []
   },
@@ -78166,9 +77592,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-f017d8ef"
+      "station-es-renfe-cercanias-gtfs-f017d8ef",
+      "station-es-renfe-mainline-gtfs-f017d8ef"
     ],
     "aliases": []
   },
@@ -81251,9 +80678,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-4a8dc245"
+      "station-es-renfe-cercanias-gtfs-4a8dc245",
+      "station-es-renfe-mainline-gtfs-4a8dc245"
     ],
     "aliases": []
   },
@@ -83418,23 +82846,6 @@
     "aliases": []
   },
   {
-    "city_id": "lezo-errenteria-es-31fa63f0",
-    "slug": "lezo-errenteria",
-    "display_name": "Lezo Errenteria",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3159364,
-      "lon": -1.8994386
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-2416c1a7"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "lezo-renteria-es-cf91175d",
     "slug": "lezo-renteria",
     "display_name": "Lezo Renteria",
@@ -83445,9 +82856,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-2416c1a7"
+      "station-es-renfe-cercanias-gtfs-2416c1a7",
+      "station-es-renfe-mainline-gtfs-2416c1a7"
     ],
     "aliases": []
   },
@@ -84849,23 +84261,6 @@
     "aliases": []
   },
   {
-    "city_id": "llamas-es-91e263fe",
-    "slug": "llamas",
-    "display_name": "Llamas",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.5473064,
-      "lon": -8.0490166
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-5b4a5846"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "llames-es-846993ee",
     "slug": "llames",
     "display_name": "Llames",
@@ -84981,7 +84376,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-f9af812d",
       "station-es-renfe-mainline-gtfs-f9af812d"
@@ -86147,9 +85542,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5d16df37"
+      "station-es-renfe-cercanias-gtfs-5d16df37",
+      "station-es-renfe-mainline-gtfs-5d16df37"
     ],
     "aliases": []
   },
@@ -86185,23 +85581,6 @@
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-ee7b9352",
       "station-es-renfe-mainline-gtfs-ee7b9352"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "los-cavos-es-43be16a6",
-    "slug": "los-cavos",
-    "display_name": "Los Cavos",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.5124147,
-      "lon": -6.0974746
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-5d16df37"
     ],
     "aliases": []
   },
@@ -86325,23 +85704,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-36b4c95a"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "los-prados-es-9071416e",
-    "slug": "los-prados",
-    "display_name": "Los Prados",
-    "country_code": "ES",
-    "location": {
-      "lat": 36.6986108,
-      "lon": -4.47815
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-a37a8a0e"
     ],
     "aliases": []
   },
@@ -88706,15 +88068,14 @@
       "station-es-renfe-mainline-gtfs-f23dc69d"
     ],
     "aliases": [
-      "Madrid - Atocha Cercanías",
-      "Madrid Pta.Atocha - Almudena Grandes",
       "Madrid-Aeropuerto T4",
       "Madrid-Atocha Cercanías",
       "Madrid-Chamartín-Clara Campoamor",
       "Madrid-Nuevos Ministerios",
-      "Madrid-Principe Pio",
       "Madrid-Príncipe Pío",
+      "Madrid-Puerta de Atocha-Almudena Grandes",
       "Madrid-Ramón Y Cajal",
+      "Madrid-Ramón y Cajal",
       "Madrid-Recoletos"
     ]
   },
@@ -89350,8 +88711,8 @@
     "display_name": "Malaga",
     "country_code": "ES",
     "location": {
-      "lat": 36.7072819375,
-      "lon": -4.442947462499999
+      "lat": 36.7047760125,
+      "lon": -4.451145604166666
     },
     "wikidata_qid": null,
     "population": null,
@@ -89362,12 +88723,12 @@
       "station-es-renfe-cercanias-gtfs-a37a8a0e",
       "station-es-renfe-cercanias-gtfs-e7bb86a5",
       "station-es-renfe-mainline-gtfs-68b6bda4",
+      "station-es-renfe-mainline-gtfs-a37a8a0e",
       "station-es-renfe-mainline-gtfs-e7fc4cdf"
     ],
     "aliases": [
-      "Malaga Maria Zambrano",
-      "Málaga Centro Alameda",
       "Málaga M.z. Cercanías",
+      "Málaga María Zambrano",
       "Málaga-Aeropuerto",
       "Málaga-Centro Alameda",
       "Málaga-Los Prados"
@@ -91511,23 +90872,6 @@
     "aliases": []
   },
   {
-    "city_id": "massalfassar-albuixech-es-9751bef1",
-    "slug": "massalfassar-albuixech",
-    "display_name": "Massalfassar Albuixech",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.5557532,
-      "lon": -0.3183058
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-9477333d"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "massalfassar-es-ebe49a78",
     "slug": "massalfassar",
     "display_name": "Massalfassar",
@@ -91538,9 +90882,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-9477333d"
+      "station-es-renfe-cercanias-gtfs-9477333d",
+      "station-es-renfe-mainline-gtfs-9477333d"
     ],
     "aliases": []
   },
@@ -92466,23 +91811,6 @@
     ]
   },
   {
-    "city_id": "meco-apd-cgd-es-8e23c242",
-    "slug": "meco-apd-cgd",
-    "display_name": "Meco Apd Cgd",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.5346731,
-      "lon": -3.2986806
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-c86fa10e"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "meco-es-16d8af29",
     "slug": "meco",
     "display_name": "Meco",
@@ -92493,9 +91821,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-c86fa10e"
+      "station-es-renfe-cercanias-gtfs-c86fa10e",
+      "station-es-renfe-mainline-gtfs-c86fa10e"
     ],
     "aliases": []
   },
@@ -92550,7 +91879,7 @@
       "station-es-renfe-mainline-gtfs-b13b6ec9"
     ],
     "aliases": [
-      "Medina del Campo Alta Velocidad"
+      "Medina del Campo AV"
     ]
   },
   {
@@ -93005,9 +92334,9 @@
     "aliases": []
   },
   {
-    "city_id": "mengibar-artichuela-apd-cgd-es-592d7835",
-    "slug": "mengibar-artichuela-apd-cgd",
-    "display_name": "Mengibar Artichuela Apd Cgd",
+    "city_id": "mengibar-artichuela-es-f43bdec4",
+    "slug": "mengibar-artichuela",
+    "display_name": "Mengibar Artichuela",
     "country_code": "ES",
     "location": {
       "lat": 37.978219,
@@ -94426,8 +93755,8 @@
     "display_name": "Mimetiz",
     "country_code": "ES",
     "location": {
-      "lat": 43.214538250000004,
-      "lon": -3.13326645
+      "lat": 43.2158138,
+      "lon": -3.1312555
     },
     "wikidata_qid": null,
     "population": null,
@@ -95643,9 +94972,9 @@
     "aliases": []
   },
   {
-    "city_id": "monfrague-plasencia-es-4835ec8f",
-    "slug": "monfrague-plasencia",
-    "display_name": "Monfrague Plasencia",
+    "city_id": "monfrague-es-c0d510ff",
+    "slug": "monfrague",
+    "display_name": "Monfrague",
     "country_code": "ES",
     "location": {
       "lat": 39.937464,
@@ -95907,6 +95236,23 @@
     ]
   },
   {
+    "city_id": "montaberner-es-c5b90d2f",
+    "slug": "montaberner",
+    "display_name": "Montaberner",
+    "country_code": "ES",
+    "location": {
+      "lat": 38.884135,
+      "lon": -0.491619
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-eef8ec33"
+    ],
+    "aliases": []
+  },
+  {
     "city_id": "montaignac-zz-9a6e2fd2",
     "slug": "montaignac",
     "display_name": "Montaignac",
@@ -96064,23 +95410,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87672113"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "montaverner-es-a3ca0c66",
-    "slug": "montaverner",
-    "display_name": "Montaverner",
-    "country_code": "ES",
-    "location": {
-      "lat": 38.884135,
-      "lon": -0.491619
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-eef8ec33"
     ],
     "aliases": []
   },
@@ -96956,7 +96285,6 @@
     "population": 310240,
     "interest_score": 8,
     "station_ids": [
-      "station-es-renfe-mainline-gtfs-77845621",
       "station-uic-8768888",
       "station-uic-87688887",
       "station-uic-8777300",
@@ -96966,6 +96294,23 @@
       "Montpellier Saint-Roch",
       "Montpellier Sud de France"
     ]
+  },
+  {
+    "city_id": "montpellier-saint-roch-es-e4552a56",
+    "slug": "montpellier-saint-roch",
+    "display_name": "Montpellier Saint Roch",
+    "country_code": "ES",
+    "location": {
+      "lat": 43.604852,
+      "lon": 3.880491
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-77845621"
+    ],
+    "aliases": []
   },
   {
     "city_id": "montpon-menesterol-fr-24294",
@@ -99654,25 +98999,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-6b1b977e"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "murcia-es-6b6a65da",
-    "slug": "murcia",
-    "display_name": "Murcia",
-    "country_code": "ES",
-    "location": {
-      "lat": 37.9748243,
-      "lon": -1.131508
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-6b1b977e",
       "station-es-renfe-mainline-gtfs-6b1b977e"
     ],
     "aliases": []
@@ -102823,9 +102152,9 @@
     "aliases": []
   },
   {
-    "city_id": "niebla-es-6ce00b12",
-    "slug": "niebla",
-    "display_name": "Niebla",
+    "city_id": "niebla-puerta-del-buey-es-547bfa87",
+    "slug": "niebla-puerta-del-buey",
+    "display_name": "Niebla Puerta Del Buey",
     "country_code": "ES",
     "location": {
       "lat": 37.3587619,
@@ -104631,23 +103960,6 @@
     "aliases": []
   },
   {
-    "city_id": "nules-la-vilavella-es-852ae1da",
-    "slug": "nules-la-vilavella",
-    "display_name": "Nules La Vilavella",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.8532354,
-      "lon": -0.1527317
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-4c37e9b6"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "nules-la-villavella-es-9c787a6a",
     "slug": "nules-la-villavella",
     "display_name": "Nules La Villavella",
@@ -104658,9 +103970,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-4c37e9b6"
+      "station-es-renfe-cercanias-gtfs-4c37e9b6",
+      "station-es-renfe-mainline-gtfs-4c37e9b6"
     ],
     "aliases": []
   },
@@ -107617,25 +106930,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-9b918873"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "ordizia-ordicia-es-47904722",
-    "slug": "ordizia-ordicia",
-    "display_name": "Ordizia Ordicia",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.0527547,
-      "lon": -2.1791923
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-9b918873",
       "station-es-renfe-mainline-gtfs-9b918873"
     ],
     "aliases": []
@@ -107746,23 +107043,6 @@
     "aliases": []
   },
   {
-    "city_id": "ormaiztegi-es-313f48b5",
-    "slug": "ormaiztegi",
-    "display_name": "Ormaiztegi",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.0402752,
-      "lon": -2.256462
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-f7046948"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ormaiztegui-es-38a5804d",
     "slug": "ormaiztegui",
     "display_name": "Ormaiztegui",
@@ -107773,9 +107053,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-f7046948"
+      "station-es-renfe-cercanias-gtfs-f7046948",
+      "station-es-renfe-mainline-gtfs-f7046948"
     ],
     "aliases": []
   },
@@ -107824,25 +107105,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-1f30a005"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "orpesa-oropesa-del-mar-es-dc1055a9",
-    "slug": "orpesa-oropesa-del-mar",
-    "display_name": "Orpesa Oropesa Del Mar",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.092258,
-      "lon": 0.139861
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-1f30a005",
       "station-es-renfe-mainline-gtfs-1f30a005"
     ],
     "aliases": []
@@ -108932,25 +108197,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-dca52a55"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "oviedo-uvieu-es-4f139b69",
-    "slug": "oviedo-uvieu",
-    "display_name": "Oviedo Uvieu",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3663577,
-      "lon": -5.854838
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-dca52a55",
       "station-es-renfe-mainline-gtfs-dca52a55"
     ],
     "aliases": []
@@ -110543,9 +109792,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-08e7101e"
+      "station-es-renfe-cercanias-gtfs-08e7101e",
+      "station-es-renfe-mainline-gtfs-08e7101e"
     ],
     "aliases": []
   },
@@ -113220,8 +112470,8 @@
     ],
     "aliases": [
       "Pola De Lena",
-      "Pola De Lena/La Pola",
       "Pola De Siero",
+      "Pola de Lena",
       "Pola de Siero"
     ]
   },
@@ -114258,8 +113508,8 @@
       "station-es-renfe-mainline-gtfs-6a4bebd8"
     ],
     "aliases": [
-      "Pontevedra-Turistico",
-      "Pontevedra-Universidad"
+      "Pontevedra Universidad",
+      "Pontevedra-Turístico"
     ]
   },
   {
@@ -114720,9 +113970,9 @@
     "aliases": []
   },
   {
-    "city_id": "porto-campanha-es-38d46e7e",
-    "slug": "porto-campanha",
-    "display_name": "Porto Campanha",
+    "city_id": "porto-campanha-o-porto-campana-es-c22ce1b2",
+    "slug": "porto-campanha-o-porto-campana",
+    "display_name": "Porto Campanha O Porto Campana",
     "country_code": "ES",
     "location": {
       "lat": 41.1489,
@@ -116112,9 +115362,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5c57d34a"
+      "station-es-renfe-cercanias-gtfs-5c57d34a",
+      "station-es-renfe-mainline-gtfs-5c57d34a"
     ],
     "aliases": []
   },
@@ -116173,7 +115424,8 @@
     ],
     "aliases": [
       "Puerto De Santa María",
-      "Puerto Real"
+      "Puerto Real",
+      "Puerto de Santa María"
     ]
   },
   {
@@ -116245,23 +115497,6 @@
     "aliases": []
   },
   {
-    "city_id": "puigverd-de-lleida-artesa-de-lleida-es-52d844ac",
-    "slug": "puigverd-de-lleida-artesa-de-lleida",
-    "display_name": "Puigverd De Lleida Artesa De Lleida",
-    "country_code": "ES",
-    "location": {
-      "lat": 41.5537015,
-      "lon": 0.73342706
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-b1dc9959"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "puigverd-de-lleida-artesa-es-775e4fa4",
     "slug": "puigverd-de-lleida-artesa",
     "display_name": "Puigverd De Lleida Artesa",
@@ -116272,9 +115507,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-b1dc9959"
+      "station-es-renfe-cercanias-gtfs-b1dc9959",
+      "station-es-renfe-mainline-gtfs-b1dc9959"
     ],
     "aliases": []
   },
@@ -118337,8 +117573,8 @@
     "display_name": "Redondela",
     "country_code": "ES",
     "location": {
-      "lat": 42.286292,
-      "lon": -8.615307333333332
+      "lat": 42.28579333333334,
+      "lon": -8.610031
     },
     "wikidata_qid": null,
     "population": null,
@@ -118349,7 +117585,7 @@
       "station-es-renfe-mainline-gtfs-c562ee83"
     ],
     "aliases": [
-      "Redondela Av",
+      "Redondela AV",
       "Redondela-Picota"
     ]
   },
@@ -124942,25 +124178,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-ada1863e"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "sagunt-sagunto-es-a23a866d",
-    "slug": "sagunt-sagunto",
-    "display_name": "Sagunt Sagunto",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.6758025,
-      "lon": -0.271542
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-ada1863e",
       "station-es-renfe-mainline-gtfs-ada1863e"
     ],
     "aliases": []
@@ -129051,9 +128271,9 @@
     "aliases": []
   },
   {
-    "city_id": "salvaterra-de-mino-es-c5335680",
-    "slug": "salvaterra-de-mino",
-    "display_name": "Salvaterra De Mino",
+    "city_id": "salvaterra-es-9f06d1ce",
+    "slug": "salvaterra",
+    "display_name": "Salvaterra",
     "country_code": "ES",
     "location": {
       "lat": 42.08164,
@@ -129064,23 +128284,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-e1f146a6"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "salvatierra-agurain-es-76039d55",
-    "slug": "salvatierra-agurain",
-    "display_name": "Salvatierra Agurain",
-    "country_code": "ES",
-    "location": {
-      "lat": 42.84643,
-      "lon": -2.38921
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-518f2ea3"
     ],
     "aliases": []
   },
@@ -129292,9 +128495,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-bad64d28"
+      "station-es-renfe-cercanias-gtfs-bad64d28",
+      "station-es-renfe-mainline-gtfs-bad64d28"
     ],
     "aliases": []
   },
@@ -129444,23 +128648,6 @@
     "aliases": []
   },
   {
-    "city_id": "san-estevo-do-sil-es-599b5b6b",
-    "slug": "san-estevo-do-sil",
-    "display_name": "San Estevo Do Sil",
-    "country_code": "ES",
-    "location": {
-      "lat": 42.426921,
-      "lon": -7.661676
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-6d24ca60"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "san-feliz-es-3c1683bc",
     "slug": "san-feliz",
     "display_name": "San Feliz",
@@ -129506,9 +128693,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-f0857ac8"
+      "station-es-renfe-cercanias-gtfs-f0857ac8",
+      "station-es-renfe-mainline-gtfs-f0857ac8"
     ],
     "aliases": []
   },
@@ -129534,23 +128722,6 @@
     ]
   },
   {
-    "city_id": "san-fernando-henares-es-98d7b3ee",
-    "slug": "san-fernando-henares",
-    "display_name": "San Fernando Henares",
-    "country_code": "ES",
-    "location": {
-      "lat": 40.4427805,
-      "lon": -3.5339866
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-f0857ac8"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "san-isidro-albatera-catral-es-7d4718ee",
     "slug": "san-isidro-albatera-catral",
     "display_name": "San Isidro Albatera Catral",
@@ -129561,9 +128732,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-29e327b7"
+      "station-es-renfe-cercanias-gtfs-29e327b7",
+      "station-es-renfe-mainline-gtfs-29e327b7"
     ],
     "aliases": []
   },
@@ -129767,9 +128939,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-2cb533c0"
+      "station-es-renfe-cercanias-gtfs-2cb533c0",
+      "station-es-renfe-mainline-gtfs-2cb533c0"
     ],
     "aliases": []
   },
@@ -129821,23 +128994,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-a2f9721c"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "san-pedro-nora-es-c5add6ff",
-    "slug": "san-pedro-nora",
-    "display_name": "San Pedro Nora",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3687481,
-      "lon": -5.9585951
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-2cb533c0"
     ],
     "aliases": []
   },
@@ -129956,7 +129112,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-a0dddfe2",
       "station-es-renfe-mainline-gtfs-a0dddfe2"
@@ -130069,9 +129225,9 @@
     "aliases": []
   },
   {
-    "city_id": "sanabria-alta-velocidad-es-2c995c5e",
-    "slug": "sanabria-alta-velocidad",
-    "display_name": "Sanabria Alta Velocidad",
+    "city_id": "sanabria-av-es-f0f9dd8f",
+    "slug": "sanabria-av",
+    "display_name": "Sanabria Av",
     "country_code": "ES",
     "location": {
       "lat": 42.0450532,
@@ -130765,23 +129921,6 @@
     "aliases": []
   },
   {
-    "city_id": "santa-ma-de-grado-es-89da69d7",
-    "slug": "santa-ma-de-grado",
-    "display_name": "Santa Ma De Grado",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.3842274,
-      "lon": -5.9827075
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-f938536f"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "santa-maria-de-grado-es-ea8d2b33",
     "slug": "santa-maria-de-grado",
     "display_name": "Santa Maria De Grado",
@@ -130792,9 +129931,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-f938536f"
+      "station-es-renfe-cercanias-gtfs-f938536f",
+      "station-es-renfe-mainline-gtfs-f938536f"
     ],
     "aliases": []
   },
@@ -131023,8 +130163,8 @@
       "station-es-renfe-mainline-gtfs-945bb7f8"
     ],
     "aliases": [
-      "Santiago de Compostela",
-      "Santiago-Turistico"
+      "Santiago de Compostela-Daniel Castelao",
+      "Santiago-Turístico"
     ]
   },
   {
@@ -131077,6 +130217,23 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-44d14fc8"
+    ],
+    "aliases": []
+  },
+  {
+    "city_id": "santo-estevo-do-sil-es-41784554",
+    "slug": "santo-estevo-do-sil",
+    "display_name": "Santo Estevo Do Sil",
+    "country_code": "ES",
+    "location": {
+      "lat": 42.426921,
+      "lon": -7.661676
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 5,
+    "station_ids": [
+      "station-es-renfe-mainline-gtfs-6d24ca60"
     ],
     "aliases": []
   },
@@ -134908,25 +134065,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 4,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-a38142f4"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "segorbe-es-dc992e57",
-    "slug": "segorbe",
-    "display_name": "Segorbe",
-    "country_code": "ES",
-    "location": {
-      "lat": 39.8471755,
-      "lon": -0.4823544
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-a38142f4",
       "station-es-renfe-mainline-gtfs-a38142f4"
     ],
     "aliases": []
@@ -135963,29 +135104,6 @@
     "aliases": []
   },
   {
-    "city_id": "sevilla-es-b7e9227f",
-    "slug": "sevilla",
-    "display_name": "Sevilla",
-    "country_code": "ES",
-    "location": {
-      "lat": 37.377694133333335,
-      "lon": -5.976850533333334
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-421daed9",
-      "station-es-renfe-mainline-gtfs-6f2d1ecd",
-      "station-es-renfe-mainline-gtfs-bad64d28"
-    ],
-    "aliases": [
-      "Sevilla-San Bernardo",
-      "Sevilla-Santa Justa",
-      "Sevilla-Virgen Del Rocío"
-    ]
-  },
-  {
     "city_id": "sevilla-santa-justa-es-f4e64f55",
     "slug": "sevilla-santa-justa",
     "display_name": "Sevilla Santa Justa",
@@ -135996,9 +135114,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-6f2d1ecd"
+      "station-es-renfe-cercanias-gtfs-6f2d1ecd",
+      "station-es-renfe-mainline-gtfs-6f2d1ecd"
     ],
     "aliases": []
   },
@@ -136594,7 +135713,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-7a22c086",
       "station-es-renfe-mainline-gtfs-7a22c086"
@@ -144643,9 +143762,9 @@
     ]
   },
   {
-    "city_id": "terrassa-estacio-nord-es-a8e88b36",
-    "slug": "terrassa-estacio-nord",
-    "display_name": "Terrassa Estacio Nord",
+    "city_id": "terrassa-estacio-del-nord-es-28b259ba",
+    "slug": "terrassa-estacio-del-nord",
+    "display_name": "Terrassa Estacio Del Nord",
     "country_code": "ES",
     "location": {
       "lat": 41.5697825,
@@ -146265,9 +145384,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 7,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-581c26b1"
+      "station-es-renfe-cercanias-gtfs-581c26b1",
+      "station-es-renfe-mainline-gtfs-581c26b1"
     ],
     "aliases": []
   },
@@ -146277,21 +145397,17 @@
     "display_name": "Torrelavega",
     "country_code": "ES",
     "location": {
-      "lat": 43.333508550000005,
-      "lon": -4.044810050000001
+      "lat": 43.3276776,
+      "lon": -4.0426871
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 7,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-034430ab",
-      "station-es-renfe-mainline-gtfs-034430ab",
-      "station-es-renfe-mainline-gtfs-581c26b1"
+      "station-es-renfe-mainline-gtfs-034430ab"
     ],
-    "aliases": [
-      "Torrelavega-Centro",
-      "Torrelavega/Tanos"
-    ]
+    "aliases": []
   },
   {
     "city_id": "torrellano-es-2cf07eaf",
@@ -146538,7 +145654,7 @@
     },
     "wikidata_qid": "Q7880",
     "population": 514819,
-    "interest_score": 9,
+    "interest_score": 8,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-cf16b4b2",
       "station-es-renfe-mainline-gtfs-cf16b4b2"
@@ -148813,9 +147929,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-6c3de518"
+      "station-es-renfe-cercanias-gtfs-6c3de518",
+      "station-es-renfe-mainline-gtfs-6c3de518"
     ],
     "aliases": []
   },
@@ -150216,23 +149333,6 @@
     "aliases": []
   },
   {
-    "city_id": "uxo-es-bfaa789f",
-    "slug": "uxo",
-    "display_name": "Uxo",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.2046962,
-      "lon": -5.7926422
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-6c3de518"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "uzerche-fr-19276",
     "slug": "uzerche",
     "display_name": "Uzerche",
@@ -150867,8 +149967,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 8,
     "station_ids": [
+      "station-es-renfe-mainline-gtfs-a40be0a7",
       "station-es-renfe-mainline-gtfs-a5e448e4",
       "station-uic-87556506",
       "station-uic-8776100",
@@ -150877,7 +149978,9 @@
     ],
     "aliases": [
       "Valence Gare Routiere",
-      "Valence Tgv Rhone Alpes Sud"
+      "Valence TGV",
+      "Valence Tgv Rhone Alpes Sud",
+      "Valence Ville"
     ]
   },
   {
@@ -150936,13 +150039,12 @@
       "station-es-renfe-mainline-gtfs-a7f49ad0"
     ],
     "aliases": [
-      "Valencia F.s.l-Hospital La Fe",
-      "Valencia Joaquin Sorolla",
-      "Valencia-Cabanyal",
-      "Valencia-Estaciò Del Nord",
       "València-Cabanyal",
       "València-Estació Del Nord",
-      "València-La Font De Sant Lluís"
+      "València-Estació del Nord",
+      "València-Joaquín Sorolla",
+      "València-La Font De Sant Lluís",
+      "València-La Font de Sant Lluís"
     ]
   },
   {
@@ -151037,33 +150139,20 @@
     "display_name": "Valladolid",
     "country_code": "ES",
     "location": {
-      "lat": 41.642167,
-      "lon": -4.726986
+      "lat": 41.651212,
+      "lon": -4.7155115
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 7,
     "station_ids": [
+      "station-es-renfe-mainline-gtfs-16298c8f",
       "station-es-renfe-mainline-gtfs-4ecedf66"
     ],
-    "aliases": []
-  },
-  {
-    "city_id": "valladolid-universidad-es-de8531d5",
-    "slug": "valladolid-universidad",
-    "display_name": "Valladolid Universidad",
-    "country_code": "ES",
-    "location": {
-      "lat": 41.660257,
-      "lon": -4.704037
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-16298c8f"
-    ],
-    "aliases": []
+    "aliases": [
+      "Valladolid Universidad",
+      "Valladolid-Campo Grande"
+    ]
   },
   {
     "city_id": "valle-de-las-casas-es-d4be35ee",
@@ -153179,9 +152268,9 @@
     "aliases": []
   },
   {
-    "city_id": "viana-d-castelo-es-3e30d136",
-    "slug": "viana-d-castelo",
-    "display_name": "Viana D Castelo",
+    "city_id": "viana-do-castelo-es-ce7ca6c7",
+    "slug": "viana-do-castelo",
+    "display_name": "Viana Do Castelo",
     "country_code": "ES",
     "location": {
       "lat": 41.69517,
@@ -153748,8 +152837,8 @@
       "station-es-renfe-mainline-gtfs-cd2e3b7c"
     ],
     "aliases": [
-      "Vigo Guixar",
-      "Vigo Urzaiz"
+      "Vigo Urzaiz",
+      "Vigo-Guixar"
     ]
   },
   {
@@ -153763,7 +152852,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-00b8de44",
       "station-es-renfe-mainline-gtfs-00b8de44"
@@ -154105,23 +153194,6 @@
     ]
   },
   {
-    "city_id": "villabona-zizurkil-es-71ef14d3",
-    "slug": "villabona-zizurkil",
-    "display_name": "Villabona Zizurkil",
-    "country_code": "ES",
-    "location": {
-      "lat": 43.1891906,
-      "lon": -2.0553722
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-d1c2aaa2"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "villacanas-es-c61bad61",
     "slug": "villacanas",
     "display_name": "Villacanas",
@@ -154409,9 +153481,9 @@
     "aliases": []
   },
   {
-    "city_id": "villanua-letranz-es-41379db3",
-    "slug": "villanua-letranz",
-    "display_name": "Villanua Letranz",
+    "city_id": "villanua-es-71112957",
+    "slug": "villanua",
+    "display_name": "Villanua",
     "country_code": "ES",
     "location": {
       "lat": 42.688745,
@@ -154426,9 +153498,9 @@
     "aliases": []
   },
   {
-    "city_id": "villanueva-de-cordoba-los-pedroches-es-5070012e",
-    "slug": "villanueva-de-cordoba-los-pedroches",
-    "display_name": "Villanueva De Cordoba Los Pedroches",
+    "city_id": "villanueva-de-cordoba-es-ca84039d",
+    "slug": "villanueva-de-cordoba",
+    "display_name": "Villanueva De Cordoba",
     "country_code": "ES",
     "location": {
       "lat": 38.2554049,
@@ -155037,9 +154109,9 @@
     "aliases": []
   },
   {
-    "city_id": "villena-av-es-eec2793a",
-    "slug": "villena-av",
-    "display_name": "Villena Av",
+    "city_id": "villena-alta-velocidad-es-8509c274",
+    "slug": "villena-alta-velocidad",
+    "display_name": "Villena Alta Velocidad",
     "country_code": "ES",
     "location": {
       "lat": 38.585302,
@@ -155518,23 +154590,6 @@
     "aliases": []
   },
   {
-    "city_id": "vimbodi-es-cd0ee011",
-    "slug": "vimbodi",
-    "display_name": "Vimbodi",
-    "country_code": "ES",
-    "location": {
-      "lat": 41.4027277,
-      "lon": 1.04603327
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-es-renfe-mainline-gtfs-989146eb"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "vimbodi-i-poblet-es-f549ea7d",
     "slug": "vimbodi-i-poblet",
     "display_name": "Vimbodi I Poblet",
@@ -155545,9 +154600,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-989146eb"
+      "station-es-renfe-cercanias-gtfs-989146eb",
+      "station-es-renfe-mainline-gtfs-989146eb"
     ],
     "aliases": []
   },
@@ -155790,9 +154846,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-421daed9"
+      "station-es-renfe-cercanias-gtfs-421daed9",
+      "station-es-renfe-mainline-gtfs-421daed9"
     ],
     "aliases": []
   },
@@ -156097,9 +155154,9 @@
     "aliases": []
   },
   {
-    "city_id": "viveiro-apdro-es-fa966016",
-    "slug": "viveiro-apdro",
-    "display_name": "Viveiro Apdro",
+    "city_id": "viveiro-apeadero-es-57926fdb",
+    "slug": "viveiro-apeadero",
+    "display_name": "Viveiro Apeadero",
     "country_code": "ES",
     "location": {
       "lat": 43.661435,
@@ -162528,10 +161585,6 @@
     ],
     "aliases": [
       "Zaragoza Delicias",
-      "Zaragoza Goya",
-      "Zaragoza Miraflores",
-      "Zaragoza Portillo",
-      "Zaragoza-Delicias",
       "Zaragoza-Goya",
       "Zaragoza-Miraflores",
       "Zaragoza-Portillo"
@@ -163515,9 +162568,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 6,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-5e0f678e"
+      "station-es-renfe-cercanias-gtfs-5e0f678e",
+      "station-es-renfe-mainline-gtfs-5e0f678e"
     ],
     "aliases": []
   },
@@ -163723,7 +162777,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-es-renfe-cercanias-gtfs-6013679a",
       "station-es-renfe-mainline-gtfs-6013679a"

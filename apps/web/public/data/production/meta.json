@@ -1,12 +1,17 @@
 {
   "schema_version": 1,
-  "dataset_version": "20260515-061353.186934",
-  "generated_at": "2026-05-15T06:13:53.186934Z",
+  "dataset_version": "20260521-123439.960049",
+  "generated_at": "2026-05-21T12:34:39.960049Z",
   "source_snapshots": [
     {
       "source_id": "at-oebb-gtfs",
       "fetched_at": "2026-05-12T15:51:00.088877+00:00",
       "version_hint": "Fri, 12 Dec 2025 09:02:01 GMT"
+    },
+    {
+      "source_id": "ch-geofabrik-railways-gpkg",
+      "fetched_at": "2026-05-15T10:34:09.563067Z",
+      "version_hint": "\"377eb5bd-651d2c8435310\""
     },
     {
       "source_id": "ch-gtfs",
@@ -19,14 +24,69 @@
       "version_hint": "20251229_fahrplaene_gesamtdeutschland_gtfs.zip"
     },
     {
+      "source_id": "es-geofabrik-andalucia-railways-gpkg",
+      "fetched_at": "2026-05-15T10:34:51.295307Z",
+      "version_hint": "\"1580d0f6-651d15dbe2680\""
+    },
+    {
+      "source_id": "es-geofabrik-aragon-railways-gpkg",
+      "fetched_at": "2026-05-15T10:35:08.253398Z",
+      "version_hint": "\"cb9086c-651d3af0d4cdd\""
+    },
+    {
+      "source_id": "es-geofabrik-asturias-railways-gpkg",
+      "fetched_at": "2026-05-15T10:35:16.533141Z",
+      "version_hint": "\"4112614-651d17d589427\""
+    },
+    {
+      "source_id": "es-geofabrik-cantabria-railways-gpkg",
+      "fetched_at": "2026-05-15T10:35:20.280619Z",
+      "version_hint": "\"3ddda9f-651d1e8297989\""
+    },
+    {
+      "source_id": "es-geofabrik-castilla-la-mancha-railways-gpkg",
+      "fetched_at": "2026-05-15T10:35:27.337743Z",
+      "version_hint": "\"de8a04b-651d1b7abfb82\""
+    },
+    {
+      "source_id": "es-geofabrik-castilla-y-leon-railways-gpkg",
+      "fetched_at": "2026-05-15T10:35:47.205806Z",
+      "version_hint": "\"14fa3d32-651d250083e63\""
+    },
+    {
+      "source_id": "es-geofabrik-cataluna-railways-gpkg",
+      "fetched_at": "2026-05-15T10:36:10.241368Z",
+      "version_hint": "\"2194a089-651d25f5ddc5e\""
+    },
+    {
+      "source_id": "es-geofabrik-galicia-railways-gpkg",
+      "fetched_at": "2026-05-15T10:36:36.773395Z",
+      "version_hint": "\"d3d1e77-651d3824fb0a5\""
+    },
+    {
+      "source_id": "es-geofabrik-madrid-railways-gpkg",
+      "fetched_at": "2026-05-15T10:36:46.786359Z",
+      "version_hint": "\"82eb4cb-651d1c57e92ce\""
+    },
+    {
+      "source_id": "es-geofabrik-pais-vasco-railways-gpkg",
+      "fetched_at": "2026-05-15T10:36:54.26976Z",
+      "version_hint": "\"8be3ffb-651d3b0bd3049\""
+    },
+    {
+      "source_id": "es-geofabrik-valencia-railways-gpkg",
+      "fetched_at": "2026-05-15T10:37:05.414976Z",
+      "version_hint": "\"1026ee72-651d45f54c3b4\""
+    },
+    {
       "source_id": "es-renfe-cercanias-gtfs",
-      "fetched_at": "2026-05-12T16:05:26.266808Z",
-      "version_hint": "\"6a028c0d-eefe0a\""
+      "fetched_at": "2026-05-15T10:37:17.703401Z",
+      "version_hint": "\"6a06808a-edb9d9\""
     },
     {
       "source_id": "es-renfe-mainline-gtfs",
-      "fetched_at": "2026-05-12T16:05:11.053218Z",
-      "version_hint": "\"6a02616a-c67ee\""
+      "fetched_at": "2026-05-15T10:37:13.922475Z",
+      "version_hint": "\"6a065575-ccdef\""
     },
     {
       "source_id": "lu-atp-gtfs",

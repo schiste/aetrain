@@ -1,8 +1,8 @@
 {
   "dataset_id": "stage1-europe-gtfs",
   "target_id": "europe-validated",
-  "dataset_version": "20260515-061353.186934",
-  "generated_at": "2026-05-15T06:13:53.186934Z",
+  "dataset_version": "20260521-123439.960049",
+  "generated_at": "2026-05-21T12:34:39.960049Z",
   "sources": [
     {
       "source_id": "at-oebb-gtfs",
@@ -12,8 +12,15 @@
       "version_hint": "Fri, 12 Dec 2025 09:02:01 GMT"
     },
     {
+      "source_id": "ch-geofabrik-railways-gpkg",
+      "local_path": "../../../cache/raw/ch-geofabrik-railways-gpkg/ch-geofabrik-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:34:09.563067Z",
+      "sha256": "ee171f0a2a704993c4689897fdf6ab4bfc5da03989691e9c31259f37827eea7a",
+      "version_hint": "\"377eb5bd-651d2c8435310\""
+    },
+    {
       "source_id": "ch-gtfs",
-      "local_path": "data/cache/raw/ch-gtfs/ch-gtfs.zip",
+      "local_path": "../../../cache/raw/ch-gtfs/ch-gtfs.zip",
       "fetched_at": "2026-05-12T16:01:12.135643Z",
       "sha256": "471b8059db6d4f725b0c0e2eee9468e6af1cf00868fb5f572faafd4d82b8550d",
       "version_hint": "https://data.opentransportdata.swiss/dataset/3d2c18f9-9ef1-463f-a249-5c67604efd74/resource/f92859bf-9652-47fa-b40e-e1ba04c68d64/download/gtfs_fp2026_20260425.zip"
@@ -26,18 +33,95 @@
       "version_hint": "20251229_fahrplaene_gesamtdeutschland_gtfs.zip"
     },
     {
+      "source_id": "es-geofabrik-andalucia-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-andalucia-railways-gpkg/es-geofabrik-andalucia-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:34:51.295307Z",
+      "sha256": "ef755e289b48dcc2876324a8862917bc579345623dc74f7856d57ad879bed493",
+      "version_hint": "\"1580d0f6-651d15dbe2680\""
+    },
+    {
+      "source_id": "es-geofabrik-aragon-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-aragon-railways-gpkg/es-geofabrik-aragon-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:35:08.253398Z",
+      "sha256": "a07e8f1233eb16d5b634cec8a1ce97c9b5b46135f913fafae04c8bcd13bc0acf",
+      "version_hint": "\"cb9086c-651d3af0d4cdd\""
+    },
+    {
+      "source_id": "es-geofabrik-asturias-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-asturias-railways-gpkg/es-geofabrik-asturias-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:35:16.533141Z",
+      "sha256": "902b8975353907e2e7700c4cf0fe5e764982276d11713f7914e0b07e81252382",
+      "version_hint": "\"4112614-651d17d589427\""
+    },
+    {
+      "source_id": "es-geofabrik-cantabria-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-cantabria-railways-gpkg/es-geofabrik-cantabria-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:35:20.280619Z",
+      "sha256": "ee6cdfa6d8df6e80699c1dce0d0043ae7f8a92634526c569fdf393c98c58a47d",
+      "version_hint": "\"3ddda9f-651d1e8297989\""
+    },
+    {
+      "source_id": "es-geofabrik-castilla-la-mancha-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-castilla-la-mancha-railways-gpkg/es-geofabrik-castilla-la-mancha-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:35:27.337743Z",
+      "sha256": "71fb505d458297ca3b20fb88cea6a0eafc76bdf12e4a8aa7886a45798d59b8c9",
+      "version_hint": "\"de8a04b-651d1b7abfb82\""
+    },
+    {
+      "source_id": "es-geofabrik-castilla-y-leon-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-castilla-y-leon-railways-gpkg/es-geofabrik-castilla-y-leon-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:35:47.205806Z",
+      "sha256": "542ef21162b4948fec40d50569f8f81d1cea6e0690bf73904da19a48fbace762",
+      "version_hint": "\"14fa3d32-651d250083e63\""
+    },
+    {
+      "source_id": "es-geofabrik-cataluna-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-cataluna-railways-gpkg/es-geofabrik-cataluna-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:36:10.241368Z",
+      "sha256": "9dbe8c406fbe0e59b560f1e2c981915556f1d2d134664d354a0af001eb15be04",
+      "version_hint": "\"2194a089-651d25f5ddc5e\""
+    },
+    {
+      "source_id": "es-geofabrik-galicia-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-galicia-railways-gpkg/es-geofabrik-galicia-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:36:36.773395Z",
+      "sha256": "130bdab8c6e9ab70881c0c63d86086a6a08c69bf72e738fa6c681539d0009ce0",
+      "version_hint": "\"d3d1e77-651d3824fb0a5\""
+    },
+    {
+      "source_id": "es-geofabrik-madrid-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-madrid-railways-gpkg/es-geofabrik-madrid-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:36:46.786359Z",
+      "sha256": "fda2a6db863d3c9f82444bce9b3d717a389b0633446f9237ff9f65bd92ae26e1",
+      "version_hint": "\"82eb4cb-651d1c57e92ce\""
+    },
+    {
+      "source_id": "es-geofabrik-pais-vasco-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-pais-vasco-railways-gpkg/es-geofabrik-pais-vasco-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:36:54.26976Z",
+      "sha256": "b7c49fe4260c1d2af020890298c03d2cfbcc5e3553b8981130e65186f32668d2",
+      "version_hint": "\"8be3ffb-651d3b0bd3049\""
+    },
+    {
+      "source_id": "es-geofabrik-valencia-railways-gpkg",
+      "local_path": "../../../cache/raw/es-geofabrik-valencia-railways-gpkg/es-geofabrik-valencia-railways.gpkg.zip",
+      "fetched_at": "2026-05-15T10:37:05.414976Z",
+      "sha256": "f7d9ae5d4cb35bbfc48471db6be3e1e83799b013f79b47c45924f09b1fffe64f",
+      "version_hint": "\"1026ee72-651d45f54c3b4\""
+    },
+    {
       "source_id": "es-renfe-cercanias-gtfs",
-      "local_path": "data/cache/raw/es-renfe-cercanias-gtfs/es-renfe-cercanias-gtfs.zip",
-      "fetched_at": "2026-05-12T16:05:26.266808Z",
-      "sha256": "474e6689b3e46af6d4c12f96ea3c2304c884091b2efed689bd11c30509dbd85f",
-      "version_hint": "\"6a028c0d-eefe0a\""
+      "local_path": "../../../cache/raw/es-renfe-cercanias-gtfs/es-renfe-cercanias-gtfs.zip",
+      "fetched_at": "2026-05-15T10:37:17.703401Z",
+      "sha256": "587308dca113cce9cad4cec4ea61b2d44b0b9db2e1830c8b739591c474111eb3",
+      "version_hint": "\"6a06808a-edb9d9\""
     },
     {
       "source_id": "es-renfe-mainline-gtfs",
-      "local_path": "data/cache/raw/es-renfe-mainline-gtfs/es-renfe-mainline-gtfs.zip",
-      "fetched_at": "2026-05-12T16:05:11.053218Z",
-      "sha256": "c30d6dc541725591d8e1f5fdbe7513074b68b10308d03259c493b78543c70202",
-      "version_hint": "\"6a02616a-c67ee\""
+      "local_path": "../../../cache/raw/es-renfe-mainline-gtfs/es-renfe-mainline-gtfs.zip",
+      "fetched_at": "2026-05-15T10:37:13.922475Z",
+      "sha256": "ffb6f95ef59ea6d7a49da52167cb5358fb07d737b9b0b874f7130867f1cb9a04",
+      "version_hint": "\"6a065575-ccdef\""
     },
     {
       "source_id": "lu-atp-gtfs",
