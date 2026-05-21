@@ -565,10 +565,14 @@ ae-debug-toggles {
      takes the full background; the sidebar floats at the bottom with
      two height states gated by data-sheet-state ("expanded" | "peek").
      Grid `order` flips the visual stacking without touching DOM order
-     (so tab order remains sidebar → map for assistive tech). */
+     (so tab order remains sidebar → map for assistive tech).
+     Selectors here intentionally avoid the `#app >` direct-child combinator
+     because <ae-app>/<ae-sidebar> wrap #map and #side with display:contents
+     — the elements participate in the #app grid via the flattened layout
+     tree, but the DOM tree still has the wrappers in between, so `>` fails. */
   #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
-  #app > #map { order: 0; }
-  #app > aside#side, #app > #side {
+  #map { order: 0; }
+  #side {
     order: 1;
     width: 100%;
     min-width: 100%;
@@ -582,12 +586,10 @@ ae-debug-toggles {
     grid-template-rows: auto minmax(0, 1fr) auto;
     transition: height 220ms ease;
   }
-  #app > aside#side[data-sheet-state="expanded"],
-  #app > #side[data-sheet-state="expanded"] {
+  #side[data-sheet-state="expanded"] {
     height: min(70dvh, 36rem);
   }
-  #app > aside#side[data-sheet-state="peek"],
-  #app > #side[data-sheet-state="peek"] {
+  #side[data-sheet-state="peek"] {
     /* +1rem versus the original 8.25rem to absorb the 28→44px handle
        bump while still fitting actions + stats in the peek footprint. */
     height: calc(9.25rem + env(safe-area-inset-bottom, 0px));
