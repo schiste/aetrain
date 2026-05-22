@@ -45543,25 +45543,6 @@
     ]
   },
   {
-    "city_id": "esperaza-fr-q609690",
-    "slug": "esperaza",
-    "display_name": "Espéraza",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.93527777777778,
-      "lon": 2.2205555555555554
-    },
-    "wikidata_qid": "Q609690",
-    "population": 1695,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87615211"
-    ],
-    "aliases": [
-      "Esperaza"
-    ]
-  },
-  {
     "city_id": "espinosa-de-henares-es-94ffa8b0",
     "slug": "espinosa-de-henares",
     "display_name": "Espinosa De Henares",
@@ -127591,23 +127572,6 @@
     "interest_score": 4,
     "station_ids": [
       "station-uic-8884335"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "quillan-fr-q28381883",
-    "slug": "quillan",
-    "display_name": "Quillan",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.875277777777775,
-      "lon": 2.1819444444444445
-    },
-    "wikidata_qid": "Q28381883",
-    "population": 2978,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87615260"
     ],
     "aliases": []
   },
