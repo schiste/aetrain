@@ -18,10 +18,11 @@ The current `stage1.sources.toml` includes:
 - the official SNCF passenger-station reference export
 - the official SNCF RFN line-geometry export used for route-shape fallback
 
-The new `registry.europe.toml` is intentionally a design-time manifest for the
-future canonical Europe-wide registry. It defines the seed/refresh contract for
-Wikidata and OSM-backed registry sources, but it is not wired into the current
-fetch/build CLI yet.
+The `registry.europe.toml` manifest is intentionally a design-time manifest for
+the future canonical Europe-wide registry. It defines the seed/refresh contract
+for official municipality identity, official station identity, station-city
+membership, Wikidata enrichment, and OSM station-observation sources, but it is
+not wired into the current fetch/build CLI yet.
 
 Manifest structure:
 
@@ -29,6 +30,15 @@ Manifest structure:
   and export policy
 - `[[source]]`: a raw feed or supplementary dataset with fetch metadata and
   normalization role
+
+Registry sources also declare:
+
+- `authority_role`: what the source is allowed to decide, such as
+  `municipality_identity`, `station_identity`, `station_city_membership`, or
+  `enrichment`
+- `trust_tier`: source class, such as `official`, `linked_open_data`, or
+  `community`
+- `country_codes`: explicit coverage for national authority sources
 
 Aggregate targets may also declare:
 

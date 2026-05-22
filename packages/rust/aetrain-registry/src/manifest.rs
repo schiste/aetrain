@@ -3,9 +3,15 @@ use std::{collections::HashSet, fs, path::Path};
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
+use crate::{RegistryAuthorityRole, RegistryTrustTier};
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RegistryProvider {
+    EurostatGisco,
+    NationalGeographicAuthority,
+    NationalStatisticalOffice,
+    NationalTransportAuthority,
     Wikidata,
     Osm,
 }
@@ -13,8 +19,11 @@ pub enum RegistryProvider {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RegistryEntityKind {
+    MunicipalityRegistry,
     CityRegistry,
     StationRegistry,
+    CityStationMembership,
+    CityEnrichment,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,6 +39,7 @@ pub enum RegistryAccessStrategy {
 pub enum RegistryRefreshStrategy {
     RecentChanges,
     ReplicationDiff,
+    AnnualRelease,
     ManualRerun,
 }
 
@@ -40,6 +50,16 @@ pub struct RegistrySourceDefinition {
     pub entity_kind: RegistryEntityKind,
     pub access_strategy: RegistryAccessStrategy,
     pub refresh_strategy: RegistryRefreshStrategy,
+    #[serde(default)]
+    pub authority_role: Option<RegistryAuthorityRole>,
+    #[serde(default)]
+    pub trust_tier: Option<RegistryTrustTier>,
+    #[serde(default)]
+    pub country_codes: Vec<String>,
+    #[serde(default)]
+    pub source_url: Option<String>,
+    #[serde(default)]
+    pub license: Option<String>,
     #[serde(default)]
     pub seed_once: bool,
     #[serde(default = "default_true")]
@@ -181,6 +201,37 @@ impl RegistryManifest {
         visited.insert(target.id.clone());
         ordered.push(target);
         Ok(())
+    }
+}
+
+impl RegistrySourceDefinition {
+    pub fn effective_authority_role(&self) -> RegistryAuthorityRole {
+        self.authority_role
+            .clone()
+            .unwrap_or_else(|| match self.entity_kind {
+                RegistryEntityKind::MunicipalityRegistry => {
+                    RegistryAuthorityRole::MunicipalityIdentity
+                }
+                RegistryEntityKind::CityRegistry => RegistryAuthorityRole::CityIdentity,
+                RegistryEntityKind::StationRegistry => RegistryAuthorityRole::StationIdentity,
+                RegistryEntityKind::CityStationMembership => {
+                    RegistryAuthorityRole::StationCityMembership
+                }
+                RegistryEntityKind::CityEnrichment => RegistryAuthorityRole::Enrichment,
+            })
+    }
+
+    pub fn effective_trust_tier(&self) -> RegistryTrustTier {
+        self.trust_tier
+            .clone()
+            .unwrap_or_else(|| match self.provider {
+                RegistryProvider::EurostatGisco
+                | RegistryProvider::NationalGeographicAuthority
+                | RegistryProvider::NationalStatisticalOffice
+                | RegistryProvider::NationalTransportAuthority => RegistryTrustTier::Official,
+                RegistryProvider::Wikidata => RegistryTrustTier::LinkedOpenData,
+                RegistryProvider::Osm => RegistryTrustTier::Community,
+            })
     }
 }
 

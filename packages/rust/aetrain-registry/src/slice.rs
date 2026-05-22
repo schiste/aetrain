@@ -5,12 +5,12 @@ use anyhow::{Context, Result, anyhow};
 use deunicode::deunicode;
 
 use crate::{
-    ExternalRecordRef, GeoBounds, NameRuleSet, RegistryBuildLayout, RegistryCanonicalBundle,
-    RegistryCity, RegistryCityCollection, RegistryCityFacts, RegistryCityFactsCollection,
-    RegistryCitySignals, RegistryCitySignalsCollection, RegistryMeta, RegistryNameVariant,
-    RegistryNameVariantCollection, RegistryNameVariantKind, RegistryStationCollection,
-    RegistryStatus, WikidataCityObservation, apply_name_rules, read_json_lines, write_json,
-    write_json_lines,
+    ExternalRecordRef, GeoBounds, NameRuleSet, RegistryAuthorityRole, RegistryBuildLayout,
+    RegistryCanonicalBundle, RegistryCity, RegistryCityCollection, RegistryCityFacts,
+    RegistryCityFactsCollection, RegistryCitySignals, RegistryCitySignalsCollection, RegistryMeta,
+    RegistryNameVariant, RegistryNameVariantCollection, RegistryNameVariantKind,
+    RegistryStationCollection, RegistryStatus, RegistryTrustTier, WikidataCityObservation,
+    apply_name_rules, read_json_lines, write_json, write_json_lines,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -82,10 +82,14 @@ pub fn build_wikidata_city_slice(
             ExternalRecordRef {
                 source_id: source_id.clone(),
                 external_id: observation.qid.clone(),
+                authority_role: Some(RegistryAuthorityRole::Enrichment),
+                trust_tier: Some(RegistryTrustTier::LinkedOpenData),
             },
             ExternalRecordRef {
                 source_id: "wikidata-entity-url".to_string(),
                 external_id: format!("https://www.wikidata.org/wiki/{}", observation.qid),
+                authority_role: Some(RegistryAuthorityRole::Enrichment),
+                trust_tier: Some(RegistryTrustTier::LinkedOpenData),
             },
         ];
         for alias in &observation.aliases {
@@ -149,6 +153,8 @@ pub fn build_wikidata_city_slice(
         name_variants: variants.clone(),
         city_facts: facts.clone(),
         city_signals: signals.clone(),
+        city_authority_evidence: Vec::new(),
+        membership_evidence: Vec::new(),
     };
 
     write_json_lines(

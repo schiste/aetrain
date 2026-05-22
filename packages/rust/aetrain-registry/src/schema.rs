@@ -3,6 +3,28 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+pub enum RegistryAuthorityRole {
+    MunicipalityIdentity,
+    CityIdentity,
+    StationIdentity,
+    StationCityMembership,
+    Enrichment,
+    InterestSignal,
+    FeedEvidence,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RegistryTrustTier {
+    Official,
+    LinkedOpenData,
+    Community,
+    Derived,
+    ManualOverride,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RegistryStatus {
     Resolved,
     Provisional,
@@ -29,6 +51,10 @@ pub struct GeoBounds {
 pub struct ExternalRecordRef {
     pub source_id: String,
     pub external_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub authority_role: Option<RegistryAuthorityRole>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trust_tier: Option<RegistryTrustTier>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -71,6 +97,35 @@ pub struct RegistryCityStationMembership {
     pub city_id: CityId,
     pub station_id: StationId,
     pub is_primary: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RegistryEvidenceKind {
+    OfficialCode,
+    PolygonContainment,
+    CoordinateContainment,
+    NameAliasMatch,
+    WikidataSitelink,
+    OsmTag,
+    ManualOverride,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RegistryCityAuthorityEvidence {
+    pub city_id: CityId,
+    pub source_ref: ExternalRecordRef,
+    pub evidence_kind: RegistryEvidenceKind,
+    pub confidence: u8,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RegistryStationCityMembershipEvidence {
+    pub city_id: CityId,
+    pub station_id: StationId,
+    pub source_ref: ExternalRecordRef,
+    pub evidence_kind: RegistryEvidenceKind,
+    pub confidence: u8,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -122,6 +177,10 @@ pub struct RegistryCanonicalBundle {
     pub name_variants: Vec<RegistryNameVariant>,
     pub city_facts: Vec<RegistryCityFacts>,
     pub city_signals: Vec<RegistryCitySignals>,
+    #[serde(default)]
+    pub city_authority_evidence: Vec<RegistryCityAuthorityEvidence>,
+    #[serde(default)]
+    pub membership_evidence: Vec<RegistryStationCityMembershipEvidence>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -152,4 +211,16 @@ pub struct RegistryCityFactsCollection {
 pub struct RegistryCitySignalsCollection {
     pub meta: RegistryMeta,
     pub signals: Vec<RegistryCitySignals>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RegistryCityAuthorityEvidenceCollection {
+    pub meta: RegistryMeta,
+    pub evidence: Vec<RegistryCityAuthorityEvidence>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RegistryStationCityMembershipEvidenceCollection {
+    pub meta: RegistryMeta,
+    pub evidence: Vec<RegistryStationCityMembershipEvidence>,
 }

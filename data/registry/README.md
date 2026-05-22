@@ -14,6 +14,7 @@ Rules:
 See:
 
 - `ARCHITECTURE.md`
+- `docs/city-registry-layer.md`
 - `docs/data-hardening-roadmap.md`
 
 Subdirectories:

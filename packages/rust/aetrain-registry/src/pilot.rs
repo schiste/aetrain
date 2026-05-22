@@ -6,11 +6,12 @@ use deunicode::deunicode;
 
 use crate::{
     ExternalRecordRef, GeoBounds, NameRuleSet, OsmStationObservation, RegistryAuditFinding,
-    RegistryAuditFindingKind, RegistryAuditSeverity, RegistryBuildLayout, RegistryCanonicalBundle,
-    RegistryCity, RegistryCityCollection, RegistryCityFacts, RegistryCityFactsCollection,
-    RegistryCitySignals, RegistryCitySignalsCollection, RegistryCityStationMembership,
-    RegistryMeta, RegistryNameVariant, RegistryNameVariantCollection, RegistryNameVariantKind,
-    RegistryStation, RegistryStationCollection, RegistryStatus, WikidataCityObservation,
+    RegistryAuditFindingKind, RegistryAuditSeverity, RegistryAuthorityRole, RegistryBuildLayout,
+    RegistryCanonicalBundle, RegistryCity, RegistryCityCollection, RegistryCityFacts,
+    RegistryCityFactsCollection, RegistryCitySignals, RegistryCitySignalsCollection,
+    RegistryCityStationMembership, RegistryMeta, RegistryNameVariant,
+    RegistryNameVariantCollection, RegistryNameVariantKind, RegistryStation,
+    RegistryStationCollection, RegistryStatus, RegistryTrustTier, WikidataCityObservation,
     apply_name_rules, read_json_lines, write_json, write_json_lines,
 };
 
@@ -102,6 +103,8 @@ pub fn build_pilot_registry(
             external_refs: vec![ExternalRecordRef {
                 source_id: "wikidata-pilot".to_string(),
                 external_id: observation.qid.clone(),
+                authority_role: Some(RegistryAuthorityRole::Enrichment),
+                trust_tier: Some(RegistryTrustTier::LinkedOpenData),
             }],
         });
     }
@@ -235,6 +238,8 @@ pub fn build_pilot_registry(
         name_variants: variants.clone(),
         city_facts: city_facts.clone(),
         city_signals: city_signals.clone(),
+        city_authority_evidence: Vec::new(),
+        membership_evidence: Vec::new(),
     };
 
     write_json_lines(

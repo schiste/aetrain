@@ -66,6 +66,7 @@ Make registry identity the default for canonical cities, not a late overlay.
 
 Required capabilities:
 
+- source authority contract with explicit `authority_role` and `trust_tier`
 - registry-backed exact city match
 - registry-backed station-variant rescue
 - authoritative `city_id` adoption
@@ -79,6 +80,8 @@ Success signal:
 
 - matched cities export registry-owned `city_id`
 - no downstream dangling references after remap
+- source coverage can explain which source was allowed to decide identity,
+  membership, enrichment, or only feed evidence
 
 ### 2. Country Inference
 
@@ -248,6 +251,7 @@ The following artifacts should become first-class outputs:
 
 - `country-quality.json`
 - `registry-match-report.json`
+- `registry-source-coverage.json`
 - `station-like-cities.json`
 - `zz-cities.json`
 - `abbreviation-candidates.json`
@@ -262,6 +266,7 @@ The following artifacts should become first-class outputs:
 - `corridor-geometry-authorities.json`
 - `rail-authority-defect-details.json`
 - `shape-plausibility-defect-details.json`
+- `authoritative-zero-edge-cities.json`
 - `close-node-without-edge-summary.json`
 - `close-node-without-edge-candidates.json`
 

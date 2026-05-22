@@ -4,14 +4,156 @@ description = "Canonical Europe-wide city and station registry for Aetrain."
 default_target_id = "europe-city-registry"
 
 [[source]]
-id = "wikidata-city-seed"
-provider = "wikidata"
-entity_kind = "city_registry"
+id = "eurostat-gisco-lau-seed"
+provider = "eurostat_gisco"
+entity_kind = "municipality_registry"
 access_strategy = "bulk_snapshot"
-refresh_strategy = "recent_changes"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = [
+  "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "EL",
+  "ES", "FI", "FR", "HR", "HU", "IE", "IS", "IT", "LI", "LT",
+  "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI",
+  "SK"
+]
+source_url = "https://ec.europa.eu/eurostat/web/gisco/geodata/statistical-units/local-administrative-units"
+license = "Eurostat reuse notice"
 seed_once = true
 active = true
-notes = "Canonical city backbone. Design scaffold only; fetching is intentionally not wired yet."
+notes = "Pan-European canonical municipality backbone. Fetching remains intentionally unwired until the seed workflow is implemented."
+
+[[source]]
+id = "fr-insee-cog-municipalities"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["FR"]
+source_url = "https://www.insee.fr/fr/information/2560452"
+license = "Licence Ouverte / Open Licence"
+seed_once = true
+active = true
+notes = "INSEE Code officiel geographique annual commune files. Used for French municipality identity, official codes, and annual commune changes."
+
+[[source]]
+id = "de-destatis-gvisys-municipalities"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["DE"]
+source_url = "https://www.destatis.de/EN/Themes/Countries-Regions/Regional-Statistics/OnlineListMunicipalities/list-municipalities-information-system.html"
+license = "Destatis reuse terms"
+seed_once = true
+active = true
+notes = "Destatis GV-ISys official municipality list with AGS/ARS codes."
+
+[[source]]
+id = "es-ine-municipal-population"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["ES"]
+source_url = "https://www.ine.es/dyngs/INEbase/en/categoria.htm?c=Estadistica_P&cid=1254735572981"
+license = "INE reuse terms"
+seed_once = true
+active = true
+notes = "INE official municipal population and municipality-code source used to strengthen Spanish city identity and population."
+
+[[source]]
+id = "gb-ons-open-geography-local-authorities"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["GB"]
+source_url = "https://www.ons.gov.uk/methodology/geography/geographicalproducts/opengeography"
+license = "Open Government Licence"
+seed_once = true
+active = true
+notes = "ONS Open Geography local authority products for the United Kingdom authority layer."
+
+[[source]]
+id = "at-statistik-austria-municipalities"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["AT"]
+source_url = "https://www.statistik.at/services/tools/regionale-internationale-daten/regionale-daten-und-gliederungen/regionale-gliederungen"
+license = "Statistik Austria reuse terms"
+seed_once = true
+active = true
+notes = "Statistik Austria regional classifications and municipality geometry products."
+
+[[source]]
+id = "be-statbel-municipalities"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["BE"]
+source_url = "https://statbel.fgov.be/en/open-data?category=All&page=0"
+license = "Statbel open data terms"
+seed_once = true
+active = true
+notes = "Statbel open data catalog for Belgian municipality-level identity and population tables."
+
+[[source]]
+id = "ch-swisstopo-official-localities"
+provider = "national_geographic_authority"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["CH"]
+source_url = "https://www.swisstopo.admin.ch/en/official-directory-of-towns-and-cities"
+license = "swisstopo reuse terms"
+seed_once = true
+active = true
+notes = "swisstopo official directory of towns and cities, including locality perimeters and municipality references."
+
+[[source]]
+id = "nl-cbs-municipalities"
+provider = "national_statistical_office"
+entity_kind = "municipality_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "municipality_identity"
+trust_tier = "official"
+country_codes = ["NL"]
+source_url = "https://www.cbs.nl/nl-nl/onze-diensten/methoden/classificaties/overig/gemeentelijke-indelingen-per-jaar"
+license = "CBS open data terms"
+seed_once = true
+active = true
+notes = "CBS annual municipal classifications, municipality names, and municipality codes."
+
+[[source]]
+id = "wikidata-city-enrichment-seed"
+provider = "wikidata"
+entity_kind = "city_enrichment"
+access_strategy = "bulk_snapshot"
+refresh_strategy = "recent_changes"
+authority_role = "enrichment"
+trust_tier = "linked_open_data"
+seed_once = true
+active = true
+notes = "Build-time enrichment only: QIDs, population where available, labels, aliases, and source URLs. It must not be the sole canonical identity authority."
 
 [[source]]
 id = "osm-station-seed"
@@ -19,14 +161,156 @@ provider = "osm"
 entity_kind = "station_registry"
 access_strategy = "regional_snapshot"
 refresh_strategy = "replication_diff"
+authority_role = "station_identity"
+trust_tier = "community"
 seed_once = true
 active = true
-notes = "Passenger rail station and place backbone. Design scaffold only; fetching is intentionally not wired yet."
+notes = "Passenger rail station observation layer and station-name evidence. Station-city membership still requires official or coordinate-containment corroboration."
+
+[[source]]
+id = "fr-sncf-gares-voyageurs"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["FR"]
+source_url = "https://ressources.data.sncf.com/explore/dataset/gares-de-voyageurs/"
+license = "SNCF Open Data licence"
+seed_once = true
+active = true
+notes = "Official SNCF passenger-station reference export."
+
+[[source]]
+id = "fr-sncf-gares-voyageurs-commune-membership"
+provider = "national_transport_authority"
+entity_kind = "city_station_membership"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_city_membership"
+trust_tier = "official"
+country_codes = ["FR"]
+source_url = "https://ressources.data.sncf.com/explore/dataset/gares-de-voyageurs/"
+license = "SNCF Open Data licence"
+seed_once = true
+active = true
+notes = "SNCF passenger-station commune codes used as official station-to-municipality membership evidence."
+
+[[source]]
+id = "at-oebb-station-register"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["AT"]
+source_url = "https://data.oebb.at/de/datensaetze~verzeichnis-der-verkehrsstationen~"
+license = "OBB Open Data terms"
+seed_once = true
+active = true
+notes = "OBB station register."
+
+[[source]]
+id = "be-belgian-mobility-sncb-gtfs"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["BE"]
+source_url = "https://data.belgianmobility.io/"
+license = "Belgian Mobility open data terms"
+seed_once = true
+active = true
+notes = "Official Belgian public-transport open-data portal including NMBS-SNCB GTFS static data."
+
+[[source]]
+id = "ch-bav-station-directory"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["CH"]
+source_url = "https://www.bav.admin.ch/de/oeffentliche-verzeichnisse"
+license = "BAV reuse terms"
+seed_once = true
+active = true
+notes = "Swiss Federal Office of Transport public station-name and stop directory."
+
+[[source]]
+id = "de-dbinfrago-openstation"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["DE"]
+source_url = "https://developers.deutschebahn.com/db-api-marketplace/apis/product/open-station"
+license = "CC0"
+seed_once = true
+active = true
+notes = "DB InfraGO OpenStation passenger-station infrastructure source."
+
+[[source]]
+id = "es-adif-station-directory"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["ES"]
+source_url = "https://www.adif.es/en/viajeros/estaciones"
+license = "ADIF reuse terms"
+seed_once = true
+active = true
+notes = "ADIF official passenger-station directory. Needs a fetch adapter or scraper before activation in builds."
+
+[[source]]
+id = "nl-ns-api-stations"
+provider = "national_transport_authority"
+entity_kind = "station_registry"
+access_strategy = "regional_snapshot"
+refresh_strategy = "annual_release"
+authority_role = "station_identity"
+trust_tier = "official"
+country_codes = ["NL"]
+source_url = "https://www.ns.nl/en/travel-information/ns-api"
+license = "NS API terms"
+seed_once = true
+active = true
+notes = "NS API station list with Dutch station geodata."
 
 [[target]]
 id = "europe-city-registry"
 adapter = "registry_europe"
-source_ids = ["wikidata-city-seed", "osm-station-seed"]
+source_ids = [
+  "eurostat-gisco-lau-seed",
+  "fr-insee-cog-municipalities",
+  "de-destatis-gvisys-municipalities",
+  "es-ine-municipal-population",
+  "gb-ons-open-geography-local-authorities",
+  "at-statistik-austria-municipalities",
+  "be-statbel-municipalities",
+  "ch-swisstopo-official-localities",
+  "nl-cbs-municipalities",
+  "wikidata-city-enrichment-seed",
+  "osm-station-seed",
+  "fr-sncf-gares-voyageurs",
+  "fr-sncf-gares-voyageurs-commune-membership",
+  "at-oebb-station-register",
+  "be-belgian-mobility-sncb-gtfs",
+  "ch-bav-station-directory",
+  "de-dbinfrago-openstation",
+  "es-adif-station-directory",
+  "nl-ns-api-stations"
+]
 canonical_export = true
 audit_export = true
 notes = "Canonical registry target used by later feed-to-registry resolution."

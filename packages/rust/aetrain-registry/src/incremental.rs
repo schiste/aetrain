@@ -40,7 +40,7 @@ pub fn build_incremental_plan(
     for source in &sources {
         match source.refresh_strategy {
             RegistryRefreshStrategy::RecentChanges | RegistryRefreshStrategy::ReplicationDiff => {}
-            RegistryRefreshStrategy::ManualRerun => {
+            RegistryRefreshStrategy::AnnualRelease | RegistryRefreshStrategy::ManualRerun => {
                 bail!("source {} does not support incremental refresh", source.id)
             }
         }
@@ -89,6 +89,11 @@ mod tests {
                 entity_kind: RegistryEntityKind::CityRegistry,
                 access_strategy: RegistryAccessStrategy::BulkSnapshot,
                 refresh_strategy: RegistryRefreshStrategy::RecentChanges,
+                authority_role: None,
+                trust_tier: None,
+                country_codes: Vec::new(),
+                source_url: None,
+                license: None,
                 seed_once: true,
                 active: true,
                 notes: None,

@@ -55,6 +55,20 @@ pub fn partition_bundle_by_country(
         .filter(|signals| city_ids.contains(&signals.city_id))
         .cloned()
         .collect::<Vec<_>>();
+    let city_authority_evidence = bundle
+        .city_authority_evidence
+        .iter()
+        .filter(|evidence| city_ids.contains(&evidence.city_id))
+        .cloned()
+        .collect::<Vec<_>>();
+    let membership_evidence = bundle
+        .membership_evidence
+        .iter()
+        .filter(|evidence| {
+            city_ids.contains(&evidence.city_id) && station_ids.contains(&evidence.station_id)
+        })
+        .cloned()
+        .collect::<Vec<_>>();
 
     RegistryCanonicalBundle {
         meta: bundle.meta.clone(),
@@ -64,6 +78,8 @@ pub fn partition_bundle_by_country(
         name_variants,
         city_facts,
         city_signals,
+        city_authority_evidence,
+        membership_evidence,
     }
 }
 
@@ -153,6 +169,8 @@ mod tests {
             }],
             city_facts: Vec::new(),
             city_signals: Vec::new(),
+            city_authority_evidence: Vec::new(),
+            membership_evidence: Vec::new(),
         };
 
         let fr = partition_bundle_by_country(&bundle, "FR");

@@ -10289,6 +10289,8 @@ mod tests {
             name_variants: Vec::new(),
             city_facts: Vec::new(),
             city_signals: Vec::new(),
+            city_authority_evidence: Vec::new(),
+            membership_evidence: Vec::new(),
         };
         let mut remap = BTreeMap::new();
         let mut issues = Vec::new();
@@ -11004,6 +11006,8 @@ mod tests {
             name_variants: Vec::new(),
             city_facts: Vec::new(),
             city_signals: Vec::new(),
+            city_authority_evidence: Vec::new(),
+            membership_evidence: Vec::new(),
         };
         let mut issues = Vec::new();
         let mut remap = cities
@@ -11120,6 +11124,8 @@ mod tests {
             name_variants: Vec::new(),
             city_facts: Vec::new(),
             city_signals: Vec::new(),
+            city_authority_evidence: Vec::new(),
+            membership_evidence: Vec::new(),
         };
         let mut issues = Vec::new();
         let mut remap = cities

@@ -13,6 +13,7 @@ mod pilot;
 mod schema;
 mod seed;
 mod slice;
+mod source_quality;
 mod wikidata;
 
 pub use artifacts::{
@@ -44,12 +45,20 @@ pub use osm::{OsmPlaceObservation, OsmRelationRef, OsmStationObservation};
 pub use partition::{RegistryPartition, partition_bundle_by_country};
 pub use pilot::{PilotBuildSummary, build_pilot_registry};
 pub use schema::{
-    ExternalRecordRef, GeoBounds, RegistryCanonicalBundle, RegistryCity, RegistryCityCollection,
+    ExternalRecordRef, GeoBounds, RegistryAuthorityRole, RegistryCanonicalBundle, RegistryCity,
+    RegistryCityAuthorityEvidence, RegistryCityAuthorityEvidenceCollection, RegistryCityCollection,
     RegistryCityFacts, RegistryCityFactsCollection, RegistryCitySignals,
-    RegistryCitySignalsCollection, RegistryCityStationMembership, RegistryMeta,
-    RegistryNameVariant, RegistryNameVariantCollection, RegistryNameVariantKind,
-    RegistryObservationSource, RegistryStation, RegistryStationCollection, RegistryStatus,
+    RegistryCitySignalsCollection, RegistryCityStationMembership, RegistryEvidenceKind,
+    RegistryMeta, RegistryNameVariant, RegistryNameVariantCollection, RegistryNameVariantKind,
+    RegistryObservationSource, RegistryStation, RegistryStationCityMembershipEvidence,
+    RegistryStationCityMembershipEvidenceCollection, RegistryStationCollection, RegistryStatus,
+    RegistryTrustTier,
 };
 pub use seed::{SeedPlan, build_seed_plan};
 pub use slice::{WikidataCitySliceSummary, build_wikidata_city_slice};
+pub use source_quality::{
+    RegistryRecordAuthorityStrength, RegistrySourceContractFinding, RegistrySourceCoverageRecord,
+    RegistrySourceCoverageReport, audit_registry_source_contract,
+    build_registry_source_coverage_report, city_authority_strength,
+};
 pub use wikidata::{WikidataCityObservation, WikidataStationObservation};
