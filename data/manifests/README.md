@@ -44,6 +44,11 @@ Aggregate targets may also declare:
 
 - `registry_overlay_path`: registry-backed city authority used during
   aggregation
+- `registry_source_manifest_path`: registry-source authority contract used to
+  emit `quality/registry-source-coverage.json` and enforce the
+  `source_contract_error_count_zero` gate
+- `complete_registry_country_codes`: countries where the registry overlay is
+  complete enough to forbid feed-created canonical cities
 - `geometry_authority_registry_path`: the infrastructure-geometry authority
   registry that defines which countries and corridors are merely tracked versus
   promoted and held to zero-regression gates

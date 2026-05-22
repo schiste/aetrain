@@ -7,13 +7,15 @@ use std::{
 use aetrain_dataset::{
     AliasRecord, DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord,
     EdgeGeometrySource, PolylinePointE5, RuntimeAliasIndex, RuntimeAliasRecord,
-    RuntimeCountryRecord,
-    RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeEdgeGeometryArtifact,
+    RuntimeCountryRecord, RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeEdgeGeometryArtifact,
     RuntimeEdgeGeometryRecord, RuntimeGraph, RuntimeStationArtifact, RuntimeStationRecord,
     SourceSnapshot,
 };
 use aetrain_domain::{City, GeoPoint, ServiceClass, ServiceKind};
-use aetrain_registry::RegistryCanonicalBundle;
+use aetrain_registry::{
+    RegistryCanonicalBundle, RegistryManifest, RegistrySourceCoverageReport,
+    build_registry_source_coverage_report,
+};
 use anyhow::{Context, Result, bail};
 use deunicode::deunicode;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -23,9 +25,9 @@ use crate::{
     FetchedSource, GeometryAuthorityLoader, GeometryAuthorityRegistry,
     GeometryAuthorityRoutePolicyAction, GeometryAuthorityStatus, ManualOverrideRegistry,
     NormalizationIssue, SourceKind, SourceManifest, StationMappingReport, TargetDefinition,
-    build_gtfs_basic_dataset_with_loaded_rail_geometry, build_gtfs_basic_dataset_with_rail_geometry,
-    build_sncf_dataset, bundle_from_basic_output, bundle_from_output,
-    rail_geometry::RailGeometryNetwork,
+    build_gtfs_basic_dataset_with_loaded_rail_geometry,
+    build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset, bundle_from_basic_output,
+    bundle_from_output, rail_geometry::RailGeometryNetwork,
 };
 
 pub trait PipelineAdapter {
@@ -571,9 +573,12 @@ pub struct PipelineQuarantinedPromotedAttachmentGapCityRecord {
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
+    pub registry_source_coverage: Option<RegistrySourceCoverageReport>,
+    pub identity_safety_report: PipelineIdentitySafetyReport,
     pub country_quality: Vec<PipelineCountryQualityRecord>,
     pub station_like_cities: Vec<PipelineCityQualityRecord>,
     pub zz_cities: Vec<PipelineCityQualityRecord>,
+    pub authoritative_zero_edge_cities: Vec<PipelineCityQualityRecord>,
     pub close_node_without_edge_summary: Vec<PipelineCloseNodeWithoutEdgeSummaryRecord>,
     pub close_node_without_edge_candidates: Vec<PipelineCloseNodeWithoutEdgeRecord>,
     pub abbreviation_candidates: Vec<PipelineAbbreviationCandidateRecord>,
@@ -583,7 +588,8 @@ pub struct PipelineQualityReport {
     pub route_geometry_anomalies: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub domestic_geometry_backlog_by_country: Vec<PipelineDomesticGeometryBacklogRecord>,
     pub cross_border_geometry_backlog_by_corridor: Vec<PipelineCrossBorderGeometryBacklogRecord>,
-    pub domestic_authority_onboarding_hotspots: Vec<PipelineDomesticAuthorityOnboardingHotspotRecord>,
+    pub domestic_authority_onboarding_hotspots:
+        Vec<PipelineDomesticAuthorityOnboardingHotspotRecord>,
     pub domestic_authority_gap_clusters: Vec<PipelineDomesticAuthorityGapClusterRecord>,
     pub domestic_authority_gap_details: Vec<PipelineDomesticAuthorityGapDetailRecord>,
     pub rejected_rail_authority_routes: Vec<PipelineRouteGeometryAnomalyRecord>,
@@ -607,6 +613,15 @@ pub struct PipelineQualityReport {
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
     pub quarantined_promoted_attachment_gap_cities:
         Vec<PipelineQuarantinedPromotedAttachmentGapCityRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineIdentitySafetyReport {
+    pub alias_cross_country_match_count: u64,
+    pub station_like_city_in_official_registry_country_count: u64,
+    pub feed_created_city_in_complete_registry_country_count: u64,
+    pub complete_registry_country_codes: Vec<String>,
+    pub official_municipality_country_codes: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -644,6 +659,7 @@ const QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES: u64 = 100;
 const QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES: u64 = 250;
 const QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES: u64 = 10;
 const CLOSE_NODE_WITHOUT_EDGE_MAX_DISTANCE_METERS: u32 = 5_000;
+const REGISTRY_OVERLAY_MAX_SPATIAL_MATCH_DISTANCE_METERS: u32 = 50_000;
 const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str = "geometry:invalid-railway-path-rejected";
 const INVALID_GTFS_SHAPE_GEOMETRY_REJECTED_PROVENANCE: &str =
     "geometry:invalid-gtfs-shape-rejected";
@@ -885,6 +901,7 @@ fn export_pipeline_target(
     };
 
     let authority_registry = load_geometry_authority_registry(manifest_dir, target)?;
+    let registry_source_coverage = load_registry_source_coverage_report(manifest_dir, target)?;
     let quality_report = build_quality_report(
         &artifacts.canonical.cities,
         &artifacts.canonical.edges,
@@ -896,6 +913,8 @@ fn export_pipeline_target(
         &artifacts.counters,
         artifacts.duplicates.candidates.len(),
         authority_registry.as_ref(),
+        registry_source_coverage,
+        &target.complete_registry_country_codes,
         &attribution.sources,
         &target_root,
     );
@@ -964,6 +983,16 @@ fn export_pipeline_target(
         &quality_dir.join("registry-match-report.json"),
         &quality_report.registry_match_report,
     )?;
+    if let Some(registry_source_coverage) = &quality_report.registry_source_coverage {
+        write_json(
+            &quality_dir.join("registry-source-coverage.json"),
+            registry_source_coverage,
+        )?;
+    }
+    write_json(
+        &quality_dir.join("identity-safety-report.json"),
+        &quality_report.identity_safety_report,
+    )?;
     write_json(
         &quality_dir.join("station-like-cities.json"),
         &quality_report.station_like_cities,
@@ -971,6 +1000,10 @@ fn export_pipeline_target(
     write_json(
         &quality_dir.join("zz-cities.json"),
         &quality_report.zz_cities,
+    )?;
+    write_json(
+        &quality_dir.join("authoritative-zero-edge-cities.json"),
+        &quality_report.authoritative_zero_edge_cities,
     )?;
     write_json(
         &quality_dir.join("close-node-without-edge-summary.json"),
@@ -1151,6 +1184,25 @@ fn load_geometry_authority_registry(
     GeometryAuthorityRegistry::load(&registry_path).map(Some)
 }
 
+fn load_registry_source_coverage_report(
+    manifest_dir: &Path,
+    target: &TargetDefinition,
+) -> Result<Option<RegistrySourceCoverageReport>> {
+    let Some(path) = target.registry_source_manifest_path.as_deref() else {
+        return Ok(None);
+    };
+    let registry_manifest_path = resolve_manifest_relative_path(manifest_dir, path);
+    let registry_manifest = RegistryManifest::load(&registry_manifest_path).with_context(|| {
+        format!(
+            "failed to load registry source manifest from {}",
+            registry_manifest_path.display()
+        )
+    })?;
+    Ok(Some(build_registry_source_coverage_report(
+        &registry_manifest,
+    )))
+}
+
 fn load_registry_overlay_bundle(
     manifest_dir: &Path,
     target: &TargetDefinition,
@@ -1218,6 +1270,8 @@ fn build_quality_report(
     counters: &BTreeMap<String, u64>,
     duplicate_count: usize,
     authority_registry: Option<&GeometryAuthorityRegistry>,
+    registry_source_coverage: Option<RegistrySourceCoverageReport>,
+    complete_registry_country_codes: &[String],
     source_artifacts: &[PipelineSourceArtifact],
     target_root: &Path,
 ) -> PipelineQualityReport {
@@ -1285,8 +1339,21 @@ fn build_quality_report(
         .filter(|city| city.country_code == "ZZ")
         .map(city_quality_record)
         .collect::<Vec<_>>();
-    let close_node_without_edge_candidates =
-        build_close_node_without_edge_records(cities, edges);
+    let edge_degree_by_city = edges.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, u64>::new(),
+        |mut acc, edge| {
+            *acc.entry(edge.from_city_id.clone()).or_default() += 1;
+            *acc.entry(edge.to_city_id.clone()).or_default() += 1;
+            acc
+        },
+    );
+    let authoritative_zero_edge_cities = cities
+        .iter()
+        .filter(|city| is_authoritative_city(city))
+        .filter(|city| edge_degree_by_city.get(&city.city_id).copied().unwrap_or(0) == 0)
+        .map(city_quality_record)
+        .collect::<Vec<_>>();
+    let close_node_without_edge_candidates = build_close_node_without_edge_records(cities, edges);
     let close_node_without_edge_summary =
         build_close_node_without_edge_summary(&close_node_without_edge_candidates);
     let low_signal_candidates = cities
@@ -1309,10 +1376,8 @@ fn build_quality_report(
         build_domestic_geometry_backlog_by_country(&route_geometry_anomalies);
     let cross_border_geometry_backlog_by_corridor =
         build_cross_border_geometry_backlog_by_corridor(&route_geometry_anomalies);
-    let domestic_authority_onboarding_hotspots = build_domestic_authority_onboarding_hotspots(
-        &route_geometry_anomalies,
-        authority_registry,
-    );
+    let domestic_authority_onboarding_hotspots =
+        build_domestic_authority_onboarding_hotspots(&route_geometry_anomalies, authority_registry);
     let domestic_authority_gap_clusters =
         build_domestic_authority_gap_clusters(&route_geometry_anomalies, authority_registry);
     let rejected_rail_authority_routes = route_geometry_anomalies
@@ -1517,12 +1582,82 @@ fn build_quality_report(
         &customer_facing_country_backlog,
         &customer_facing_corridor_backlog,
     );
+    let source_contract_error_count = registry_source_coverage
+        .as_ref()
+        .map(|coverage| {
+            coverage
+                .findings
+                .iter()
+                .filter(|finding| {
+                    finding.severity == aetrain_registry::RegistryAuditSeverity::Error
+                })
+                .count() as u64
+        })
+        .unwrap_or(0);
+    let official_municipality_country_codes =
+        official_municipality_country_codes(registry_source_coverage.as_ref());
+    let complete_registry_country_set = complete_registry_country_codes
+        .iter()
+        .map(|country| country.to_ascii_uppercase())
+        .collect::<BTreeSet<_>>();
+    let station_like_city_in_official_registry_country_count = station_like_cities
+        .iter()
+        .filter(|city| official_municipality_country_codes.contains(&city.country_code))
+        .count() as u64;
+    let feed_created_city_in_complete_registry_country_count = cities
+        .iter()
+        .filter(|city| complete_registry_country_set.contains(&city.country_code))
+        .filter(|city| !is_authoritative_city(city))
+        .count() as u64;
+    let identity_safety_report = PipelineIdentitySafetyReport {
+        alias_cross_country_match_count: counter_value(
+            counters,
+            "registry_overlay_country_correction_count",
+        ),
+        station_like_city_in_official_registry_country_count,
+        feed_created_city_in_complete_registry_country_count,
+        complete_registry_country_codes: complete_registry_country_set.iter().cloned().collect(),
+        official_municipality_country_codes: official_municipality_country_codes
+            .iter()
+            .cloned()
+            .collect(),
+    };
 
     let gate_results = vec![
+        quality_gate_equals(
+            "source_contract_error_count_zero",
+            "source_contract_error_count",
+            source_contract_error_count,
+            0,
+        ),
+        quality_gate_equals(
+            "alias_cross_country_match_count_zero",
+            "alias_cross_country_match_count",
+            identity_safety_report.alias_cross_country_match_count,
+            0,
+        ),
+        quality_gate_equals(
+            "station_like_city_in_official_registry_country_count_zero",
+            "station_like_city_in_official_registry_country_count",
+            identity_safety_report.station_like_city_in_official_registry_country_count,
+            0,
+        ),
+        quality_gate_equals(
+            "feed_created_city_in_complete_registry_country_count_zero",
+            "feed_created_city_in_complete_registry_country_count",
+            identity_safety_report.feed_created_city_in_complete_registry_country_count,
+            0,
+        ),
         quality_gate_equals(
             "registry_overlay_ambiguous_count_zero",
             "registry_overlay_ambiguous_count",
             counter_value(counters, "registry_overlay_ambiguous_count"),
+            0,
+        ),
+        quality_gate_equals(
+            "authoritative_zero_edge_city_count_zero",
+            "authoritative_zero_edge_city_count",
+            authoritative_zero_edge_cities.len() as u64,
             0,
         ),
         quality_gate_equals(
@@ -1700,9 +1835,12 @@ fn build_quality_report(
     PipelineQualityReport {
         gate_results,
         registry_match_report,
+        registry_source_coverage,
+        identity_safety_report,
         country_quality: grouped.into_values().collect(),
         station_like_cities,
         zz_cities,
+        authoritative_zero_edge_cities,
         close_node_without_edge_summary,
         close_node_without_edge_candidates,
         abbreviation_candidates,
@@ -1730,11 +1868,11 @@ fn build_quality_report(
         customer_facing_country_backlog,
         customer_facing_corridor_backlog,
         customer_facing_release_backlog_summary,
-        plain_name_fallback_gap_registry_candidates:
-            plain_name_fallback_gap_registry_candidates.to_vec(),
+        plain_name_fallback_gap_registry_candidates: plain_name_fallback_gap_registry_candidates
+            .to_vec(),
         quarantined_fallback_gap_cities: quarantined_fallback_gap_cities.to_vec(),
-        quarantined_promoted_attachment_gap_cities:
-            quarantined_promoted_attachment_gap_cities.to_vec(),
+        quarantined_promoted_attachment_gap_cities: quarantined_promoted_attachment_gap_cities
+            .to_vec(),
     }
 }
 
@@ -1773,23 +1911,22 @@ fn build_country_geometry_authority_records(
                         && record.authority_gap_reason == "authority_topology_no_route"
                 })
                 .count() as u64;
-            let promoted_rejected_implausible_authority_detour_count =
-                rail_authority_defect_details
-                    .iter()
-                    .filter(|record| {
-                        record.from_country_code == entry.country_code
-                            && record.to_country_code == entry.country_code
-                            && record.authority_defect_reason == "implausible_authority_detour"
-                    })
-                    .count() as u64;
-            let customer_facing_blockers =
-                build_country_customer_facing_blockers(
-                    entry,
-                    missing_domestic_authority_count,
-                    promoted_station_attachment_gap_count,
-                    promoted_topology_no_route_gap_count,
-                    promoted_rejected_implausible_authority_detour_count,
-                );
+            let promoted_rejected_implausible_authority_detour_count = rail_authority_defect_details
+                .iter()
+                .filter(|record| {
+                    record.from_country_code == entry.country_code
+                        && record.to_country_code == entry.country_code
+                        && record.authority_defect_reason == "implausible_authority_detour"
+                })
+                .count()
+                as u64;
+            let customer_facing_blockers = build_country_customer_facing_blockers(
+                entry,
+                missing_domestic_authority_count,
+                promoted_station_attachment_gap_count,
+                promoted_topology_no_route_gap_count,
+                promoted_rejected_implausible_authority_detour_count,
+            );
             PipelineCountryGeometryAuthorityRecord {
                 country_code: entry.country_code.clone(),
                 status: geometry_authority_status_label(&entry.status).to_string(),
@@ -1820,6 +1957,28 @@ fn build_country_geometry_authority_records(
                 notes: entry.notes.clone(),
             }
         })
+        .collect()
+}
+
+fn official_municipality_country_codes(
+    registry_source_coverage: Option<&RegistrySourceCoverageReport>,
+) -> BTreeSet<String> {
+    let Some(registry_source_coverage) = registry_source_coverage else {
+        return BTreeSet::new();
+    };
+    registry_source_coverage
+        .sources
+        .iter()
+        .filter(|source| {
+            source.active
+                && source.trust_tier == aetrain_registry::RegistryTrustTier::Official
+                && matches!(
+                    source.authority_role,
+                    aetrain_registry::RegistryAuthorityRole::MunicipalityIdentity
+                        | aetrain_registry::RegistryAuthorityRole::CityIdentity
+                )
+        })
+        .flat_map(|source| source.country_codes.iter().map(|country| country.to_ascii_uppercase()))
         .collect()
 }
 
@@ -1856,8 +2015,7 @@ fn build_corridor_geometry_authority_records(
                 status: geometry_authority_status_label(&entry.status).to_string(),
                 promoted: entry.status.is_promoted(),
                 customer_facing: entry.customer_facing,
-                customer_facing_ready: entry.customer_facing
-                    && customer_facing_blockers.is_empty(),
+                customer_facing_ready: entry.customer_facing && customer_facing_blockers.is_empty(),
                 customer_facing_blockers,
                 source_id: entry.source_id.clone(),
                 cross_border_unresolved_count,
@@ -1982,7 +2140,8 @@ fn build_customer_facing_corridor_backlog(
         .map(|record| {
             let mut next_actions = Vec::new();
             if !record.customer_facing {
-                next_actions.push("do_not_mark_customer_facing_until_corridor_is_promoted".to_string());
+                next_actions
+                    .push("do_not_mark_customer_facing_until_corridor_is_promoted".to_string());
             }
             if !record.promoted {
                 next_actions.push("onboard_and_promote_corridor_authority".to_string());
@@ -2054,7 +2213,8 @@ fn build_customer_facing_release_backlog_summary(
         recommended_next_steps.push("finish_highest_priority_country_backlog_first".to_string());
     }
     if highest_priority_corridor.is_some() {
-        recommended_next_steps.push("keep_cross_border_corridors_out_of_scope_until_promoted".to_string());
+        recommended_next_steps
+            .push("keep_cross_border_corridors_out_of_scope_until_promoted".to_string());
     }
     PipelineCustomerFacingReleaseBacklogSummary {
         customer_facing_target_enabled,
@@ -2198,7 +2358,9 @@ fn load_pipeline_authority_network(
         .or_else(|| fallback_loader.cloned())?;
     let path = resolve_pipeline_source_artifact_path(artifact, &target_root.display().to_string());
     match loader {
-        GeometryAuthorityLoader::SncfRfnGeojson => RailGeometryNetwork::load_sncf_rfn_geojson(&path),
+        GeometryAuthorityLoader::SncfRfnGeojson => {
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path)
+        }
         GeometryAuthorityLoader::GeofabrikRailwaysGpkg => {
             RailGeometryNetwork::load_geofabrik_railways_gpkg(&path)
         }
@@ -2495,7 +2657,11 @@ fn classify_authority_path_failure_reason(
     end_snap_distance_m: Option<u32>,
     route_found_in_authority_graph: bool,
 ) -> &'static str {
-    match (start_snap_distance_m, end_snap_distance_m, route_found_in_authority_graph) {
+    match (
+        start_snap_distance_m,
+        end_snap_distance_m,
+        route_found_in_authority_graph,
+    ) {
         (Some(_), Some(_), true) => "implausible_authority_detour",
         (Some(_), Some(_), false) => "authority_topology_no_route",
         _ => "authority_station_attachment_gap",
@@ -2567,12 +2733,16 @@ fn build_promoted_station_attachment_gap_details(
                 duration_min: record.duration_min,
                 from_city_layer_status: classify_city_layer_status(
                     from_city,
-                    station_records_by_city.get(&from_city.city_id).map(Vec::as_slice),
+                    station_records_by_city
+                        .get(&from_city.city_id)
+                        .map(Vec::as_slice),
                 )
                 .to_string(),
                 to_city_layer_status: classify_city_layer_status(
                     to_city,
-                    station_records_by_city.get(&to_city.city_id).map(Vec::as_slice),
+                    station_records_by_city
+                        .get(&to_city.city_id)
+                        .map(Vec::as_slice),
                 )
                 .to_string(),
                 from_registry_resolution_status: plain_name_registry_by_city
@@ -2619,7 +2789,8 @@ fn build_authority_attachment_coverage_clusters(
         expanded_candidate_distances_m: Vec<u32>,
     }
 
-    let mut grouped = BTreeMap::<(String, String, aetrain_domain::CityId, String), ClusterAccumulator>::new();
+    let mut grouped =
+        BTreeMap::<(String, String, aetrain_domain::CityId, String), ClusterAccumulator>::new();
     for record in promoted_station_attachment_gap_details {
         for side in [
             (
@@ -2665,37 +2836,41 @@ fn build_authority_attachment_coverage_clusters(
             });
             entry.route_count += 1;
             entry.counterpart_examples.insert(side.7.clone());
-            entry.min_direct_distance_km = entry.min_direct_distance_km.min(record.direct_distance_km);
-            entry.max_direct_distance_km = entry.max_direct_distance_km.max(record.direct_distance_km);
+            entry.min_direct_distance_km =
+                entry.min_direct_distance_km.min(record.direct_distance_km);
+            entry.max_direct_distance_km =
+                entry.max_direct_distance_km.max(record.direct_distance_km);
         }
     }
 
     let mut clusters = grouped
         .into_iter()
-        .map(|((source_id, country_code, city_id, display_name), entry)| {
-            let suggested_action = match entry.city_layer_status.as_str() {
-                "authoritative_city" => "expand_authority_source_coverage",
-                "fallback_gap_plain_name_singleton" => "expand_registry_or_authority_coverage",
-                "fallback_gap_pseudo_city" => "review_city_layer_before_authority_expansion",
-                _ => "review_authority_attachment_gap",
-            };
-            PipelineAuthorityAttachmentCoverageClusterRecord {
-                source_id,
-                country_code,
-                city_id,
-                display_name,
-                city_layer_status: entry.city_layer_status,
-                registry_resolution_status: entry.registry_resolution_status,
-                attachment_surface: entry.attachment_surface,
-                route_count: entry.route_count,
-                counterpart_examples: entry.counterpart_examples.into_iter().take(5).collect(),
-                min_direct_distance_km: entry.min_direct_distance_km,
-                max_direct_distance_km: entry.max_direct_distance_km,
-                local_candidate_distances_m: entry.local_candidate_distances_m,
-                expanded_candidate_distances_m: entry.expanded_candidate_distances_m,
-                suggested_action: suggested_action.to_string(),
-            }
-        })
+        .map(
+            |((source_id, country_code, city_id, display_name), entry)| {
+                let suggested_action = match entry.city_layer_status.as_str() {
+                    "authoritative_city" => "expand_authority_source_coverage",
+                    "fallback_gap_plain_name_singleton" => "expand_registry_or_authority_coverage",
+                    "fallback_gap_pseudo_city" => "review_city_layer_before_authority_expansion",
+                    _ => "review_authority_attachment_gap",
+                };
+                PipelineAuthorityAttachmentCoverageClusterRecord {
+                    source_id,
+                    country_code,
+                    city_id,
+                    display_name,
+                    city_layer_status: entry.city_layer_status,
+                    registry_resolution_status: entry.registry_resolution_status,
+                    attachment_surface: entry.attachment_surface,
+                    route_count: entry.route_count,
+                    counterpart_examples: entry.counterpart_examples.into_iter().take(5).collect(),
+                    min_direct_distance_km: entry.min_direct_distance_km,
+                    max_direct_distance_km: entry.max_direct_distance_km,
+                    local_candidate_distances_m: entry.local_candidate_distances_m,
+                    expanded_candidate_distances_m: entry.expanded_candidate_distances_m,
+                    suggested_action: suggested_action.to_string(),
+                }
+            },
+        )
         .collect::<Vec<_>>();
     clusters.sort_by(|left, right| {
         right
@@ -2720,7 +2895,9 @@ fn classify_city_layer_status(
         } else {
             "fallback_gap_plain_name_singleton"
         }
-    } else if city_id_has_registry_qid(city) || city.wikidata_qid.is_some() || city.population.is_some()
+    } else if city_id_has_registry_qid(city)
+        || city.wikidata_qid.is_some()
+        || city.population.is_some()
     {
         "authoritative_city"
     } else {
@@ -2744,7 +2921,9 @@ fn classify_attachment_surface(
 fn build_authority_detour_corridor_records(
     rail_authority_defect_details: &[PipelineRailAuthorityDefectRecord],
 ) -> Vec<PipelineAuthorityDetourCorridorRecord> {
-    let mut grouped = BTreeMap::<(String, String, String, String), Vec<&PipelineRailAuthorityDefectRecord>>::new();
+    let mut grouped =
+        BTreeMap::<(String, String, String, String), Vec<&PipelineRailAuthorityDefectRecord>>::new(
+        );
     for record in rail_authority_defect_details
         .iter()
         .filter(|record| record.authority_defect_reason == "implausible_authority_detour")
@@ -2782,73 +2961,76 @@ fn build_authority_detour_corridor_records(
 
     grouped
         .into_iter()
-        .map(|((source_id, _left_id, _right_id, corridor_key), records)| {
-            let first = records[0];
-            let max_snap_distance_m = records
-                .iter()
-                .flat_map(|record| {
-                    [
-                        record.start_snap_distance_m.unwrap_or(0),
-                        record.end_snap_distance_m.unwrap_or(0),
-                    ]
-                })
-                .max()
-                .unwrap_or(0);
-            let min_detour_ratio_x100 = records
-                .iter()
-                .filter_map(|record| record.detour_ratio_x100)
-                .min()
-                .unwrap_or(0);
-            let max_detour_ratio_x100 = records
-                .iter()
-                .filter_map(|record| record.detour_ratio_x100)
-                .max()
-                .unwrap_or(0);
-            let (recommended_policy, policy_reason) =
-                classify_authority_detour_corridor_policy(
+        .map(
+            |((source_id, _left_id, _right_id, corridor_key), records)| {
+                let first = records[0];
+                let max_snap_distance_m = records
+                    .iter()
+                    .flat_map(|record| {
+                        [
+                            record.start_snap_distance_m.unwrap_or(0),
+                            record.end_snap_distance_m.unwrap_or(0),
+                        ]
+                    })
+                    .max()
+                    .unwrap_or(0);
+                let min_detour_ratio_x100 = records
+                    .iter()
+                    .filter_map(|record| record.detour_ratio_x100)
+                    .min()
+                    .unwrap_or(0);
+                let max_detour_ratio_x100 = records
+                    .iter()
+                    .filter_map(|record| record.detour_ratio_x100)
+                    .max()
+                    .unwrap_or(0);
+                let (recommended_policy, policy_reason) = classify_authority_detour_corridor_policy(
                     records.len() as u64,
                     max_snap_distance_m,
                     min_detour_ratio_x100,
                     max_detour_ratio_x100,
                 );
-            PipelineAuthorityDetourCorridorRecord {
-                source_id,
-                from_country_code: first.from_country_code.clone(),
-                to_country_code: first.to_country_code.clone(),
-                corridor_key,
-                route_count: records.len() as u64,
-                example_routes: records
-                    .iter()
-                    .take(6)
-                    .map(|record| format!("{} -> {}", record.from_display_name, record.to_display_name))
-                    .collect(),
-                min_direct_distance_km: records
-                    .iter()
-                    .map(|record| record.direct_distance_km)
-                    .min()
-                    .unwrap_or(0),
-                max_direct_distance_km: records
-                    .iter()
-                    .map(|record| record.direct_distance_km)
-                    .max()
-                    .unwrap_or(0),
-                min_routed_authority_distance_km: records
-                    .iter()
-                    .filter_map(|record| record.routed_authority_distance_km)
-                    .min()
-                    .unwrap_or(0),
-                max_routed_authority_distance_km: records
-                    .iter()
-                    .filter_map(|record| record.routed_authority_distance_km)
-                    .max()
-                    .unwrap_or(0),
-                min_detour_ratio_x100,
-                max_detour_ratio_x100,
-                max_snap_distance_m,
-                recommended_policy: recommended_policy.to_string(),
-                policy_reason: policy_reason.to_string(),
-            }
-        })
+                PipelineAuthorityDetourCorridorRecord {
+                    source_id,
+                    from_country_code: first.from_country_code.clone(),
+                    to_country_code: first.to_country_code.clone(),
+                    corridor_key,
+                    route_count: records.len() as u64,
+                    example_routes: records
+                        .iter()
+                        .take(6)
+                        .map(|record| {
+                            format!("{} -> {}", record.from_display_name, record.to_display_name)
+                        })
+                        .collect(),
+                    min_direct_distance_km: records
+                        .iter()
+                        .map(|record| record.direct_distance_km)
+                        .min()
+                        .unwrap_or(0),
+                    max_direct_distance_km: records
+                        .iter()
+                        .map(|record| record.direct_distance_km)
+                        .max()
+                        .unwrap_or(0),
+                    min_routed_authority_distance_km: records
+                        .iter()
+                        .filter_map(|record| record.routed_authority_distance_km)
+                        .min()
+                        .unwrap_or(0),
+                    max_routed_authority_distance_km: records
+                        .iter()
+                        .filter_map(|record| record.routed_authority_distance_km)
+                        .max()
+                        .unwrap_or(0),
+                    min_detour_ratio_x100,
+                    max_detour_ratio_x100,
+                    max_snap_distance_m,
+                    recommended_policy: recommended_policy.to_string(),
+                    policy_reason: policy_reason.to_string(),
+                }
+            },
+        )
         .collect()
 }
 
@@ -3185,8 +3367,10 @@ fn build_domestic_authority_onboarding_hotspots(
             });
             entry.route_count += 1;
             entry.counterpart_examples.insert(counterpart.clone());
-            entry.min_direct_distance_km = entry.min_direct_distance_km.min(record.direct_distance_km);
-            entry.max_direct_distance_km = entry.max_direct_distance_km.max(record.direct_distance_km);
+            entry.min_direct_distance_km =
+                entry.min_direct_distance_km.min(record.direct_distance_km);
+            entry.max_direct_distance_km =
+                entry.max_direct_distance_km.max(record.direct_distance_km);
         }
     }
 
@@ -3265,11 +3449,9 @@ fn build_domestic_authority_gap_clusters(
         let home_country_code =
             infer_home_country_code_from_provenance(&record.provenance).map(str::to_string);
         let feed_source_family = infer_feed_source_family_from_provenance(&record.provenance);
-        let scope_classification = classify_domestic_authority_gap_scope(
-            &country_code,
-            home_country_code.as_deref(),
-        )
-        .to_string();
+        let scope_classification =
+            classify_domestic_authority_gap_scope(&country_code, home_country_code.as_deref())
+                .to_string();
         let authority = authority_registry.and_then(|registry| registry.country(&country_code));
         let authority_status = authority
             .map(|entry| geometry_authority_status_label(&entry.status).to_string())
@@ -3347,14 +3529,8 @@ fn build_domestic_authority_gap_clusters(
             .route_count
             .cmp(&left.route_count)
             .then_with(|| left.country_code.cmp(&right.country_code))
-            .then_with(|| {
-                left.scope_classification
-                    .cmp(&right.scope_classification)
-            })
-            .then_with(|| {
-                left.feed_source_family
-                    .cmp(&right.feed_source_family)
-            })
+            .then_with(|| left.scope_classification.cmp(&right.scope_classification))
+            .then_with(|| left.feed_source_family.cmp(&right.feed_source_family))
     });
     records
 }
@@ -3411,13 +3587,11 @@ fn build_domestic_authority_gap_details(
                     network.expanded_route_snap_candidates(from_city.location);
                 let expanded_end_candidates =
                     network.expanded_route_snap_candidates(to_city.location);
-                let max_geometry_distance_meters =
-                    max_plausible_route_geometry_meters(geo_distance_meters(
-                        from_city.location,
-                        to_city.location,
-                    ))
-                    .ceil()
-                    .min(u32::MAX as f64) as u32;
+                let max_geometry_distance_meters = max_plausible_route_geometry_meters(
+                    geo_distance_meters(from_city.location, to_city.location),
+                )
+                .ceil()
+                .min(u32::MAX as f64) as u32;
                 let points = network
                     .route_polyline_for_snap_candidates_bounded(
                         from_city.location,
@@ -3449,8 +3623,12 @@ fn build_domestic_authority_gap_details(
                     (
                         start_candidates.first().map(|(_, distance)| *distance),
                         end_candidates.first().map(|(_, distance)| *distance),
-                        expanded_start_candidates.first().map(|(_, distance)| *distance),
-                        expanded_end_candidates.first().map(|(_, distance)| *distance),
+                        expanded_start_candidates
+                            .first()
+                            .map(|(_, distance)| *distance),
+                        expanded_end_candidates
+                            .first()
+                            .map(|(_, distance)| *distance),
                         true,
                         Some(meters_to_km_u32(metrics.geometry_meters)),
                         Some(points_e5.len()),
@@ -3461,8 +3639,12 @@ fn build_domestic_authority_gap_details(
                     (
                         start_candidates.first().map(|(_, distance)| *distance),
                         end_candidates.first().map(|(_, distance)| *distance),
-                        expanded_start_candidates.first().map(|(_, distance)| *distance),
-                        expanded_end_candidates.first().map(|(_, distance)| *distance),
+                        expanded_start_candidates
+                            .first()
+                            .map(|(_, distance)| *distance),
+                        expanded_end_candidates
+                            .first()
+                            .map(|(_, distance)| *distance),
                         false,
                         None,
                         None,
@@ -4123,14 +4305,14 @@ fn build_close_node_without_edge_summary(
 
     let mut grouped = BTreeMap::<String, SummaryAccumulator>::new();
     for record in records {
-        let entry = grouped
-            .entry(record.classification.clone())
-            .or_default();
+        let entry = grouped.entry(record.classification.clone()).or_default();
         entry.candidate_count += 1;
         entry.min_distance_meters = Some(
             entry
                 .min_distance_meters
-                .map_or(record.distance_meters, |current| current.min(record.distance_meters)),
+                .map_or(record.distance_meters, |current| {
+                    current.min(record.distance_meters)
+                }),
         );
         entry.max_distance_meters = entry.max_distance_meters.max(record.distance_meters);
         if record.same_country {
@@ -4158,17 +4340,19 @@ fn build_close_node_without_edge_summary(
 
     let mut summary = grouped
         .into_iter()
-        .map(|(classification, entry)| PipelineCloseNodeWithoutEdgeSummaryRecord {
-            classification,
-            candidate_count: entry.candidate_count,
-            min_distance_meters: entry.min_distance_meters.unwrap_or(0),
-            max_distance_meters: entry.max_distance_meters,
-            same_country_count: entry.same_country_count,
-            cross_country_count: entry.cross_country_count,
-            connected_within_2_hops_count: entry.connected_within_2_hops_count,
-            connected_within_3_hops_count: entry.connected_within_3_hops_count,
-            example_pairs: entry.example_pairs,
-        })
+        .map(
+            |(classification, entry)| PipelineCloseNodeWithoutEdgeSummaryRecord {
+                classification,
+                candidate_count: entry.candidate_count,
+                min_distance_meters: entry.min_distance_meters.unwrap_or(0),
+                max_distance_meters: entry.max_distance_meters,
+                same_country_count: entry.same_country_count,
+                cross_country_count: entry.cross_country_count,
+                connected_within_2_hops_count: entry.connected_within_2_hops_count,
+                connected_within_3_hops_count: entry.connected_within_3_hops_count,
+                example_pairs: entry.example_pairs,
+            },
+        )
         .collect::<Vec<_>>();
     summary.sort_by(|left, right| {
         right
@@ -5262,7 +5446,9 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         "plain_name_fallback_gap_registry_resolved_count".to_string(),
         plain_name_fallback_gap_registry_candidates
             .iter()
-            .filter(|record| record.registry_resolution_status == "resolved_exact_registry_city_match")
+            .filter(|record| {
+                record.registry_resolution_status == "resolved_exact_registry_city_match"
+            })
             .count() as u64,
     );
     merged_cities.aliases = rebuild_alias_records(&merged_cities.cities);
@@ -5544,9 +5730,9 @@ fn apply_customer_facing_release_scope(
         .iter()
         .map(|edge| (edge.from_city_id.clone(), edge.to_city_id.clone()))
         .collect::<BTreeSet<_>>();
-    edge_geometries
-        .geometries
-        .retain(|geometry| kept_edge_keys.contains(&(geometry.from_city_id.clone(), geometry.to_city_id.clone())));
+    edge_geometries.geometries.retain(|geometry| {
+        kept_edge_keys.contains(&(geometry.from_city_id.clone(), geometry.to_city_id.clone()))
+    });
     let kept_city_count = cities.len() as u64;
     let kept_station_count = stations.len() as u64;
     let kept_edge_count = edges.len() as u64;
@@ -5770,7 +5956,12 @@ fn collapse_cities_by_remap(
                 existing.population = merge_optional_u64(existing.population, city.population);
                 existing.interest_score =
                     merge_optional_u8(existing.interest_score, city.interest_score);
-                existing.location = merge_geo_points(existing.location, city.location);
+                if city.city_id == canonical_city_id
+                    || !is_authoritative_city(existing)
+                    || is_authoritative_city(&city)
+                {
+                    existing.location = merge_geo_points(existing.location, city.location);
+                }
                 merge_station_ids(&mut existing.station_ids, &city.station_ids);
                 merge_string_vec(&mut existing.aliases, &city.aliases);
             })
@@ -6592,12 +6783,14 @@ fn load_aggregate_rail_geometry_network(
         if !allowed_source_ids.contains(&artifact.source_id) {
             continue;
         }
-        let Some(_source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
+        let Some(_source_definition) = rail_geometry_sources.get(artifact.source_id.as_str())
+        else {
             continue;
         };
         let path =
             resolve_pipeline_source_artifact_path(artifact, &input.manifest.outputs.target_root);
-        let network = match authority_loader_for_source_id(authority_registry, &artifact.source_id) {
+        let network = match authority_loader_for_source_id(authority_registry, &artifact.source_id)
+        {
             Some(GeometryAuthorityLoader::SncfRfnGeojson) => {
                 RailGeometryNetwork::load_sncf_rfn_geojson(&path)
             }
@@ -6656,7 +6849,8 @@ fn load_aggregate_promoted_country_authority_networks(
         let Some(loader) = promoted_country_sources.get(&artifact.source_id) else {
             continue;
         };
-        let Some(_source_definition) = rail_geometry_sources.get(artifact.source_id.as_str()) else {
+        let Some(_source_definition) = rail_geometry_sources.get(artifact.source_id.as_str())
+        else {
             continue;
         };
         let path =
@@ -6693,21 +6887,21 @@ fn authority_loader_for_source_id(
         .iter()
         .find_map(|entry| (entry.source_id == source_id).then(|| entry.loader.clone()))
         .or_else(|| {
-    authority_registry
-        .countries
-        .iter()
-        .find_map(|entry| {
-            (entry.source_id.as_deref() == Some(source_id))
-                .then(|| entry.loader.as_ref().cloned())
-                .flatten()
-        })
-        .or_else(|| {
-            authority_registry.corridors.iter().find_map(|entry| {
-                (entry.source_id.as_deref() == Some(source_id))
-                    .then(|| entry.loader.as_ref().cloned())
-                    .flatten()
-            })
-        })
+            authority_registry
+                .countries
+                .iter()
+                .find_map(|entry| {
+                    (entry.source_id.as_deref() == Some(source_id))
+                        .then(|| entry.loader.as_ref().cloned())
+                        .flatten()
+                })
+                .or_else(|| {
+                    authority_registry.corridors.iter().find_map(|entry| {
+                        (entry.source_id.as_deref() == Some(source_id))
+                            .then(|| entry.loader.as_ref().cloned())
+                            .flatten()
+                    })
+                })
         })
 }
 
@@ -7065,6 +7259,30 @@ fn cleanup_station_like_and_zz_residual_cities(
             continue;
         }
 
+        if is_weak_singleton_city(city)
+            && let Some(parent) = best_authoritative_parent_for_alias_singleton(
+                city,
+                &snapshot,
+                mapping_by_city
+                    .get(&city.city_id)
+                    .map(|records| records.as_slice()),
+                &effective_country_by_city,
+                &parent_match_keys_by_city,
+            )
+        {
+            remap.insert(city.city_id.clone(), parent.city_id.clone());
+            issues.push(NormalizationIssue {
+                severity: crate::IssueSeverity::Info,
+                source_id: aggregate_source_id.to_string(),
+                entity_ref: city.city_id.to_string(),
+                message: format!(
+                    "demoted weak singleton city {} into authoritative alias parent city {}",
+                    city.display_name, parent.display_name
+                ),
+            });
+            continue;
+        }
+
         if !is_station_qualified_city_name(&city.display_name) || city.station_ids.len() != 1 {
             continue;
         }
@@ -7143,6 +7361,96 @@ fn is_fallback_reference_gap_singleton_city(
                     record.mapping_strategy == crate::StationMappingStrategy::FallbackReferenceGap
                 })
         })
+}
+
+fn is_weak_singleton_city(city: &aetrain_domain::City) -> bool {
+    city.wikidata_qid.is_none() && city.population.is_none() && city.station_ids.len() == 1
+}
+
+fn is_authoritative_city(city: &aetrain_domain::City) -> bool {
+    city.wikidata_qid.is_some() || city.population.is_some() || city_id_has_registry_qid(city)
+}
+
+fn best_authoritative_parent_for_alias_singleton<'a>(
+    city: &aetrain_domain::City,
+    snapshot: &'a [aetrain_domain::City],
+    station_records: Option<&[&crate::StationMappingRecord]>,
+    effective_country_by_city: &BTreeMap<aetrain_domain::CityId, String>,
+    parent_match_keys_by_city: &BTreeMap<aetrain_domain::CityId, BTreeSet<String>>,
+) -> Option<&'a aetrain_domain::City> {
+    let effective_country = effective_country_by_city
+        .get(&city.city_id)
+        .cloned()
+        .unwrap_or_else(|| city.country_code.clone());
+    let child_keys = city_and_station_match_keys(city, station_records);
+    if child_keys.is_empty() {
+        return None;
+    }
+
+    let mut candidates = snapshot
+        .iter()
+        .filter(|parent| parent.city_id != city.city_id)
+        .filter(|parent| is_authoritative_city(parent))
+        .filter(|parent| parent.station_ids.len() > city.station_ids.len())
+        .filter(|parent| {
+            effective_country_by_city
+                .get(&parent.city_id)
+                .is_some_and(|country| *country == effective_country)
+        })
+        .filter(|parent| {
+            parent_match_keys_by_city
+                .get(&parent.city_id)
+                .is_some_and(|keys| keys.iter().any(|key| child_keys.contains(key)))
+        })
+        .filter_map(|parent| {
+            let distance_meters =
+                geo_distance_meters(city.location, parent.location).round() as u32;
+            (distance_meters <= 5_000).then_some((parent, distance_meters))
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        authoritative_alias_parent_score(left.0, left.1)
+            .cmp(&authoritative_alias_parent_score(right.0, right.1))
+            .reverse()
+    });
+    if candidates.len() >= 2
+        && authoritative_alias_parent_score(candidates[0].0, candidates[0].1)
+            == authoritative_alias_parent_score(candidates[1].0, candidates[1].1)
+    {
+        return None;
+    }
+    candidates.first().map(|(parent, _)| *parent)
+}
+
+fn city_and_station_match_keys(
+    city: &aetrain_domain::City,
+    station_records: Option<&[&crate::StationMappingRecord]>,
+) -> BTreeSet<String> {
+    let mut keys = parent_city_match_keys(city);
+    if let Some(records) = station_records {
+        for record in records {
+            keys.insert(comparable_place_key(&city_identity_key(
+                &record.station_display_name,
+            )));
+            keys.insert(comparable_place_key(&normalize_name(
+                &record.station_display_name,
+            )));
+        }
+    }
+    keys.retain(|key| !key.is_empty());
+    keys
+}
+
+fn authoritative_alias_parent_score(
+    city: &aetrain_domain::City,
+    distance_meters: u32,
+) -> (u8, usize, usize, std::cmp::Reverse<u32>) {
+    (
+        u8::from(city.wikidata_qid.is_some() || city.population.is_some()),
+        city.station_ids.len(),
+        city.aliases.len(),
+        std::cmp::Reverse(distance_meters),
+    )
 }
 
 fn best_parent_for_fallback_gap_alias_match<'a>(
@@ -7313,7 +7621,10 @@ fn promote_plain_name_fallback_gap_registry_cities(
 
         if record.registry_resolution_status == "resolved_exact_registry_city_match" {
             let registry_city = registry_index
-                .get(&(normalize_name(&city.display_name), city.country_code.clone()))
+                .get(&(
+                    normalize_name(&city.display_name),
+                    city.country_code.clone(),
+                ))
                 .and_then(|cities| cities.first())
                 .copied()
                 .expect("resolved registry candidate should exist");
@@ -7329,7 +7640,10 @@ fn promote_plain_name_fallback_gap_registry_cities(
             city.wikidata_qid = registry_city.wikidata_qid.clone();
             city.population = registry_city.population;
             if original_display_name != registry_city.display_name
-                && !city.aliases.iter().any(|alias| alias == &original_display_name)
+                && !city
+                    .aliases
+                    .iter()
+                    .any(|alias| alias == &original_display_name)
             {
                 city.aliases.push(original_display_name);
             }
@@ -7360,7 +7674,10 @@ fn build_registry_exact_city_name_index<'a>(
     let mut index = BTreeMap::<(String, String), Vec<&aetrain_registry::RegistryCity>>::new();
     for city in &registry_overlay.cities {
         index
-            .entry((normalize_name(&city.display_name), city.country_code.clone()))
+            .entry((
+                normalize_name(&city.display_name),
+                city.country_code.clone(),
+            ))
             .or_default()
             .push(city);
     }
@@ -7384,23 +7701,31 @@ fn classify_plain_name_fallback_gap_registry_candidate(
         .iter()
         .map(|record| record.station_display_name.clone())
         .collect::<Vec<_>>();
-    let key = (normalize_name(&city.display_name), city.country_code.clone());
+    let key = (
+        normalize_name(&city.display_name),
+        city.country_code.clone(),
+    );
     let matches = registry_index.get(&key).cloned().unwrap_or_default();
-    let (registry_resolution_status, registry_city_id, registry_display_name, registry_distance_m, suggested_action) =
-        match matches.as_slice() {
-            [] => (
-                "no_registry_match".to_string(),
-                None,
-                None,
-                None,
-                "expand authoritative municipality registry coverage for this plain-name fallback city"
-                    .to_string(),
-            ),
-            [registry_city] => {
-                let distance_m =
-                    geo_distance_meters(city.location, registry_city.identity_point).round() as u32;
-                if distance_m <= 25_000 {
-                    (
+    let (
+        registry_resolution_status,
+        registry_city_id,
+        registry_display_name,
+        registry_distance_m,
+        suggested_action,
+    ) = match matches.as_slice() {
+        [] => (
+            "no_registry_match".to_string(),
+            None,
+            None,
+            None,
+            "expand authoritative municipality registry coverage for this plain-name fallback city"
+                .to_string(),
+        ),
+        [registry_city] => {
+            let distance_m =
+                geo_distance_meters(city.location, registry_city.identity_point).round() as u32;
+            if distance_m <= 25_000 {
+                (
                         "resolved_exact_registry_city_match".to_string(),
                         Some(registry_city.city_id.clone()),
                         Some(registry_city.display_name.clone()),
@@ -7408,26 +7733,26 @@ fn classify_plain_name_fallback_gap_registry_candidate(
                         "promote to the exact registry municipality and keep stop membership under that city"
                             .to_string(),
                     )
-                } else {
-                    (
-                        "registry_match_too_far".to_string(),
-                        Some(registry_city.city_id.clone()),
-                        Some(registry_city.display_name.clone()),
-                        Some(distance_m),
-                        "review locality geometry before promoting this plain-name fallback city"
-                            .to_string(),
-                    )
-                }
+            } else {
+                (
+                    "registry_match_too_far".to_string(),
+                    Some(registry_city.city_id.clone()),
+                    Some(registry_city.display_name.clone()),
+                    Some(distance_m),
+                    "review locality geometry before promoting this plain-name fallback city"
+                        .to_string(),
+                )
             }
-            _ => (
-                "ambiguous_registry_match".to_string(),
-                None,
-                None,
-                None,
-                "add disambiguating registry coverage before promoting this plain-name fallback city"
-                    .to_string(),
-            ),
-        };
+        }
+        _ => (
+            "ambiguous_registry_match".to_string(),
+            None,
+            None,
+            None,
+            "add disambiguating registry coverage before promoting this plain-name fallback city"
+                .to_string(),
+        ),
+    };
 
     Some(PipelinePlainNameFallbackGapRegistryRecord {
         city_id: city.city_id.clone(),
@@ -7856,18 +8181,15 @@ fn apply_registry_city_authority(
     aggregate_source_id: &str,
     issues: &mut Vec<NormalizationIssue>,
 ) -> RegistryOverlayStats {
-    let variant_names_by_city = overlay
-        .name_variants
-        .iter()
-        .fold(
-            BTreeMap::<aetrain_domain::CityId, Vec<String>>::new(),
-            |mut acc, variant| {
-                acc.entry(variant.city_id.clone())
-                    .or_default()
-                    .push(variant.value.clone());
-                acc
-            },
-        );
+    let variant_names_by_city = overlay.name_variants.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, Vec<String>>::new(),
+        |mut acc, variant| {
+            acc.entry(variant.city_id.clone())
+                .or_default()
+                .push(variant.value.clone());
+            acc
+        },
+    );
     let mut claimed_indexes = BTreeSet::new();
     let mut stats = RegistryOverlayStats::default();
     for registry_city in &overlay.cities {
@@ -7933,6 +8255,10 @@ fn apply_registry_city_authority(
         }
         if city.display_name != registry_city.display_name {
             city.display_name = registry_city.display_name.clone();
+            changed = true;
+        }
+        if city.location != registry_city.map_anchor_point {
+            city.location = registry_city.map_anchor_point;
             changed = true;
         }
         if original_display_name != registry_city.display_name
@@ -8010,20 +8336,15 @@ fn registry_overlay_match_score(
     city: &aetrain_domain::City,
     registry_city: &aetrain_registry::RegistryCity,
     registry_names: &[String],
-) -> Option<(u8, u8, u8, usize)> {
-    let current_name = normalize_name(&city.display_name);
-    let exact_name_match = registry_names
-        .iter()
-        .any(|name| current_name == normalize_name(name));
-    let strong_prefix_match = registry_names.iter().any(|name| {
-        let normalized = normalize_name(name);
-        current_name.starts_with(&(normalized + " "))
-    });
-    if !exact_name_match && !strong_prefix_match {
+) -> Option<(u8, u8, u8, usize, std::cmp::Reverse<u32>)> {
+    let name_rank = registry_overlay_name_rank(city, registry_names)?;
+
+    let distance_meters =
+        geo_distance_meters(city.location, registry_city.map_anchor_point).round() as u32;
+    if distance_meters > REGISTRY_OVERLAY_MAX_SPATIAL_MATCH_DISTANCE_METERS {
         return None;
     }
 
-    let name_rank = if exact_name_match { 3 } else { 2 };
     let country_rank = if city
         .country_code
         .eq_ignore_ascii_case(&registry_city.country_code)
@@ -8040,7 +8361,35 @@ fn registry_overlay_match_score(
         country_rank,
         station_rank,
         city.station_ids.len(),
+        std::cmp::Reverse(distance_meters),
     ))
+}
+
+fn registry_overlay_name_rank(
+    city: &aetrain_domain::City,
+    registry_names: &[String],
+) -> Option<u8> {
+    let mut city_names = vec![(&city.display_name, true)];
+    city_names.extend(city.aliases.iter().map(|alias| (alias, false)));
+
+    let mut best_rank = None;
+    for (city_name, is_display_name) in city_names {
+        let normalized_city_name = normalize_name(city_name);
+        for registry_name in registry_names {
+            let normalized_registry_name = normalize_name(registry_name);
+            let rank = if normalized_city_name == normalized_registry_name {
+                Some(if is_display_name { 4 } else { 3 })
+            } else if normalized_city_name.starts_with(&(normalized_registry_name + " ")) {
+                Some(2)
+            } else {
+                None
+            };
+            if let Some(rank) = rank {
+                best_rank = Some(best_rank.map_or(rank, |current: u8| current.max(rank)));
+            }
+        }
+    }
+    best_rank
 }
 
 fn compute_city_interest_score(city: &aetrain_domain::City, degree: usize) -> u8 {
@@ -8873,7 +9222,9 @@ impl PipelineAdapter for GtfsBasicAdapter {
             for source in rail_geometry_sources {
                 let loader = authority_registry
                     .as_ref()
-                    .and_then(|registry| authority_loader_for_source_id(registry, &source.definition.id))
+                    .and_then(|registry| {
+                        authority_loader_for_source_id(registry, &source.definition.id)
+                    })
                     .with_context(|| {
                         format!(
                             "target {} is missing an authority loader for {}",
@@ -8999,7 +9350,10 @@ mod tests {
         PolylinePointE5,
     };
     use aetrain_domain::{City, CityId, GeoPoint, Station, StationId, TravelEdge};
-    use aetrain_registry::{RegistryCanonicalBundle, RegistryCity, RegistryMeta, RegistryStatus};
+    use aetrain_registry::{
+        RegistryCanonicalBundle, RegistryCity, RegistryMeta, RegistryNameVariant,
+        RegistryNameVariantKind, RegistryStatus,
+    };
 
     #[test]
     fn compact_web_runtime_bundle_validates() {
@@ -10201,6 +10555,120 @@ mod tests {
     }
 
     #[test]
+    fn cleanup_station_like_and_zz_residual_cities_demotes_authoritative_alias_singleton() {
+        let toulouse_id = CityId::new("toulouse-fr-q7880").expect("valid city id");
+        let residual_id = CityId::new("toulouse-matabiau-ch-099c66c9").expect("valid city id");
+        let blagnac_id = CityId::new("blagnac-fr-31069").expect("valid city id");
+        let mut cities = vec![
+            City {
+                city_id: toulouse_id.clone(),
+                slug: "toulouse".to_string(),
+                display_name: "Toulouse".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.6044,
+                    lon: 1.4433,
+                },
+                wikidata_qid: Some("Q7880".to_string()),
+                population: Some(514_819),
+                interest_score: Some(10),
+                station_ids: vec![
+                    StationId::new("station-uic-87611004").expect("valid station id"),
+                    StationId::new("station-uic-87611301").expect("valid station id"),
+                ],
+                aliases: vec!["Toulouse Matabiau".to_string()],
+            },
+            City {
+                city_id: residual_id.clone(),
+                slug: "toulouse-matabiau".to_string(),
+                display_name: "Toulouse Matabiau".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.6114,
+                    lon: 1.4539,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-uic-8761100").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: blagnac_id.clone(),
+                slug: "blagnac".to_string(),
+                display_name: "Blagnac".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.635,
+                    lon: 1.390,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![
+                    StationId::new("station-uic-87611800").expect("valid station id"),
+                ],
+                aliases: Vec::new(),
+            },
+        ];
+        let station_mappings = StationMappingReport {
+            records: vec![
+                StationMappingRecord {
+                    station_key: "StopArea:OCE8761100".to_string(),
+                    station_id: StationId::new("station-uic-8761100").expect("valid station id"),
+                    city_id: residual_id.clone(),
+                    city_cluster_key: "fallback-toulouse-matabiau".to_string(),
+                    station_display_name: "Toulouse Matabiau".to_string(),
+                    mapping_strategy: StationMappingStrategy::GtfsStemCluster,
+                    confidence: 60,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+                StationMappingRecord {
+                    station_key: "StopArea:OCE87611800".to_string(),
+                    station_id: StationId::new("station-uic-87611800").expect("valid station id"),
+                    city_id: blagnac_id.clone(),
+                    city_cluster_key: "fallback-blagnac".to_string(),
+                    station_display_name: "Blagnac".to_string(),
+                    mapping_strategy: StationMappingStrategy::GtfsStemCluster,
+                    confidence: 60,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+            ],
+        };
+        let mut remap = BTreeMap::new();
+        let mut issues = Vec::new();
+
+        cleanup_station_like_and_zz_residual_cities(
+            &mut cities,
+            &mut remap,
+            &station_mappings,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert!(!cities.iter().any(|city| city.city_id == residual_id));
+        assert!(cities.iter().any(|city| city.city_id == blagnac_id));
+        assert_eq!(remap.get(&residual_id).cloned(), Some(toulouse_id.clone()));
+        let toulouse = cities
+            .iter()
+            .find(|city| city.city_id == toulouse_id)
+            .expect("Toulouse should remain");
+        assert_eq!(toulouse.location.lat, 43.6044);
+        assert_eq!(toulouse.location.lon, 1.4433);
+        assert!(
+            toulouse
+                .station_ids
+                .contains(&StationId::new("station-uic-8761100").expect("valid station id"))
+        );
+    }
+
+    #[test]
     fn cleaned_residual_city_display_name_strips_route_like_noise() {
         let city = City {
             city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d").expect("valid city id"),
@@ -10321,7 +10789,9 @@ mod tests {
         assert!(fallback_gap_station_name_has_local_stop_qualifier(
             "Gouzon Champ De Foire"
         ));
-        assert!(!fallback_gap_station_name_has_local_stop_qualifier("Quillan"));
+        assert!(!fallback_gap_station_name_has_local_stop_qualifier(
+            "Quillan"
+        ));
     }
 
     #[test]
@@ -10392,7 +10862,10 @@ mod tests {
         assert_eq!(clusters.len(), 2);
         assert_eq!(clusters[0].display_name, "Arcachon");
         assert_eq!(clusters[0].route_count, 2);
-        assert_eq!(clusters[0].suggested_action, "expand_authority_source_coverage");
+        assert_eq!(
+            clusters[0].suggested_action,
+            "expand_authority_source_coverage"
+        );
         assert_eq!(clusters[0].counterpart_examples.len(), 2);
         assert_eq!(clusters[1].display_name, "La Teste-de-Buch");
         assert_eq!(clusters[1].route_count, 1);
@@ -10447,9 +10920,9 @@ mod tests {
         assert_eq!(summary.customer_facing_edge_count, 0);
         assert_eq!(summary.highest_priority_country.as_deref(), Some("CH"));
         assert_eq!(summary.highest_priority_corridor.as_deref(), Some("CH-DE"));
-        assert!(summary
-            .recommended_next_steps
-            .contains(&"do_not_enable_customer_facing_release_until_nonzero_edge_scope_exists".to_string()));
+        assert!(summary.recommended_next_steps.contains(
+            &"do_not_enable_customer_facing_release_until_nonzero_edge_scope_exists".to_string()
+        ));
     }
 
     #[test]
@@ -10496,7 +10969,10 @@ mod tests {
         assert_eq!(records[0].country_code, "CH");
         assert_eq!(records[0].display_name, "Zurich");
         assert_eq!(records[0].route_count, 2);
-        assert_eq!(records[0].suggested_action, "onboard_domestic_authority_layer");
+        assert_eq!(
+            records[0].suggested_action,
+            "onboard_domestic_authority_layer"
+        );
         assert_eq!(records[0].counterpart_examples.len(), 2);
     }
 
@@ -11036,6 +11512,8 @@ mod tests {
         assert_eq!(cities[3].city_id.as_str(), "toulouse-fr-q7880");
         assert_eq!(cities[3].display_name, "Toulouse");
         assert_eq!(cities[3].country_code, "FR");
+        assert_eq!(cities[3].location.lat, 43.6044);
+        assert_eq!(cities[3].location.lon, 1.4433);
         assert_eq!(cities[3].wikidata_qid.as_deref(), Some("Q7880"));
         assert_eq!(
             remap
@@ -11057,6 +11535,131 @@ mod tests {
         assert_eq!(stats.ambiguous_count, 0);
         assert_eq!(stats.country_corrected_count, 2);
         assert_eq!(stats.station_promoted_count, 1);
+    }
+
+    #[test]
+    fn registry_overlay_rejects_far_alias_homonyms() {
+        let mut cities = vec![
+            City {
+                city_id: CityId::new("tolosa-es-123").expect("valid city id"),
+                slug: "tolosa".to_string(),
+                display_name: "Tolosa".to_string(),
+                country_code: "ES".to_string(),
+                location: GeoPoint {
+                    lat: 43.1354,
+                    lon: -2.0791,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-tolosa-es").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: CityId::new("saint-martin-du-touch-fr-31555").expect("valid city id"),
+                slug: "saint-martin-du-touch".to_string(),
+                display_name: "Saint Martin Du Touch".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.5990,
+                    lon: 1.4143,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![
+                    StationId::new("station-toulouse-matabiau").expect("valid station id"),
+                    StationId::new("station-toulouse-saint-agne").expect("valid station id"),
+                ],
+                aliases: vec!["Toulouse Matabiau".to_string()],
+            },
+            City {
+                city_id: CityId::new("toulouse-matabiau-fr-123").expect("valid city id"),
+                slug: "toulouse-matabiau".to_string(),
+                display_name: "Toulouse Matabiau".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.6114,
+                    lon: 1.4539,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![StationId::new("station-toulouse-fr").expect("valid station id")],
+                aliases: Vec::new(),
+            },
+        ];
+        let overlay = RegistryCanonicalBundle {
+            meta: RegistryMeta {
+                schema_version: 1,
+                dataset_id: "test-overlay".to_string(),
+                scope: "fr-test".to_string(),
+                generated_at: "2026-05-10T00:00:00Z".to_string(),
+            },
+            cities: vec![RegistryCity {
+                city_id: CityId::new("toulouse-fr-q7880").expect("valid city id"),
+                slug: "toulouse".to_string(),
+                display_name: "Toulouse".to_string(),
+                country_code: "FR".to_string(),
+                identity_point: GeoPoint {
+                    lat: 43.6044,
+                    lon: 1.4433,
+                },
+                map_anchor_point: GeoPoint {
+                    lat: 43.6044,
+                    lon: 1.4433,
+                },
+                bbox: None,
+                wikidata_qid: Some("Q7880".to_string()),
+                population: Some(514_819),
+                status: RegistryStatus::Resolved,
+                external_refs: Vec::new(),
+            }],
+            stations: Vec::new(),
+            memberships: Vec::new(),
+            name_variants: vec![RegistryNameVariant {
+                city_id: CityId::new("toulouse-fr-q7880").expect("valid city id"),
+                value: "Tolosa".to_string(),
+                kind: RegistryNameVariantKind::CanonicalAlias,
+                source: "test".to_string(),
+            }],
+            city_facts: Vec::new(),
+            city_signals: Vec::new(),
+            city_authority_evidence: Vec::new(),
+            membership_evidence: Vec::new(),
+        };
+        let mut issues = Vec::new();
+        let mut remap = cities
+            .iter()
+            .map(|city| (city.city_id.clone(), city.city_id.clone()))
+            .collect::<BTreeMap<_, _>>();
+
+        let stats = apply_registry_city_authority(
+            &mut cities,
+            &mut remap,
+            &overlay,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(stats.matched_count, 1);
+        assert_eq!(cities[0].city_id.as_str(), "tolosa-es-123");
+        assert_eq!(cities[0].display_name, "Tolosa");
+        assert_eq!(cities[0].country_code, "ES");
+        assert_eq!(cities[1].city_id.as_str(), "toulouse-fr-q7880");
+        assert_eq!(cities[1].display_name, "Toulouse");
+        assert_eq!(cities[1].country_code, "FR");
+        assert_eq!(cities[1].location.lat, 43.6044);
+        assert_eq!(cities[1].location.lon, 1.4433);
+        assert_eq!(cities[1].wikidata_qid.as_deref(), Some("Q7880"));
+        assert_eq!(cities[2].city_id.as_str(), "toulouse-matabiau-fr-123");
+        assert_eq!(
+            remap
+                .get(&CityId::new("saint-martin-du-touch-fr-31555").expect("valid city id"))
+                .expect("remapped station-rich Toulouse cluster")
+                .as_str(),
+            "toulouse-fr-q7880"
+        );
     }
 
     #[test]
@@ -11193,6 +11796,8 @@ mod tests {
             &counters,
             0,
             None,
+            None,
+            &[],
             &[],
             Path::new("."),
         );
@@ -11390,6 +11995,8 @@ mod tests {
             &counters,
             0,
             None,
+            None,
+            &[],
             &[],
             Path::new("."),
         );
@@ -11510,6 +12117,8 @@ mod tests {
             &BTreeMap::new(),
             0,
             Some(&registry),
+            None,
+            &[],
             &[],
             Path::new("."),
         );
@@ -11641,6 +12250,8 @@ mod tests {
             &BTreeMap::new(),
             0,
             None,
+            None,
+            &[],
             &[],
             Path::new("."),
         );
@@ -12098,6 +12709,8 @@ mod tests {
             &counters,
             0,
             None,
+            None,
+            &[],
             &[],
             Path::new("."),
         );

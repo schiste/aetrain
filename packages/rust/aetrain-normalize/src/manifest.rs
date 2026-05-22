@@ -111,6 +111,10 @@ pub struct TargetDefinition {
     #[serde(default)]
     pub registry_overlay_path: Option<String>,
     #[serde(default)]
+    pub registry_source_manifest_path: Option<String>,
+    #[serde(default)]
+    pub complete_registry_country_codes: Vec<String>,
+    #[serde(default)]
     pub geometry_authority_registry_path: Option<String>,
     #[serde(default)]
     pub notes: Option<String>,
@@ -277,8 +281,7 @@ impl GeometryAuthorityRegistry {
         self.route_policies.iter().find(|entry| {
             entry.source_id == source_id
                 && ((&entry.from_city_id == left_city_id && &entry.to_city_id == right_city_id)
-                    || (&entry.from_city_id == right_city_id
-                        && &entry.to_city_id == left_city_id))
+                    || (&entry.from_city_id == right_city_id && &entry.to_city_id == left_city_id))
         })
     }
 }
@@ -584,6 +587,8 @@ mod tests {
                     web_debug_export: true,
                     customer_facing_scope_only: false,
                     registry_overlay_path: None,
+                    registry_source_manifest_path: None,
+                    complete_registry_country_codes: Vec::new(),
                     geometry_authority_registry_path: None,
                     notes: None,
                 },
@@ -597,6 +602,8 @@ mod tests {
                     web_debug_export: true,
                     customer_facing_scope_only: false,
                     registry_overlay_path: None,
+                    registry_source_manifest_path: None,
+                    complete_registry_country_codes: Vec::new(),
                     geometry_authority_registry_path: None,
                     notes: None,
                 },
@@ -629,6 +636,8 @@ mod tests {
                     web_debug_export: true,
                     customer_facing_scope_only: false,
                     registry_overlay_path: None,
+                    registry_source_manifest_path: None,
+                    complete_registry_country_codes: Vec::new(),
                     geometry_authority_registry_path: None,
                     notes: None,
                 },
@@ -642,6 +651,8 @@ mod tests {
                     web_debug_export: true,
                     customer_facing_scope_only: false,
                     registry_overlay_path: None,
+                    registry_source_manifest_path: None,
+                    complete_registry_country_codes: Vec::new(),
                     geometry_authority_registry_path: None,
                     notes: None,
                 },
@@ -655,6 +666,8 @@ mod tests {
                     web_debug_export: true,
                     customer_facing_scope_only: false,
                     registry_overlay_path: None,
+                    registry_source_manifest_path: None,
+                    complete_registry_country_codes: Vec::new(),
                     geometry_authority_registry_path: None,
                     notes: None,
                 },

@@ -30,7 +30,8 @@ input_target_ids = [
 active = true
 canonical_export = true
 web_debug_export = true
-registry_overlay_path = "../registry/fixtures/fr-wikidata-27/canonical/bundle.json"
+registry_overlay_path = "../registry/fixtures/fr-authority-27/canonical/bundle.json"
+registry_source_manifest_path = "registry.europe.toml"
 geometry_authority_registry_path = "geometry-authorities.toml"
 notes = "Aggregate Europe target built from the currently validated national rail targets."
 
@@ -53,7 +54,8 @@ active = true
 canonical_export = true
 web_debug_export = false
 customer_facing_scope_only = true
-registry_overlay_path = "../registry/fixtures/fr-wikidata-27/canonical/bundle.json"
+registry_overlay_path = "../registry/fixtures/fr-authority-27/canonical/bundle.json"
+registry_source_manifest_path = "registry.europe.toml"
 geometry_authority_registry_path = "geometry-authorities.toml"
 notes = "Release-scope aggregate. Exports only countries and corridors explicitly marked customer-facing in the authority registry."
 
