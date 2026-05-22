@@ -108,6 +108,8 @@ pub struct AdapterBuildArtifacts {
     pub plain_name_fallback_gap_registry_candidates:
         Vec<PipelinePlainNameFallbackGapRegistryRecord>,
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
+    pub quarantined_authoritative_zero_edge_cities:
+        Vec<PipelineQuarantinedAuthoritativeZeroEdgeCityRecord>,
     pub quarantined_promoted_attachment_gap_cities:
         Vec<PipelineQuarantinedPromotedAttachmentGapCityRecord>,
     pub duplicates: DuplicateCityReport,
@@ -544,6 +546,19 @@ pub struct PipelineQuarantinedFallbackGapCityRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineQuarantinedAuthoritativeZeroEdgeCityRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub country_code: String,
+    pub wikidata_qid: Option<String>,
+    pub population: Option<u64>,
+    pub station_ids: Vec<aetrain_domain::StationId>,
+    pub station_display_names: Vec<String>,
+    pub classification: String,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelinePlainNameFallbackGapRegistryRecord {
     pub city_id: aetrain_domain::CityId,
     pub display_name: String,
@@ -611,6 +626,8 @@ pub struct PipelineQualityReport {
     pub plain_name_fallback_gap_registry_candidates:
         Vec<PipelinePlainNameFallbackGapRegistryRecord>,
     pub quarantined_fallback_gap_cities: Vec<PipelineQuarantinedFallbackGapCityRecord>,
+    pub quarantined_authoritative_zero_edge_cities:
+        Vec<PipelineQuarantinedAuthoritativeZeroEdgeCityRecord>,
     pub quarantined_promoted_attachment_gap_cities:
         Vec<PipelineQuarantinedPromotedAttachmentGapCityRecord>,
 }
@@ -909,6 +926,7 @@ fn export_pipeline_target(
         artifacts.station_mappings.as_ref(),
         &artifacts.plain_name_fallback_gap_registry_candidates,
         &artifacts.quarantined_fallback_gap_cities,
+        &artifacts.quarantined_authoritative_zero_edge_cities,
         &artifacts.quarantined_promoted_attachment_gap_cities,
         &artifacts.counters,
         artifacts.duplicates.candidates.len(),
@@ -1122,6 +1140,10 @@ fn export_pipeline_target(
         &quality_report.quarantined_fallback_gap_cities,
     )?;
     write_json(
+        &quality_dir.join("quarantined-authoritative-zero-edge-cities.json"),
+        &quality_report.quarantined_authoritative_zero_edge_cities,
+    )?;
+    write_json(
         &quality_dir.join("quarantined-promoted-attachment-gap-cities.json"),
         &quality_report.quarantined_promoted_attachment_gap_cities,
     )?;
@@ -1266,6 +1288,8 @@ fn build_quality_report(
     station_mappings: Option<&StationMappingReport>,
     plain_name_fallback_gap_registry_candidates: &[PipelinePlainNameFallbackGapRegistryRecord],
     quarantined_fallback_gap_cities: &[PipelineQuarantinedFallbackGapCityRecord],
+    quarantined_authoritative_zero_edge_cities:
+        &[PipelineQuarantinedAuthoritativeZeroEdgeCityRecord],
     quarantined_promoted_attachment_gap_cities: &[PipelineQuarantinedPromotedAttachmentGapCityRecord],
     counters: &BTreeMap<String, u64>,
     duplicate_count: usize,
@@ -1871,6 +1895,8 @@ fn build_quality_report(
         plain_name_fallback_gap_registry_candidates: plain_name_fallback_gap_registry_candidates
             .to_vec(),
         quarantined_fallback_gap_cities: quarantined_fallback_gap_cities.to_vec(),
+        quarantined_authoritative_zero_edge_cities: quarantined_authoritative_zero_edge_cities
+            .to_vec(),
         quarantined_promoted_attachment_gap_cities: quarantined_promoted_attachment_gap_cities
             .to_vec(),
     }
@@ -1978,7 +2004,12 @@ fn official_municipality_country_codes(
                         | aetrain_registry::RegistryAuthorityRole::CityIdentity
                 )
         })
-        .flat_map(|source| source.country_codes.iter().map(|country| country.to_ascii_uppercase()))
+        .flat_map(|source| {
+            source
+                .country_codes
+                .iter()
+                .map(|country| country.to_ascii_uppercase())
+        })
         .collect()
 }
 
@@ -5542,6 +5573,17 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         request.target.id.as_str(),
         &mut merged_cities.issues,
     );
+    let quarantined_authoritative_zero_edge_cities =
+        quarantine_authoritative_zero_edge_fallback_gap_cities(
+            &mut merged_cities.cities,
+            &mut merged_cities.aliases,
+            &mut stations,
+            &mut edges,
+            &mut edge_geometries,
+            &mut station_mappings,
+            request.target.id.as_str(),
+            &mut merged_cities.issues,
+        );
     let aggregate_promoted_authority_networks = load_aggregate_promoted_country_authority_networks(
         &dependency_inputs,
         request.manifest,
@@ -5563,6 +5605,10 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     counters.insert(
         "quarantined_fallback_gap_city_count".to_string(),
         quarantined_fallback_gap_cities.len() as u64,
+    );
+    counters.insert(
+        "quarantined_authoritative_zero_edge_city_count".to_string(),
+        quarantined_authoritative_zero_edge_cities.len() as u64,
     );
     counters.insert(
         "quarantined_promoted_attachment_gap_city_count".to_string(),
@@ -5657,6 +5703,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         rejected_city_candidates: Some(rejected_city_candidates),
         plain_name_fallback_gap_registry_candidates,
         quarantined_fallback_gap_cities,
+        quarantined_authoritative_zero_edge_cities,
         quarantined_promoted_attachment_gap_cities,
         duplicates,
         issues,
@@ -7589,6 +7636,133 @@ fn quarantine_unresolved_fallback_gap_pseudo_cities(
     quarantined
 }
 
+fn quarantine_authoritative_zero_edge_fallback_gap_cities(
+    cities: &mut Vec<aetrain_domain::City>,
+    aliases: &mut Vec<aetrain_dataset::AliasRecord>,
+    stations: &mut Vec<aetrain_domain::Station>,
+    edges: &mut Vec<aetrain_domain::TravelEdge>,
+    edge_geometries: &mut EdgeGeometryArtifact,
+    station_mappings: &mut StationMappingReport,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> Vec<PipelineQuarantinedAuthoritativeZeroEdgeCityRecord> {
+    let mapping_by_city = station_mappings.records.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, Vec<&crate::StationMappingRecord>>::new(),
+        |mut acc, record| {
+            acc.entry(record.city_id.clone()).or_default().push(record);
+            acc
+        },
+    );
+    let edge_degree_by_city = edges.iter().fold(
+        BTreeMap::<aetrain_domain::CityId, u64>::new(),
+        |mut acc, edge| {
+            *acc.entry(edge.from_city_id.clone()).or_default() += 1;
+            *acc.entry(edge.to_city_id.clone()).or_default() += 1;
+            acc
+        },
+    );
+
+    let quarantined = cities
+        .iter()
+        .filter_map(|city| {
+            classify_quarantined_authoritative_zero_edge_fallback_gap_city(
+                city,
+                mapping_by_city.get(&city.city_id)?.as_slice(),
+                edge_degree_by_city.get(&city.city_id).copied().unwrap_or(0),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    if quarantined.is_empty() {
+        return quarantined;
+    }
+
+    let quarantined_city_ids = quarantined
+        .iter()
+        .map(|record| record.city_id.clone())
+        .collect::<BTreeSet<_>>();
+    for record in &quarantined {
+        issues.push(NormalizationIssue {
+            severity: crate::IssueSeverity::Warning,
+            source_id: aggregate_source_id.to_string(),
+            entity_ref: record.city_id.to_string(),
+            message: format!(
+                "quarantined authoritative zero-edge fallback-gap city {} ({})",
+                record.display_name, record.classification
+            ),
+        });
+    }
+
+    cities.retain(|city| !quarantined_city_ids.contains(&city.city_id));
+    aliases.retain(|alias| !quarantined_city_ids.contains(&alias.city_id));
+    stations.retain(|station| !quarantined_city_ids.contains(&station.city_id));
+    edges.retain(|edge| {
+        !quarantined_city_ids.contains(&edge.from_city_id)
+            && !quarantined_city_ids.contains(&edge.to_city_id)
+    });
+    edge_geometries.geometries.retain(|geometry| {
+        !quarantined_city_ids.contains(&geometry.from_city_id)
+            && !quarantined_city_ids.contains(&geometry.to_city_id)
+    });
+    station_mappings
+        .records
+        .retain(|record| !quarantined_city_ids.contains(&record.city_id));
+
+    *aliases = rebuild_alias_records(cities);
+    quarantined
+}
+
+fn classify_quarantined_authoritative_zero_edge_fallback_gap_city(
+    city: &aetrain_domain::City,
+    station_records: &[&crate::StationMappingRecord],
+    edge_degree: u64,
+) -> Option<PipelineQuarantinedAuthoritativeZeroEdgeCityRecord> {
+    if !is_authoritative_city(city)
+        || edge_degree != 0
+        || city.station_ids.is_empty()
+        || station_records.is_empty()
+    {
+        return None;
+    }
+    if !station_records.iter().all(|record| {
+        record.mapping_strategy == crate::StationMappingStrategy::FallbackReferenceGap
+            && record.matched_reference_id.is_none()
+            && record.matched_reference_name.is_none()
+            && record.override_id.is_none()
+    }) {
+        return None;
+    }
+
+    let mapped_station_ids = station_records
+        .iter()
+        .map(|record| record.station_id.clone())
+        .collect::<BTreeSet<_>>();
+    if city
+        .station_ids
+        .iter()
+        .any(|station_id| !mapped_station_ids.contains(station_id))
+    {
+        return None;
+    }
+
+    Some(PipelineQuarantinedAuthoritativeZeroEdgeCityRecord {
+        city_id: city.city_id.clone(),
+        display_name: city.display_name.clone(),
+        country_code: city.country_code.clone(),
+        wikidata_qid: city.wikidata_qid.clone(),
+        population: city.population,
+        station_ids: city.station_ids.clone(),
+        station_display_names: station_records
+            .iter()
+            .map(|record| record.station_display_name.clone())
+            .collect(),
+        classification: "authoritative_zero_edge_fallback_reference_gap".to_string(),
+        suggested_action:
+            "keep the registry city, but exclude it from runtime trip planning until official station-reference membership or rail service edges exist"
+                .to_string(),
+    })
+}
+
 fn promote_plain_name_fallback_gap_registry_cities(
     cities: &mut [aetrain_domain::City],
     city_id_remap: &mut BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
@@ -9178,6 +9352,7 @@ impl PipelineAdapter for SncfAdapter {
             rejected_city_candidates: Some(output.rejected_city_candidates),
             plain_name_fallback_gap_registry_candidates: Vec::new(),
             quarantined_fallback_gap_cities: Vec::new(),
+            quarantined_authoritative_zero_edge_cities: Vec::new(),
             quarantined_promoted_attachment_gap_cities: Vec::new(),
             duplicates: output.duplicates,
             issues: output.issues,
@@ -9317,6 +9492,7 @@ impl PipelineAdapter for GtfsBasicAdapter {
             rejected_city_candidates: Some(output.rejected_city_candidates),
             plain_name_fallback_gap_registry_candidates: Vec::new(),
             quarantined_fallback_gap_cities: Vec::new(),
+            quarantined_authoritative_zero_edge_cities: Vec::new(),
             quarantined_promoted_attachment_gap_cities: Vec::new(),
             duplicates: output.duplicates,
             issues: output.issues,
@@ -10693,6 +10869,142 @@ mod tests {
     }
 
     #[test]
+    fn quarantine_authoritative_zero_edge_fallback_gap_cities_removes_runtime_dead_ends() {
+        let zero_edge_city_id = CityId::new("quillan-fr-q28381883").expect("valid city id");
+        let official_zero_edge_city_id =
+            CityId::new("official-town-fr-q123").expect("valid city id");
+        let zero_edge_station_id =
+            StationId::new("station-uic-87615260").expect("valid station id");
+        let official_station_id = StationId::new("station-uic-87000001").expect("valid station id");
+        let mut cities = vec![
+            City {
+                city_id: zero_edge_city_id.clone(),
+                slug: "quillan".to_string(),
+                display_name: "Quillan".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 42.873947,
+                    lon: 2.181787,
+                },
+                wikidata_qid: Some("Q28381883".to_string()),
+                population: Some(2_978),
+                interest_score: Some(4),
+                station_ids: vec![zero_edge_station_id.clone()],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: official_zero_edge_city_id.clone(),
+                slug: "official-town".to_string(),
+                display_name: "Official Town".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 43.0,
+                    lon: 2.0,
+                },
+                wikidata_qid: Some("Q123".to_string()),
+                population: Some(1_000),
+                interest_score: Some(3),
+                station_ids: vec![official_station_id.clone()],
+                aliases: Vec::new(),
+            },
+        ];
+        let mut aliases = rebuild_alias_records(&cities);
+        let mut stations = vec![
+            Station {
+                station_id: zero_edge_station_id.clone(),
+                city_id: zero_edge_city_id.clone(),
+                display_name: "Quillan".to_string(),
+                location: GeoPoint {
+                    lat: 42.873947,
+                    lon: 2.181787,
+                },
+                uic_code: Some("87615260".to_string()),
+                source_refs: Vec::new(),
+            },
+            Station {
+                station_id: official_station_id.clone(),
+                city_id: official_zero_edge_city_id.clone(),
+                display_name: "Official Town".to_string(),
+                location: GeoPoint {
+                    lat: 43.0,
+                    lon: 2.0,
+                },
+                uic_code: Some("87000001".to_string()),
+                source_refs: Vec::new(),
+            },
+        ];
+        let mut edges = Vec::new();
+        let mut edge_geometries = EdgeGeometryArtifact { geometries: vec![] };
+        let mut station_mappings = StationMappingReport {
+            records: vec![
+                StationMappingRecord {
+                    station_key: "StopArea:OCE87615260".to_string(),
+                    station_id: zero_edge_station_id.clone(),
+                    city_id: zero_edge_city_id.clone(),
+                    city_cluster_key: "fallback-quillan-87615260".to_string(),
+                    station_display_name: "Quillan".to_string(),
+                    mapping_strategy: StationMappingStrategy::FallbackReferenceGap,
+                    confidence: 50,
+                    matched_reference_id: None,
+                    matched_reference_name: None,
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+                StationMappingRecord {
+                    station_key: "StopArea:OCE87000001".to_string(),
+                    station_id: official_station_id.clone(),
+                    city_id: official_zero_edge_city_id.clone(),
+                    city_cluster_key: "official-town".to_string(),
+                    station_display_name: "Official Town".to_string(),
+                    mapping_strategy: StationMappingStrategy::ReferenceUic,
+                    confidence: 95,
+                    matched_reference_id: Some("87000001".to_string()),
+                    matched_reference_name: Some("Official Town".to_string()),
+                    override_id: None,
+                    source_refs: Vec::new(),
+                },
+            ],
+        };
+        let mut issues = Vec::new();
+
+        let quarantined = quarantine_authoritative_zero_edge_fallback_gap_cities(
+            &mut cities,
+            &mut aliases,
+            &mut stations,
+            &mut edges,
+            &mut edge_geometries,
+            &mut station_mappings,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(quarantined.len(), 1);
+        assert_eq!(&quarantined[0].city_id, &zero_edge_city_id);
+        assert!(cities.iter().all(|city| city.city_id != zero_edge_city_id));
+        assert!(
+            cities
+                .iter()
+                .any(|city| city.city_id == official_zero_edge_city_id)
+        );
+        assert!(
+            stations
+                .iter()
+                .all(|station| station.city_id != zero_edge_city_id)
+        );
+        assert!(
+            station_mappings
+                .records
+                .iter()
+                .all(|record| record.city_id != zero_edge_city_id)
+        );
+        assert!(
+            issues
+                .iter()
+                .any(|issue| issue.entity_ref == "quillan-fr-q28381883")
+        );
+    }
+
+    #[test]
     fn promote_plain_name_fallback_gap_registry_cities_resolves_exact_match() {
         let original_id = CityId::new("ajain-fr-fallback").expect("valid city id");
         let registry_id = CityId::new("ajain-fr-q123").expect("valid city id");
@@ -11793,6 +12105,7 @@ mod tests {
             &[],
             &[],
             &[],
+            &[],
             &counters,
             0,
             None,
@@ -11992,6 +12305,7 @@ mod tests {
             &[],
             &[],
             &[],
+            &[],
             &counters,
             0,
             None,
@@ -12111,6 +12425,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &[],
             &[],
             &[],
@@ -12244,6 +12559,7 @@ mod tests {
             &edges,
             &edge_geometries,
             None,
+            &[],
             &[],
             &[],
             &[],
@@ -12703,6 +13019,7 @@ mod tests {
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
             None,
+            &[],
             &[],
             &[],
             &[],
