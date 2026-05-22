@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "unresolved_city",
+    "severity": "warning",
+    "entity_ref": "ajain-fr-q673204",
+    "message": "France authority city Ajain has no SNCF station membership in this scoped build"
+  },
+  {
+    "kind": "unresolved_city",
+    "severity": "warning",
+    "entity_ref": "alet-les-bains-fr-q173787",
+    "message": "France authority city Alet-les-Bains has no SNCF station membership in this scoped build"
+  },
+  {
+    "kind": "unresolved_city",
+    "severity": "warning",
+    "entity_ref": "esperaza-fr-q609690",
+    "message": "France authority city Espéraza has no SNCF station membership in this scoped build"
+  },
+  {
+    "kind": "unresolved_city",
+    "severity": "warning",
+    "entity_ref": "quillan-fr-q28381883",
+    "message": "France authority city Quillan has no SNCF station membership in this scoped build"
+  }
+]

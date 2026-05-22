@@ -1,0 +1,1222 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-authority-27",
+    "scope": "fr-authority-27",
+    "generated_at": "2026-05-22T00:00:00Z"
+  },
+  "evidence": [
+    {
+      "city_id": "angers-fr-q38380",
+      "station_id": "station-uic-87484048",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "49007",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "station_id": "station-uic-87484006",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "49007",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "station_id": "station-uic-87582668",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "33009",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87580340",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87543207",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87381038",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87381046",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_id": "station-uic-87765008",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "84007",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_id": "station-uic-87318964",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "84007",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87328328",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_id": "station-uic-87581009",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "33063",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87543181",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_id": "station-uic-87581538",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "33063",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87393058",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_id": "station-uic-87481051",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "44109",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87381129",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "station_id": "station-uic-87713040",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "21231",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "station_id": "station-uic-87713008",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "21231",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "station_id": "station-uic-87417444",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "51454",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87497461",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "station_id": "station-uic-87747006",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "38185",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_id": "station-uic-87590331",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "44109",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87281899",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87286062",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87393033",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87393066",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_id": "station-uic-87338525",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "67482",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751602",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751719",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "station_id": "station-uic-87334508",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "35238",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "station_id": "station-uic-87582643",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "33529",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87611434",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87611939",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87353573",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87353581",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87287102",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87109306",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87223263",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87286005",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87287250",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_id": "station-uic-87721175",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "69123",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_id": "station-uic-87282624",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "69123",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_id": "station-uic-87723197",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "69123",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_id": "station-uic-87722025",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "69123",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_id": "station-uic-87721159",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "69123",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_id": "station-uic-87721001",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "69123",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87281873",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751081",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751008",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_id": "station-uic-87287128",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59350",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87612010",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_id": "station-uic-87765412",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "84007",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "station_id": "station-uic-87773002",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "34172",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "station_id": "station-uic-87688887",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "34172",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87547307",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_id": "station-uic-87481002",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "44109",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87381020",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87731448",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_id": "station-uic-87756056",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "06088",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_id": "station-uic-87590299",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "06088",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_id": "station-uic-87756353",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "06088",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_id": "station-uic-87756254",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "06088",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "station_id": "station-uic-87775007",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "30189",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87547026",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87686667",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87113001",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87686030",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87271007",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87391102",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87384008",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87381012",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87759290",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87381111",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87393041",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87393322",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "station_id": "station-uic-87471391",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "35238",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87111278",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "station_id": "station-uic-87171009",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "51454",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "station_id": "station-uic-87171272",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "51454",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "station_id": "station-uic-87471003",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "35238",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87654798",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "station_id": "station-uic-87411017",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "76540",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87611301",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751826",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "station_id": "station-uic-87775072",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "30189",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87446179",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_id": "station-uic-87726190",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "42218",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_id": "station-uic-87726901",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "42218",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_id": "station-uic-87726000",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "42218",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_id": "station-uic-87726158",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "42218",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_id": "station-uic-87726174",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "42218",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87759316",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751701",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87353599",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "station_id": "station-uic-87547315",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "75056",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_id": "station-uic-87751842",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "13055",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_id": "station-uic-87212027",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "67482",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "station_id": "station-uic-87755009",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "83137",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "station_id": "station-uic-87742262",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "83137",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_id": "station-uic-87611004",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "31555",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "station_id": "station-uic-87343301",
+      "source_ref": {
+        "source_id": "fr-sncf-gares-voyageurs-commune-membership",
+        "external_id": "59632",
+        "authority_role": "station_city_membership",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    }
+  ]
+}

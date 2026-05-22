@@ -1,0 +1,27 @@
+{"code_insee":"75056","display_name":"Paris","country_code":"FR","location":{"lat":48.85666666666667,"lon":2.352222222222222}}
+{"code_insee":"69123","display_name":"Lyon","country_code":"FR","location":{"lat":45.7675,"lon":4.835}}
+{"code_insee":"13055","display_name":"Marseille","country_code":"FR","location":{"lat":43.296666666667,"lon":5.3763888888889}}
+{"code_insee":"31555","display_name":"Toulouse","country_code":"FR","location":{"lat":43.60444444444445,"lon":1.4433333333333334}}
+{"code_insee":"33063","display_name":"Bordeaux","country_code":"FR","location":{"lat":44.837777777778,"lon":-0.57944444444444}}
+{"code_insee":"44109","display_name":"Nantes","country_code":"FR","location":{"lat":47.217222222222,"lon":-1.5538888888889}}
+{"code_insee":"59350","display_name":"Lille","country_code":"FR","location":{"lat":50.631944444444,"lon":3.0575}}
+{"code_insee":"67482","display_name":"Strasbourg","country_code":"FR","location":{"lat":48.573333333333,"lon":7.7522222222222}}
+{"code_insee":"06088","display_name":"Nice","country_code":"FR","location":{"lat":43.701944444444,"lon":7.2683333333333}}
+{"code_insee":"84007","display_name":"Avignon","country_code":"FR","location":{"lat":43.948611111111,"lon":4.8083333333333}}
+{"code_insee":"34172","display_name":"Montpellier","country_code":"FR","location":{"lat":43.610919444444,"lon":3.8772305555556}}
+{"code_insee":"35238","display_name":"Rennes","country_code":"FR","location":{"lat":48.114166666667,"lon":-1.6808333333333}}
+{"code_insee":"38185","display_name":"Grenoble","country_code":"FR","location":{"lat":45.186944444444,"lon":5.7263888888889}}
+{"code_insee":"21231","display_name":"Dijon","country_code":"FR","location":{"lat":47.323055555556,"lon":5.0419444444444}}
+{"code_insee":"76540","display_name":"Rouen","country_code":"FR","location":{"lat":49.443055555556,"lon":1.1025}}
+{"code_insee":"51454","display_name":"Reims","country_code":"FR","location":{"lat":49.265277777778,"lon":4.0286111111111}}
+{"code_insee":"42218","display_name":"Saint-Étienne","country_code":"FR","location":{"lat":45.433888888889,"lon":4.3897222222222}}
+{"code_insee":"83137","display_name":"Toulon","country_code":"FR","location":{"lat":43.125,"lon":5.9305555555556}}
+{"code_insee":"49007","display_name":"Angers","country_code":"FR","location":{"lat":47.472777777778,"lon":-0.55555555555556}}
+{"code_insee":"30189","display_name":"Nîmes","country_code":"FR","location":{"lat":43.83833333333333,"lon":4.3597222222222225}}
+{"code_insee":"23002","display_name":"Ajain","country_code":"FR","location":{"lat":46.2075,"lon":1.9986111111111111}}
+{"code_insee":"11008","display_name":"Alet-les-Bains","country_code":"FR","location":{"lat":42.99638888888889,"lon":2.256388888888889}}
+{"code_insee":"11129","display_name":"Espéraza","country_code":"FR","location":{"lat":42.93527777777778,"lon":2.2205555555555554}}
+{"code_insee":"11304","display_name":"Quillan","country_code":"FR","location":{"lat":42.875277777777775,"lon":2.1819444444444445}}
+{"code_insee":"33009","display_name":"Arcachon","country_code":"FR","location":{"lat":44.65861111111111,"lon":-1.1688888888888889}}
+{"code_insee":"33529","display_name":"La Teste-de-Buch","country_code":"FR","location":{"lat":44.63099444444444,"lon":-1.1482305555555556}}
+{"code_insee":"59632","display_name":"Wallers","country_code":"FR","location":{"lat":50.375277777777775,"lon":3.3919444444444444}}

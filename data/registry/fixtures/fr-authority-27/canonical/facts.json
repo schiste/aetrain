@@ -1,0 +1,766 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-authority-27",
+    "scope": "fr-authority-27",
+    "generated_at": "2026-05-22T00:00:00Z"
+  },
+  "facts": [
+    {
+      "city_id": "paris-fr-q90",
+      "station_count": 28,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "75056",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q90",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "station_count": 6,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "69123",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q456",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "station_count": 10,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "13055",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q23482",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "station_count": 10,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "31555",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q7880",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "33063",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q1479",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "station_count": 3,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "44109",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q12191",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "station_count": 7,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "59350",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q648",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "67482",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q6602",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "station_count": 4,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "06088",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q33959",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "station_count": 3,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "84007",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q6397",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "34172",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q6441",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6441",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "station_count": 3,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "35238",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q647",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q647",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "station_count": 1,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "38185",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q1289",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1289",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "21231",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q7003",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7003",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "station_count": 1,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "76540",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q30974",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q30974",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "station_count": 3,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "51454",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q41876",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q41876",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "station_count": 5,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "42218",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q42716",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42716",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "83137",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q44160",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q44160",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "49007",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q38380",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q38380",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "station_count": 2,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "30189",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q42807",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42807",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "23002",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q673204",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q673204",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "11008",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q173787",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q173787",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "11129",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q609690",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q609690",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "station_count": null,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "11304",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q28381883",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q28381883",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "station_count": 1,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "33009",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q191460",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q191460",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "station_count": 1,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "33529",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q233133",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q233133",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "station_count": 1,
+      "museum_count": null,
+      "unesco_site_count": null,
+      "protected_area_distance_km": null,
+      "coastline_distance_km": null,
+      "source_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "59632",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q473417",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q473417",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    }
+  ]
+}

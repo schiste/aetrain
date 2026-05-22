@@ -1,0 +1,507 @@
+[
+  {
+    "city_id": "angers-fr-q38380",
+    "station_id": "station-uic-87484048",
+    "is_primary": true
+  },
+  {
+    "city_id": "angers-fr-q38380",
+    "station_id": "station-uic-87484006",
+    "is_primary": false
+  },
+  {
+    "city_id": "arcachon-fr-q191460",
+    "station_id": "station-uic-87582668",
+    "is_primary": true
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87580340",
+    "is_primary": true
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87543207",
+    "is_primary": true
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87381038",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87381046",
+    "is_primary": false
+  },
+  {
+    "city_id": "avignon-fr-q6397",
+    "station_id": "station-uic-87765008",
+    "is_primary": true
+  },
+  {
+    "city_id": "avignon-fr-q6397",
+    "station_id": "station-uic-87318964",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87328328",
+    "is_primary": false
+  },
+  {
+    "city_id": "bordeaux-fr-q1479",
+    "station_id": "station-uic-87581009",
+    "is_primary": true
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87543181",
+    "is_primary": false
+  },
+  {
+    "city_id": "bordeaux-fr-q1479",
+    "station_id": "station-uic-87581538",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87393058",
+    "is_primary": false
+  },
+  {
+    "city_id": "nantes-fr-q12191",
+    "station_id": "station-uic-87481051",
+    "is_primary": true
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87381129",
+    "is_primary": false
+  },
+  {
+    "city_id": "dijon-fr-q7003",
+    "station_id": "station-uic-87713040",
+    "is_primary": true
+  },
+  {
+    "city_id": "dijon-fr-q7003",
+    "station_id": "station-uic-87713008",
+    "is_primary": false
+  },
+  {
+    "city_id": "reims-fr-q41876",
+    "station_id": "station-uic-87417444",
+    "is_primary": true
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87497461",
+    "is_primary": true
+  },
+  {
+    "city_id": "grenoble-fr-q1289",
+    "station_id": "station-uic-87747006",
+    "is_primary": true
+  },
+  {
+    "city_id": "nantes-fr-q12191",
+    "station_id": "station-uic-87590331",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87281899",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87286062",
+    "is_primary": true
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87393033",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87393066",
+    "is_primary": false
+  },
+  {
+    "city_id": "strasbourg-fr-q6602",
+    "station_id": "station-uic-87338525",
+    "is_primary": true
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751602",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751719",
+    "is_primary": false
+  },
+  {
+    "city_id": "rennes-fr-q647",
+    "station_id": "station-uic-87334508",
+    "is_primary": true
+  },
+  {
+    "city_id": "la-teste-de-buch-fr-q233133",
+    "station_id": "station-uic-87582643",
+    "is_primary": true
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87611434",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87611939",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87353573",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87353581",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87287102",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87109306",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87223263",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87286005",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87287250",
+    "is_primary": false
+  },
+  {
+    "city_id": "lyon-fr-q456",
+    "station_id": "station-uic-87721175",
+    "is_primary": true
+  },
+  {
+    "city_id": "lyon-fr-q456",
+    "station_id": "station-uic-87282624",
+    "is_primary": false
+  },
+  {
+    "city_id": "lyon-fr-q456",
+    "station_id": "station-uic-87723197",
+    "is_primary": false
+  },
+  {
+    "city_id": "lyon-fr-q456",
+    "station_id": "station-uic-87722025",
+    "is_primary": false
+  },
+  {
+    "city_id": "lyon-fr-q456",
+    "station_id": "station-uic-87721159",
+    "is_primary": false
+  },
+  {
+    "city_id": "lyon-fr-q456",
+    "station_id": "station-uic-87721001",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87281873",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751081",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751008",
+    "is_primary": false
+  },
+  {
+    "city_id": "lille-fr-q648",
+    "station_id": "station-uic-87287128",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87612010",
+    "is_primary": false
+  },
+  {
+    "city_id": "avignon-fr-q6397",
+    "station_id": "station-uic-87765412",
+    "is_primary": false
+  },
+  {
+    "city_id": "montpellier-fr-q6441",
+    "station_id": "station-uic-87773002",
+    "is_primary": true
+  },
+  {
+    "city_id": "montpellier-fr-q6441",
+    "station_id": "station-uic-87688887",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87547307",
+    "is_primary": false
+  },
+  {
+    "city_id": "nantes-fr-q12191",
+    "station_id": "station-uic-87481002",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87381020",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87731448",
+    "is_primary": false
+  },
+  {
+    "city_id": "nice-fr-q33959",
+    "station_id": "station-uic-87756056",
+    "is_primary": true
+  },
+  {
+    "city_id": "nice-fr-q33959",
+    "station_id": "station-uic-87590299",
+    "is_primary": false
+  },
+  {
+    "city_id": "nice-fr-q33959",
+    "station_id": "station-uic-87756353",
+    "is_primary": false
+  },
+  {
+    "city_id": "nice-fr-q33959",
+    "station_id": "station-uic-87756254",
+    "is_primary": false
+  },
+  {
+    "city_id": "nimes-fr-q42807",
+    "station_id": "station-uic-87775007",
+    "is_primary": true
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87547026",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87686667",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87113001",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87686030",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87271007",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87391102",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87384008",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87381012",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87759290",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87381111",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87393041",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87393322",
+    "is_primary": false
+  },
+  {
+    "city_id": "rennes-fr-q647",
+    "station_id": "station-uic-87471391",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87111278",
+    "is_primary": false
+  },
+  {
+    "city_id": "reims-fr-q41876",
+    "station_id": "station-uic-87171009",
+    "is_primary": false
+  },
+  {
+    "city_id": "reims-fr-q41876",
+    "station_id": "station-uic-87171272",
+    "is_primary": false
+  },
+  {
+    "city_id": "rennes-fr-q647",
+    "station_id": "station-uic-87471003",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87654798",
+    "is_primary": false
+  },
+  {
+    "city_id": "rouen-fr-q30974",
+    "station_id": "station-uic-87411017",
+    "is_primary": true
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87611301",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751826",
+    "is_primary": false
+  },
+  {
+    "city_id": "nimes-fr-q42807",
+    "station_id": "station-uic-87775072",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87446179",
+    "is_primary": false
+  },
+  {
+    "city_id": "saint-etienne-fr-q42716",
+    "station_id": "station-uic-87726190",
+    "is_primary": true
+  },
+  {
+    "city_id": "saint-etienne-fr-q42716",
+    "station_id": "station-uic-87726901",
+    "is_primary": false
+  },
+  {
+    "city_id": "saint-etienne-fr-q42716",
+    "station_id": "station-uic-87726000",
+    "is_primary": false
+  },
+  {
+    "city_id": "saint-etienne-fr-q42716",
+    "station_id": "station-uic-87726158",
+    "is_primary": false
+  },
+  {
+    "city_id": "saint-etienne-fr-q42716",
+    "station_id": "station-uic-87726174",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87759316",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751701",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87353599",
+    "is_primary": false
+  },
+  {
+    "city_id": "paris-fr-q90",
+    "station_id": "station-uic-87547315",
+    "is_primary": false
+  },
+  {
+    "city_id": "marseille-fr-q23482",
+    "station_id": "station-uic-87751842",
+    "is_primary": false
+  },
+  {
+    "city_id": "strasbourg-fr-q6602",
+    "station_id": "station-uic-87212027",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulon-fr-q44160",
+    "station_id": "station-uic-87755009",
+    "is_primary": true
+  },
+  {
+    "city_id": "toulon-fr-q44160",
+    "station_id": "station-uic-87742262",
+    "is_primary": false
+  },
+  {
+    "city_id": "toulouse-fr-q7880",
+    "station_id": "station-uic-87611004",
+    "is_primary": false
+  },
+  {
+    "city_id": "wallers-fr-q473417",
+    "station_id": "station-uic-87343301",
+    "is_primary": true
+  }
+]

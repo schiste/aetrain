@@ -1,0 +1,1929 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-authority-27",
+    "scope": "fr-authority-27",
+    "generated_at": "2026-05-22T00:00:00Z"
+  },
+  "stations": [
+    {
+      "station_id": "station-uic-87484048",
+      "display_name": "Angers Maître École",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.4670899,
+        "lon": -0.531894
+      },
+      "uic_code": "87484048",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c27e171a-ed5f-4f42-80dd-7dca6f1f57d6",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87484006",
+      "display_name": "Angers Saint-Laud",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.464647,
+        "lon": -0.55682
+      },
+      "uic_code": "87484006",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "3730810c-71aa-49d4-b620-88750e4189dc",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87582668",
+      "display_name": "Arcachon",
+      "country_code": "FR",
+      "location": {
+        "lat": 44.659009,
+        "lon": -1.16523
+      },
+      "uic_code": "87582668",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "59845363-41d7-4a59-b1d5-ba734779148e",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87580340",
+      "display_name": "Arenc Euroméditerranée",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.3132339,
+        "lon": 5.3676221
+      },
+      "uic_code": "87580340",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "76a0b43c-b7df-4c96-982d-33ccaeeab554",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87543207",
+      "display_name": "Avenue du Président Kennedy Maison de Radio France",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.853322,
+        "lon": 2.279969
+      },
+      "uic_code": "87543207",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "257c109b-eca1-445d-a301-a4f0260a0135",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87381038",
+      "display_name": "Avenue Foch",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.870971,
+        "lon": 2.2756167
+      },
+      "uic_code": "87381038",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "cad23d17-ec93-4aad-9a4a-27be1df38e06",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87381046",
+      "display_name": "Avenue Henri Martin",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.8644077,
+        "lon": 2.272238
+      },
+      "uic_code": "87381046",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5bb79be5-eeb0-4cbd-8170-5e901d515bab",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87765008",
+      "display_name": "Avignon Centre",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.9419,
+        "lon": 4.805281
+      },
+      "uic_code": "87765008",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c2b70eb9-3a27-4cd8-953c-8ed3fa307b23",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87318964",
+      "display_name": "Avignon TGV",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.921586,
+        "lon": 4.786079
+      },
+      "uic_code": "87318964",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "6d950f75-8a47-4c30-b0ca-66f074ad3496",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87328328",
+      "display_name": "Bibliothèque François Mitterrand",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.82984,
+        "lon": 2.37684
+      },
+      "uic_code": "87328328",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "b86ef9b5-cf80-4bfc-a95a-e7c4e74430cf",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87581009",
+      "display_name": "Bordeaux Saint-Jean",
+      "country_code": "FR",
+      "location": {
+        "lat": 44.825873,
+        "lon": -0.556697
+      },
+      "uic_code": "87581009",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "72a31fc3-3b7f-4e0d-823f-ce3a878505de",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87543181",
+      "display_name": "Boulainvilliers",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.85645,
+        "lon": 2.275149
+      },
+      "uic_code": "87543181",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c0a52a98-2e8c-4406-90b3-238e829c203d",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87581538",
+      "display_name": "Caudéran Mérignac",
+      "country_code": "FR",
+      "location": {
+        "lat": 44.84288,
+        "lon": -0.6274337
+      },
+      "uic_code": "87581538",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5b3691c7-784e-4ad6-aec5-f2bdd42950e0",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87393058",
+      "display_name": "Champ de Mars Tour Eiffel",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.8551134,
+        "lon": 2.2892141
+      },
+      "uic_code": "87393058",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "67cd9ba4-dd5a-4a26-8556-3ab4ec297572",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87481051",
+      "display_name": "Chantenay",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.1971227,
+        "lon": -1.5943634
+      },
+      "uic_code": "87481051",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c8fbaa44-3a36-484d-834a-a5f54f0f1151",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87381129",
+      "display_name": "Clichy - Levallois",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.89678,
+        "lon": 2.2982
+      },
+      "uic_code": "87381129",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "12eb1de8-0c57-43ce-a934-3bf389b35e38",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87713040",
+      "display_name": "Dijon",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.32337,
+        "lon": 5.027208
+      },
+      "uic_code": "87713040",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "7be8e806-878f-4cd0-8a4b-0a068b85c474",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87713008",
+      "display_name": "Dijon Porte Neuve",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.322806,
+        "lon": 5.054872
+      },
+      "uic_code": "87713008",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "41c91a81-a072-4fca-91da-c7ce03a1908f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87417444",
+      "display_name": "Franchet d'Esperey",
+      "country_code": "FR",
+      "location": {
+        "lat": 49.2425356,
+        "lon": 4.013869
+      },
+      "uic_code": "87417444",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "843c57bd-aa04-4613-97e5-b0a5ce575474",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87497461",
+      "display_name": "Gallieni Cancéropôle",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.5730877,
+        "lon": 1.4195801
+      },
+      "uic_code": "87497461",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "91750406-7ece-442f-8d96-58627dc8adb8",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87747006",
+      "display_name": "Grenoble",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.191493,
+        "lon": 5.714584
+      },
+      "uic_code": "87747006",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "803b5973-6581-4d53-8ce6-8a7c74b9bf67",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87590331",
+      "display_name": "Haluchère Batignolles",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.249142,
+        "lon": -1.5224436
+      },
+      "uic_code": "87590331",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "34c7bbab-4ced-434d-a76d-1e8b27b54e2c",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87281899",
+      "display_name": "Haussmann Saint-Lazare",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.87478,
+        "lon": 2.32862
+      },
+      "uic_code": "87281899",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "69a5f787-dba4-4e73-92e2-b03d8aed840b",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87286062",
+      "display_name": "Hellemmes",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.6226402,
+        "lon": 3.1149328
+      },
+      "uic_code": "87286062",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "fb5d94cb-b0f1-4cdb-bdb3-fa35dc6e83a1",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87393033",
+      "display_name": "Invalides",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.8619133,
+        "lon": 2.3150151
+      },
+      "uic_code": "87393033",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "b4524294-b039-4ac1-8dce-730d1d90132b",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87393066",
+      "display_name": "Javel",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.8462046,
+        "lon": 2.2768401
+      },
+      "uic_code": "87393066",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "db7834bd-43d7-492a-bd5a-293dec51ca6f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87338525",
+      "display_name": "Krimmeri Meinau",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.56358,
+        "lon": 7.75259
+      },
+      "uic_code": "87338525",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "be79006e-a8ea-418a-88fc-1003f926566a",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751602",
+      "display_name": "L'Estaque",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.363628,
+        "lon": 5.3213598
+      },
+      "uic_code": "87751602",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "ad606f15-1609-40e4-92bf-f0fc91ad66ae",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751719",
+      "display_name": "La Pomme",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.2905165,
+        "lon": 5.4413152
+      },
+      "uic_code": "87751719",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "fed6db52-e2a8-48d2-936a-b31951bb2a23",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87334508",
+      "display_name": "La Poterie",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.0923448,
+        "lon": -1.6307729
+      },
+      "uic_code": "87334508",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "db349276-0724-4bee-ba10-7e7b06f219b6",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87582643",
+      "display_name": "La Teste-de-Buch",
+      "country_code": "FR",
+      "location": {
+        "lat": 44.636924,
+        "lon": -1.14295
+      },
+      "uic_code": "87582643",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "d56977ff-86c9-47b3-81a2-15b37acfad3c",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87611434",
+      "display_name": "Lacourtensourt",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.6638838,
+        "lon": 1.4138687
+      },
+      "uic_code": "87611434",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c7144111-fb0f-4566-9d32-b0093d1e74fd",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87611939",
+      "display_name": "Lardenne",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.5966262,
+        "lon": 1.3839252
+      },
+      "uic_code": "87611939",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "ef5524c0-f1ce-41d9-a7f9-6084f4ea9bf1",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87353573",
+      "display_name": "Le Toec",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.5956037,
+        "lon": 1.4014496
+      },
+      "uic_code": "87353573",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "b4f22411-8b42-4820-aba2-14da89578c85",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87353581",
+      "display_name": "Les Ramassiers",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.6024594,
+        "lon": 1.3528032
+      },
+      "uic_code": "87353581",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "14d640da-d80c-4ee1-a9cd-eee163b1026f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87287102",
+      "display_name": "Lezennes",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.6205699,
+        "lon": 3.0986481
+      },
+      "uic_code": "87287102",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "8f68cf68-4cf2-48b4-9ef3-bf0e5dc64267",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87109306",
+      "display_name": "Lille CHR",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.61432,
+        "lon": 3.03432
+      },
+      "uic_code": "87109306",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "15e97d40-cde4-4851-996f-054c9b5329bf",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87223263",
+      "display_name": "Lille Europe",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.639224,
+        "lon": 3.075796
+      },
+      "uic_code": "87223263",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "abb69b50-0b86-49ef-8fc5-c1116b5514a2",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87286005",
+      "display_name": "Lille Flandres",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.636577,
+        "lon": 3.06987
+      },
+      "uic_code": "87286005",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "2df9f83c-36e9-48f3-b6a5-4bd45aeb91fe",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87287250",
+      "display_name": "Lille Porte de Douai",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.6119054,
+        "lon": 3.075837
+      },
+      "uic_code": "87287250",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "6196d819-a405-4a0b-a3c8-381241ed98e1",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87721175",
+      "display_name": "Lyon Gorge de Loup",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.766078,
+        "lon": 4.804631
+      },
+      "uic_code": "87721175",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "2ba548c3-7256-45ab-8e33-32d2f76ae81c",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87282624",
+      "display_name": "Lyon Jean Macé",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.74495,
+        "lon": 4.84139
+      },
+      "uic_code": "87282624",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "be8b0fdc-7290-4218-bfa7-1b65897df59f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87723197",
+      "display_name": "Lyon Part Dieu",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.760559,
+        "lon": 4.859355
+      },
+      "uic_code": "87723197",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "f8df288c-2b8b-4e2b-9cef-5cfcd7028bf4",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87722025",
+      "display_name": "Lyon Perrache",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.748476,
+        "lon": 4.825733
+      },
+      "uic_code": "87722025",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "270e6cc2-d881-4c1c-aa97-1ad95026576a",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87721159",
+      "display_name": "Lyon Saint-Paul",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.76601,
+        "lon": 4.827057
+      },
+      "uic_code": "87721159",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "7f9925af-6701-478d-9c8f-79cd7c7785ff",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87721001",
+      "display_name": "Lyon Vaise",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.779938,
+        "lon": 4.80396
+      },
+      "uic_code": "87721001",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "175e61dc-8834-45b8-819a-2d9fb6a02936",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87281873",
+      "display_name": "Magenta",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.87986,
+        "lon": 2.35835
+      },
+      "uic_code": "87281873",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "b1fb9e27-f0db-46bf-a753-dd21a7e306e3",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751081",
+      "display_name": "Marseille Blancarde",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.29614391,
+        "lon": 5.406559
+      },
+      "uic_code": "87751081",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "ea12f311-ff7f-4f9a-a259-32d1b5992ccc",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751008",
+      "display_name": "Marseille Saint-Charles",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.302666,
+        "lon": 5.380407
+      },
+      "uic_code": "87751008",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "b0ce193b-0926-4b87-8bf9-f37a1332e9a1",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87287128",
+      "display_name": "Mont de Terre",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.6176672,
+        "lon": 3.0966031
+      },
+      "uic_code": "87287128",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "a34da9a5-2143-4894-af84-e74a18526c24",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87612010",
+      "display_name": "Montaudran",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.5734591,
+        "lon": 1.4804356
+      },
+      "uic_code": "87612010",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "83042a60-be50-4825-b525-4d5786019661",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87765412",
+      "display_name": "Montfavet",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.932635,
+        "lon": 4.873943
+      },
+      "uic_code": "87765412",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "dc449515-1f33-4e5e-b013-f26e5c07c3c4",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87773002",
+      "display_name": "Montpellier Saint-Roch",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.604738,
+        "lon": 3.880674
+      },
+      "uic_code": "87773002",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "3a8d2e95-4378-4d72-ba9b-0e082dfb8916",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87688887",
+      "display_name": "Montpellier Sud de France",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.594787,
+        "lon": 3.924623
+      },
+      "uic_code": "87688887",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "44e6286d-09b7-476c-8bc5-b32822c32c21",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87547307",
+      "display_name": "Musée d'Orsay",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.86079,
+        "lon": 2.325671
+      },
+      "uic_code": "87547307",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "42fd8f3d-5580-421e-8ec0-da2fc8d21742",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87481002",
+      "display_name": "Nantes",
+      "country_code": "FR",
+      "location": {
+        "lat": 47.216148,
+        "lon": -1.542356
+      },
+      "uic_code": "87481002",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "77474ee2-1c30-4740-a579-b52c2bc74d89",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87381020",
+      "display_name": "Neuilly - Porte Maillot",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.877983,
+        "lon": 2.284516
+      },
+      "uic_code": "87381020",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "e463c9c7-346c-416b-8e6d-4a0cedbbe38d",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87731448",
+      "display_name": "Neuilly Porte Maillot RER E",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.87816,
+        "lon": 2.28318
+      },
+      "uic_code": "87731448",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "2fca4a11-547a-416d-9764-0160ffeb1b5b",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87756056",
+      "display_name": "Nice",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.704556,
+        "lon": 7.261904
+      },
+      "uic_code": "87756056",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "a121239c-108a-4bfa-8254-069b73dbe619",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87590299",
+      "display_name": "Nice Pont Michel",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.72175,
+        "lon": 7.29144
+      },
+      "uic_code": "87590299",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "82ad6aa8-ef64-4d18-a2fd-caf8c82e9344",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87756353",
+      "display_name": "Nice Riquier",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.705554,
+        "lon": 7.290175
+      },
+      "uic_code": "87756353",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "cb6dbcb0-1e4b-4876-9429-77e94087a674",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87756254",
+      "display_name": "Nice Saint-Augustin",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.670728,
+        "lon": 7.216199
+      },
+      "uic_code": "87756254",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "1c697adc-b060-4f3c-b953-26c2c5178c1e",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87775007",
+      "display_name": "Nîmes",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.832291,
+        "lon": 4.365845
+      },
+      "uic_code": "87775007",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c209a3e2-d322-4281-8c2e-1ea5c6046c50",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87547026",
+      "display_name": "Paris Austerlitz",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.842285,
+        "lon": 2.364891
+      },
+      "uic_code": "87547026",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "002271ab-2ed4-4eaa-aed1-d1db7a81f230",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87686667",
+      "display_name": "Paris Bercy Bourgogne - Pays d'Auvergne",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.83917,
+        "lon": 2.38278
+      },
+      "uic_code": "87686667",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "adceab5e-d9bf-4cdc-8c13-66902b313a7c",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87113001",
+      "display_name": "Paris Est",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.876742,
+        "lon": 2.358424
+      },
+      "uic_code": "87113001",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5dd4fb9f-a6f3-4107-a7cf-e198e3d3b169",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87686030",
+      "display_name": "Paris Gare de Lyon",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.844888,
+        "lon": 2.37352
+      },
+      "uic_code": "87686030",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "a6433423-9738-42fd-a125-321b28d78e8a",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87271007",
+      "display_name": "Paris Gare du Nord",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.880185,
+        "lon": 2.355151
+      },
+      "uic_code": "87271007",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "70835097-e1ff-4138-86e1-4758ed173ed6",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87391102",
+      "display_name": "Paris Montparnasse",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.841172,
+        "lon": 2.320514
+      },
+      "uic_code": "87391102",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "db3c1d28-2b95-43df-ae9f-5418a778abe0",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87384008",
+      "display_name": "Paris Saint-Lazare",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.876242,
+        "lon": 2.325331
+      },
+      "uic_code": "87384008",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "9525725e-3b2c-4d63-9fa9-236a4ae26fee",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87381012",
+      "display_name": "Péreire - Levallois",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.8853581,
+        "lon": 2.2979465
+      },
+      "uic_code": "87381012",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "ce712b2b-caf2-4b3c-a5b1-9cabeb751d71",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87759290",
+      "display_name": "Picon Busserine",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.3309989,
+        "lon": 5.3927456
+      },
+      "uic_code": "87759290",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "26d1629d-7ff5-45de-a221-a87417553d5f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87381111",
+      "display_name": "Pont Cardinet",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.88755,
+        "lon": 2.31425
+      },
+      "uic_code": "87381111",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5049458b-d8bd-4625-a811-5b33127d5cfe",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87393041",
+      "display_name": "Pont de l'Alma",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.8625705,
+        "lon": 2.3010287
+      },
+      "uic_code": "87393041",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "aa461143-01d1-4d1c-9c66-727e2aa0b024",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87393322",
+      "display_name": "Pont du Garigliano - Hôpital Européen Georges Pompidou",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.839464,
+        "lon": 2.2712276
+      },
+      "uic_code": "87393322",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "09df9e2b-3a20-422e-aacd-1c8c9f87d3d0",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87471391",
+      "display_name": "Pontchaillou",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.11918,
+        "lon": -1.69107
+      },
+      "uic_code": "87471391",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "e318e6a2-9aa0-4212-b48d-f504b7143863",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87111278",
+      "display_name": "Porte de Clichy",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.89399,
+        "lon": 2.31462
+      },
+      "uic_code": "87111278",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "29a7ff77-3141-499e-9b69-e8b08c76b90f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87171009",
+      "display_name": "Reims",
+      "country_code": "FR",
+      "location": {
+        "lat": 49.258978,
+        "lon": 4.024435
+      },
+      "uic_code": "87171009",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "dbcc38ea-df8d-49f0-9e13-25648c35a1a8",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87171272",
+      "display_name": "Reims Maison Blanche",
+      "country_code": "FR",
+      "location": {
+        "lat": 49.2336853,
+        "lon": 4.0224927
+      },
+      "uic_code": "87171272",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "ac4b462b-1a2c-4dde-a795-fd3d3e2e28b6",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87471003",
+      "display_name": "Rennes",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.103517,
+        "lon": -1.672744
+      },
+      "uic_code": "87471003",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "e26021bf-541a-4e9e-8e74-66f59ce9bc60",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87654798",
+      "display_name": "Rosa Parks",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.89602,
+        "lon": 2.37397
+      },
+      "uic_code": "87654798",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "b5f4052c-32e9-4211-91b0-d803d4f1618f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87411017",
+      "display_name": "Rouen Rive Droite",
+      "country_code": "FR",
+      "location": {
+        "lat": 49.448764,
+        "lon": 1.094087
+      },
+      "uic_code": "87411017",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "a5bf3b1d-70e4-4873-98ab-9f03a79fa558",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87611301",
+      "display_name": "Saint-Agne",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.579674,
+        "lon": 1.450209
+      },
+      "uic_code": "87611301",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c48a7fd6-e79d-4e90-8738-4c36a2a8e14a",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751826",
+      "display_name": "Saint-Antoine",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.3695993,
+        "lon": 5.3578102
+      },
+      "uic_code": "87751826",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "90c6b374-76e7-4bc7-b849-3f3cb8bda3e5",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87775072",
+      "display_name": "Saint-Césaire",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.8133863,
+        "lon": 4.3276399
+      },
+      "uic_code": "87775072",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "8c2b81bd-c242-4006-a869-0baf0fa6493a",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87446179",
+      "display_name": "Saint-Cyprien Arènes",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.593438,
+        "lon": 1.417986
+      },
+      "uic_code": "87446179",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "6c2f21ad-e55b-4d8a-a24c-674496c8118b",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87726190",
+      "display_name": "Saint-Étienne Bellevue",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.417128,
+        "lon": 4.392734
+      },
+      "uic_code": "87726190",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "f0ac3973-8fd1-446f-9cdc-18174ec342df",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87726901",
+      "display_name": "Saint-Étienne Carnot",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.446976,
+        "lon": 4.385317
+      },
+      "uic_code": "87726901",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "f8b3caf8-418e-4f53-820e-9ec46526dcef",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87726000",
+      "display_name": "Saint-Étienne Châteaucreux",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.443366,
+        "lon": 4.399722
+      },
+      "uic_code": "87726000",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "cc95ee13-6bd4-429c-8d75-7e8ea2f32438",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87726158",
+      "display_name": "Saint-Étienne La Terrasse",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.464843,
+        "lon": 4.379601
+      },
+      "uic_code": "87726158",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "c0410a5a-0d6a-405f-97c0-3fcf972bca02",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87726174",
+      "display_name": "Saint-Étienne Le Clapier",
+      "country_code": "FR",
+      "location": {
+        "lat": 45.4371122,
+        "lon": 4.3782267
+      },
+      "uic_code": "87726174",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "28bfe736-2f6b-4876-852a-e003e9cab1ce",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87759316",
+      "display_name": "Saint-Joseph le Castellas",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.3518976,
+        "lon": 5.3770681
+      },
+      "uic_code": "87759316",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "7bd3ffb2-9187-475a-a3e1-39bcca0ecd0e",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751701",
+      "display_name": "Saint-Marcel",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.28818,
+        "lon": 5.4671155
+      },
+      "uic_code": "87751701",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "18c8848e-1cea-4114-879d-f17b3a82e2e4",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87353599",
+      "display_name": "Saint-Martin du Touch",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.5997881,
+        "lon": 1.3718548
+      },
+      "uic_code": "87353599",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "774613e7-8394-45ec-a474-dc07ce973ad8",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87547315",
+      "display_name": "Saint-Michel Notre-Dame",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.85348,
+        "lon": 2.34545
+      },
+      "uic_code": "87547315",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "42999092-5c38-4fdc-9aa8-4d41697966db",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87751842",
+      "display_name": "Sainte-Marthe en Provence",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.3392414,
+        "lon": 5.390412
+      },
+      "uic_code": "87751842",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "d49122be-6e98-46c9-bf14-4451d9ac545f",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87212027",
+      "display_name": "Strasbourg",
+      "country_code": "FR",
+      "location": {
+        "lat": 48.584967,
+        "lon": 7.734584
+      },
+      "uic_code": "87212027",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "1256d5fe-bbc3-416b-9bf5-184b0b84b2a3",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87755009",
+      "display_name": "Toulon",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.12837,
+        "lon": 5.929293
+      },
+      "uic_code": "87755009",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5d5ece4d-8cc9-4877-b797-76707642504c",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87742262",
+      "display_name": "Toulon Sainte-Musse",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.125113642636705,
+        "lon": 5.972755104236321
+      },
+      "uic_code": "87742262",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5d5ee38a-caad-4f35-9419-0edf6d6a0fe1",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87611004",
+      "display_name": "Toulouse Matabiau",
+      "country_code": "FR",
+      "location": {
+        "lat": 43.611206,
+        "lon": 1.453616
+      },
+      "uic_code": "87611004",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "876acd6d-c67b-47fd-95ee-f2b13b33508e",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    },
+    {
+      "station_id": "station-uic-87343301",
+      "display_name": "Wallers",
+      "country_code": "FR",
+      "location": {
+        "lat": 50.384611,
+        "lon": 3.3937454
+      },
+      "uic_code": "87343301",
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-sncf-gares-voyageurs",
+          "external_id": "5c4477b9-e5b7-42f8-add4-d1ccdabca047",
+          "authority_role": "station_identity",
+          "trust_tier": "official"
+        }
+      ]
+    }
+  ]
+}

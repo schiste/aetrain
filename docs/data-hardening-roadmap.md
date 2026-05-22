@@ -41,9 +41,10 @@ Current cleanup counters:
 
 Current authoritative registry coverage:
 
-- `20` French cities with registry-owned `city_id`
-- `20` cities with `wikidata_qid`
-- `20` cities with `population`
+- `27` French cities with INSEE municipality evidence
+- `101` SNCF station-to-city memberships in the scoped French authority fixture
+- `27` cities with `wikidata_qid`
+- `23` cities with `population`
 
 This means the authority path is working, but coverage is still narrow.
 
@@ -252,6 +253,7 @@ The following artifacts should become first-class outputs:
 - `country-quality.json`
 - `registry-match-report.json`
 - `registry-source-coverage.json`
+- `identity-safety-report.json`
 - `station-like-cities.json`
 - `zz-cities.json`
 - `abbreviation-candidates.json`

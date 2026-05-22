@@ -1,0 +1,1171 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-authority-27",
+    "scope": "fr-authority-27",
+    "generated_at": "2026-05-22T00:00:00Z"
+  },
+  "cities": [
+    {
+      "city_id": "paris-fr-q90",
+      "slug": "paris",
+      "display_name": "Paris",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.85666666666667,
+        "lon": 2.352222222222222
+      },
+      "map_anchor_point": {
+        "lat": 48.85666666666667,
+        "lon": 2.352222222222222
+      },
+      "bbox": {
+        "min_lat": 48.82984,
+        "min_lon": 2.2712276,
+        "max_lat": 48.89678,
+        "max_lon": 2.38278
+      },
+      "wikidata_qid": "Q90",
+      "population": 2243739,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "75056",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q90",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q90",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "slug": "lyon",
+      "display_name": "Lyon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.7675,
+        "lon": 4.835
+      },
+      "map_anchor_point": {
+        "lat": 45.7675,
+        "lon": 4.835
+      },
+      "bbox": {
+        "min_lat": 45.74495,
+        "min_lon": 4.80396,
+        "max_lat": 45.779938,
+        "max_lon": 4.859355
+      },
+      "wikidata_qid": "Q456",
+      "population": 522969,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "69123",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q456",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q456",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "slug": "marseille",
+      "display_name": "Marseille",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.296666666667,
+        "lon": 5.3763888888889
+      },
+      "map_anchor_point": {
+        "lat": 43.296666666667,
+        "lon": 5.3763888888889
+      },
+      "bbox": {
+        "min_lat": 43.28818,
+        "min_lon": 5.3213598,
+        "max_lat": 43.3695993,
+        "max_lon": 5.4671155
+      },
+      "wikidata_qid": "Q23482",
+      "population": 914000,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "13055",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q23482",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q23482",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "slug": "toulouse",
+      "display_name": "Toulouse",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.60444444444445,
+        "lon": 1.4433333333333334
+      },
+      "map_anchor_point": {
+        "lat": 43.60444444444445,
+        "lon": 1.4433333333333334
+      },
+      "bbox": {
+        "min_lat": 43.5730877,
+        "min_lon": 1.3528032,
+        "max_lat": 43.6638838,
+        "max_lon": 1.4804356
+      },
+      "wikidata_qid": "Q7880",
+      "population": 514819,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "31555",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q7880",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7880",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "slug": "bordeaux",
+      "display_name": "Bordeaux",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.837777777778,
+        "lon": -0.57944444444444
+      },
+      "map_anchor_point": {
+        "lat": 44.837777777778,
+        "lon": -0.57944444444444
+      },
+      "bbox": {
+        "min_lat": 44.825873,
+        "min_lon": -0.6274337,
+        "max_lat": 44.84288,
+        "max_lon": -0.556697
+      },
+      "wikidata_qid": "Q1479",
+      "population": 267991,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "33063",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q1479",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1479",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "slug": "nantes",
+      "display_name": "Nantes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.217222222222,
+        "lon": -1.5538888888889
+      },
+      "map_anchor_point": {
+        "lat": 47.217222222222,
+        "lon": -1.5538888888889
+      },
+      "bbox": {
+        "min_lat": 47.1971227,
+        "min_lon": -1.5943634,
+        "max_lat": 47.249142,
+        "max_lon": -1.5224436
+      },
+      "wikidata_qid": "Q12191",
+      "population": 327734,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "44109",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q12191",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q12191",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "slug": "lille",
+      "display_name": "Lille",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 50.631944444444,
+        "lon": 3.0575
+      },
+      "map_anchor_point": {
+        "lat": 50.631944444444,
+        "lon": 3.0575
+      },
+      "bbox": {
+        "min_lat": 50.6119054,
+        "min_lon": 3.03432,
+        "max_lat": 50.639224,
+        "max_lon": 3.1149328
+      },
+      "wikidata_qid": "Q648",
+      "population": 238695,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "59350",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q648",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q648",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "slug": "strasbourg",
+      "display_name": "Strasbourg",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.573333333333,
+        "lon": 7.7522222222222
+      },
+      "map_anchor_point": {
+        "lat": 48.573333333333,
+        "lon": 7.7522222222222
+      },
+      "bbox": {
+        "min_lat": 48.56358,
+        "min_lon": 7.734584,
+        "max_lat": 48.584967,
+        "max_lon": 7.75259
+      },
+      "wikidata_qid": "Q6602",
+      "population": 293771,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "67482",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q6602",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6602",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "slug": "nice",
+      "display_name": "Nice",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.701944444444,
+        "lon": 7.2683333333333
+      },
+      "map_anchor_point": {
+        "lat": 43.701944444444,
+        "lon": 7.2683333333333
+      },
+      "bbox": {
+        "min_lat": 43.670728,
+        "min_lon": 7.216199,
+        "max_lat": 43.72175,
+        "max_lon": 7.29144
+      },
+      "wikidata_qid": "Q33959",
+      "population": 357737,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "06088",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q33959",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q33959",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "slug": "avignon",
+      "display_name": "Avignon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.948611111111,
+        "lon": 4.8083333333333
+      },
+      "map_anchor_point": {
+        "lat": 43.948611111111,
+        "lon": 4.8083333333333
+      },
+      "bbox": {
+        "min_lat": 43.921586,
+        "min_lon": 4.786079,
+        "max_lat": 43.948611111111,
+        "max_lon": 4.873943
+      },
+      "wikidata_qid": "Q6397",
+      "population": 94200,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "84007",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q6397",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6397",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "slug": "montpellier",
+      "display_name": "Montpellier",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.610919444444,
+        "lon": 3.8772305555556
+      },
+      "map_anchor_point": {
+        "lat": 43.610919444444,
+        "lon": 3.8772305555556
+      },
+      "bbox": {
+        "min_lat": 43.594787,
+        "min_lon": 3.8772305555556,
+        "max_lat": 43.610919444444,
+        "max_lon": 3.924623
+      },
+      "wikidata_qid": "Q6441",
+      "population": 310240,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "34172",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q6441",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q6441",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "slug": "rennes",
+      "display_name": "Rennes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 48.114166666667,
+        "lon": -1.6808333333333
+      },
+      "map_anchor_point": {
+        "lat": 48.114166666667,
+        "lon": -1.6808333333333
+      },
+      "bbox": {
+        "min_lat": 48.0923448,
+        "min_lon": -1.69107,
+        "max_lat": 48.11918,
+        "max_lon": -1.6307729
+      },
+      "wikidata_qid": "Q647",
+      "population": 230890,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "35238",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q647",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q647",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "slug": "grenoble",
+      "display_name": "Grenoble",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.186944444444,
+        "lon": 5.7263888888889
+      },
+      "map_anchor_point": {
+        "lat": 45.186944444444,
+        "lon": 5.7263888888889
+      },
+      "bbox": {
+        "min_lat": 45.186944444444,
+        "min_lon": 5.714584,
+        "max_lat": 45.191493,
+        "max_lon": 5.7263888888889
+      },
+      "wikidata_qid": "Q1289",
+      "population": 166037,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "38185",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q1289",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q1289",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "slug": "dijon",
+      "display_name": "Dijon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.323055555556,
+        "lon": 5.0419444444444
+      },
+      "map_anchor_point": {
+        "lat": 47.323055555556,
+        "lon": 5.0419444444444
+      },
+      "bbox": {
+        "min_lat": 47.322806,
+        "min_lon": 5.027208,
+        "max_lat": 47.32337,
+        "max_lon": 5.054872
+      },
+      "wikidata_qid": "Q7003",
+      "population": 161830,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "21231",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q7003",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q7003",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "slug": "rouen",
+      "display_name": "Rouen",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 49.443055555556,
+        "lon": 1.1025
+      },
+      "map_anchor_point": {
+        "lat": 49.443055555556,
+        "lon": 1.1025
+      },
+      "bbox": {
+        "min_lat": 49.443055555556,
+        "min_lon": 1.094087,
+        "max_lat": 49.448764,
+        "max_lon": 1.1025
+      },
+      "wikidata_qid": "Q30974",
+      "population": 117662,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "76540",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q30974",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q30974",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "slug": "reims",
+      "display_name": "Reims",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 49.265277777778,
+        "lon": 4.0286111111111
+      },
+      "map_anchor_point": {
+        "lat": 49.265277777778,
+        "lon": 4.0286111111111
+      },
+      "bbox": {
+        "min_lat": 49.2336853,
+        "min_lon": 4.013869,
+        "max_lat": 49.265277777778,
+        "max_lon": 4.0286111111111
+      },
+      "wikidata_qid": "Q41876",
+      "population": 187206,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "51454",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q41876",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q41876",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "slug": "saint-etienne",
+      "display_name": "Saint-Étienne",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 45.433888888889,
+        "lon": 4.3897222222222
+      },
+      "map_anchor_point": {
+        "lat": 45.433888888889,
+        "lon": 4.3897222222222
+      },
+      "bbox": {
+        "min_lat": 45.417128,
+        "min_lon": 4.3782267,
+        "max_lat": 45.464843,
+        "max_lon": 4.399722
+      },
+      "wikidata_qid": "Q42716",
+      "population": 199000,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "42218",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q42716",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42716",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "slug": "toulon",
+      "display_name": "Toulon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.125,
+        "lon": 5.9305555555556
+      },
+      "map_anchor_point": {
+        "lat": 43.125,
+        "lon": 5.9305555555556
+      },
+      "bbox": {
+        "min_lat": 43.125,
+        "min_lon": 5.929293,
+        "max_lat": 43.12837,
+        "max_lon": 5.972755104236321
+      },
+      "wikidata_qid": "Q44160",
+      "population": 180834,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "83137",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q44160",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q44160",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "slug": "angers",
+      "display_name": "Angers",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 47.472777777778,
+        "lon": -0.55555555555556
+      },
+      "map_anchor_point": {
+        "lat": 47.472777777778,
+        "lon": -0.55555555555556
+      },
+      "bbox": {
+        "min_lat": 47.464647,
+        "min_lon": -0.55682,
+        "max_lat": 47.472777777778,
+        "max_lon": -0.531894
+      },
+      "wikidata_qid": "Q38380",
+      "population": 159022,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "49007",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q38380",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q38380",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "slug": "nimes",
+      "display_name": "Nîmes",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 43.83833333333333,
+        "lon": 4.3597222222222225
+      },
+      "map_anchor_point": {
+        "lat": 43.83833333333333,
+        "lon": 4.3597222222222225
+      },
+      "bbox": {
+        "min_lat": 43.8133863,
+        "min_lon": 4.3276399,
+        "max_lat": 43.83833333333333,
+        "max_lon": 4.365845
+      },
+      "wikidata_qid": "Q42807",
+      "population": 154196,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "30189",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q42807",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q42807",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "slug": "ajain",
+      "display_name": "Ajain",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 46.2075,
+        "lon": 1.9986111111111111
+      },
+      "map_anchor_point": {
+        "lat": 46.2075,
+        "lon": 1.9986111111111111
+      },
+      "bbox": {
+        "min_lat": 46.2075,
+        "min_lon": 1.9986111111111111,
+        "max_lat": 46.2075,
+        "max_lon": 1.9986111111111111
+      },
+      "wikidata_qid": "Q673204",
+      "population": 1028,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "23002",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q673204",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q673204",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "slug": "alet-les-bains",
+      "display_name": "Alet-les-Bains",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 42.99638888888889,
+        "lon": 2.256388888888889
+      },
+      "map_anchor_point": {
+        "lat": 42.99638888888889,
+        "lon": 2.256388888888889
+      },
+      "bbox": {
+        "min_lat": 42.99638888888889,
+        "min_lon": 2.256388888888889,
+        "max_lat": 42.99638888888889,
+        "max_lon": 2.256388888888889
+      },
+      "wikidata_qid": "Q173787",
+      "population": 379,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "11008",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q173787",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q173787",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "slug": "esperaza",
+      "display_name": "Espéraza",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 42.93527777777778,
+        "lon": 2.2205555555555554
+      },
+      "map_anchor_point": {
+        "lat": 42.93527777777778,
+        "lon": 2.2205555555555554
+      },
+      "bbox": {
+        "min_lat": 42.93527777777778,
+        "min_lon": 2.2205555555555554,
+        "max_lat": 42.93527777777778,
+        "max_lon": 2.2205555555555554
+      },
+      "wikidata_qid": "Q609690",
+      "population": 1695,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "11129",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q609690",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q609690",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "slug": "quillan",
+      "display_name": "Quillan",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 42.875277777777775,
+        "lon": 2.1819444444444445
+      },
+      "map_anchor_point": {
+        "lat": 42.875277777777775,
+        "lon": 2.1819444444444445
+      },
+      "bbox": {
+        "min_lat": 42.875277777777775,
+        "min_lon": 2.1819444444444445,
+        "max_lat": 42.875277777777775,
+        "max_lon": 2.1819444444444445
+      },
+      "wikidata_qid": "Q28381883",
+      "population": 2978,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "11304",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q28381883",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q28381883",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "slug": "arcachon",
+      "display_name": "Arcachon",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.65861111111111,
+        "lon": -1.1688888888888889
+      },
+      "map_anchor_point": {
+        "lat": 44.65861111111111,
+        "lon": -1.1688888888888889
+      },
+      "bbox": {
+        "min_lat": 44.65861111111111,
+        "min_lon": -1.1688888888888889,
+        "max_lat": 44.659009,
+        "max_lon": -1.16523
+      },
+      "wikidata_qid": "Q191460",
+      "population": 11092,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "33009",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q191460",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q191460",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "slug": "la-teste-de-buch",
+      "display_name": "La Teste-de-Buch",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 44.63099444444444,
+        "lon": -1.1482305555555556
+      },
+      "map_anchor_point": {
+        "lat": 44.63099444444444,
+        "lon": -1.1482305555555556
+      },
+      "bbox": {
+        "min_lat": 44.63099444444444,
+        "min_lon": -1.1482305555555556,
+        "max_lat": 44.636924,
+        "max_lon": -1.14295
+      },
+      "wikidata_qid": "Q233133",
+      "population": 27566,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "33529",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q233133",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q233133",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "slug": "wallers",
+      "display_name": "Wallers",
+      "country_code": "FR",
+      "identity_point": {
+        "lat": 50.375277777777775,
+        "lon": 3.3919444444444444
+      },
+      "map_anchor_point": {
+        "lat": 50.375277777777775,
+        "lon": 3.3919444444444444
+      },
+      "bbox": {
+        "min_lat": 50.375277777777775,
+        "min_lon": 3.3919444444444444,
+        "max_lat": 50.384611,
+        "max_lon": 3.3937454
+      },
+      "wikidata_qid": "Q473417",
+      "population": 5633,
+      "status": "resolved",
+      "external_refs": [
+        {
+          "source_id": "fr-insee-cog-municipalities",
+          "external_id": "59632",
+          "authority_role": "municipality_identity",
+          "trust_tier": "official"
+        },
+        {
+          "source_id": "wikidata-city-enrichment-seed",
+          "external_id": "Q473417",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        },
+        {
+          "source_id": "wikidata-entity-url",
+          "external_id": "https://www.wikidata.org/wiki/Q473417",
+          "authority_role": "enrichment",
+          "trust_tier": "linked_open_data"
+        }
+      ]
+    }
+  ]
+}

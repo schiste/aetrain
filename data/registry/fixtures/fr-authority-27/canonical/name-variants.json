@@ -1,0 +1,1138 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-authority-27",
+    "scope": "fr-authority-27",
+    "generated_at": "2026-05-22T00:00:00Z"
+  },
+  "variants": [
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville-Lumière",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paname",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Lutèce",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville de l'Amour",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "FR-75",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Pantruche",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Ville de Paris",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "City of Light",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "City of Love",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Lutetia",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Commune-Affranchie",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "capitale des Gaules",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "City of Lyon",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Cité phocéenne",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Ville-sans-Nom",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Sans-Nom",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massalia",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massilia",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Massaliotes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsailles",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseilles",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsielles",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsielle",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "City of Marseille",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsaille",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marsiglia",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille City",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Ville rose",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Tolosa",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse, Occitania",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Pink City",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Burdigala",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordèu",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Commune-Franklin",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordele",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordeu",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Naoned",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Naunnt",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "\"cité des ducs de Bretagne\"",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Rijsel",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lile",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Rysel",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Straßburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strassburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Schdroosburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strossburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strossburig",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strosburi",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strasburg",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nizza",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nissa",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nikaia",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nicaea",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Niça",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice, French Riviera",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice, Côte d'Azur",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "cité des papes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avinhon",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avignoun",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "value": "Montpelhièr",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "Rennes, France",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "City of Rennes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "Roazhon",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "value": "Rotomagus",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "value": "Rheims",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "St. Etienne",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Armes-Ville",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Commune-d'Armes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Canton-d'Armes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Libre-Ville",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "St. Étienne",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Sant Estève",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "value": "Port-la-Montagne",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "value": "Tolon",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Saint-Augustin (réunie à Angers)",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Saint-Léonard (réunie à Angers)",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Peu-de-Fonds",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Fruits-Sucrés",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Gaie-Vallée",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Saint-Samson (réunie à Angers)",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "value": "Nismes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "value": "Nimes",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "value": "Alet Les Bains",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "value": "Esperaza",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "value": "La Teste",
+      "kind": "canonical_alias",
+      "source": "wikidata-city-enrichment-seed"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Angers Maître École",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "value": "Angers Saint-Laud",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "value": "Arcachon",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Arenc Euroméditerranée",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Avenue du Président Kennedy Maison de Radio France",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Avenue Foch",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Avenue Henri Martin",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avignon Centre",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Avignon TGV",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Bibliothèque François Mitterrand",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Bordeaux Saint-Jean",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Boulainvilliers",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "value": "Caudéran Mérignac",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Champ de Mars Tour Eiffel",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Chantenay",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Clichy - Levallois",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "value": "Dijon",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "value": "Dijon Porte Neuve",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "value": "Franchet d'Esperey",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Gallieni Cancéropôle",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "value": "Grenoble",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Haluchère Batignolles",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Haussmann Saint-Lazare",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Hellemmes",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Invalides",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Javel",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Krimmeri Meinau",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "L'Estaque",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "La Pomme",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "La Poterie",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "value": "La Teste-de-Buch",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Lacourtensourt",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Lardenne",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Le Toec",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Les Ramassiers",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lezennes",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lille CHR",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lille Europe",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lille Flandres",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Lille Porte de Douai",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Lyon Gorge de Loup",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Lyon Jean Macé",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Lyon Part Dieu",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Lyon Perrache",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Lyon Saint-Paul",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "value": "Lyon Vaise",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Magenta",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille Blancarde",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Marseille Saint-Charles",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "value": "Mont de Terre",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Montaudran",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "value": "Montfavet",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "value": "Montpellier Saint-Roch",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "value": "Montpellier Sud de France",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Musée d'Orsay",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "value": "Nantes",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Neuilly - Porte Maillot",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Neuilly Porte Maillot RER E",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice Pont Michel",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice Riquier",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "value": "Nice Saint-Augustin",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "value": "Nîmes",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Austerlitz",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Bercy Bourgogne - Pays d'Auvergne",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Est",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Gare de Lyon",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Gare du Nord",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Montparnasse",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Paris Saint-Lazare",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Péreire - Levallois",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Picon Busserine",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Pont Cardinet",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Pont de l'Alma",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Pont du Garigliano - Hôpital Européen Georges Pompidou",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "Pontchaillou",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Porte de Clichy",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "value": "Reims",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "value": "Reims Maison Blanche",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "value": "Rennes",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Rosa Parks",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "value": "Rouen Rive Droite",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Saint-Agne",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Saint-Antoine",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "value": "Saint-Césaire",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Saint-Cyprien Arènes",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Saint-Étienne Bellevue",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Saint-Étienne Carnot",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Saint-Étienne Châteaucreux",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Saint-Étienne La Terrasse",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "value": "Saint-Étienne Le Clapier",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Saint-Joseph le Castellas",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Saint-Marcel",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Saint-Martin du Touch",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "paris-fr-q90",
+      "value": "Saint-Michel Notre-Dame",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "value": "Sainte-Marthe en Provence",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "value": "Strasbourg",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "value": "Toulon",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "value": "Toulon Sainte-Musse",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "value": "Toulouse Matabiau",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "value": "Wallers",
+      "kind": "station_variant",
+      "source": "fr-sncf-gares-voyageurs"
+    }
+  ]
+}

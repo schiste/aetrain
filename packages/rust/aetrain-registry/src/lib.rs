@@ -3,7 +3,9 @@ mod audit;
 mod city_identity;
 mod country_inference;
 mod cursor;
+mod fr_authority;
 mod incremental;
+mod insee;
 mod manifest;
 mod merge;
 mod name_rules;
@@ -13,6 +15,7 @@ mod pilot;
 mod schema;
 mod seed;
 mod slice;
+mod sncf;
 mod source_quality;
 mod wikidata;
 
@@ -34,7 +37,9 @@ pub use country_inference::{
 pub use cursor::{
     RegistryCursorMode, RegistrySourceCursor, RegistrySourceCursorState, load_cursor, save_cursor,
 };
+pub use fr_authority::{FranceAuthorityBuildSummary, build_france_authority_registry};
 pub use incremental::{IncrementalPlan, build_incremental_plan};
+pub use insee::InseeCommuneObservation;
 pub use manifest::{
     RegistryAccessStrategy, RegistryEntityKind, RegistryManifest, RegistryProvider,
     RegistryRefreshStrategy, RegistrySourceDefinition, RegistryTargetDefinition,
@@ -56,6 +61,7 @@ pub use schema::{
 };
 pub use seed::{SeedPlan, build_seed_plan};
 pub use slice::{WikidataCitySliceSummary, build_wikidata_city_slice};
+pub use sncf::SncfStationReferenceObservation;
 pub use source_quality::{
     RegistryRecordAuthorityStrength, RegistrySourceContractFinding, RegistrySourceCoverageRecord,
     RegistrySourceCoverageReport, audit_registry_source_contract,

@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "dataset_id": "aetrain-registry-fr-authority-27",
+    "scope": "fr-authority-27",
+    "generated_at": "2026-05-22T00:00:00Z"
+  },
+  "evidence": [
+    {
+      "city_id": "paris-fr-q90",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "75056",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lyon-fr-q456",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "69123",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "marseille-fr-q23482",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "13055",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulouse-fr-q7880",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "31555",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "bordeaux-fr-q1479",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "33063",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nantes-fr-q12191",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "44109",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "lille-fr-q648",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "59350",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "strasbourg-fr-q6602",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "67482",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nice-fr-q33959",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "06088",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "avignon-fr-q6397",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "84007",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "montpellier-fr-q6441",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "34172",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "rennes-fr-q647",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "35238",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "grenoble-fr-q1289",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "38185",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "dijon-fr-q7003",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "21231",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "rouen-fr-q30974",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "76540",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "reims-fr-q41876",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "51454",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "saint-etienne-fr-q42716",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "42218",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "toulon-fr-q44160",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "83137",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "angers-fr-q38380",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "49007",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "nimes-fr-q42807",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "30189",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "ajain-fr-q673204",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "23002",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "alet-les-bains-fr-q173787",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "11008",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "esperaza-fr-q609690",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "11129",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "quillan-fr-q28381883",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "11304",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "arcachon-fr-q191460",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "33009",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "la-teste-de-buch-fr-q233133",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "33529",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    },
+    {
+      "city_id": "wallers-fr-q473417",
+      "source_ref": {
+        "source_id": "fr-insee-cog-municipalities",
+        "external_id": "59632",
+        "authority_role": "municipality_identity",
+        "trust_tier": "official"
+      },
+      "evidence_kind": "official_code",
+      "confidence": 100
+    }
+  ]
+}
