@@ -1805,11 +1805,11 @@
     "display_name": "Ajain",
     "country_code": "FR",
     "location": {
-      "lat": 46.207153,
-      "lon": 1.99724
+      "lat": 46.2075,
+      "lon": 1.9986111111111111
     },
     "wikidata_qid": "Q673204",
-    "population": null,
+    "population": 1028,
     "interest_score": 4,
     "station_ids": [
       "station-uic-87417808"
@@ -2423,11 +2423,11 @@
     "display_name": "Alet-les-Bains",
     "country_code": "FR",
     "location": {
-      "lat": 42.997403,
-      "lon": 2.252189
+      "lat": 42.99638888888889,
+      "lon": 2.256388888888889
     },
     "wikidata_qid": "Q173787",
-    "population": null,
+    "population": 379,
     "interest_score": 4,
     "station_ids": [
       "station-uic-87615187"
@@ -5068,37 +5068,22 @@
     "display_name": "Angers",
     "country_code": "FR",
     "location": {
-      "lat": 47.465801,
-      "lon": -0.5446035
+      "lat": 47.472777777778,
+      "lon": -0.55555555555556
     },
     "wikidata_qid": "Q38380",
     "population": 159022,
     "interest_score": 8,
     "station_ids": [
       "station-uic-87484006",
-      "station-uic-87484048"
+      "station-uic-87484048",
+      "station-uic-8748400"
     ],
     "aliases": [
       "Angers Maître École",
-      "Angers Saint-Laud"
+      "Angers Saint-Laud",
+      "Angers St Laud"
     ]
-  },
-  {
-    "city_id": "angers-st-laud-ch-4cfccf19",
-    "slug": "angers-st-laud",
-    "display_name": "Angers St Laud",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.46408321,
-      "lon": -0.55852753
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-8748400"
-    ],
-    "aliases": []
   },
   {
     "city_id": "angersdorf-de-7079ac1c",
@@ -5180,7 +5165,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8758300",
       "station-uic-87583005"
@@ -6147,11 +6132,11 @@
     "display_name": "Arcachon",
     "country_code": "FR",
     "location": {
-      "lat": 44.658967,
-      "lon": -1.165323
+      "lat": 44.65861111111111,
+      "lon": -1.1688888888888889
     },
     "wikidata_qid": "Q191460",
-    "population": null,
+    "population": 11092,
     "interest_score": 5,
     "station_ids": [
       "station-uic-87582668"
@@ -8773,8 +8758,8 @@
     "display_name": "Avignon",
     "country_code": "FR",
     "location": {
-      "lat": 43.924498416666665,
-      "lon": 4.79487125
+      "lat": 43.948611111111,
+      "lon": 4.8083333333333
     },
     "wikidata_qid": "Q6397",
     "population": 94200,
@@ -18029,7 +18014,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721361",
       "station-uic-87213611"
@@ -20195,37 +20180,22 @@
     "display_name": "Bordeaux",
     "country_code": "FR",
     "location": {
-      "lat": 44.8342475,
-      "lon": -0.592221
+      "lat": 44.837777777778,
+      "lon": -0.57944444444444
     },
     "wikidata_qid": "Q1479",
     "population": 267991,
     "interest_score": 9,
     "station_ids": [
       "station-uic-87581009",
-      "station-uic-87581538"
-    ],
-    "aliases": [
-      "Caudéran-Mérignac",
-      "Bordeaux Saint Jean"
-    ]
-  },
-  {
-    "city_id": "bordeaux-st-jean-ch-5755fe03",
-    "slug": "bordeaux-st-jean",
-    "display_name": "Bordeaux St Jean",
-    "country_code": "FR",
-    "location": {
-      "lat": 44.82648285,
-      "lon": -0.55592241
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
+      "station-uic-87581538",
       "station-uic-8758100"
     ],
-    "aliases": []
+    "aliases": [
+      "Bordeaux Saint Jean",
+      "Bordeaux St Jean",
+      "Caudéran-Mérignac"
+    ]
   },
   {
     "city_id": "bordet-be-a2764578",
@@ -29874,26 +29844,6 @@
     "aliases": []
   },
   {
-    "city_id": "chantenay-fr-44109",
-    "slug": "chantenay",
-    "display_name": "Chantenay",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.2073455,
-      "lon": -1.5682045
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
-    "station_ids": [
-      "station-uic-87481002",
-      "station-uic-87481051"
-    ],
-    "aliases": [
-      "Nantes"
-    ]
-  },
-  {
     "city_id": "chantenay-saint-imbert-bourg-zz-5dafa8e7",
     "slug": "chantenay-saint-imbert-bourg",
     "display_name": "Chantenay Saint Imbert Bourg",
@@ -38019,8 +37969,8 @@
     "display_name": "Dijon",
     "country_code": "FR",
     "location": {
-      "lat": 47.3231055,
-      "lon": 5.0410805
+      "lat": 47.323055555556,
+      "lon": 5.0419444444444
     },
     "wikidata_qid": "Q7003",
     "population": 161830,
@@ -38028,28 +37978,12 @@
     "station_ids": [
       "station-uic-87713008",
       "station-uic-8771304",
-      "station-uic-87713040"
+      "station-uic-87713040",
+      "station-uic-8771300"
     ],
     "aliases": [
       "Dijon Porte Neuve"
     ]
-  },
-  {
-    "city_id": "dijon-porte-neuve-ch-b3ca1ddf",
-    "slug": "dijon-porte-neuve",
-    "display_name": "Dijon Porte Neuve",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.32277968,
-      "lon": 5.05518841
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-8771300"
-    ],
-    "aliases": []
   },
   {
     "city_id": "dilbeek-be-db8eb09a",
@@ -44397,7 +44331,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8717155",
       "station-uic-87171553"
@@ -45614,11 +45548,11 @@
     "display_name": "Espéraza",
     "country_code": "FR",
     "location": {
-      "lat": 42.935933,
-      "lon": 2.218403
+      "lat": 42.93527777777778,
+      "lon": 2.2205555555555554
     },
     "wikidata_qid": "Q609690",
-    "population": null,
+    "population": 1695,
     "interest_score": 4,
     "station_ids": [
       "station-uic-87615211"
@@ -50349,23 +50283,6 @@
     "interest_score": 4,
     "station_ids": [
       "station-uic-80110684"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "franchet-d-esperey-ch-d1f063ba",
-    "slug": "franchet-d-esperey",
-    "display_name": "Franchet D Esperey",
-    "country_code": "FR",
-    "location": {
-      "lat": 49.24251649,
-      "lon": 4.01379845
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-8741744"
     ],
     "aliases": []
   },
@@ -57215,7 +57132,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721224",
       "station-uic-87212241",
@@ -57965,8 +57882,8 @@
     "display_name": "Grenoble",
     "country_code": "FR",
     "location": {
-      "lat": 45.192092,
-      "lon": 5.7144569999999995
+      "lat": 45.186944444444,
+      "lon": 5.7263888888889
     },
     "wikidata_qid": "Q1289",
     "population": 166037,
@@ -78510,27 +78427,6 @@
     ]
   },
   {
-    "city_id": "krimmeri-meinau-fr-67482",
-    "slug": "krimmeri-meinau",
-    "display_name": "Krimmeri Meinau",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.574377,
-      "lon": 7.743248
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
-    "station_ids": [
-      "station-uic-87212027",
-      "station-uic-8733852",
-      "station-uic-87338525"
-    ],
-    "aliases": [
-      "Strasbourg"
-    ]
-  },
-  {
     "city_id": "krippen-de-fa136a39",
     "slug": "krippen",
     "display_name": "Krippen",
@@ -82310,28 +82206,6 @@
     "aliases": []
   },
   {
-    "city_id": "la-poterie-fr-35238",
-    "slug": "la-poterie",
-    "display_name": "La Poterie",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.104834333333336,
-      "lon": -1.6648783333333337
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
-    "station_ids": [
-      "station-uic-87334508",
-      "station-uic-87471003",
-      "station-uic-87471391"
-    ],
-    "aliases": [
-      "Pontchaillou",
-      "Rennes"
-    ]
-  },
-  {
     "city_id": "la-presta-mines-d-asphalte-ch-c5c8ecc3",
     "slug": "la-presta-mines-d-asphalte",
     "display_name": "La Presta Mines D Asphalte",
@@ -82894,8 +82768,8 @@
     "display_name": "La Teste-de-Buch",
     "country_code": "FR",
     "location": {
-      "lat": 44.636966,
-      "lon": -1.14297
+      "lat": 44.63099444444444,
+      "lon": -1.1482305555555556
     },
     "wikidata_qid": "Q233133",
     "population": 27566,
@@ -92321,8 +92195,8 @@
     "display_name": "Lille",
     "country_code": "FR",
     "location": {
-      "lat": 50.62337128571429,
-      "lon": 3.0805224285714283
+      "lat": 50.631944444444,
+      "lon": 3.0575
     },
     "wikidata_qid": "Q648",
     "population": 238695,
@@ -96983,8 +96857,8 @@
     "display_name": "Lyon",
     "country_code": "FR",
     "location": {
-      "lat": 45.76733825,
-      "lon": 4.81544725
+      "lat": 45.7675,
+      "lon": 4.835
     },
     "wikidata_qid": "Q456",
     "population": 522969,
@@ -100188,8 +100062,8 @@
     "display_name": "Marseille",
     "country_code": "FR",
     "location": {
-      "lat": 43.3245224,
-      "lon": 5.3902785
+      "lat": 43.296666666667,
+      "lon": 5.3763888888889
     },
     "wikidata_qid": "Q23482",
     "population": 914000,
@@ -106450,8 +106324,8 @@
     "display_name": "Montpellier",
     "country_code": "FR",
     "location": {
-      "lat": 43.599942,
-      "lon": 3.9023415
+      "lat": 43.610919444444,
+      "lon": 3.8772305555556
     },
     "wikidata_qid": "Q6441",
     "population": 310240,
@@ -110030,16 +109904,21 @@
     "display_name": "Nantes",
     "country_code": "FR",
     "location": {
-      "lat": 47.21709028,
-      "lon": -1.5414731
+      "lat": 47.217222222222,
+      "lon": -1.5538888888889
     },
     "wikidata_qid": "Q12191",
     "population": 327734,
-    "interest_score": 5,
+    "interest_score": 8,
     "station_ids": [
+      "station-uic-87481002",
+      "station-uic-87481051",
       "station-uic-8748100"
     ],
-    "aliases": []
+    "aliases": [
+      "Chantenay",
+      "Nantes"
+    ]
   },
   {
     "city_id": "nanteuil-le-haudouin-fr-60446",
@@ -112541,8 +112420,8 @@
     "display_name": "Nice",
     "country_code": "FR",
     "location": {
-      "lat": 43.7008825,
-      "lon": 7.264987249999999
+      "lat": 43.701944444444,
+      "lon": 7.2683333333333
     },
     "wikidata_qid": "Q33959",
     "population": 357737,
@@ -112551,31 +112430,16 @@
       "station-uic-87590299",
       "station-uic-87756056",
       "station-uic-87756254",
-      "station-uic-87756353"
+      "station-uic-87756353",
+      "station-uic-8775605"
     ],
     "aliases": [
       "Nice Pont Michel",
       "Nice Riquier",
       "Nice Saint-Augustin",
+      "Nice Ville",
       "Nice-Ville"
     ]
-  },
-  {
-    "city_id": "nice-ville-ch-d53df463",
-    "slug": "nice-ville",
-    "display_name": "Nice Ville",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.70482356,
-      "lon": 7.26176516
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-8775605"
-    ],
-    "aliases": []
   },
   {
     "city_id": "nickelsdorf-at-04f1e86e",
@@ -113514,18 +113378,24 @@
     "display_name": "Nîmes",
     "country_code": "FR",
     "location": {
-      "lat": 43.832344774999996,
-      "lon": 4.366008305
+      "lat": 43.83833333333333,
+      "lon": 4.3597222222222225
     },
     "wikidata_qid": "Q42807",
     "population": 154196,
-    "interest_score": 6,
+    "interest_score": 10,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-1b615812",
-      "station-uic-8777500"
+      "station-uic-8777500",
+      "station-uic-87767871",
+      "station-uic-87775007",
+      "station-uic-87775072"
     ],
     "aliases": [
-      "Nimes"
+      "Nîmes Centre",
+      "Saint Cesaire",
+      "Saint Cesaire V3",
+      "Saint-Césaire"
     ]
   },
   {
@@ -120303,8 +120173,8 @@
     "display_name": "Paris",
     "country_code": "FR",
     "location": {
-      "lat": 48.855238625,
-      "lon": 2.350099625
+      "lat": 48.85666666666667,
+      "lon": 2.352222222222222
     },
     "wikidata_qid": "Q90",
     "population": 2243739,
@@ -127730,11 +127600,11 @@
     "display_name": "Quillan",
     "country_code": "FR",
     "location": {
-      "lat": 42.873947,
-      "lon": 2.181787
+      "lat": 42.875277777777775,
+      "lon": 2.1819444444444445
     },
     "wikidata_qid": "Q28381883",
-    "population": null,
+    "population": 2978,
     "interest_score": 4,
     "station_ids": [
       "station-uic-87615260"
@@ -129771,30 +129641,15 @@
     "display_name": "Reims",
     "country_code": "FR",
     "location": {
-      "lat": 49.25924572,
-      "lon": 4.02415603
+      "lat": 49.265277777778,
+      "lon": 4.0286111111111
     },
     "wikidata_qid": "Q41876",
     "population": 187206,
-    "interest_score": 5,
+    "interest_score": 7,
     "station_ids": [
-      "station-uic-8717100"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "reims-maison-blanche-fr-51454",
-    "slug": "reims-maison-blanche",
-    "display_name": "Reims Maison Blanche",
-    "country_code": "FR",
-    "location": {
-      "lat": 49.245181333333335,
-      "lon": 4.020145666666667
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 8,
-    "station_ids": [
+      "station-uic-8741744",
+      "station-uic-8717100",
       "station-uic-87171009",
       "station-uic-8717127",
       "station-uic-87171272",
@@ -129802,7 +129657,8 @@
     ],
     "aliases": [
       "Franchet d'Esperey",
-      "Reims"
+      "Reims",
+      "Reims Maison Blanche"
     ]
   },
   {
@@ -130268,16 +130124,23 @@
     "display_name": "Rennes",
     "country_code": "FR",
     "location": {
-      "lat": 48.10317696,
-      "lon": -1.67233967
+      "lat": 48.114166666667,
+      "lon": -1.6808333333333
     },
     "wikidata_qid": "Q647",
     "population": 230890,
-    "interest_score": 5,
+    "interest_score": 10,
     "station_ids": [
+      "station-uic-87334508",
+      "station-uic-87471003",
+      "station-uic-87471391",
       "station-uic-8747100"
     ],
-    "aliases": []
+    "aliases": [
+      "La Poterie",
+      "Pontchaillou",
+      "Rennes"
+    ]
   },
   {
     "city_id": "renningen-de-1dfe9fa7",
@@ -134794,8 +134657,8 @@
     "display_name": "Rouen",
     "country_code": "FR",
     "location": {
-      "lat": 49.448663,
-      "lon": 1.094103
+      "lat": 49.443055555556,
+      "lon": 1.1025
     },
     "wikidata_qid": "Q30974",
     "population": 117662,
@@ -137190,29 +137053,6 @@
     "aliases": []
   },
   {
-    "city_id": "saint-cesaire-v3-fr-30189",
-    "slug": "saint-cesaire",
-    "display_name": "Saint Cesaire",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.81966766666667,
-      "lon": 4.34038
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 7,
-    "station_ids": [
-      "station-uic-87767871",
-      "station-uic-87775007",
-      "station-uic-87775072"
-    ],
-    "aliases": [
-      "Nîmes Centre",
-      "Saint-Césaire",
-      "Saint Cesaire V3"
-    ]
-  },
-  {
     "city_id": "saint-chamas-fr-13092",
     "slug": "saint-chamas",
     "display_name": "Saint Chamas",
@@ -137634,8 +137474,8 @@
     "display_name": "Saint-Étienne",
     "country_code": "FR",
     "location": {
-      "lat": 45.4419066,
-      "lon": 4.387131999999999
+      "lat": 45.433888888889,
+      "lon": 4.3897222222222
     },
     "wikidata_qid": "Q42716",
     "population": 199000,
@@ -138888,42 +138728,6 @@
       "station-uic-87696500"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "saint-martin-du-touch-fr-31555",
-    "slug": "saint-martin-du-touch",
-    "display_name": "Saint Martin Du Touch",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.5989781,
-      "lon": 1.4143328
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 10,
-    "station_ids": [
-      "station-uic-87353573",
-      "station-uic-87353581",
-      "station-uic-87353599",
-      "station-uic-87446179",
-      "station-uic-87497461",
-      "station-uic-87611004",
-      "station-uic-87611301",
-      "station-uic-87611434",
-      "station-uic-87611939",
-      "station-uic-87612010"
-    ],
-    "aliases": [
-      "Gallieni-Cancéropôle",
-      "Lacourtensourt",
-      "Lardenne",
-      "Le Toec",
-      "Les Ramassiers",
-      "Montaudran",
-      "Saint-Agne",
-      "Saint-Cyprien Arènes",
-      "Toulouse Matabiau"
-    ]
   },
   {
     "city_id": "saint-martin-le-beau-fr-37225",
@@ -143467,7 +143271,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721222",
       "station-uic-87212225"
@@ -154720,17 +154524,22 @@
     "display_name": "Strasbourg",
     "country_code": "FR",
     "location": {
-      "lat": 48.585339,
-      "lon": 7.734067
+      "lat": 48.573333333333,
+      "lon": 7.7522222222222
     },
     "wikidata_qid": "Q6602",
     "population": 293771,
-    "interest_score": 7,
+    "interest_score": 9,
     "station_ids": [
       "station-de-delfi-gtfs-c5f971b6",
-      "station-uic-8721202"
+      "station-uic-8721202",
+      "station-uic-87212027",
+      "station-uic-8733852",
+      "station-uic-87338525"
     ],
     "aliases": [
+      "Krimmeri Meinau",
+      "Strasbourg",
       "Strasbourg Bahnhof"
     ]
   },
@@ -154745,7 +154554,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721219",
       "station-uic-87212191",
@@ -158821,6 +158630,24 @@
     "aliases": []
   },
   {
+    "city_id": "tolosa-es-f6c717ea",
+    "slug": "tolosa",
+    "display_name": "Tolosa",
+    "country_code": "ES",
+    "location": {
+      "lat": 43.1354472,
+      "lon": -2.0790886
+    },
+    "wikidata_qid": null,
+    "population": null,
+    "interest_score": 6,
+    "station_ids": [
+      "station-es-renfe-cercanias-gtfs-cf16b4b2",
+      "station-es-renfe-mainline-gtfs-cf16b4b2"
+    ],
+    "aliases": []
+  },
+  {
     "city_id": "tongres-be-b85283e5",
     "slug": "tongres",
     "display_name": "Tongres",
@@ -159454,8 +159281,8 @@
     "display_name": "Toulon",
     "country_code": "FR",
     "location": {
-      "lat": 43.1266805,
-      "lon": 5.9509185
+      "lat": 43.125,
+      "lon": 5.9305555555556
     },
     "wikidata_qid": "Q44160",
     "population": 180834,
@@ -159475,36 +159302,37 @@
     "display_name": "Toulouse",
     "country_code": "FR",
     "location": {
-      "lat": 43.1354472,
-      "lon": -2.0790886
+      "lat": 43.60444444444445,
+      "lon": 1.4433333333333334
     },
     "wikidata_qid": "Q7880",
     "population": 514819,
-    "interest_score": 8,
+    "interest_score": 10,
     "station_ids": [
-      "station-es-renfe-cercanias-gtfs-cf16b4b2",
-      "station-es-renfe-mainline-gtfs-cf16b4b2"
-    ],
-    "aliases": [
-      "Tolosa"
-    ]
-  },
-  {
-    "city_id": "toulouse-matabiau-ch-099c66c9",
-    "slug": "toulouse-matabiau",
-    "display_name": "Toulouse Matabiau",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.6114061,
-      "lon": 1.45394125
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
+      "station-uic-87353573",
+      "station-uic-87353581",
+      "station-uic-87353599",
+      "station-uic-87446179",
+      "station-uic-87497461",
+      "station-uic-87611004",
+      "station-uic-87611301",
+      "station-uic-87611434",
+      "station-uic-87611939",
+      "station-uic-87612010",
       "station-uic-8761100"
     ],
-    "aliases": []
+    "aliases": [
+      "Gallieni-Cancéropôle",
+      "Lacourtensourt",
+      "Lardenne",
+      "Le Toec",
+      "Les Ramassiers",
+      "Montaudran",
+      "Saint Martin Du Touch",
+      "Saint-Agne",
+      "Saint-Cyprien Arènes",
+      "Toulouse Matabiau"
+    ]
   },
   {
     "city_id": "tour-et-taxis-be-99a541a7",
@@ -171150,11 +170978,11 @@
     "display_name": "Wallers",
     "country_code": "FR",
     "location": {
-      "lat": 50.3845,
-      "lon": 3.393922
+      "lat": 50.375277777777775,
+      "lon": 3.3919444444444444
     },
     "wikidata_qid": "Q473417",
-    "population": null,
+    "population": 5633,
     "interest_score": 5,
     "station_ids": [
       "station-uic-87343301"
