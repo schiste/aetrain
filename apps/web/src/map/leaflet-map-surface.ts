@@ -25,6 +25,8 @@ import {
 } from "./landmass-model.ts";
 import {
   buildLodProfile,
+  cityOpacityAtZoom,
+  computeCityAppearZoom,
   createSpatialGrid,
   hitTestSpatialGrid,
   lineIntersectsViewport,
@@ -51,9 +53,17 @@ interface MapPlannerState {
 type PlannerStateInput = Partial<MapPlannerState>;
 
 interface RenderStats {
+  /** Cities whose fade opacity is strictly between 0 and 1 — i.e. those
+   *  mid-ramp during a wheel/pinch gesture. Useful for verifying the fade
+   *  band is actually being crossed gradually rather than snapping. */
+  citiesFading: number;
   culledByLod: number;
   culledByViewport: number;
   labelCount: number;
+  /** Of the placed labels, how many were re-placed from the previous
+   *  frame's sticky set (hysteresis-preserved). The remainder = new entries
+   *  picked up this frame. */
+  labelsPackedSticky: number;
   reachable: number;
   rendered: number;
   shown: number;
@@ -71,6 +81,10 @@ interface MarkerStyle {
 
 interface VisibleCity extends MapPoint {
   city: PlannerCity;
+  /** Smoothstepped fade opacity in [0, 1] for the current frame. Trip /
+   *  keyboard-focused cities pin to 1; everyone else ramps with
+   *  `cityOpacityAtZoom(appearZoom, camera.zoom, fadeBand)`. */
+  fadeOpacity: number;
   inTrip: boolean;
   radius: number;
   style: MarkerStyle;
@@ -78,6 +92,10 @@ interface VisibleCity extends MapPoint {
 }
 
 interface InternalLabelCandidate extends LabelCandidate {
+  /** Inherited from the parent VisibleCity's fadeOpacity so the label ramps
+   *  in sync with its dot during a zoom gesture. Required (not optional) so
+   *  the apply path doesn't need null checks per frame. */
+  fadeOpacity: number;
   priority: number;
 }
 
@@ -155,6 +173,11 @@ interface RouteSegmentRender {
 }
 
 interface PreparedCity {
+  /** Zoom at which this city reaches full opacity. Pre-computed at city
+   *  load via `computeCityAppearZoom` so the per-frame fade math is a
+   *  single smoothstep evaluation against the live `camera.zoom`,
+   *  decoupled from the frozen-during-interaction `frame.lod` thresholds. */
+  appearZoom: number;
   city: PlannerCity;
   renderPriority: number;
   world: WorldPoint;
@@ -299,7 +322,11 @@ const PAN_SETTLE_DELAY_MS = 120;
 // interaction restores full network density.
 const INTERACTION_NETWORK_BUDGET_DIVISOR = 5;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
-const INTERACTION_LABEL_OPACITY = "0.18";
+// Zoom-units window over which a city fades from invisible → fully opaque
+// as the camera crosses its `appearZoom` threshold. Wide enough to feel
+// continuous on a slow trackpad pinch, narrow enough that a one-notch
+// wheel tick still produces a visible state change.
+const CITY_FADE_BAND_ZOOM = 0.85;
 const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
@@ -463,6 +490,7 @@ export function createLeafletMapSurface({
       const world = mercatorProject(city.lon, city.lat);
       cityWorldByName.set(city.name, world);
       return {
+        appearZoom: computeCityAppearZoom(city),
         city,
         renderPriority: cityRenderPriority(city),
         world
@@ -522,14 +550,21 @@ export function createLeafletMapSurface({
   let currentFrame: MapFrame | null = null;
   let renderPlanCache: RenderPlanCache | null = null;
   let lastRenderStats: RenderStats = {
+    citiesFading: 0,
     culledByLod: 0,
     culledByViewport: 0,
     labelCount: 0,
+    labelsPackedSticky: 0,
     reachable: 0,
     rendered: 0,
     shown: 0,
     total: cities.length
   };
+  // Cross-frame hysteresis set: ids (city names) of labels successfully
+  // placed on the previous frame. Passed back into selectLabelCandidates
+  // so a label that fit last frame keeps its slot when the camera moves
+  // by a tiny amount. Refreshed at the end of every cities+labels render.
+  let previouslyPlacedLabelIds: Set<string> = new Set();
   let hitGrid: SpatialGrid<VisibleCity> = createSpatialGrid<VisibleCity>([]);
   // Last-rendered visible-city array, kept so the keyboard-navigation
   // path can pick its next target without recomputing the render plan.
@@ -1117,7 +1152,10 @@ export function createLeafletMapSurface({
 
     isZooming = true;
     semanticZoom = camera.zoom;
-    labelsLayer.style.opacity = INTERACTION_LABEL_OPACITY;
+    // Per-label fade now rides on each candidate's fadeOpacity (inherited
+    // from its parent city's smoothstep against the live camera zoom), so
+    // the old whole-layer dim hammer is gone. Labels stay rendered through
+    // the gesture; individual entries fade in/out as their dots do.
     diagnostics.debug("began smooth zoom interaction", {
       semantic_zoom: semanticZoom
     });
@@ -1139,7 +1177,6 @@ export function createLeafletMapSurface({
     zoomSettleTimeoutId = 0;
     isZooming = false;
     semanticZoom = camera.zoom;
-    labelsLayer.style.opacity = "";
     invalidateView("zoom-settle", {
       notifyViewChange
     });
@@ -1384,17 +1421,25 @@ export function createLeafletMapSurface({
     }
 
     if (dirty.cities || dirty.labels) {
-      const shouldRenderLabels = !isZooming;
+      // Labels are always included now — per-label fade makes the old
+      // interaction kill-switch obsolete. Mid-gesture flicker is contained
+      // by the hysteresis pack inside selectLabelCandidates.
       const plan = getRenderPlan(frame, currentState, currentSignature, {
-        includeLabels: shouldRenderLabels
+        includeLabels: true
       });
       if (dirty.cities) {
         drawCities(frame, plan.visibleCities);
       }
-      if (shouldRenderLabels && dirty.labels) {
+      if (dirty.labels) {
         applyLabels(plan.labels);
-      } else if (isZooming) {
-        applyLabels([]);
+        // Refresh the hysteresis Set from the labels that survived this
+        // frame's pack. Done after applyLabels so a draw error doesn't
+        // poison the next frame's sticky pass.
+        const nextSticky = new Set<string>();
+        for (const label of plan.labels) {
+          if (label.id) nextSticky.add(label.id);
+        }
+        previouslyPlacedLabelIds = nextSticky;
       }
       hitGrid = plan.hitGrid;
       lastRenderStats = plan.stats;
@@ -1924,6 +1969,7 @@ export function createLeafletMapSurface({
     let reachable = 0;
     let culledByViewport = 0;
     let culledByLod = 0;
+    let citiesFading = 0;
     const visibleCities: VisibleCity[] = [];
     const labelCandidates: InternalLabelCandidate[] = [];
 
@@ -1952,13 +1998,22 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const lodVisible =
-        inTrip ||
-        city.interest >= frame.lod.minInterest ||
-        city.pop >= frame.lod.minPopulation;
-      if (!lodVisible) {
+      // Trip cities and the keyboard-focused city bypass the fade so the
+      // trip overlay and focus ring never blink out — the latter resolves
+      // its target via visibleCities.find(name === keyboardFocusedCityName)
+      // and a culled entry would leave the ring stranded.
+      const isKeyboardFocused =
+        keyboardNavActive && keyboardFocusedCityName === city.name;
+      const fadeOpacity =
+        inTrip || isKeyboardFocused
+          ? 1
+          : cityOpacityAtZoom(entry.appearZoom, frame.zoom, CITY_FADE_BAND_ZOOM);
+      if (fadeOpacity <= 0) {
         culledByLod += 1;
         continue;
+      }
+      if (fadeOpacity < 1) {
+        citiesFading += 1;
       }
 
       const point = frame.projectWorld(entry.world);
@@ -1976,9 +2031,10 @@ export function createLeafletMapSurface({
       if (!inTrip) {
         nonTripBudgetedCount += 1;
       }
-      const style = markerStyle(city, frame.zoom, inTrip);
+      const style = markerStyle(city, frame.zoom, inTrip, fadeOpacity);
       const visibleCity: VisibleCity = {
         city,
+        fadeOpacity,
         inTrip,
         radius: style.radius,
         style,
@@ -2006,17 +2062,32 @@ export function createLeafletMapSurface({
     const labels: InternalLabelCandidate[] = includeLabels
       ? selectLabelCandidates<InternalLabelCandidate>(
           labelCandidates.sort((left, right) => right.priority - left.priority),
-          frame.lod.labelBudget
+          frame.lod.labelBudget,
+          previouslyPlacedLabelIds
         )
       : [];
+
+    // How many of the placed labels were sticky vs new picks. Cheap O(n)
+    // sweep; lets the diagnostics emit prove the hysteresis pass is doing
+    // work (without this, "label flicker fixed" is an unverifiable claim).
+    let labelsPackedSticky = 0;
+    if (previouslyPlacedLabelIds.size > 0) {
+      for (const label of labels) {
+        if (label.id && previouslyPlacedLabelIds.has(label.id)) {
+          labelsPackedSticky += 1;
+        }
+      }
+    }
 
     return {
       hitGrid: createSpatialGrid<VisibleCity>(visibleCities),
       labels,
       stats: {
+        citiesFading,
         culledByLod,
         culledByViewport,
         labelCount: labels.length,
+        labelsPackedSticky,
         reachable,
         rendered: shown,
         shown,
@@ -2041,6 +2112,14 @@ export function createLeafletMapSurface({
       }
       node.style.display = "block";
       node.style.transform = `translate3d(${Math.round(label.x)}px, ${Math.round(label.y)}px, 0)`;
+      // Per-label fade. Empty string lets the CSS default win so we don't
+      // accumulate an inline override at full opacity; the equality guard
+      // keeps DOM writes off the fast path when the value is unchanged.
+      const opacityString =
+        label.fadeOpacity >= 1 ? "" : label.fadeOpacity.toFixed(2);
+      if (node.style.opacity !== opacityString) {
+        node.style.opacity = opacityString;
+      }
     }
 
     for (let index = labels.length; index < labelPool.length; index += 1) {
@@ -2313,11 +2392,13 @@ export function createLeafletMapSurface({
     }
 
     diagnostics.metric("map-render", stats.rendered, {
+      cities_fading: stats.citiesFading,
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
       dirty: { ...dirty },
       duration_ms: roundMs(durationMs),
       label_count: stats.labelCount,
+      labels_packed_sticky: stats.labelsPackedSticky,
       reachable: stats.reachable,
       reason,
       rendered: stats.rendered,
@@ -2332,10 +2413,12 @@ export function createLeafletMapSurface({
 
     lastHotRenderInfoAt = now();
     diagnostics.info("rendered planner map surface", {
+      cities_fading: stats.citiesFading,
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
       duration_ms: roundMs(durationMs),
       label_count: stats.labelCount,
+      labels_packed_sticky: stats.labelsPackedSticky,
       reason,
       rendered: stats.rendered,
       shown: stats.shown,
@@ -2369,6 +2452,11 @@ function buildLabelCandidate(
 
   return {
     className,
+    fadeOpacity: visibleCity.fadeOpacity,
+    // City name is unique within a dataset, so it works as the cross-frame
+    // hysteresis key. If we ever allow duplicate names we'll need a stable
+    // id on PlannerCity itself.
+    id: visibleCity.city.name,
     priority: labelPriority(visibleCity, plannerState),
     text,
     x: visibleCity.x + visibleCity.radius + 3,
@@ -2804,16 +2892,24 @@ function markerColor(interest: number): string {
   return "#475569";
 }
 
-function markerStyle(city: PlannerCity, zoom: number, inTrip: boolean): MarkerStyle {
+function markerStyle(
+  city: PlannerCity,
+  zoom: number,
+  inTrip: boolean,
+  fadeOpacity = 1
+): MarkerStyle {
   const color = inTrip ? "#f59e0b" : markerColor(city.interest);
   const radius = inTrip
     ? Math.max(8, markerRadius(city.interest, zoom) + 3)
     : markerRadius(city.interest, zoom);
+  const baseFillOpacity =
+    inTrip ? 0.7 : city.interest >= 9 ? 0.5 : city.interest >= 7 ? 0.35 : 0.25;
+  const baseStrokeOpacity = inTrip ? 1 : 0.8;
   return {
     color,
     fillColor: color,
-    fillOpacity: inTrip ? 0.7 : city.interest >= 9 ? 0.5 : city.interest >= 7 ? 0.35 : 0.25,
-    opacity: inTrip ? 1 : 0.8,
+    fillOpacity: baseFillOpacity * fadeOpacity,
+    opacity: baseStrokeOpacity * fadeOpacity,
     radius,
     weight: inTrip ? 2.5 : city.interest >= 7 ? 1.5 : 1
   };

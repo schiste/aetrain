@@ -2,6 +2,27 @@ import type { MapPoint, MapSize } from "./camera-model.ts";
 
 const DEFAULT_HIT_GRID_CELL_SIZE = 48;
 
+// The piecewise-linear curves driving per-city visibility. Kept exported so
+// the surface can derive each city's `appearZoom` once at load time (closed-
+// form invert below) instead of recomputing the LOD profile every frame.
+// Mirrors the curves inside `buildLodProfile` — keep them in sync.
+const MIN_INTEREST_CURVE: readonly ZoomPoint[] = [
+  [3, 6.5],
+  [4.5, 5.8],
+  [6, 4.8],
+  [7.5, 3.5],
+  [9, 2],
+  [10, 1]
+];
+const MIN_POPULATION_CURVE: readonly ZoomPoint[] = [
+  [3, 180_000],
+  [4.5, 120_000],
+  [6, 70_000],
+  [7.5, 30_000],
+  [9, 8_000],
+  [10, 0]
+];
+
 export interface LabelThresholdValue {
   interest: number;
   pop: number;
@@ -38,6 +59,11 @@ export interface LabelCandidate {
   // Higher priority candidates are placed first; consumers must sort the input
   // array by priority before calling selectLabelCandidates.
   priority?: number;
+  /** Stable identifier (e.g. city name). When provided alongside
+   *  `previouslyPlacedIds`, the packer uses it for cross-frame hysteresis
+   *  so a label that fit last frame keeps its slot even when the camera
+   *  moves slightly. */
+  id?: string;
 }
 
 interface LabelBounds {
@@ -78,22 +104,8 @@ export function buildLodProfile(
       [10, 84]
     ])),
     labelThreshold: interpolateLabelThreshold(zoom, labelThreshold),
-    minInterest: interpolateByZoom(zoom, [
-      [3, 6.5],
-      [4.5, 5.8],
-      [6, 4.8],
-      [7.5, 3.5],
-      [9, 2],
-      [10, 1]
-    ]),
-    minPopulation: Math.round(interpolateByZoom(zoom, [
-      [3, 180_000],
-      [4.5, 120_000],
-      [6, 70_000],
-      [7.5, 30_000],
-      [9, 8_000],
-      [10, 0]
-    ])),
+    minInterest: interpolateByZoom(zoom, MIN_INTEREST_CURVE),
+    minPopulation: Math.round(interpolateByZoom(zoom, MIN_POPULATION_CURVE)),
     networkMinInterest: interpolateByZoom(zoom, [
       [3, 6],
       [4.5, 5.3],
@@ -208,28 +220,135 @@ export function hitTestSpatialGrid<T extends SpatialGridEntry>(
   return bestHit;
 }
 
+/** Cubic smoothstep — eases in and out, derivative 0 at both ends. Used
+ *  for per-city fade curves so dots ramp in/out without a visible pop. */
+export function smoothstep(t: number): number {
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  return t * t * (3 - 2 * t);
+}
+
+/** Lowest camera zoom at which `city` would satisfy the binary LOD gate
+ *  (`interest >= minInterest(z) || pop >= minPopulation(z)`). Computed
+ *  once at city load time so per-frame fade math is O(1) per city.
+ *
+ *  Because both curves are monotonically *decreasing* in zoom, we invert
+ *  each independently and take the minimum (the OR semantics of the gate
+ *  pick whichever criterion qualifies the city first). If a city sits
+ *  above the first sample's threshold it appears at all zooms (returns
+ *  the curve's minimum zoom); if it never qualifies it returns `+Infinity`
+ *  so the fade math collapses to opacity 0. */
+export function computeCityAppearZoom(city: {
+  readonly interest: number;
+  readonly pop: number;
+}): number {
+  return Math.min(
+    invertDecreasingCurve(MIN_INTEREST_CURVE, city.interest),
+    invertDecreasingCurve(MIN_POPULATION_CURVE, city.pop)
+  );
+}
+
+/** Smoothstepped fade-in opacity for a city, in [0, 1]. `fadeBand` is the
+ *  zoom-units window over which the city ramps from 0 → 1; the city is
+ *  fully opaque at and beyond its `appearZoom`, and fully invisible at
+ *  `appearZoom - fadeBand` or below. */
+export function cityOpacityAtZoom(
+  appearZoom: number,
+  zoom: number,
+  fadeBand: number
+): number {
+  if (!Number.isFinite(appearZoom)) return 0;
+  if (fadeBand <= 0) return zoom >= appearZoom ? 1 : 0;
+  return smoothstep((zoom - appearZoom + fadeBand) / fadeBand);
+}
+
+/** Hysteresis-aware label packer.
+ *
+ *  Two-pass greedy pack:
+ *    Pass 1 — re-place candidates whose id appeared in the previous frame
+ *             (sticky pass; preserves visual identity through small camera
+ *              motion so labels don't flicker on/off frame-to-frame).
+ *    Pass 2 — fill the remaining budget from non-sticky candidates by
+ *             input order (callers must pre-sort by priority).
+ *
+ *  Without an `id`, candidates are treated as non-sticky and the function
+ *  collapses to the original single-pass behaviour. */
 export function selectLabelCandidates<T extends LabelCandidate>(
   candidates: readonly T[],
-  budget: number
+  budget: number,
+  previouslyPlacedIds?: ReadonlySet<string>
 ): T[] {
   const accepted: T[] = [];
   const occupied: LabelBounds[] = [];
 
-  for (const candidate of candidates) {
-    if (accepted.length >= budget) {
-      break;
+  if (previouslyPlacedIds && previouslyPlacedIds.size > 0) {
+    // Pass 1: sticky candidates first, scanned in their original (priority)
+    // order. We use the same collision check as the fill pass; the only
+    // change is the eligibility predicate.
+    for (const candidate of candidates) {
+      if (accepted.length >= budget) break;
+      const id = candidate.id;
+      if (!id || !previouslyPlacedIds.has(id)) continue;
+
+      const bounds = estimateLabelBounds(candidate);
+      if (occupied.some((rect) => rectsIntersect(rect, bounds))) continue;
+
+      occupied.push(bounds);
+      accepted.push(candidate);
     }
+  }
+
+  // Pass 2: fill the remainder. Sticky candidates already accepted in
+  // pass 1 are skipped via reference identity.
+  const acceptedSet = accepted.length > 0 ? new Set<T>(accepted) : null;
+  for (const candidate of candidates) {
+    if (accepted.length >= budget) break;
+    if (acceptedSet && acceptedSet.has(candidate)) continue;
 
     const bounds = estimateLabelBounds(candidate);
-    if (occupied.some((rect) => rectsIntersect(rect, bounds))) {
-      continue;
-    }
+    if (occupied.some((rect) => rectsIntersect(rect, bounds))) continue;
 
     occupied.push(bounds);
     accepted.push(candidate);
   }
 
   return accepted;
+}
+
+/** Closed-form invert of a piecewise-linear curve where y is monotonically
+ *  decreasing in x. Returns the smallest x where `curve(x) <= target`. */
+function invertDecreasingCurve(
+  curve: readonly ZoomPoint[],
+  target: number
+): number {
+  const first = curve[0];
+  if (!first) return Number.POSITIVE_INFINITY;
+  if (target >= first[1]) {
+    // Above the curve's max threshold — qualifies at the very first sample.
+    return first[0];
+  }
+
+  for (let index = 1; index < curve.length; index += 1) {
+    const previous = curve[index - 1];
+    const current = curve[index];
+    if (!previous || !current) continue;
+    // Segment spans (previous → current). y is decreasing, so we look for
+    // the first segment whose lower endpoint dips to/below `target`.
+    if (target > current[1]) continue;
+
+    const yRange = previous[1] - current[1];
+    if (yRange <= 0) {
+      // Flat segment — once we crossed `target` in an earlier segment we
+      // wouldn't be here; this point qualifies if it equals `target`.
+      return current[0];
+    }
+    const progress = (previous[1] - target) / yRange;
+    return previous[0] + (current[0] - previous[0]) * progress;
+  }
+
+  // City never qualifies on this curve. Return +Infinity so OR-callers
+  // ignore it; the surrounding `Math.min` will pick the other curve.
+  return Number.POSITIVE_INFINITY;
 }
 
 function estimateLabelBounds(candidate: LabelCandidate): LabelBounds {
