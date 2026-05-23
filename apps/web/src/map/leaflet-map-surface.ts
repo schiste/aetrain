@@ -53,6 +53,11 @@ interface MapPlannerState {
 type PlannerStateInput = Partial<MapPlannerState>;
 
 interface RenderStats {
+  /** Non-trip cities painted in the fade tail that bypassed the LOD
+   *  cityBudget cap. Confirms the budget/fade decoupling is active —
+   *  if this stays at 0 during a wheel-zoom burst, the dot layer is
+   *  back to popping at settle. */
+  citiesFadeBypassedBudget: number;
   /** Cities whose fade opacity is strictly between 0 and 1 — i.e. those
    *  mid-ramp during a wheel/pinch gesture. Useful for verifying the fade
    *  band is actually being crossed gradually rather than snapping. */
@@ -323,10 +328,14 @@ const PAN_SETTLE_DELAY_MS = 120;
 const INTERACTION_NETWORK_BUDGET_DIVISOR = 5;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
 // Zoom-units window over which a city fades from invisible → fully opaque
-// as the camera crosses its `appearZoom` threshold. Wide enough to feel
-// continuous on a slow trackpad pinch, narrow enough that a one-notch
-// wheel tick still produces a visible state change.
-const CITY_FADE_BAND_ZOOM = 0.85;
+// as the camera crosses its `appearZoom` threshold. Sized to ~2× the
+// per-notch wheel zoom step (WHEEL_PIXELS_PER_ZOOM_LEVEL=120 ⇒ ~0.83
+// zoom levels per notch) so a single wheel tick ramps a fading city
+// through ~50% opacity instead of collapsing the entire band into one
+// rAF frame. Combined with the fade-tail / LOD-budget decoupling in
+// buildRenderPlan, this is what makes the fade visible across a
+// multi-notch gesture rather than appearing only at settle.
+const CITY_FADE_BAND_ZOOM = 1.6;
 const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
@@ -550,6 +559,7 @@ export function createLeafletMapSurface({
   let currentFrame: MapFrame | null = null;
   let renderPlanCache: RenderPlanCache | null = null;
   let lastRenderStats: RenderStats = {
+    citiesFadeBypassedBudget: 0,
     citiesFading: 0,
     culledByLod: 0,
     culledByViewport: 0,
@@ -1970,6 +1980,12 @@ export function createLeafletMapSurface({
     let culledByViewport = 0;
     let culledByLod = 0;
     let citiesFading = 0;
+    // Fade-tail cities (0 < fadeOpacity < 1) bypass the LOD cityBudget cap
+    // so the smoothstep ramp is visible even when the frozen-semanticZoom
+    // budget would otherwise cull them mid-gesture. This counter proves
+    // that path is being taken — if it stays at 0 during a wheel-zoom
+    // burst, the decoupling regressed.
+    let citiesFadeBypassedBudget = 0;
     const visibleCities: VisibleCity[] = [];
     const labelCandidates: InternalLabelCandidate[] = [];
 
@@ -2022,14 +2038,25 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      if (!inTrip && nonTripBudgetedCount >= frame.lod.cityBudget) {
+      // Only fully-opaque non-trip cities consume the LOD budget. Fade-tail
+      // cities (mid-ramp during a wheel/pinch gesture) paint unconditionally
+      // so the smoothstep is visible across the gesture — otherwise the
+      // frozen-semanticZoom budget cap would cull them at fadeOpacity=0.05
+      // and the user only ever sees them pop in at settle. The fade tail
+      // is bounded in size by the fade band (only cities whose appearZoom
+      // sits within CITY_FADE_BAND_ZOOM of camera.zoom qualify), so the
+      // dot layer's per-frame ceiling stays predictable.
+      const fullyOpaque = fadeOpacity >= 1;
+      if (!inTrip && fullyOpaque && nonTripBudgetedCount >= frame.lod.cityBudget) {
         culledByLod += 1;
         continue;
       }
 
       shown += 1;
-      if (!inTrip) {
+      if (!inTrip && fullyOpaque) {
         nonTripBudgetedCount += 1;
+      } else if (!inTrip && !fullyOpaque) {
+        citiesFadeBypassedBudget += 1;
       }
       const style = markerStyle(city, frame.zoom, inTrip, fadeOpacity);
       const visibleCity: VisibleCity = {
@@ -2083,6 +2110,7 @@ export function createLeafletMapSurface({
       hitGrid: createSpatialGrid<VisibleCity>(visibleCities),
       labels,
       stats: {
+        citiesFadeBypassedBudget,
         citiesFading,
         culledByLod,
         culledByViewport,
@@ -2392,6 +2420,7 @@ export function createLeafletMapSurface({
     }
 
     diagnostics.metric("map-render", stats.rendered, {
+      cities_fade_bypassed_budget: stats.citiesFadeBypassedBudget,
       cities_fading: stats.citiesFading,
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
@@ -2413,6 +2442,7 @@ export function createLeafletMapSurface({
 
     lastHotRenderInfoAt = now();
     diagnostics.info("rendered planner map surface", {
+      cities_fade_bypassed_budget: stats.citiesFadeBypassedBudget,
       cities_fading: stats.citiesFading,
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
