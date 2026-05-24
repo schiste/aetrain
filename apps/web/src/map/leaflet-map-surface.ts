@@ -349,7 +349,6 @@ const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
 const BUTTON_ZOOM_DELTA = 0.35;
-const BACKGROUND_NETWORK_SIMPLIFIED_ZOOM = 6.5;
 
 // Straight-line suspect-edge thresholds. An edge is hidden from the
 // background network when BOTH conditions hold:
@@ -1677,12 +1676,13 @@ export function createLeafletMapSurface({
     let drawnEdges = 0;
     let drawnLowConfidence = 0;
     let culledStubEdges = 0;
-    // Force straight-line geometry during active interaction — the
-    // multi-point projections per edge are the dominant cost on the
-    // hot wheel/pan path. Visual fidelity restores on settle.
-    const shouldSimplifyGeometry =
-      isInteractingWithCamera()
-      || frame.zoom < BACKGROUND_NETWORK_SIMPLIFIED_ZOOM;
+    // Force straight-line geometry during active interaction only — the
+    // multi-point projections per edge are the dominant cost on the hot
+    // wheel/pan path, where the network redraws every frame. At rest the
+    // network draws once per settle, so we trace real polylines at every
+    // zoom: collapsing rural lines to endpoint chords at continental zoom
+    // made the whole web read as a straight-line graph rather than railways.
+    const shouldSimplifyGeometry = isInteractingWithCamera();
     for (const edge of edgeRefs) {
       // Railways are always-on: the network is bounded only by the viewport
       // (the bbox + polyline culls below) and by motion-simplified geometry,
