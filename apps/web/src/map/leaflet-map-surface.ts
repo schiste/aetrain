@@ -1552,7 +1552,18 @@ export function createLeafletMapSurface({
       cityPadding: cityLod.cityPadding
     };
     const projectCache = new Map<string, MapPoint>();
-    const worldProjectCache = new Map<string, MapPoint>();
+    // Frame-invariant projection terms, computed once. projectWorld() below is
+    // called for every network/route/landmass vertex each frame, so we hoist
+    // the camera-center world point, the zoom scale, and the viewport half-
+    // extents out of the per-vertex path. projectWorldToScreen() recomputes
+    // mercatorProject(camera) (a log + tan) and scaleForZoom() on every call;
+    // at ~25k edges that transcendental work dominated the projection. Inlining
+    // the affine map here also makes it cheaper than a Map lookup, which is why
+    // the old stringified-coord cache is gone — it spent a key allocation + a
+    // hash per vertex to dodge six FLOPs, and missed on every unique interior
+    // polyline vertex anyway.
+    const halfWidthPx = size.x / 2;
+    const halfHeightPx = size.y / 2;
 
     syncSurfaceFrame({ pixelRatio, size });
 
@@ -1579,15 +1590,12 @@ export function createLeafletMapSurface({
         return projected;
       },
       projectWorld(worldPoint: WorldPoint): MapPoint {
-        const cacheKey = `${worldPoint.x}:${worldPoint.y}`;
-        const cached = worldProjectCache.get(cacheKey);
-        if (cached) {
-          return cached;
-        }
-
-        const projected = projectWorldToScreen(worldPoint, camera, size);
-        worldProjectCache.set(cacheKey, projected);
-        return projected;
+        // Affine world→screen map with frame-invariant terms hoisted above.
+        // Equivalent to projectWorldToScreen() (no clamping there either).
+        return {
+          x: (worldPoint.x - cameraWorld.x) * cameraScale + halfWidthPx,
+          y: (worldPoint.y - cameraWorld.y) * cameraScale + halfHeightPx
+        };
       },
       size,
       zoom: camera.zoom,
