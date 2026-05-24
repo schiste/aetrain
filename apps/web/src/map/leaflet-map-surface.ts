@@ -1659,14 +1659,17 @@ export function createLeafletMapSurface({
       }
       currentIsLowConfidence = isLowConfidence;
       if (isLowConfidence) {
-        networkContext.strokeStyle = "rgba(30,41,59,0.3)";
-        networkContext.lineWidth = 0.4;
+        // Slate-500 at low alpha over the #151d2e basemap composites to a
+        // muted gray-blue, well clear of the fill (the old (30,41,59) stroke
+        // sat only ~6 RGB units above it and read as invisible).
+        networkContext.strokeStyle = "rgba(71,85,105,0.45)";
+        networkContext.lineWidth = 0.7;
         // Tight 1px-on / 2px-off pattern — reads as dots at this line
         // width without looking like a long dash.
         networkContext.setLineDash([1, 2]);
       } else {
-        networkContext.strokeStyle = "rgba(30,41,59,0.5)";
-        networkContext.lineWidth = 0.6;
+        networkContext.strokeStyle = "rgba(71,85,105,0.70)";
+        networkContext.lineWidth = 0.9;
         networkContext.setLineDash([]);
       }
     };
