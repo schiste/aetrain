@@ -43684,7 +43684,7 @@
   },
   {
     "from_city_id": "brussel-nl-a2a4df2e",
-    "to_city_id": "lille-europe-nl-045eee8d",
+    "to_city_id": "lille-fr-q648",
     "duration_min": 34,
     "service_kind": "rail",
     "service_class": "regional",
@@ -43708,7 +43708,7 @@
   },
   {
     "from_city_id": "brussel-nl-a2a4df2e",
-    "to_city_id": "paris-nord-nl-5b222607",
+    "to_city_id": "paris-fr-q90",
     "duration_min": 72,
     "service_kind": "rail",
     "service_class": "regional",
@@ -55784,7 +55784,7 @@
   },
   {
     "from_city_id": "chartres-fr-28085",
-    "to_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
+    "to_city_id": "paris-fr-q90",
     "duration_min": 100,
     "service_kind": "rail",
     "service_class": "regional",
@@ -80662,21 +80662,8 @@
     "change_count_estimate": 0,
     "source_confidence": 100,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "epernon-fr-28140",
-    "to_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
-    "duration_min": 76,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:"
     ]
   },
   {
@@ -103290,45 +103277,6 @@
     ]
   },
   {
-    "from_city_id": "grenoble-cite-internationale-zz-01539826",
-    "to_city_id": "grenoble-fr-q1289",
-    "duration_min": 3,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::990301c3-14d2-4ac3-b839-9f452ebd7f65:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "grenoble-cite-internationale-zz-01539826",
-    "to_city_id": "monestier-de-clermont-fr-38242",
-    "duration_min": 37,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "grenoble-cite-internationale-zz-01539826",
-    "to_city_id": "pont-de-claix-l-etoile-ch-ff76f54e",
-    "duration_min": 12,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
     "from_city_id": "grenoble-fr-q1289",
     "to_city_id": "brignoud-fr-38547",
     "duration_min": 25,
@@ -103358,19 +103306,6 @@
   },
   {
     "from_city_id": "grenoble-fr-q1289",
-    "to_city_id": "grenoble-cite-internationale-zz-01539826",
-    "duration_min": 10,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "grenoble-fr-q1289",
     "to_city_id": "lyon-part-dieu-de-cfdacf42",
     "duration_min": 89,
     "service_kind": "rail",
@@ -103392,6 +103327,19 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::D9F206DE-37B5-4299-A71A-5B4201D0B9F9:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "grenoble-fr-q1289",
+    "to_city_id": "monestier-de-clermont-fr-38242",
+    "duration_min": 37,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -161706,30 +161654,6 @@
     ]
   },
   {
-    "from_city_id": "lille-europe-nl-045eee8d",
-    "to_city_id": "brussel-nl-a2a4df2e",
-    "duration_min": 34,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "nl-ovapi-gtfs:138956"
-    ]
-  },
-  {
-    "from_city_id": "lille-europe-nl-045eee8d",
-    "to_city_id": "london-st-pancras-int-nl-8641c358",
-    "duration_min": 81,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "nl-ovapi-gtfs:138956"
-    ]
-  },
-  {
     "from_city_id": "lille-fr-q648",
     "to_city_id": "aeroport-charles-gaulle-fr-93073",
     "duration_min": 49,
@@ -161753,6 +161677,18 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::938DCE7E-3A57-443A-B771-92F6F819E7E3:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "lille-fr-q648",
+    "to_city_id": "brussel-nl-a2a4df2e",
+    "duration_min": 34,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "nl-ovapi-gtfs:138956"
     ]
   },
   {
@@ -161906,6 +161842,18 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::E597DAD9-42BF-4927-BEDB-0B05091BCBBE:",
       "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "lille-fr-q648",
+    "to_city_id": "london-st-pancras-int-nl-8641c358",
+    "duration_min": 81,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "nl-ovapi-gtfs:138956"
     ]
   },
   {
@@ -165189,7 +165137,7 @@
   },
   {
     "from_city_id": "london-st-pancras-int-nl-8641c358",
-    "to_city_id": "lille-europe-nl-045eee8d",
+    "to_city_id": "lille-fr-q648",
     "duration_min": 81,
     "service_kind": "rail",
     "service_class": "regional",
@@ -185953,28 +185901,16 @@
   },
   {
     "from_city_id": "monestier-de-clermont-fr-38242",
-    "to_city_id": "grenoble-cite-internationale-zz-01539826",
-    "duration_min": 54,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::990301c3-14d2-4ac3-b839-9f452ebd7f65:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "monestier-de-clermont-fr-38242",
-    "to_city_id": "grenoble-europole-zz-5a27c138",
+    "to_city_id": "grenoble-fr-q1289",
     "duration_min": 40,
     "service_kind": "rail",
     "service_class": "regional",
     "change_count_estimate": 0,
     "source_confidence": 50,
     "provenance": [
-      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:",
-      "geometry:sncf-fr-rfn-lines"
+      "geometry:sncf-fr-rfn-lines",
+      "sncf-fr-gtfs:FR:Line::990301c3-14d2-4ac3-b839-9f452ebd7f65:",
+      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:"
     ]
   },
   {
@@ -188355,30 +188291,6 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::B175B939-CEB2-4013-A90F-64CA627A5C45:",
       "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "montpellier-saint-roch-es-e4552a56",
-    "to_city_id": "narbonne-fr-11262",
-    "duration_min": 50,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:8730371801AV016"
-    ]
-  },
-  {
-    "from_city_id": "montpellier-saint-roch-es-e4552a56",
-    "to_city_id": "nimes-fr-q42807",
-    "duration_min": 26,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:7180187303AV016"
     ]
   },
   {
@@ -194728,18 +194640,6 @@
   },
   {
     "from_city_id": "narbonne-fr-11262",
-    "to_city_id": "montpellier-saint-roch-es-e4552a56",
-    "duration_min": 51,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:7180187303AV016"
-    ]
-  },
-  {
-    "from_city_id": "narbonne-fr-11262",
     "to_city_id": "port-la-nouvelle-fr-11266",
     "duration_min": 11,
     "service_kind": "rail",
@@ -200278,18 +200178,6 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::0202671B-7107-429E-A37B-473C55E0254C:",
       "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "nimes-fr-q42807",
-    "to_city_id": "montpellier-saint-roch-es-e4552a56",
-    "duration_min": 25,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "es-renfe-mainline-gtfs:8730371801AV016"
     ]
   },
   {
@@ -212878,6 +212766,18 @@
   },
   {
     "from_city_id": "paris-fr-q90",
+    "to_city_id": "brussel-nl-a2a4df2e",
+    "duration_min": 82,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 60,
+    "provenance": [
+      "nl-ovapi-gtfs:138957"
+    ]
+  },
+  {
+    "from_city_id": "paris-fr-q90",
     "to_city_id": "caen-fr-14118",
     "duration_min": 111,
     "service_kind": "rail",
@@ -212912,6 +212812,19 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::4B0DFE2B-138B-455F-BCEF-0B57A660A95F:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "paris-fr-q90",
+    "to_city_id": "chartres-fr-28085",
+    "duration_min": 100,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -213042,6 +212955,19 @@
     "source_confidence": 100,
     "provenance": [
       "sncf-fr-gtfs:FR:Line::6155CD5F-AB2D-4274-A052-8C7462540578:",
+      "geometry:sncf-fr-rfn-lines"
+    ]
+  },
+  {
+    "from_city_id": "paris-fr-q90",
+    "to_city_id": "epernon-fr-28140",
+    "duration_min": 76,
+    "service_kind": "rail",
+    "service_class": "regional",
+    "change_count_estimate": 0,
+    "source_confidence": 50,
+    "provenance": [
+      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
       "geometry:sncf-fr-rfn-lines"
     ]
   },
@@ -213616,44 +213542,6 @@
     "provenance": [
       "sncf-fr-gtfs:FR:Line::fc526a2c-d3e0-4ae0-b8cd-782f83e16cdd:",
       "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
-    "to_city_id": "chartres-fr-28085",
-    "duration_min": 100,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "paris-montparnasse-point-rencontre-groupes-zz-a1c4abc9",
-    "to_city_id": "epernon-fr-28140",
-    "duration_min": 76,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::F7BB4338-AE0A-457B-A5D3-F1F80F115201:",
-      "geometry:sncf-fr-rfn-lines"
-    ]
-  },
-  {
-    "from_city_id": "paris-nord-nl-5b222607",
-    "to_city_id": "brussel-nl-a2a4df2e",
-    "duration_min": 82,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 60,
-    "provenance": [
-      "nl-ovapi-gtfs:138957"
     ]
   },
   {
@@ -220497,19 +220385,6 @@
     "provenance": [
       "ch-gtfs:91-72-j26-1",
       "geometry:ch-geofabrik-railways-gpkg"
-    ]
-  },
-  {
-    "from_city_id": "pont-de-claix-l-etoile-ch-ff76f54e",
-    "to_city_id": "grenoble-europole-zz-5a27c138",
-    "duration_min": 22,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::BD427EAB-2FA4-46A5-84D0-6ADB50D00346:",
-      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
@@ -298491,19 +298366,6 @@
     "source_confidence": 60,
     "provenance": [
       "de-delfi-gtfs:2549260_2"
-    ]
-  },
-  {
-    "from_city_id": "voiron-fr-38563",
-    "to_city_id": "grenoble-europole-zz-5a27c138",
-    "duration_min": 30,
-    "service_kind": "rail",
-    "service_class": "regional",
-    "change_count_estimate": 0,
-    "source_confidence": 50,
-    "provenance": [
-      "sncf-fr-gtfs:FR:Line::D02BC35E-F58E-45E7-968F-42B8AB630E6E:",
-      "geometry:sncf-fr-rfn-lines"
     ]
   },
   {
