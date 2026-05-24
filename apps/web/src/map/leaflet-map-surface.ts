@@ -1496,19 +1496,31 @@ export function createLeafletMapSurface({
     ].join(":");
     const cameraWorld = mercatorProject(camera.lon, camera.lat);
     const cameraScale = scaleForZoom(camera.zoom);
-    const baseLod = buildLodProfile(semanticZoom, labelThreshold);
-    const lod = isInteractingWithCamera()
-      ? {
-          ...baseLod,
-          // Tighter network during active zoom/pan keeps the per-tick
-          // render under the 16ms budget on the production graph. The
-          // settle path runs invalidateView() at full LOD afterwards.
-          networkEdgeBudget: Math.max(
+    // Two-clock LOD. The network layer (≈39k multi-point polylines) is the
+    // expensive draw, so it stays on the FROZEN semanticZoom during a gesture
+    // — that freeze is what keeps each wheel tick under the 16ms budget. But
+    // freezing the whole profile also froze cityBudget, which starved the
+    // cheap city point-draws mid-zoom: dots ramped their fade in but then hit
+    // the gesture-start budget and were culled until settle thawed it (the
+    // "pop"). Cities are bounded by the viewport cull regardless of budget, so
+    // we let their LOD ride the LIVE camera.zoom and grow continuously.
+    const structuralLod = buildLodProfile(semanticZoom, labelThreshold);
+    const cityLod = buildLodProfile(camera.zoom, labelThreshold);
+    const interacting = isInteractingWithCamera();
+    const lod = {
+      ...structuralLod,
+      cityBudget: cityLod.cityBudget,
+      cityPadding: cityLod.cityPadding,
+      // Tighter network during active zoom/pan keeps the per-tick render under
+      // the 16ms budget on the production graph. The settle path runs
+      // invalidateView() at full LOD afterwards.
+      networkEdgeBudget: interacting
+        ? Math.max(
             300,
-            Math.round(baseLod.networkEdgeBudget / INTERACTION_NETWORK_BUDGET_DIVISOR)
+            Math.round(structuralLod.networkEdgeBudget / INTERACTION_NETWORK_BUDGET_DIVISOR)
           )
-        }
-      : baseLod;
+        : structuralLod.networkEdgeBudget
+    };
     const projectCache = new Map<string, MapPoint>();
     const worldProjectCache = new Map<string, MapPoint>();
 
