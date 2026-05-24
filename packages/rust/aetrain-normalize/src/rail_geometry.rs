@@ -63,6 +63,8 @@ pub struct RailRouteTopologyDiagnostics {
     pub expanded_end_candidate_count: usize,
     pub nearest_start_snap_distance_m: Option<u32>,
     pub nearest_end_snap_distance_m: Option<u32>,
+    pub nearest_expanded_start_snap_distance_m: Option<u32>,
+    pub nearest_expanded_end_snap_distance_m: Option<u32>,
     pub nearest_start_component_id: Option<usize>,
     pub nearest_end_component_id: Option<usize>,
     pub nearest_candidates_same_component: bool,
@@ -501,6 +503,12 @@ impl RailGeometryNetwork {
                 .first()
                 .map(|(_, distance)| *distance),
             nearest_end_snap_distance_m: local_end_candidates
+                .first()
+                .map(|(_, distance)| *distance),
+            nearest_expanded_start_snap_distance_m: expanded_start_candidates
+                .first()
+                .map(|(_, distance)| *distance),
+            nearest_expanded_end_snap_distance_m: expanded_end_candidates
                 .first()
                 .map(|(_, distance)| *distance),
             nearest_start_component_id,
