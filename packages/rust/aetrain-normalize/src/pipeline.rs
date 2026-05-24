@@ -742,6 +742,20 @@ struct ChunkedEdgeGeometryManifestChunk {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedRouteGeometryManifest {
+    pub version: u8,
+    pub total_geometry_count: usize,
+    pub chunk_target_bytes: usize,
+    pub chunks: Vec<ChunkedRouteGeometryManifestChunk>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedRouteGeometryManifestChunk {
+    pub file: String,
+    pub geometry_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct PipelineRailNetworkArtifactManifest {
     pub version: u8,
     pub source_count: usize,
@@ -759,6 +773,7 @@ struct PipelineRailNetworkArtifactRecord {
 }
 
 const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
+const WEB_RUNTIME_ROUTE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
 const AGGREGATE_CITY_MERGE_DISTANCE_METERS: u32 = 20_000;
 const ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS: u32 = 5_000;
 
@@ -5157,10 +5172,7 @@ fn export_web_runtime_bundle(
     write_json(&output_dir.join("graph.json"), &runtime_bundle.graph)?;
     write_json(&output_dir.join("aliases.json"), &runtime_bundle.aliases)?;
     write_json(&output_dir.join("stations.json"), &station_artifact)?;
-    write_json(
-        &output_dir.join("route-geometries.json"),
-        &runtime_edge_geometries,
-    )?;
+    export_chunked_web_runtime_route_geometries(output_dir, &runtime_edge_geometries)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
 }
@@ -5498,9 +5510,60 @@ fn export_chunked_web_debug_edge_geometries(
     Ok(())
 }
 
+fn export_chunked_web_runtime_route_geometries(
+    output_dir: &Path,
+    route_geometries: &RuntimeEdgeGeometryArtifact,
+) -> Result<()> {
+    let chunk_ranges = chunk_runtime_route_geometry_ranges(
+        &route_geometries.geometries,
+        WEB_RUNTIME_ROUTE_GEOMETRY_CHUNK_TARGET_BYTES,
+    )?;
+    let chunk_dir = output_dir.join("route-geometries");
+    recreate_dir(&chunk_dir)?;
+
+    let mut manifest = ChunkedRouteGeometryManifest {
+        version: 1,
+        total_geometry_count: route_geometries.geometries.len(),
+        chunk_target_bytes: WEB_RUNTIME_ROUTE_GEOMETRY_CHUNK_TARGET_BYTES,
+        chunks: Vec::with_capacity(chunk_ranges.len()),
+    };
+
+    for (chunk_index, range) in chunk_ranges.iter().enumerate() {
+        let file_name = format!("chunk-{chunk_index:04}.json");
+        let relative_file = format!("route-geometries/{file_name}");
+        let chunk_path = chunk_dir.join(&file_name);
+        write_json_compact(&chunk_path, &route_geometries.geometries[range.clone()])?;
+        manifest.chunks.push(ChunkedRouteGeometryManifestChunk {
+            file: relative_file,
+            geometry_count: range.len(),
+        });
+    }
+
+    write_json(
+        &output_dir.join("route-geometries.manifest.json"),
+        &manifest,
+    )?;
+    Ok(())
+}
+
 fn chunk_edge_geometry_ranges(
     geometries: &[EdgeGeometryRecord],
     max_bytes: usize,
+) -> Result<Vec<std::ops::Range<usize>>> {
+    chunk_serialized_record_ranges(geometries, max_bytes, "edge geometry")
+}
+
+fn chunk_runtime_route_geometry_ranges(
+    geometries: &[RuntimeEdgeGeometryRecord],
+    max_bytes: usize,
+) -> Result<Vec<std::ops::Range<usize>>> {
+    chunk_serialized_record_ranges(geometries, max_bytes, "runtime route geometry")
+}
+
+fn chunk_serialized_record_ranges<T: Serialize>(
+    geometries: &[T],
+    max_bytes: usize,
+    label: &str,
 ) -> Result<Vec<std::ops::Range<usize>>> {
     if geometries.is_empty() {
         return Ok(Vec::new());
@@ -5512,7 +5575,7 @@ fn chunk_edge_geometry_ranges(
 
     for (index, geometry) in geometries.iter().enumerate() {
         let geometry_bytes = serde_json::to_vec(geometry)
-            .context("failed to size edge geometry record for chunking")?
+            .with_context(|| format!("failed to size {label} record for chunking"))?
             .len();
         let separator_bytes = usize::from(index > chunk_start);
         if index > chunk_start && chunk_bytes + separator_bytes + geometry_bytes > max_bytes {
@@ -9995,6 +10058,35 @@ mod tests {
 
         let chunk_ranges =
             chunk_edge_geometry_ranges(&geometries, 250).expect("chunking should succeed");
+        assert!(chunk_ranges.len() > 1);
+        assert_eq!(
+            chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),
+            geometries.len()
+        );
+    }
+
+    #[test]
+    fn runtime_route_geometry_chunking_splits_large_artifacts() {
+        let geometries = (0..6)
+            .map(|index| RuntimeEdgeGeometryRecord {
+                from_city_index: index as u32,
+                to_city_index: index as u32 + 1,
+                points: vec![
+                    PolylinePointE5 {
+                        lat_e5: 4_800_000 + index,
+                        lon_e5: 200_000 + index,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: 4_810_000 + index,
+                        lon_e5: 210_000 + index,
+                    },
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+            })
+            .collect::<Vec<_>>();
+
+        let chunk_ranges =
+            chunk_runtime_route_geometry_ranges(&geometries, 180).expect("chunking should succeed");
         assert!(chunk_ranges.len() > 1);
         assert_eq!(
             chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),

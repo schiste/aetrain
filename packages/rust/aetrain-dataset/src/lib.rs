@@ -109,7 +109,7 @@ impl RuntimeDatasetMeta {
             city_count,
             edge_count,
             alias_count,
-            route_geometry_artifact_path: Some("route-geometries.json".to_string()),
+            route_geometry_artifact_path: Some("route-geometries.manifest.json".to_string()),
             station_artifact_path: Some("stations.json".to_string()),
             attribution_path: meta.attribution_path.clone(),
         }
@@ -474,7 +474,7 @@ mod tests {
                 city_count: 2,
                 edge_count: 2,
                 alias_count: 2,
-                route_geometry_artifact_path: Some("route-geometries.json".to_string()),
+                route_geometry_artifact_path: Some("route-geometries.manifest.json".to_string()),
                 station_artifact_path: Some("stations.json".to_string()),
                 attribution_path: "attribution.json".to_string(),
             },
