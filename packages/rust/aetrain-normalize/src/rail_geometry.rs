@@ -7,8 +7,9 @@ use std::{
 };
 
 use aetrain_domain::GeoPoint;
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use rusqlite::Connection;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use zip::ZipArchive;
 
@@ -32,6 +33,26 @@ pub struct RailGeometryNetwork {
     endpoint_node_indexes: Vec<usize>,
     node_indexes_by_bucket: HashMap<(i32, i32), Vec<usize>>,
     component_by_node: Vec<usize>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RailNetworkArtifact {
+    pub schema_version: u16,
+    pub source_id: String,
+    pub source_sha256: Option<String>,
+    pub node_count: usize,
+    pub segment_count: usize,
+    pub component_count: usize,
+    pub nodes: Vec<GeoPoint>,
+    pub segments: Vec<RailNetworkSegmentRecord>,
+    pub endpoint_node_indexes: Vec<u32>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RailNetworkSegmentRecord {
+    pub from_node_index: u32,
+    pub to_node_index: u32,
+    pub weight_meters: u32,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -135,6 +156,114 @@ impl PartialOrd for QueueState {
 }
 
 impl RailGeometryNetwork {
+    pub fn to_artifact(
+        &self,
+        source_id: impl Into<String>,
+        source_sha256: Option<String>,
+    ) -> RailNetworkArtifact {
+        let mut segments = Vec::new();
+        for (from_node, edges) in self.adjacency.iter().enumerate() {
+            for edge in edges {
+                if from_node >= edge.target {
+                    continue;
+                }
+                segments.push(RailNetworkSegmentRecord {
+                    from_node_index: from_node as u32,
+                    to_node_index: edge.target as u32,
+                    weight_meters: edge.weight_meters,
+                });
+            }
+        }
+
+        RailNetworkArtifact {
+            schema_version: 1,
+            source_id: source_id.into(),
+            source_sha256,
+            node_count: self.nodes.len(),
+            segment_count: segments.len(),
+            component_count: self
+                .component_by_node
+                .iter()
+                .copied()
+                .max()
+                .map(|component| component + 1)
+                .unwrap_or(0),
+            nodes: self.nodes.clone(),
+            segments,
+            endpoint_node_indexes: self
+                .endpoint_node_indexes
+                .iter()
+                .map(|index| *index as u32)
+                .collect(),
+        }
+    }
+
+    pub fn from_artifact(artifact: RailNetworkArtifact) -> Result<Self> {
+        if artifact.schema_version != 1 {
+            bail!(
+                "unsupported rail network artifact schema version {}",
+                artifact.schema_version
+            );
+        }
+        if artifact.node_count != artifact.nodes.len() {
+            bail!(
+                "rail network artifact node_count {} does not match nodes length {}",
+                artifact.node_count,
+                artifact.nodes.len()
+            );
+        }
+        if artifact.segment_count != artifact.segments.len() {
+            bail!(
+                "rail network artifact segment_count {} does not match segments length {}",
+                artifact.segment_count,
+                artifact.segments.len()
+            );
+        }
+
+        let mut adjacency = vec![Vec::<GraphEdge>::new(); artifact.nodes.len()];
+        for segment in artifact.segments {
+            let from_node = segment.from_node_index as usize;
+            let to_node = segment.to_node_index as usize;
+            if from_node >= artifact.nodes.len() || to_node >= artifact.nodes.len() {
+                bail!(
+                    "rail network segment references out-of-range node indexes {} -> {}",
+                    from_node,
+                    to_node
+                );
+            }
+            add_directed_edge(
+                &mut adjacency,
+                from_node,
+                to_node,
+                segment.weight_meters.max(1),
+            );
+            add_directed_edge(
+                &mut adjacency,
+                to_node,
+                from_node,
+                segment.weight_meters.max(1),
+            );
+        }
+
+        let mut endpoint_node_indexes = Vec::with_capacity(artifact.endpoint_node_indexes.len());
+        for endpoint_index in artifact.endpoint_node_indexes {
+            let endpoint_index = endpoint_index as usize;
+            if endpoint_index >= artifact.nodes.len() {
+                bail!(
+                    "rail network endpoint references out-of-range node index {}",
+                    endpoint_index
+                );
+            }
+            endpoint_node_indexes.push(endpoint_index);
+        }
+
+        Ok(build_rail_geometry_network(
+            artifact.nodes,
+            adjacency,
+            endpoint_node_indexes,
+        ))
+    }
+
     pub fn merge(networks: &[&RailGeometryNetwork]) -> Self {
         let mut nodes = Vec::<GeoPoint>::new();
         let mut adjacency = Vec::<Vec<GraphEdge>>::new();
@@ -2027,6 +2156,52 @@ mod tests {
                 .iter()
                 .any(|point| (point.lon - 2.0300).abs() < 0.0002)
         );
+    }
+
+    #[test]
+    fn rail_network_artifact_round_trips_routing_topology() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0000, 48.0000], [2.0100, 48.0000], [2.0200, 48.0000]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let artifact = network.to_artifact("test-rfn", Some("sha256".to_string()));
+        let restored = RailGeometryNetwork::from_artifact(artifact).expect("artifact should load");
+        let route = restored
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.0,
+                },
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.02,
+                },
+            )
+            .expect("restored network should route");
+
+        assert!(route.len() >= 3);
+        assert!(
+            route
+                .iter()
+                .any(|point| (point.lon - 2.0100).abs() < 0.0002)
+        );
+
+        let _ = fs::remove_file(path);
     }
 
     #[test]

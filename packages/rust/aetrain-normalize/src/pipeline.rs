@@ -28,7 +28,7 @@ use crate::{
     build_gtfs_basic_dataset_with_loaded_rail_geometry,
     build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset, bundle_from_basic_output,
     bundle_from_output,
-    rail_geometry::{RailGeometryNetwork, RailRouteTopologyDiagnostics},
+    rail_geometry::{RailGeometryNetwork, RailNetworkArtifact, RailRouteTopologyDiagnostics},
 };
 
 pub trait PipelineAdapter {
@@ -690,6 +690,7 @@ pub struct PipelineOutputPaths {
     pub canonical_dir: Option<String>,
     pub web_dir: Option<String>,
     pub web_debug_dir: Option<String>,
+    pub rail_network_dir: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -738,6 +739,23 @@ struct ChunkedEdgeGeometryManifest {
 struct ChunkedEdgeGeometryManifestChunk {
     pub file: String,
     pub geometry_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct PipelineRailNetworkArtifactManifest {
+    pub version: u8,
+    pub source_count: usize,
+    pub sources: Vec<PipelineRailNetworkArtifactRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct PipelineRailNetworkArtifactRecord {
+    pub source_id: String,
+    pub source_sha256: String,
+    pub file: String,
+    pub node_count: usize,
+    pub segment_count: usize,
+    pub component_count: usize,
 }
 
 const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
@@ -913,6 +931,13 @@ fn export_pipeline_target(
         sources: source_artifacts,
     };
 
+    let authority_registry = load_geometry_authority_registry(manifest_dir, target)?;
+    let rail_network_dir = export_rail_network_artifacts(
+        authority_registry.as_ref(),
+        &attribution.sources,
+        &target_root,
+    )?;
+    let registry_source_coverage = load_registry_source_coverage_report(manifest_dir, target)?;
     let canonical_dir = if target.canonical_export {
         let canonical_dir = target_root.join("canonical");
         recreate_dir(&canonical_dir)?;
@@ -951,8 +976,6 @@ fn export_pipeline_target(
         None
     };
 
-    let authority_registry = load_geometry_authority_registry(manifest_dir, target)?;
-    let registry_source_coverage = load_registry_source_coverage_report(manifest_dir, target)?;
     let quality_report = build_quality_report(
         &artifacts.canonical.cities,
         &artifacts.canonical.edges,
@@ -1009,6 +1032,9 @@ fn export_pipeline_target(
                 .map(|path| path.display().to_string()),
             web_dir: web_dir.as_ref().map(|path| path.display().to_string()),
             web_debug_dir: web_debug_dir
+                .as_ref()
+                .map(|path| path.display().to_string()),
+            rail_network_dir: rail_network_dir
                 .as_ref()
                 .map(|path| path.display().to_string()),
         },
@@ -2421,6 +2447,95 @@ fn load_pipeline_authority_networks(
     networks
 }
 
+fn export_rail_network_artifacts(
+    authority_registry: Option<&GeometryAuthorityRegistry>,
+    source_artifacts: &[PipelineSourceArtifact],
+    target_root: &Path,
+) -> Result<Option<PathBuf>> {
+    let Some(authority_registry) = authority_registry else {
+        return Ok(None);
+    };
+    let artifacts_by_source_id = source_artifacts
+        .iter()
+        .map(|artifact| (artifact.source_id.as_str(), artifact))
+        .collect::<BTreeMap<_, _>>();
+    let candidates = rail_network_artifact_source_candidates(authority_registry);
+    if candidates.is_empty() {
+        return Ok(None);
+    }
+
+    let rail_network_dir = target_root.join("rail-network");
+    let source_dir = rail_network_dir.join("sources");
+    recreate_dir(&rail_network_dir)?;
+    fs::create_dir_all(&source_dir)
+        .with_context(|| format!("failed to create {}", source_dir.display()))?;
+
+    let mut sources = Vec::new();
+    for (source_id, fallback_loader) in candidates {
+        let Some(source_artifact) = artifacts_by_source_id.get(source_id.as_str()) else {
+            continue;
+        };
+        let Some(loader) =
+            authority_loader_for_source_id(authority_registry, &source_id).or(fallback_loader)
+        else {
+            continue;
+        };
+        let network =
+            load_pipeline_authority_network_from_source(source_artifact, target_root, &loader)
+                .with_context(|| {
+                    format!("failed to build rail network artifact for {source_id}")
+                })?;
+        let artifact = network.to_artifact(source_id.clone(), Some(source_artifact.sha256.clone()));
+        let file_name = format!("{}.json", safe_artifact_file_name(&source_id));
+        let relative_file = format!("sources/{file_name}");
+        write_json_compact(&source_dir.join(&file_name), &artifact)?;
+        sources.push(PipelineRailNetworkArtifactRecord {
+            source_id,
+            source_sha256: source_artifact.sha256.clone(),
+            file: relative_file,
+            node_count: artifact.node_count,
+            segment_count: artifact.segment_count,
+            component_count: artifact.component_count,
+        });
+    }
+
+    if sources.is_empty() {
+        return Ok(None);
+    }
+
+    let manifest = PipelineRailNetworkArtifactManifest {
+        version: 1,
+        source_count: sources.len(),
+        sources,
+    };
+    write_json(&rail_network_dir.join("manifest.json"), &manifest)?;
+    Ok(Some(rail_network_dir))
+}
+
+fn rail_network_artifact_source_candidates(
+    authority_registry: &GeometryAuthorityRegistry,
+) -> BTreeMap<String, Option<GeometryAuthorityLoader>> {
+    let mut candidates = BTreeMap::<String, Option<GeometryAuthorityLoader>>::new();
+    for source in &authority_registry.sources {
+        candidates.insert(source.source_id.clone(), Some(source.loader.clone()));
+    }
+    for country in &authority_registry.countries {
+        for source_id in country_authority_source_ids(country) {
+            candidates
+                .entry(source_id)
+                .or_insert_with(|| country.loader.clone());
+        }
+    }
+    for corridor in &authority_registry.corridors {
+        if let Some(source_id) = &corridor.source_id {
+            candidates
+                .entry(source_id.clone())
+                .or_insert_with(|| corridor.loader.clone());
+        }
+    }
+    candidates
+}
+
 fn load_pipeline_authority_network(
     authority_registry: &GeometryAuthorityRegistry,
     artifacts_by_source_id: &BTreeMap<&str, &PipelineSourceArtifact>,
@@ -2431,6 +2546,44 @@ fn load_pipeline_authority_network(
     let artifact = artifacts_by_source_id.get(source_id)?;
     let loader = authority_loader_for_source_id(authority_registry, source_id)
         .or_else(|| fallback_loader.cloned())?;
+    if let Ok(Some(network)) =
+        load_cached_pipeline_authority_network(artifact, target_root, source_id)
+    {
+        return Some(network);
+    }
+    load_pipeline_authority_network_from_source(artifact, target_root, &loader).ok()
+}
+
+fn load_cached_pipeline_authority_network(
+    source_artifact: &PipelineSourceArtifact,
+    target_root: &Path,
+    source_id: &str,
+) -> Result<Option<RailGeometryNetwork>> {
+    let path = cached_rail_network_artifact_path(target_root, source_id);
+    if !path.exists() {
+        return Ok(None);
+    }
+    let artifact: RailNetworkArtifact = read_json(&path)?;
+    if artifact.source_id != source_id
+        || artifact.source_sha256.as_deref() != Some(source_artifact.sha256.as_str())
+    {
+        return Ok(None);
+    }
+    RailGeometryNetwork::from_artifact(artifact).map(Some)
+}
+
+fn cached_rail_network_artifact_path(target_root: &Path, source_id: &str) -> PathBuf {
+    target_root
+        .join("rail-network")
+        .join("sources")
+        .join(format!("{}.json", safe_artifact_file_name(source_id)))
+}
+
+fn load_pipeline_authority_network_from_source(
+    artifact: &PipelineSourceArtifact,
+    target_root: &Path,
+    loader: &GeometryAuthorityLoader,
+) -> Result<RailGeometryNetwork> {
     let path = resolve_pipeline_source_artifact_path(artifact, &target_root.display().to_string());
     match loader {
         GeometryAuthorityLoader::SncfRfnGeojson => {
@@ -2440,7 +2593,19 @@ fn load_pipeline_authority_network(
             RailGeometryNetwork::load_geofabrik_railways_gpkg(&path)
         }
     }
-    .ok()
+}
+
+fn safe_artifact_file_name(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' {
+                ch
+            } else {
+                '-'
+            }
+        })
+        .collect()
 }
 
 fn build_rail_authority_defect_details(
@@ -9989,6 +10154,7 @@ mod tests {
                     canonical_dir: None,
                     web_dir: None,
                     web_debug_dir: None,
+                    rail_network_dir: None,
                 },
                 summary: PipelineBuildSummary {
                     city_count: 3,
@@ -10061,6 +10227,7 @@ mod tests {
                     canonical_dir: None,
                     web_dir: None,
                     web_debug_dir: None,
+                    rail_network_dir: None,
                 },
                 summary: PipelineBuildSummary {
                     city_count: 0,
