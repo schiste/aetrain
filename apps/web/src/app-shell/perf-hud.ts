@@ -24,8 +24,10 @@ interface HudSnapshot {
   renderedCities: number;
   shownCities: number;
   totalCities: number;
+  stationsOnNetwork: number;
   labelCount: number;
-  culledByLod: number;
+  culledByFade: number;
+  culledOffNetwork: number;
   culledByViewport: number;
   workerRoundTrip: RollingMetric;
   searchRoundTrip: RollingMetric;
@@ -89,8 +91,10 @@ function sampleSnapshot(store: DiagnosticsStore): HudSnapshot {
     renderedCities: numberField(lastRender, "rendered"),
     shownCities: numberField(lastRender, "shown"),
     totalCities: numberField(lastRender, "total") || numberField(lastRender, "rendered"),
+    stationsOnNetwork: numberField(lastRender, "stations_on_network"),
     labelCount: numberField(lastRender, "label_count"),
-    culledByLod: numberField(lastRender, "culled_by_lod"),
+    culledByFade: numberField(lastRender, "culled_by_fade"),
+    culledOffNetwork: numberField(lastRender, "culled_off_network"),
     culledByViewport: numberField(lastRender, "culled_by_viewport"),
     workerRoundTrip: rollingFromEvents(deriveTripEvents, "duration_ms"),
     searchRoundTrip: rollingFromEvents(searchEvents, "duration_ms"),
@@ -266,9 +270,13 @@ function renderSnapshot(container: HTMLElement, snapshot: HudSnapshot): void {
   lines.push(formatFrameTime("hot  ", snapshot.hotPathFrameTime));
   lines.push(
     `cities ${snapshot.renderedCities}/${snapshot.shownCities}/${snapshot.totalCities}`
-    + ` lbl ${snapshot.labelCount}`
+    + ` net ${snapshot.stationsOnNetwork} lbl ${snapshot.labelCount}`
   );
-  lines.push(`cull lod ${snapshot.culledByLod} vp ${snapshot.culledByViewport}`);
+  lines.push(
+    `cull fade ${snapshot.culledByFade}`
+    + ` off-net ${snapshot.culledOffNetwork}`
+    + ` vp ${snapshot.culledByViewport}`
+  );
   lines.push(formatFrameTime("trip ", snapshot.workerRoundTrip));
   lines.push(formatFrameTime("srch ", snapshot.searchRoundTrip));
   lines.push(`url commit ${formatMs(snapshot.urlCommitMs)}`);

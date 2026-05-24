@@ -58,17 +58,20 @@ interface MapPlannerState {
 type PlannerStateInput = Partial<MapPlannerState>;
 
 interface RenderStats {
-  /** Non-trip cities painted in the fade tail that bypassed the LOD
-   *  cityBudget cap. Confirms the budget/fade decoupling is active —
-   *  if this stays at 0 during a wheel-zoom burst, the dot layer is
-   *  back to popping at settle. */
-  citiesFadeBypassedBudget: number;
   /** Cities whose fade opacity is strictly between 0 and 1 — i.e. those
    *  mid-ramp during a wheel/pinch gesture. Useful for verifying the fade
    *  band is actually being crossed gradually rather than snapping. */
   citiesFading: number;
-  culledByLod: number;
+  /** Cities culled because their pop-fade opacity reached 0 (below the
+   *  bottom of the live fade band). Formerly culledByLod; the LOD city
+   *  budget that also fed it is gone, so fade is now the only cause. */
+  culledByFade: number;
   culledByViewport: number;
+  /** Non-trip, non-focused cities that cleared the pop/interest sliders but
+   *  are hidden because none of their rail edges are in the viewport. The
+   *  network-anchoring gate; a spike means the sliders would surface more
+   *  dots than the visible network supports. */
+  culledOffNetwork: number;
   labelCount: number;
   /** Of the placed labels, how many were re-placed from the previous
    *  frame's sticky set (hysteresis-preserved). The remainder = new entries
@@ -77,6 +80,10 @@ interface RenderStats {
   reachable: number;
   rendered: number;
   shown: number;
+  /** Distinct cities that are stations on at least one in-viewport rail edge
+   *  — the candidate pool the dot gate draws from. Makes the always-on
+   *  network observable: drawn_edges and this should move together. */
+  stationsOnNetwork: number;
   total: number;
 }
 
@@ -327,12 +334,6 @@ const EUROPE_VIEW_PADDING_PX = 32;
 const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const ZOOM_SETTLE_DELAY_MS = 120;
 const PAN_SETTLE_DELAY_MS = 120;
-// During active wheel-zoom / pan we tighten the network LOD so the
-// per-frame draw doesn't blow the budget on the production graph
-// (39k edges × multi-point geometries). Cities stay at full LOD so the
-// user's input still feels responsive; a settle pass after the
-// interaction restores full network density.
-const INTERACTION_NETWORK_BUDGET_DIVISOR = 5;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
 // Multiplicative half-width of the population fade band around the live
 // threshold: a city is fully opaque at pop >= threshold × ratio, invisible
@@ -567,15 +568,16 @@ export function createLeafletMapSurface({
   let currentFrame: MapFrame | null = null;
   let renderPlanCache: RenderPlanCache | null = null;
   let lastRenderStats: RenderStats = {
-    citiesFadeBypassedBudget: 0,
     citiesFading: 0,
-    culledByLod: 0,
+    culledByFade: 0,
     culledByViewport: 0,
+    culledOffNetwork: 0,
     labelCount: 0,
     labelsPackedSticky: 0,
     reachable: 0,
     rendered: 0,
     shown: 0,
+    stationsOnNetwork: 0,
     total: cities.length
   };
   // Cross-frame hysteresis set: ids (city names) of labels successfully
@@ -1504,30 +1506,18 @@ export function createLeafletMapSurface({
     ].join(":");
     const cameraWorld = mercatorProject(camera.lon, camera.lat);
     const cameraScale = scaleForZoom(camera.zoom);
-    // Two-clock LOD. The network layer (≈39k multi-point polylines) is the
-    // expensive draw, so it stays on the FROZEN semanticZoom during a gesture
-    // — that freeze is what keeps each wheel tick under the 16ms budget. But
-    // freezing the whole profile also froze cityBudget, which starved the
-    // cheap city point-draws mid-zoom: dots ramped their fade in but then hit
-    // the gesture-start budget and were culled until settle thawed it (the
-    // "pop"). Cities are bounded by the viewport cull regardless of budget, so
-    // we let their LOD ride the LIVE camera.zoom and grow continuously.
+    // Two-clock LOD. Structural fields (label budget/threshold, network
+    // padding) ride the FROZEN semanticZoom so they don't churn mid-gesture.
+    // Only cityPadding rides the LIVE camera.zoom: it sets the viewport cull
+    // margin for city dots, and the dots are now bounded purely by the
+    // viewport + network membership (no budget), so growing the margin
+    // continuously as the camera moves keeps dots fading in smoothly instead
+    // of snapping at settle.
     const structuralLod = buildLodProfile(semanticZoom, labelThreshold);
     const cityLod = buildLodProfile(camera.zoom, labelThreshold);
-    const interacting = isInteractingWithCamera();
     const lod = {
       ...structuralLod,
-      cityBudget: cityLod.cityBudget,
-      cityPadding: cityLod.cityPadding,
-      // Tighter network during active zoom/pan keeps the per-tick render under
-      // the 16ms budget on the production graph. The settle path runs
-      // invalidateView() at full LOD afterwards.
-      networkEdgeBudget: interacting
-        ? Math.max(
-            300,
-            Math.round(structuralLod.networkEdgeBudget / INTERACTION_NETWORK_BUDGET_DIVISOR)
-          )
-        : structuralLod.networkEdgeBudget
+      cityPadding: cityLod.cityPadding
     };
     const projectCache = new Map<string, MapPoint>();
     const worldProjectCache = new Map<string, MapPoint>();
@@ -1691,16 +1681,12 @@ export function createLeafletMapSurface({
       isInteractingWithCamera()
       || frame.zoom < BACKGROUND_NETWORK_SIMPLIFIED_ZOOM;
     for (const edge of edgeRefs) {
-      if (drawnEdges >= frame.lod.networkEdgeBudget) {
-        break;
-      }
-      if (
-        edge.fromCity.interest < frame.lod.networkMinInterest &&
-        edge.toCity.interest < frame.lod.networkMinInterest
-      ) {
-        continue;
-      }
-
+      // Railways are always-on: the network is bounded only by the viewport
+      // (the bbox + polyline culls below) and by motion-simplified geometry,
+      // never by a per-frame edge budget or an interest floor. Those two gates
+      // hid most rural lines at low zoom and made the network look broken even
+      // though the data is healthy — see the "Network-anchored map" change.
+      //
       // Cheap world-bbox cull BEFORE projection. Most edges at high
       // zoom sit entirely outside the viewport — skipping their points'
       // projection is the dominant settle-time win on the production
@@ -1995,17 +1981,16 @@ export function createLeafletMapSurface({
       (plannerState.legMin > 0 || plannerState.legMax < plannerState.legDynMax);
 
     let shown = 0;
-    let nonTripBudgetedCount = 0;
     let reachable = 0;
     let culledByViewport = 0;
-    let culledByLod = 0;
+    let culledByFade = 0;
     let citiesFading = 0;
-    // Fade-tail cities (0 < fadeOpacity < 1) bypass the LOD cityBudget cap
-    // so the smoothstep ramp is visible even when the frozen-semanticZoom
-    // budget would otherwise cull them mid-gesture. This counter proves
-    // that path is being taken — if it stays at 0 during a wheel-zoom
-    // burst, the decoupling regressed.
-    let citiesFadeBypassedBudget = 0;
+    // Non-trip, non-focused cities that cleared the pop/interest sliders but
+    // are hidden because none of their rail edges are in the viewport. This
+    // is the network-anchoring gate doing its job — a spike at a given zoom
+    // means the sliders would surface more dots than the visible network
+    // supports, which is exactly the continental-zoom flood we suppress.
+    let culledOffNetwork = 0;
     const visibleCities: VisibleCity[] = [];
     const labelCandidates: InternalLabelCandidate[] = [];
 
@@ -2024,13 +2009,45 @@ export function createLeafletMapSurface({
     const popThresholdAbs = popThresholdK * 1000;
     const popFadeLo = popThresholdAbs <= 0 ? 0 : popThresholdAbs / CITY_POP_FADE_RATIO;
 
+    // Network-anchored dots: a city is a candidate only if it's a station on
+    // a rail edge currently in the viewport. We harvest that set HERE rather
+    // than as a side-effect of drawBackgroundNetwork because the two layers
+    // have independent dirty flags — a cities-only frame never redraws the
+    // network, so a set built during the draw would go stale and the dots
+    // would disagree with the railways they're meant to sit on. Reusing
+    // worldBboxIntersectsViewport (the predicate the draw uses at the network
+    // loop) keeps "in view" identical for both. Cost is one bbox test per
+    // edge; buildRenderPlan is already cached by the render-state summary, so
+    // this only recomputes when the viewport or state actually changes.
+    const visibleStations = new Set<string>();
+    for (const edge of edgeRefs) {
+      if (worldBboxIntersectsViewport(edge.worldBbox, frame.viewportWorldBbox)) {
+        visibleStations.add(edge.from);
+        visibleStations.add(edge.to);
+      }
+    }
+
     for (const entry of preparedCities) {
       const city = entry.city;
       const inTrip = tripSet.has(city.name);
-      let visible =
-        inTrip ||
-        (city.interest >= plannerState.filterInterest &&
-          (popThresholdAbs <= 0 || city.pop >= popFadeLo));
+      // Lifted above `visible` so keyboard focus can bypass the network gate
+      // (and the fade below): the focus ring resolves its target through
+      // visibleCities, so a focused city must reach the plan even when its
+      // edges are off-screen.
+      const isKeyboardFocused =
+        keyboardNavActive && keyboardFocusedCityName === city.name;
+      const onNetwork = visibleStations.has(city.name);
+      const passesFilter =
+        city.interest >= plannerState.filterInterest &&
+        (popThresholdAbs <= 0 || city.pop >= popFadeLo);
+      let visible = inTrip || isKeyboardFocused || (onNetwork && passesFilter);
+
+      // A city that cleared the sliders but is hidden purely by the network
+      // gate. Counted here, before the leg filter, so it attributes the
+      // hidden dot to the network decision and not a downstream leg-range cut.
+      if (!inTrip && !isKeyboardFocused && passesFilter && !onNetwork) {
+        culledOffNetwork += 1;
+      }
 
       const travelTime = plannerState.distFromLast[city.name];
       if (visible && hasLegFilter && !inTrip) {
@@ -2050,17 +2067,14 @@ export function createLeafletMapSurface({
       }
 
       // Trip cities and the keyboard-focused city bypass the fade so the
-      // trip overlay and focus ring never blink out — the latter resolves
-      // its target via visibleCities.find(name === keyboardFocusedCityName)
-      // and a culled entry would leave the ring stranded.
-      const isKeyboardFocused =
-        keyboardNavActive && keyboardFocusedCityName === city.name;
+      // trip overlay and focus ring never blink out (isKeyboardFocused is
+      // computed above, where it also bypasses the network gate).
       const fadeOpacity =
         inTrip || isKeyboardFocused
           ? 1
           : cityPopFadeOpacity(city.pop, popThresholdAbs, CITY_POP_FADE_RATIO);
       if (fadeOpacity <= 0) {
-        culledByLod += 1;
+        culledByFade += 1;
         continue;
       }
       if (fadeOpacity < 1) {
@@ -2073,44 +2087,16 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      // Only fully-opaque non-trip cities consume the LOD budget. Fade-tail
-      // cities (mid-ramp during a wheel/pinch gesture) paint unconditionally
-      // so the smoothstep is visible across the gesture — otherwise the
-      // budget cap could cull them at fadeOpacity=0.05 and the user would
-      // only see them pop in at settle. The fade tail is bounded in size by
-      // the fade band (only cities whose population sits within
-      // CITY_POP_FADE_RATIO of the live threshold qualify), so the dot
-      // layer's per-frame ceiling stays predictable.
-      //
-      // Manual mode bypasses the cap entirely: when the user has set the
-      // population slider themselves, the pop filter is authoritative and the
-      // viewport is the only bound — every city that clears filter + viewport
-      // is drawn. This is what makes "All" mean *all on-screen cities* instead
-      // of "the cityBudget highest-priority ones". The fixed-count budget over
-      // a variable-size filtered pool is non-monotonic (relaxing the filter
-      // enlarges the pool, so the cull drops more of it by interest-priority);
-      // in dense low-interest regions (eastern France's small rail nodes) that
-      // inverted to *fewer* dots at All. Auto mode keeps the budget because its
-      // zoom-derived threshold never reaches All, so the pool stays bounded and
-      // the cap protects the frame at continental zoom.
-      const fullyOpaque = fadeOpacity >= 1;
-      const budgetApplies = !plannerState.popFilterManual;
-      if (
-        budgetApplies &&
-        !inTrip &&
-        fullyOpaque &&
-        nonTripBudgetedCount >= frame.lod.cityBudget
-      ) {
-        culledByLod += 1;
-        continue;
-      }
-
+      // No per-frame dot budget. Visibility is now bounded by the network
+      // gate (on-network stations only) plus the pop/interest sliders and the
+      // viewport cull below — which is monotonic in the sliders, unlike the
+      // old fixed-count cityBudget over a variable filtered pool. That cap was
+      // non-monotonic (relaxing the filter enlarged the pool, so the
+      // interest-priority cull dropped *more* of it), which inverted to
+      // *fewer* dots at "All" in dense low-interest regions like eastern
+      // France. Anchoring to the visible network replaces it as the flood
+      // guard at continental zoom.
       shown += 1;
-      if (!inTrip && fullyOpaque) {
-        nonTripBudgetedCount += 1;
-      } else if (!inTrip && !fullyOpaque) {
-        citiesFadeBypassedBudget += 1;
-      }
       const style = markerStyle(city, frame.zoom, inTrip, fadeOpacity);
       const visibleCity: VisibleCity = {
         city,
@@ -2163,15 +2149,16 @@ export function createLeafletMapSurface({
       hitGrid: createSpatialGrid<VisibleCity>(visibleCities),
       labels,
       stats: {
-        citiesFadeBypassedBudget,
         citiesFading,
-        culledByLod,
+        culledByFade,
         culledByViewport,
+        culledOffNetwork,
         labelCount: labels.length,
         labelsPackedSticky,
         reachable,
         rendered: shown,
         shown,
+        stationsOnNetwork: visibleStations.size,
         total: cities.length
       },
       visibleCities
@@ -2473,10 +2460,10 @@ export function createLeafletMapSurface({
     }
 
     diagnostics.metric("map-render", stats.rendered, {
-      cities_fade_bypassed_budget: stats.citiesFadeBypassedBudget,
       cities_fading: stats.citiesFading,
-      culled_by_lod: stats.culledByLod,
+      culled_by_fade: stats.culledByFade,
       culled_by_viewport: stats.culledByViewport,
+      culled_off_network: stats.culledOffNetwork,
       dirty: { ...dirty },
       duration_ms: roundMs(durationMs),
       label_count: stats.labelCount,
@@ -2485,6 +2472,7 @@ export function createLeafletMapSurface({
       reason,
       rendered: stats.rendered,
       shown: stats.shown,
+      stations_on_network: stats.stationsOnNetwork,
       zoom: frame.zoom
     });
 
@@ -2495,16 +2483,17 @@ export function createLeafletMapSurface({
 
     lastHotRenderInfoAt = now();
     diagnostics.info("rendered planner map surface", {
-      cities_fade_bypassed_budget: stats.citiesFadeBypassedBudget,
       cities_fading: stats.citiesFading,
-      culled_by_lod: stats.culledByLod,
+      culled_by_fade: stats.culledByFade,
       culled_by_viewport: stats.culledByViewport,
+      culled_off_network: stats.culledOffNetwork,
       duration_ms: roundMs(durationMs),
       label_count: stats.labelCount,
       labels_packed_sticky: stats.labelsPackedSticky,
       reason,
       rendered: stats.rendered,
       shown: stats.shown,
+      stations_on_network: stats.stationsOnNetwork,
       zoom: frame.zoom
     });
   }

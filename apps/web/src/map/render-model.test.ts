@@ -15,10 +15,8 @@ test("buildLodProfile tightens budgets at low zoom", () => {
   const low = buildLodProfile(4, () => ({ interest: 10, pop: 2_000_000 }));
   const high = buildLodProfile(9, () => ({ interest: 4, pop: 20_000 }));
 
-  assert.equal(low.cityBudget < high.cityBudget, true);
   assert.equal(low.labelBudget < high.labelBudget, true);
   assert.equal(low.minInterest > high.minInterest, true);
-  assert.equal(low.networkEdgeBudget < high.networkEdgeBudget, true);
 });
 
 test("buildLodProfile interpolates between zoom levels", () => {

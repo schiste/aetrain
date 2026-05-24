@@ -32,13 +32,10 @@ export type LabelThresholdFn = (zoom: number) => LabelThresholdValue;
 
 export interface LodProfile {
   cityPadding: number;
-  cityBudget: number;
   labelBudget: number;
   labelThreshold: LabelThresholdValue;
   minInterest: number;
   minPopulation: number;
-  networkMinInterest: number;
-  networkEdgeBudget: number;
   networkPadding: number;
 }
 
@@ -86,15 +83,6 @@ export function buildLodProfile(
       [7, 34],
       [10, 42]
     ])),
-    cityBudget: Math.round(interpolateByZoom(zoom, [
-      [3, 450],
-      [4, 900],
-      [5, 1800],
-      [6, 3200],
-      [7.5, 5600],
-      [9, 9600],
-      [10, 18_000]
-    ])),
     labelBudget: Math.round(interpolateByZoom(zoom, [
       [3, 20],
       [4.5, 28],
@@ -106,23 +94,6 @@ export function buildLodProfile(
     labelThreshold: interpolateLabelThreshold(zoom, labelThreshold),
     minInterest: interpolateByZoom(zoom, MIN_INTEREST_CURVE),
     minPopulation: Math.round(interpolateByZoom(zoom, MIN_POPULATION_CURVE)),
-    networkMinInterest: interpolateByZoom(zoom, [
-      [3, 6],
-      [4.5, 5.3],
-      [6, 4.5],
-      [7.5, 3],
-      [9, 1.8],
-      [10, 1]
-    ]),
-    networkEdgeBudget: Math.round(interpolateByZoom(zoom, [
-      [3, 1200],
-      [4, 3200],
-      [5, 6800],
-      [6, 11_000],
-      [7.5, 18_000],
-      [9, 30_000],
-      [10, 50_000]
-    ])),
     networkPadding: Math.round(interpolateByZoom(zoom, [
       [3, 124],
       [5, 136],
