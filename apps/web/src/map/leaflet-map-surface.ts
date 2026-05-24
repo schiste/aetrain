@@ -24,9 +24,9 @@ import {
   type RawBorderRecord
 } from "./landmass-model.ts";
 import {
+  appearZoomForRank,
   buildLodProfile,
   cityOpacityAtZoom,
-  computeCityAppearZoom,
   createSpatialGrid,
   hitTestSpatialGrid,
   lineIntersectsViewport,
@@ -53,14 +53,11 @@ interface MapPlannerState {
 type PlannerStateInput = Partial<MapPlannerState>;
 
 interface RenderStats {
-  /** Non-trip cities painted in the fade tail that bypassed the LOD
-   *  cityBudget cap. Confirms the budget/fade decoupling is active —
-   *  if this stays at 0 during a wheel-zoom burst, the dot layer is
-   *  back to popping at settle. */
-  citiesFadeBypassedBudget: number;
   /** Cities whose fade opacity is strictly between 0 and 1 — i.e. those
-   *  mid-ramp during a wheel/pinch gesture. Useful for verifying the fade
-   *  band is actually being crossed gradually rather than snapping. */
+   *  mid-ramp during a wheel/pinch gesture. With the budget cap gone this is
+   *  the primary proof the dot layer resolves in continuously: it should stay
+   *  non-zero throughout a wheel-zoom burst rather than spiking only at
+   *  settle. */
   citiesFading: number;
   culledByLod: number;
   culledByViewport: number;
@@ -178,10 +175,11 @@ interface RouteSegmentRender {
 }
 
 interface PreparedCity {
-  /** Zoom at which this city reaches full opacity. Pre-computed at city
-   *  load via `computeCityAppearZoom` so the per-frame fade math is a
-   *  single smoothstep evaluation against the live `camera.zoom`,
-   *  decoupled from the frozen-during-interaction `frame.lod` thresholds. */
+  /** Zoom at which this city reaches full opacity. Assigned by importance
+   *  rank via `appearZoomForRank` once the array is sorted (see below), so
+   *  the per-frame fade math is a single smoothstep against the live
+   *  `camera.zoom` — decoupled from the frozen-during-interaction
+   *  `frame.lod` thresholds and from the coarse integer interest score. */
   appearZoom: number;
   city: PlannerCity;
   renderPriority: number;
@@ -499,13 +497,22 @@ export function createLeafletMapSurface({
       const world = mercatorProject(city.lon, city.lat);
       cityWorldByName.set(city.name, world);
       return {
-        appearZoom: computeCityAppearZoom(city),
+        // Placeholder; assigned by importance rank once the array is sorted.
+        appearZoom: 0,
         city,
         renderPriority: cityRenderPriority(city),
         world
       };
     })
     .sort((left, right) => right.renderPriority - left.renderPriority);
+  // The array is now most-important-first, so each index IS the city's global
+  // importance rank. Inverting the density curve at that rank spreads the
+  // 9.8k appearZooms densely and continuously, so dots resolve in smoothly as
+  // the live zoom climbs rather than arriving in a wave gated by the coarse
+  // integer interest score. This replaces the old per-frame cityBudget cap.
+  preparedCities.forEach((entry, rank) => {
+    entry.appearZoom = appearZoomForRank(rank);
+  });
   const landmassPolygons: WorldPoint[][][] = buildLandmassPolygons(borderData).map((polygon) =>
     polygon.map((ring) =>
       ring.map((point) => mercatorProject(point.lon, point.lat))
@@ -559,7 +566,6 @@ export function createLeafletMapSurface({
   let currentFrame: MapFrame | null = null;
   let renderPlanCache: RenderPlanCache | null = null;
   let lastRenderStats: RenderStats = {
-    citiesFadeBypassedBudget: 0,
     citiesFading: 0,
     culledByLod: 0,
     culledByViewport: 0,
@@ -1498,18 +1504,17 @@ export function createLeafletMapSurface({
     const cameraScale = scaleForZoom(camera.zoom);
     // Two-clock LOD. The network layer (≈39k multi-point polylines) is the
     // expensive draw, so it stays on the FROZEN semanticZoom during a gesture
-    // — that freeze is what keeps each wheel tick under the 16ms budget. But
-    // freezing the whole profile also froze cityBudget, which starved the
-    // cheap city point-draws mid-zoom: dots ramped their fade in but then hit
-    // the gesture-start budget and were culled until settle thawed it (the
-    // "pop"). Cities are bounded by the viewport cull regardless of budget, so
-    // we let their LOD ride the LIVE camera.zoom and grow continuously.
+    // — that freeze is what keeps each wheel tick under the 16ms budget. City
+    // density is no longer gated by a per-frame budget at all (each city's
+    // appearZoom is assigned once by importance rank, so the fade curve alone
+    // governs how many dots are lit); the only city field that must ride the
+    // LIVE camera.zoom is cityPadding, so the viewport cull window grows
+    // continuously as you zoom in instead of snapping at settle.
     const structuralLod = buildLodProfile(semanticZoom, labelThreshold);
     const cityLod = buildLodProfile(camera.zoom, labelThreshold);
     const interacting = isInteractingWithCamera();
     const lod = {
       ...structuralLod,
-      cityBudget: cityLod.cityBudget,
       cityPadding: cityLod.cityPadding,
       // Tighter network during active zoom/pan keeps the per-tick render under
       // the 16ms budget on the production graph. The settle path runs
@@ -1987,17 +1992,10 @@ export function createLeafletMapSurface({
       (plannerState.legMin > 0 || plannerState.legMax < plannerState.legDynMax);
 
     let shown = 0;
-    let nonTripBudgetedCount = 0;
     let reachable = 0;
     let culledByViewport = 0;
     let culledByLod = 0;
     let citiesFading = 0;
-    // Fade-tail cities (0 < fadeOpacity < 1) bypass the LOD cityBudget cap
-    // so the smoothstep ramp is visible even when the frozen-semanticZoom
-    // budget would otherwise cull them mid-gesture. This counter proves
-    // that path is being taken — if it stays at 0 during a wheel-zoom
-    // burst, the decoupling regressed.
-    let citiesFadeBypassedBudget = 0;
     const visibleCities: VisibleCity[] = [];
     const labelCandidates: InternalLabelCandidate[] = [];
 
@@ -2050,26 +2048,14 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      // Only fully-opaque non-trip cities consume the LOD budget. Fade-tail
-      // cities (mid-ramp during a wheel/pinch gesture) paint unconditionally
-      // so the smoothstep is visible across the gesture — otherwise the
-      // frozen-semanticZoom budget cap would cull them at fadeOpacity=0.05
-      // and the user only ever sees them pop in at settle. The fade tail
-      // is bounded in size by the fade band (only cities whose appearZoom
-      // sits within CITY_FADE_BAND_ZOOM of camera.zoom qualify), so the
-      // dot layer's per-frame ceiling stays predictable.
-      const fullyOpaque = fadeOpacity >= 1;
-      if (!inTrip && fullyOpaque && nonTripBudgetedCount >= frame.lod.cityBudget) {
-        culledByLod += 1;
-        continue;
-      }
-
+      // No per-frame density cap: each city's appearZoom is assigned once by
+      // importance rank (appearZoomForRank), so the count of lit dots is a
+      // pure function of the live zoom via the fade curve above. A city is
+      // shown once it has passed the fade gate (fadeOpacity > 0) and the
+      // viewport cull, and the rank schedule guarantees they resolve in on
+      // exactly the old density curve's pace — just continuously, per city,
+      // instead of snapping to a frozen ceiling at gesture settle.
       shown += 1;
-      if (!inTrip && fullyOpaque) {
-        nonTripBudgetedCount += 1;
-      } else if (!inTrip && !fullyOpaque) {
-        citiesFadeBypassedBudget += 1;
-      }
       const style = markerStyle(city, frame.zoom, inTrip, fadeOpacity);
       const visibleCity: VisibleCity = {
         city,
@@ -2122,7 +2108,6 @@ export function createLeafletMapSurface({
       hitGrid: createSpatialGrid<VisibleCity>(visibleCities),
       labels,
       stats: {
-        citiesFadeBypassedBudget,
         citiesFading,
         culledByLod,
         culledByViewport,
@@ -2432,7 +2417,6 @@ export function createLeafletMapSurface({
     }
 
     diagnostics.metric("map-render", stats.rendered, {
-      cities_fade_bypassed_budget: stats.citiesFadeBypassedBudget,
       cities_fading: stats.citiesFading,
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
@@ -2454,7 +2438,6 @@ export function createLeafletMapSurface({
 
     lastHotRenderInfoAt = now();
     diagnostics.info("rendered planner map surface", {
-      cities_fade_bypassed_budget: stats.citiesFadeBypassedBudget,
       cities_fading: stats.citiesFading,
       culled_by_lod: stats.culledByLod,
       culled_by_viewport: stats.culledByViewport,
