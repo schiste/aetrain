@@ -667,6 +667,184 @@ pub struct PipelineQualityReport {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineQualityReportSummary {
+    pub gate_results: Vec<PipelineQualityGateResult>,
+    pub registry_match_report: PipelineRegistryMatchReport,
+    pub registry_source_coverage: Option<RegistrySourceCoverageReport>,
+    pub identity_safety_report: PipelineIdentitySafetyReport,
+    pub country_quality: Vec<PipelineCountryQualityRecord>,
+    pub customer_facing_release_backlog_summary: PipelineCustomerFacingReleaseBacklogSummary,
+    pub detail_artifacts: Vec<PipelineQualityDetailArtifactSummary>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineQualityDetailArtifactSummary {
+    pub path: String,
+    pub record_count: usize,
+}
+
+impl PipelineQualityReportSummary {
+    fn from_report(report: &PipelineQualityReport) -> Self {
+        Self {
+            gate_results: report.gate_results.clone(),
+            registry_match_report: report.registry_match_report.clone(),
+            registry_source_coverage: report.registry_source_coverage.clone(),
+            identity_safety_report: report.identity_safety_report.clone(),
+            country_quality: report.country_quality.clone(),
+            customer_facing_release_backlog_summary: report
+                .customer_facing_release_backlog_summary
+                .clone(),
+            detail_artifacts: vec![
+                quality_detail_artifact("country-quality.json", report.country_quality.len()),
+                quality_detail_artifact(
+                    "station-like-cities.json",
+                    report.station_like_cities.len(),
+                ),
+                quality_detail_artifact("zz-cities.json", report.zz_cities.len()),
+                quality_detail_artifact(
+                    "authoritative-zero-edge-cities.json",
+                    report.authoritative_zero_edge_cities.len(),
+                ),
+                quality_detail_artifact(
+                    "close-node-without-edge-summary.json",
+                    report.close_node_without_edge_summary.len(),
+                ),
+                quality_detail_artifact(
+                    "close-node-without-edge-candidates.json",
+                    report.close_node_without_edge_candidates.len(),
+                ),
+                quality_detail_artifact(
+                    "abbreviation-candidates.json",
+                    report.abbreviation_candidates.len(),
+                ),
+                quality_detail_artifact(
+                    "route-like-candidates.json",
+                    report.route_like_candidates.len(),
+                ),
+                quality_detail_artifact(
+                    "route-like-residuals.json",
+                    report.route_like_residuals.len(),
+                ),
+                quality_detail_artifact(
+                    "non-railway-route-geometries.json",
+                    report.non_railway_route_geometries.len(),
+                ),
+                quality_detail_artifact(
+                    "route-geometry-anomalies.json",
+                    report.route_geometry_anomalies.len(),
+                ),
+                quality_detail_artifact(
+                    "domestic-geometry-backlog-by-country.json",
+                    report.domestic_geometry_backlog_by_country.len(),
+                ),
+                quality_detail_artifact(
+                    "cross-border-geometry-backlog-by-corridor.json",
+                    report.cross_border_geometry_backlog_by_corridor.len(),
+                ),
+                quality_detail_artifact(
+                    "domestic-authority-onboarding-hotspots.json",
+                    report.domestic_authority_onboarding_hotspots.len(),
+                ),
+                quality_detail_artifact(
+                    "domestic-authority-gap-clusters.json",
+                    report.domestic_authority_gap_clusters.len(),
+                ),
+                quality_detail_artifact(
+                    "domestic-authority-gap-details.json",
+                    report.domestic_authority_gap_details.len(),
+                ),
+                quality_detail_artifact(
+                    "rejected-rail-authority-routes.json",
+                    report.rejected_rail_authority_routes.len(),
+                ),
+                quality_detail_artifact(
+                    "rejected-shape-plausibility-routes.json",
+                    report.rejected_shape_plausibility_routes.len(),
+                ),
+                quality_detail_artifact(
+                    "foreign-cross-border-leakage-routes.json",
+                    report.foreign_cross_border_leakage_routes.len(),
+                ),
+                quality_detail_artifact(
+                    "impossible-edge-speed-routes.json",
+                    report.impossible_edge_speed_routes.len(),
+                ),
+                quality_detail_artifact(
+                    "country-geometry-authorities.json",
+                    report.country_geometry_authorities.len(),
+                ),
+                quality_detail_artifact(
+                    "corridor-geometry-authorities.json",
+                    report.corridor_geometry_authorities.len(),
+                ),
+                quality_detail_artifact(
+                    "rail-authority-defect-details.json",
+                    report.rail_authority_defect_details.len(),
+                ),
+                quality_detail_artifact(
+                    "rail-authority-topology-defects.json",
+                    report.rail_authority_topology_defects.len(),
+                ),
+                quality_detail_artifact(
+                    "shape-plausibility-defect-details.json",
+                    report.shape_plausibility_defect_details.len(),
+                ),
+                quality_detail_artifact(
+                    "promoted-domestic-authority-gap-details.json",
+                    report.promoted_domestic_authority_gap_details.len(),
+                ),
+                quality_detail_artifact(
+                    "promoted-station-attachment-gap-details.json",
+                    report.promoted_station_attachment_gap_details.len(),
+                ),
+                quality_detail_artifact(
+                    "authority-attachment-coverage-clusters.json",
+                    report.authority_attachment_coverage_clusters.len(),
+                ),
+                quality_detail_artifact(
+                    "authority-detour-corridors.json",
+                    report.authority_detour_corridors.len(),
+                ),
+                quality_detail_artifact(
+                    "customer-facing-country-backlog.json",
+                    report.customer_facing_country_backlog.len(),
+                ),
+                quality_detail_artifact(
+                    "customer-facing-corridor-backlog.json",
+                    report.customer_facing_corridor_backlog.len(),
+                ),
+                quality_detail_artifact(
+                    "plain-name-fallback-gap-registry-candidates.json",
+                    report.plain_name_fallback_gap_registry_candidates.len(),
+                ),
+                quality_detail_artifact(
+                    "quarantined-fallback-gap-cities.json",
+                    report.quarantined_fallback_gap_cities.len(),
+                ),
+                quality_detail_artifact(
+                    "quarantined-authoritative-zero-edge-cities.json",
+                    report.quarantined_authoritative_zero_edge_cities.len(),
+                ),
+                quality_detail_artifact(
+                    "quarantined-promoted-attachment-gap-cities.json",
+                    report.quarantined_promoted_attachment_gap_cities.len(),
+                ),
+            ],
+        }
+    }
+}
+
+fn quality_detail_artifact(
+    path: &str,
+    record_count: usize,
+) -> PipelineQualityDetailArtifactSummary {
+    PipelineQualityDetailArtifactSummary {
+        path: path.to_string(),
+        record_count,
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineIdentitySafetyReport {
     pub alias_cross_country_match_count: u64,
     pub station_like_city_in_official_registry_country_count: u64,
@@ -1067,7 +1245,10 @@ fn export_pipeline_target(
     )?;
     let quality_dir = target_root.join("quality");
     recreate_dir(&quality_dir)?;
-    write_json(&quality_dir.join("quality-report.json"), &quality_report)?;
+    write_json(
+        &quality_dir.join("quality-report.json"),
+        &PipelineQualityReportSummary::from_report(&quality_report),
+    )?;
     write_json(
         &quality_dir.join("country-quality.json"),
         &quality_report.country_quality,
