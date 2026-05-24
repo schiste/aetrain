@@ -349,6 +349,15 @@ const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
 const BUTTON_ZOOM_DELTA = 0.35;
+// Per-frame edge cap applied ONLY during an active gesture, when the
+// network redraws every frame on the hot wheel/pan path. We cap the edge
+// *count* rather than simplifying each edge's geometry: edgeRefs is sorted
+// by renderPriority, so the highest-priority (trunk) lines are drawn first
+// and keep their real polylines through the gesture, while low-priority
+// rural capillaries are deferred to the settle redraw. This bounds the
+// worst-case continental-zoom frame (~25k edges) without ever flattening a
+// line to a straight endpoint chord. At rest the cap is lifted (Infinity).
+const INTERACTION_NETWORK_EDGE_BUDGET = 7000;
 
 // Straight-line suspect-edge thresholds. An edge is hidden from the
 // background network when BOTH conditions hold:
@@ -554,6 +563,18 @@ export function createLeafletMapSurface({
     .filter((edge): edge is PreparedEdge => edge !== null)
     .sort((left, right) => right.renderPriority - left.renderPriority);
 
+  // True once the network carries *real*, chunk-loaded geometry rather than
+  // the cold path's synthesized straight-line fallback. The fallback is
+  // always a 2-point from→to chord, so any edge with interior vertices proves
+  // real geometry has merged. Until this flips, drawBackgroundNetwork hides
+  // the rail layer entirely instead of painting a misleading straight-line
+  // web for the ~10s the deferred geometry chunks take to stream in.
+  // Initialized here for the (hypothetical) path where the dataset already
+  // ships geometry; otherwise flipped by refreshGeometry() when chunks land.
+  let networkGeometryLoaded = edgeRefs.some(
+    (edge) => edge.geometryWorld !== null && edge.geometryWorld.length > 2
+  );
+
   diagnostics.info("prepared map scene data", {
     edge_count: edgeRefs.length,
     landmass_polygon_count: landmassPolygons.length
@@ -755,6 +776,10 @@ export function createLeafletMapSurface({
         edgeByKey.set(edge.key, edge);
       }
       let updated = 0;
+      // Track whether this augment merged any genuinely-curved geometry. A
+      // synthesized fallback is a 2-point chord; an interior vertex means the
+      // real polyline arrived, which is what un-hides the network layer.
+      let sawRealGeometry = false;
       for (const prepared of edgeRefs) {
         const edge = edgeByKey.get(prepared.key);
         if (!edge || !Array.isArray(edge.geometry) || edge.geometry.length < 2) {
@@ -763,6 +788,9 @@ export function createLeafletMapSurface({
         prepared.geometryWorld = edge.geometry.map((point) =>
           mercatorProject(point.lon, point.lat)
         );
+        if (prepared.geometryWorld.length > 2) {
+          sawRealGeometry = true;
+        }
         prepared.worldBbox = computeEdgeWorldBbox(
           prepared.fromWorld,
           prepared.toWorld,
@@ -782,9 +810,14 @@ export function createLeafletMapSurface({
         );
         updated += 1;
       }
+      // Monotonic: once real geometry has loaded the network stays visible.
+      if (sawRealGeometry) {
+        networkGeometryLoaded = true;
+      }
       diagnostics.info("map surface refreshed geometry", {
         updated_edge_count: updated,
-        edge_count: edgeRefs.length
+        edge_count: edgeRefs.length,
+        network_geometry_loaded: networkGeometryLoaded
       });
       // Drop the render-plan cache and trigger a full redraw — geometry
       // affects the network background, the prepared route polylines, and
@@ -1638,6 +1671,25 @@ export function createLeafletMapSurface({
 
   function drawBackgroundNetwork(frame: MapFrame): void {
     clearCanvas(networkContext, networkCanvas);
+
+    // Hide the rail web until its real (chunk-loaded) geometry has merged. On
+    // a cold load the dataset paints fast with synthesized straight-line
+    // fallback geometry — a 2-point from→to chord per edge — and drawing that
+    // rendered the whole network as a straight-line graph for the ~10s until
+    // the deferred geometry chunks stream in and refreshGeometry() flips the
+    // flag. Showing no network reads as honest "still loading"; showing a
+    // straight web reads as broken. refreshGeometry() schedules a network
+    // redraw when it flips the flag, so the curved web appears as soon as it
+    // lands.
+    if (!networkGeometryLoaded) {
+      diagnostics.metric("network-layer-draw", 0, {
+        drawn_edges: 0,
+        geometry_loaded: false,
+        zoom: frame.zoom
+      });
+      return;
+    }
+
     networkContext.save();
     networkContext.lineCap = "butt";
 
@@ -1676,19 +1728,41 @@ export function createLeafletMapSurface({
     let drawnEdges = 0;
     let drawnLowConfidence = 0;
     let culledStubEdges = 0;
-    // Force straight-line geometry during active interaction only — the
-    // multi-point projections per edge are the dominant cost on the hot
-    // wheel/pan path, where the network redraws every frame. At rest the
-    // network draws once per settle, so we trace real polylines at every
-    // zoom: collapsing rural lines to endpoint chords at continental zoom
-    // made the whole web read as a straight-line graph rather than railways.
-    const shouldSimplifyGeometry = isInteractingWithCamera();
+    // Cheapen the hot wheel/pan path by capping the edge *count*, never by
+    // flattening geometry. During a gesture the network redraws every frame;
+    // we draw the highest-priority edges (edgeRefs is renderPriority-sorted)
+    // up to the budget and let the rest fill in at settle. Every edge that
+    // *is* drawn traces its real polyline at every zoom — collapsing lines to
+    // endpoint chords during motion made the whole web flash as a straight-
+    // line graph each time the camera moved, which is the bug this replaces.
+    const interacting = isInteractingWithCamera();
+    const edgeBudget = interacting ? INTERACTION_NETWORK_EDGE_BUDGET : Infinity;
+
+    // Projecting every vertex of every in-view edge each frame is the
+    // network's dominant cost — at continental zoom most vertices of a
+    // multi-point edge land within a pixel of each other and are screen-
+    // redundant. Decimate them away before projection. The gap is keyed to
+    // the camera scale (targetPx / scale world units), so it is lossless at
+    // the current zoom: looser during a gesture, where frame budget is
+    // tightest and a transient ~1.5px deviation is invisible, and near-zero
+    // at rest so the settled web stays pixel-identical to the full geometry.
+    const decimationTargetPx = interacting ? 1.5 : 0.5;
+    const decimationGapWorld = decimationTargetPx / scaleForZoom(frame.zoom);
     for (const edge of edgeRefs) {
-      // Railways are always-on: the network is bounded only by the viewport
-      // (the bbox + polyline culls below) and by motion-simplified geometry,
-      // never by a per-frame edge budget or an interest floor. Those two gates
-      // hid most rural lines at low zoom and made the network look broken even
-      // though the data is healthy — see the "Network-anchored map" change.
+      // Stop once the gesture budget is spent; edges are priority-ordered, so
+      // what remains is the lowest-priority tail (rural capillaries), restored
+      // on the settle redraw when the budget is lifted.
+      if (drawnEdges >= edgeBudget) {
+        break;
+      }
+
+      // Railways are always-on: at rest the network is bounded only by the
+      // viewport (the bbox + polyline culls below), with no interest floor —
+      // that floor hid most rural lines at low zoom and made the network look
+      // broken even though the data is healthy (see the "Network-anchored map"
+      // change). During a gesture the only extra bound is the priority-ordered
+      // edge cap above; every edge that draws still traces its real geometry at
+      // every zoom, so the web never flashes as a straight-line graph.
       //
       // Cheap world-bbox cull BEFORE projection. Most edges at high
       // zoom sit entirely outside the viewport — skipping their points'
@@ -1709,10 +1783,18 @@ export function createLeafletMapSurface({
         continue;
       }
 
-      const worldPoints: WorldPoint[] = shouldSimplifyGeometry
-        ? [edge.fromWorld, edge.toWorld]
-        : edge.geometryWorld || [edge.fromWorld, edge.toWorld];
-      const points = worldPoints.map((worldPoint) => frame.projectWorld(worldPoint));
+      // Type-narrow: every prepared edge derives a non-null geometryWorld at
+      // prep time (from synthesized or real upstream geometry), and the
+      // networkGeometryLoaded gate above already withholds the whole layer
+      // until real geometry has merged. This is a cheap safety net, not the
+      // load-window path.
+      if (!edge.geometryWorld) {
+        continue;
+      }
+
+      const points = decimateWorldByGap(edge.geometryWorld, decimationGapWorld).map(
+        (worldPoint) => frame.projectWorld(worldPoint)
+      );
       if (!polylineIntersectsViewport(points, frame.size, frame.lod.networkPadding)) {
         continue;
       }
@@ -1736,6 +1818,9 @@ export function createLeafletMapSurface({
       drawn_edges: drawnEdges,
       drawn_low_confidence: drawnLowConfidence,
       culled_stub_edges: culledStubEdges,
+      geometry_loaded: true,
+      decimation_target_px: decimationTargetPx,
+      interaction_capped: interacting && drawnEdges >= INTERACTION_NETWORK_EDGE_BUDGET,
       zoom: frame.zoom
     });
   }
@@ -2811,6 +2896,45 @@ function tracePoints(context: CanvasRenderingContext2D, points: MapPoint[]): voi
     if (!point) continue;
     context.lineTo(point.x, point.y);
   }
+}
+
+/** Drop polyline vertices that lie within `minWorldGap` world units of the
+ *  last kept vertex. Because `projectWorldToScreen` maps world→screen by a
+ *  single uniform `scale` factor in every direction, a world gap of `g`
+ *  always projects to `g × scale` pixels — so a caller that sizes the gap as
+ *  `targetPx / scale` drops only vertices that land within `targetPx` of the
+ *  kept chord on screen. At a sub-pixel `targetPx` the decimation is visually
+ *  lossless at the current zoom: it thins the dense vertex runs that appear
+ *  when a multi-point edge is viewed from far out, without ever straightening
+ *  a bend the user could actually see. First and last vertices are always
+ *  kept so endpoints stay pinned.
+ *
+ *  This is the curve-preserving replacement for the old motion path, which
+ *  collapsed every edge to its two endpoints and flashed the whole web as a
+ *  straight-line graph on each camera move. Here the curve survives at exactly
+ *  the resolution the current zoom can resolve. */
+function decimateWorldByGap(
+  points: readonly WorldPoint[],
+  minWorldGap: number
+): readonly WorldPoint[] {
+  if (minWorldGap <= 0 || points.length <= 2) {
+    return points;
+  }
+  const gapSq = minWorldGap * minWorldGap;
+  const first = points[0]!;
+  const kept: WorldPoint[] = [first];
+  let anchor = first;
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const point = points[index]!;
+    const dx = point.x - anchor.x;
+    const dy = point.y - anchor.y;
+    if (dx * dx + dy * dy >= gapSq) {
+      kept.push(point);
+      anchor = point;
+    }
+  }
+  kept.push(points[points.length - 1]!);
+  return kept;
 }
 
 function computeEdgeWorldBbox(
