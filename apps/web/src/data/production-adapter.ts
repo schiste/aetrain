@@ -87,11 +87,12 @@ export function buildProductionPlannerData({
     const degree = neighborMap.get(city.city_id)?.size || 0;
     const population = city.population ?? derivePopulation(degree, city.station_ids?.length || 1);
     const interest = city.interest_score ?? deriveInterest(degree);
+    const mapLocation = city.map_location ?? city.location;
 
     return {
       name: nameByCityId.get(city.city_id) ?? city.display_name,
-      lat: city.location.lat,
-      lon: city.location.lon,
+      lat: mapLocation.lat,
+      lon: mapLocation.lon,
       country: countryLabel(city.country_code),
       pop: population,
       interest
@@ -99,7 +100,7 @@ export function buildProductionPlannerData({
   });
 
   const fallbackLocationByCityId = new Map<string, RawCityLocation>(
-    rawCities.map((city) => [city.city_id, city.location])
+    rawCities.map((city) => [city.city_id, city.map_location ?? city.location])
   );
   const geometryByDirectedKey = new Map<string, GeoPoint[]>();
   for (const geometry of rawEdgeGeometries.geometries) {

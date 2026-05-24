@@ -78,11 +78,34 @@ export interface RawCityLocation {
   lon: number;
 }
 
+export interface RawCityRailTerminalAnchor {
+  station_id?: string | null;
+  display_name?: string | null;
+  station_location?: RawCityLocation | null;
+  rail_location: RawCityLocation;
+  station_to_rail_distance_m?: number | null;
+  edge_endpoint_use_count: number;
+}
+
+export interface RawCityRailProfile {
+  city_id: string;
+  map_location: RawCityLocation;
+  anchor_strategy: string;
+  confidence: string;
+  terminal_count: number;
+  terminal_station_ids: string[];
+  terminal_spread_m: number;
+  civic_to_map_distance_m: number;
+  terminals: RawCityRailTerminalAnchor[];
+}
+
 export interface RawCity {
   city_id: string;
   display_name: string;
   country_code: string;
   location: RawCityLocation;
+  map_location?: RawCityLocation | null;
+  rail_profile?: RawCityRailProfile | null;
   wikidata_qid?: string | null;
   population?: number | null;
   interest_score?: number | null;

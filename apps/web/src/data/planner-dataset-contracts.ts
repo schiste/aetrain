@@ -131,6 +131,12 @@ function assertRuntimeCities(
     assertString(city.display_name, `${cityContext}.display_name`);
     assertString(city.country_code, `${cityContext}.country_code`);
     assertLocation(city.location, `${cityContext}.location`);
+    if (city.map_location !== undefined && city.map_location !== null) {
+      assertLocation(city.map_location, `${cityContext}.map_location`);
+    }
+    if (city.rail_profile !== undefined && city.rail_profile !== null) {
+      assertCityRailProfile(city.rail_profile, `${cityContext}.rail_profile`);
+    }
 
     if (city.population !== undefined && city.population !== null) {
       assertFiniteNumber(city.population, `${cityContext}.population`);
@@ -139,6 +145,62 @@ function assertRuntimeCities(
     if (city.interest_score !== undefined && city.interest_score !== null) {
       assertFiniteNumber(city.interest_score, `${cityContext}.interest_score`);
     }
+  }
+}
+
+function assertCityRailProfile(profile: unknown, context: string): void {
+  assertRecord(profile, context);
+  assertString(profile.city_id, `${context}.city_id`);
+  assertLocation(profile.map_location, `${context}.map_location`);
+  assertString(profile.anchor_strategy, `${context}.anchor_strategy`);
+  assertString(profile.confidence, `${context}.confidence`);
+  assertFiniteNumber(profile.terminal_count, `${context}.terminal_count`);
+  assertFiniteNumber(profile.terminal_spread_m, `${context}.terminal_spread_m`);
+  assertFiniteNumber(
+    profile.civic_to_map_distance_m,
+    `${context}.civic_to_map_distance_m`
+  );
+
+  if (!Array.isArray(profile.terminal_station_ids)) {
+    throw new Error(`${context}.terminal_station_ids must be an array`);
+  }
+  for (let index = 0; index < profile.terminal_station_ids.length; index += 1) {
+    assertString(
+      profile.terminal_station_ids[index],
+      `${context}.terminal_station_ids[${index}]`
+    );
+  }
+
+  if (!Array.isArray(profile.terminals)) {
+    throw new Error(`${context}.terminals must be an array`);
+  }
+  for (let index = 0; index < profile.terminals.length; index += 1) {
+    const terminalContext = `${context}.terminals[${index}]`;
+    const terminal = profile.terminals[index];
+    assertRecord(terminal, terminalContext);
+    if (terminal.station_id !== undefined && terminal.station_id !== null) {
+      assertString(terminal.station_id, `${terminalContext}.station_id`);
+    }
+    if (terminal.display_name !== undefined && terminal.display_name !== null) {
+      assertString(terminal.display_name, `${terminalContext}.display_name`);
+    }
+    if (terminal.station_location !== undefined && terminal.station_location !== null) {
+      assertLocation(terminal.station_location, `${terminalContext}.station_location`);
+    }
+    assertLocation(terminal.rail_location, `${terminalContext}.rail_location`);
+    if (
+      terminal.station_to_rail_distance_m !== undefined &&
+      terminal.station_to_rail_distance_m !== null
+    ) {
+      assertFiniteNumber(
+        terminal.station_to_rail_distance_m,
+        `${terminalContext}.station_to_rail_distance_m`
+      );
+    }
+    assertFiniteNumber(
+      terminal.edge_endpoint_use_count,
+      `${terminalContext}.edge_endpoint_use_count`
+    );
   }
 }
 
