@@ -2,10 +2,10 @@ import type { MapPoint, MapSize } from "./camera-model.ts";
 
 const DEFAULT_HIT_GRID_CELL_SIZE = 48;
 
-// Legacy binary-gate curves. They no longer drive *when* a city appears —
-// that is now rank-based (see CITY_DENSITY_CURVE / appearZoomForRank) — but
-// `buildLodProfile` still surfaces them as `minInterest`/`minPopulation` for
-// the network layer and diagnostics. Keep in sync with `buildLodProfile`.
+// The piecewise-linear curves driving per-city visibility. Kept exported so
+// the surface can derive each city's `appearZoom` once at load time (closed-
+// form invert below) instead of recomputing the LOD profile every frame.
+// Mirrors the curves inside `buildLodProfile` — keep them in sync.
 const MIN_INTEREST_CURVE: readonly ZoomPoint[] = [
   [3, 6.5],
   [4.5, 5.8],
@@ -21,21 +21,6 @@ const MIN_POPULATION_CURVE: readonly ZoomPoint[] = [
   [7.5, 30_000],
   [9, 8_000],
   [10, 0]
-];
-
-// Target count of resolved-in cities at each zoom. This is the single source
-// of truth for city density: `buildLodProfile` exposes it as `cityBudget`,
-// and `appearZoomForRank` inverts it so the rank-`r` city reaches full opacity
-// exactly where the curve first targets `r + 1` cities. Monotonically
-// increasing in zoom (required by the inversion below).
-export const CITY_DENSITY_CURVE: readonly ZoomPoint[] = [
-  [3, 450],
-  [4, 900],
-  [5, 1800],
-  [6, 3200],
-  [7.5, 5600],
-  [9, 9600],
-  [10, 18_000]
 ];
 
 export interface LabelThresholdValue {
@@ -101,7 +86,15 @@ export function buildLodProfile(
       [7, 34],
       [10, 42]
     ])),
-    cityBudget: Math.round(interpolateByZoom(zoom, CITY_DENSITY_CURVE)),
+    cityBudget: Math.round(interpolateByZoom(zoom, [
+      [3, 450],
+      [4, 900],
+      [5, 1800],
+      [6, 3200],
+      [7.5, 5600],
+      [9, 9600],
+      [10, 18_000]
+    ])),
     labelBudget: Math.round(interpolateByZoom(zoom, [
       [3, 20],
       [4.5, 28],
@@ -235,19 +228,24 @@ export function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
-/** Zoom at which the rank-`rank` city (0 = most important) reaches full
- *  opacity. Inverts {@link CITY_DENSITY_CURVE}: the rank-`r` city resolves in
- *  at the zoom where the curve first targets `r + 1` cities.
+/** Lowest camera zoom at which `city` would satisfy the binary LOD gate
+ *  (`interest >= minInterest(z) || pop >= minPopulation(z)`). Computed
+ *  once at city load time so per-frame fade math is O(1) per city.
  *
- *  Computed once per city at load time (the caller sorts by importance, so the
- *  array index *is* the rank). Because every city gets a distinct rank, the
- *  resulting `appearZoom`s are dense and continuous — dots fade in smoothly as
- *  the live zoom climbs, with no per-frame budget cap and no clustering on the
- *  coarse integer `interest_score`. The top `CITY_DENSITY_CURVE[0]` cities
- *  share the curve's floor zoom (always visible); ranks past the curve's max
- *  count clamp to its final zoom. */
-export function appearZoomForRank(rank: number): number {
-  return invertIncreasingCurve(CITY_DENSITY_CURVE, rank + 1);
+ *  Because both curves are monotonically *decreasing* in zoom, we invert
+ *  each independently and take the minimum (the OR semantics of the gate
+ *  pick whichever criterion qualifies the city first). If a city sits
+ *  above the first sample's threshold it appears at all zooms (returns
+ *  the curve's minimum zoom); if it never qualifies it returns `+Infinity`
+ *  so the fade math collapses to opacity 0. */
+export function computeCityAppearZoom(city: {
+  readonly interest: number;
+  readonly pop: number;
+}): number {
+  return Math.min(
+    invertDecreasingCurve(MIN_INTEREST_CURVE, city.interest),
+    invertDecreasingCurve(MIN_POPULATION_CURVE, city.pop)
+  );
 }
 
 /** Smoothstepped fade-in opacity for a city, in [0, 1]. `fadeBand` is the
@@ -318,17 +316,15 @@ export function selectLabelCandidates<T extends LabelCandidate>(
 }
 
 /** Closed-form invert of a piecewise-linear curve where y is monotonically
- *  increasing in x. Returns the smallest x where `curve(x) >= target`.
- *  Targets at/below the curve's minimum clamp to the first sample's x;
- *  targets above its maximum clamp to the last sample's x. */
-function invertIncreasingCurve(
+ *  decreasing in x. Returns the smallest x where `curve(x) <= target`. */
+function invertDecreasingCurve(
   curve: readonly ZoomPoint[],
   target: number
 ): number {
   const first = curve[0];
   if (!first) return Number.POSITIVE_INFINITY;
-  if (target <= first[1]) {
-    // At/below the curve's minimum — satisfied at the very first sample.
+  if (target >= first[1]) {
+    // Above the curve's max threshold — qualifies at the very first sample.
     return first[0];
   }
 
@@ -336,21 +332,23 @@ function invertIncreasingCurve(
     const previous = curve[index - 1];
     const current = curve[index];
     if (!previous || !current) continue;
-    // Segment spans (previous → current). y is increasing, so we look for
-    // the first segment whose upper endpoint reaches/exceeds `target`.
+    // Segment spans (previous → current). y is decreasing, so we look for
+    // the first segment whose lower endpoint dips to/below `target`.
     if (target > current[1]) continue;
 
-    const yRange = current[1] - previous[1];
+    const yRange = previous[1] - current[1];
     if (yRange <= 0) {
-      // Flat segment — `target` is first reached at its right edge.
+      // Flat segment — once we crossed `target` in an earlier segment we
+      // wouldn't be here; this point qualifies if it equals `target`.
       return current[0];
     }
-    const progress = (target - previous[1]) / yRange;
+    const progress = (previous[1] - target) / yRange;
     return previous[0] + (current[0] - previous[0]) * progress;
   }
 
-  // Beyond the curve's max — clamp to the last sample's x.
-  return curve[curve.length - 1]?.[0] ?? Number.POSITIVE_INFINITY;
+  // City never qualifies on this curve. Return +Infinity so OR-callers
+  // ignore it; the surrounding `Math.min` will pick the other curve.
+  return Number.POSITIVE_INFINITY;
 }
 
 function estimateLabelBounds(candidate: LabelCandidate): LabelBounds {
