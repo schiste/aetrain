@@ -1540,7 +1540,7 @@ fn export_canonical_bundle(
         &artifacts.canonical.stations,
     )?;
     write_json(&output_dir.join("edges.json"), &artifacts.canonical.edges)?;
-    write_json(&output_dir.join("edge-geometries.json"), &edge_geometries)?;
+    export_chunked_edge_geometries(output_dir, &edge_geometries)?;
     write_json(
         &output_dir.join("aliases.json"),
         &artifacts.canonical.aliases,
@@ -5381,7 +5381,7 @@ fn export_web_debug_bundle(
     write_json(&output_dir.join("meta.json"), meta)?;
     write_json(&output_dir.join("cities.json"), &canonical.cities)?;
     write_json(&output_dir.join("edges.json"), &canonical.edges)?;
-    export_chunked_web_debug_edge_geometries(output_dir, &edge_geometries)?;
+    export_chunked_edge_geometries(output_dir, &edge_geometries)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
 }
@@ -5709,7 +5709,7 @@ fn write_json_compact(path: &Path, value: &(impl Serialize + ?Sized)) -> Result<
     fs::write(path, bytes).with_context(|| format!("failed to write {}", path.display()))
 }
 
-fn export_chunked_web_debug_edge_geometries(
+fn export_chunked_edge_geometries(
     output_dir: &Path,
     edge_geometries: &EdgeGeometryArtifact,
 ) -> Result<()> {
@@ -5740,6 +5740,39 @@ fn export_chunked_web_debug_edge_geometries(
 
     write_json(&output_dir.join("edge-geometries.manifest.json"), &manifest)?;
     Ok(())
+}
+
+fn read_canonical_edge_geometries(canonical_dir: &Path) -> Result<EdgeGeometryArtifact> {
+    let manifest_path = canonical_dir.join("edge-geometries.manifest.json");
+    if !manifest_path.exists() {
+        return read_json::<EdgeGeometryArtifact>(&canonical_dir.join("edge-geometries.json"));
+    }
+
+    let manifest: ChunkedEdgeGeometryManifest = read_json(&manifest_path)?;
+    let mut geometries = Vec::with_capacity(manifest.total_geometry_count);
+    for chunk in &manifest.chunks {
+        let chunk_path = canonical_dir.join(&chunk.file);
+        let mut chunk_geometries = read_json::<Vec<EdgeGeometryRecord>>(&chunk_path)
+            .with_context(|| format!("failed to load edge geometry chunk {}", chunk.file))?;
+        if chunk_geometries.len() != chunk.geometry_count {
+            bail!(
+                "edge geometry chunk {} has {} records but manifest declares {}",
+                chunk.file,
+                chunk_geometries.len(),
+                chunk.geometry_count
+            );
+        }
+        geometries.append(&mut chunk_geometries);
+    }
+    if geometries.len() != manifest.total_geometry_count {
+        bail!(
+            "chunked edge geometry manifest declares {} records but chunks contain {}",
+            manifest.total_geometry_count,
+            geometries.len()
+        );
+    }
+
+    Ok(EdgeGeometryArtifact { geometries })
 }
 
 fn export_chunked_web_runtime_route_geometries(
@@ -5886,8 +5919,7 @@ fn load_aggregate_target_input(
     let canonical_dir = PathBuf::from(canonical_dir);
 
     let canonical = read_json::<DatasetBundle>(&canonical_dir.join("bundle.json"))?;
-    let edge_geometries =
-        read_json::<EdgeGeometryArtifact>(&canonical_dir.join("edge-geometries.json"))?;
+    let edge_geometries = read_canonical_edge_geometries(&canonical_dir)?;
     let station_mappings_path = canonical_dir.join("station-mappings.json");
     let station_mappings = if station_mappings_path.exists() {
         Some(read_json::<StationMappingReport>(&station_mappings_path)?)
@@ -10295,6 +10327,44 @@ mod tests {
             chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),
             geometries.len()
         );
+    }
+
+    #[test]
+    fn chunked_edge_geometry_reader_loads_manifest_artifacts() {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("current time should be after epoch")
+            .as_nanos();
+        let canonical_dir =
+            std::env::temp_dir().join(format!("{timestamp}-aetrain-edge-geometry-test"));
+        fs::create_dir_all(&canonical_dir).expect("canonical dir should be created");
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![EdgeGeometryRecord {
+                from_city_id: CityId::new("paris-fr").expect("valid city id"),
+                to_city_id: CityId::new("lyon-fr").expect("valid city id"),
+                points: vec![
+                    PolylinePointE5 {
+                        lat_e5: 4_800_000,
+                        lon_e5: 200_000,
+                    },
+                    PolylinePointE5 {
+                        lat_e5: 4_810_000,
+                        lon_e5: 210_000,
+                    },
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+                provenance: vec!["test".to_string()],
+            }],
+        };
+        export_chunked_edge_geometries(&canonical_dir, &edge_geometries)
+            .expect("chunked edge geometries should write");
+
+        let restored =
+            read_canonical_edge_geometries(&canonical_dir).expect("chunked geometries should load");
+
+        assert_eq!(restored, edge_geometries);
+
+        let _ = fs::remove_dir_all(canonical_dir);
     }
 
     #[test]
