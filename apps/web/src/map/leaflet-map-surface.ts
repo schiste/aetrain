@@ -2081,8 +2081,26 @@ export function createLeafletMapSurface({
       // the fade band (only cities whose population sits within
       // CITY_POP_FADE_RATIO of the live threshold qualify), so the dot
       // layer's per-frame ceiling stays predictable.
+      //
+      // Manual mode bypasses the cap entirely: when the user has set the
+      // population slider themselves, the pop filter is authoritative and the
+      // viewport is the only bound — every city that clears filter + viewport
+      // is drawn. This is what makes "All" mean *all on-screen cities* instead
+      // of "the cityBudget highest-priority ones". The fixed-count budget over
+      // a variable-size filtered pool is non-monotonic (relaxing the filter
+      // enlarges the pool, so the cull drops more of it by interest-priority);
+      // in dense low-interest regions (eastern France's small rail nodes) that
+      // inverted to *fewer* dots at All. Auto mode keeps the budget because its
+      // zoom-derived threshold never reaches All, so the pool stays bounded and
+      // the cap protects the frame at continental zoom.
       const fullyOpaque = fadeOpacity >= 1;
-      if (!inTrip && fullyOpaque && nonTripBudgetedCount >= frame.lod.cityBudget) {
+      const budgetApplies = !plannerState.popFilterManual;
+      if (
+        budgetApplies &&
+        !inTrip &&
+        fullyOpaque &&
+        nonTripBudgetedCount >= frame.lod.cityBudget
+      ) {
         culledByLod += 1;
         continue;
       }
