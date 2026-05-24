@@ -27,7 +27,8 @@ use crate::{
     NormalizationIssue, SourceKind, SourceManifest, StationMappingReport, TargetDefinition,
     build_gtfs_basic_dataset_with_loaded_rail_geometry,
     build_gtfs_basic_dataset_with_rail_geometry, build_sncf_dataset, bundle_from_basic_output,
-    bundle_from_output, rail_geometry::RailGeometryNetwork,
+    bundle_from_output,
+    rail_geometry::{RailGeometryNetwork, RailRouteTopologyDiagnostics},
 };
 
 pub trait PipelineAdapter {
@@ -400,6 +401,38 @@ pub struct PipelineRailAuthorityDefectRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineRailAuthorityTopologyDefectRecord {
+    pub source_id: String,
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub from_country_code: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub to_country_code: String,
+    pub authority_defect_reason: String,
+    pub direct_distance_km: u32,
+    pub routed_authority_distance_km: Option<u32>,
+    pub detour_ratio_x100: Option<u32>,
+    pub nearest_start_snap_distance_m: Option<u32>,
+    pub nearest_end_snap_distance_m: Option<u32>,
+    pub nearest_start_component_id: Option<usize>,
+    pub nearest_end_component_id: Option<usize>,
+    pub nearest_candidates_same_component: bool,
+    pub local_start_candidate_count: usize,
+    pub local_end_candidate_count: usize,
+    pub expanded_start_candidate_count: usize,
+    pub expanded_end_candidate_count: usize,
+    pub local_start_component_ids: Vec<usize>,
+    pub local_end_component_ids: Vec<usize>,
+    pub expanded_start_component_ids: Vec<usize>,
+    pub expanded_end_component_ids: Vec<usize>,
+    pub bounded_route_found: bool,
+    pub bounded_route_distance_km: Option<u32>,
+    pub bounded_route_point_count: Option<usize>,
+    pub suggested_pipeline_rule: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineShapePlausibilityDefectRecord {
     pub source_id: Option<String>,
     pub from_city_id: aetrain_domain::CityId,
@@ -614,6 +647,7 @@ pub struct PipelineQualityReport {
     pub country_geometry_authorities: Vec<PipelineCountryGeometryAuthorityRecord>,
     pub corridor_geometry_authorities: Vec<PipelineCorridorGeometryAuthorityRecord>,
     pub rail_authority_defect_details: Vec<PipelineRailAuthorityDefectRecord>,
+    pub rail_authority_topology_defects: Vec<PipelineRailAuthorityTopologyDefectRecord>,
     pub shape_plausibility_defect_details: Vec<PipelineShapePlausibilityDefectRecord>,
     pub promoted_domestic_authority_gap_details: Vec<PipelinePromotedDomesticAuthorityGapRecord>,
     pub promoted_station_attachment_gap_details: Vec<PipelineStationAttachmentAuditRecord>,
@@ -1100,6 +1134,10 @@ fn export_pipeline_target(
         &quality_report.rail_authority_defect_details,
     )?;
     write_json(
+        &quality_dir.join("rail-authority-topology-defects.json"),
+        &quality_report.rail_authority_topology_defects,
+    )?;
+    write_json(
         &quality_dir.join("shape-plausibility-defect-details.json"),
         &quality_report.shape_plausibility_defect_details,
     )?;
@@ -1496,6 +1534,11 @@ fn build_quality_report(
         build_authority_attachment_coverage_clusters(&promoted_station_attachment_gap_details);
     let authority_detour_corridors =
         build_authority_detour_corridor_records(&rail_authority_defect_details);
+    let rail_authority_topology_defects = build_rail_authority_topology_defect_records(
+        &rail_authority_defect_details,
+        cities,
+        &authority_networks,
+    );
     let promoted_station_attachment_gap_count = promoted_domestic_authority_gap_details
         .iter()
         .filter(|record| record.authority_gap_reason == "authority_station_attachment_gap")
@@ -1884,6 +1927,7 @@ fn build_quality_report(
         country_geometry_authorities,
         corridor_geometry_authorities,
         rail_authority_defect_details,
+        rail_authority_topology_defects,
         shape_plausibility_defect_details,
         promoted_domestic_authority_gap_details,
         promoted_station_attachment_gap_details,
@@ -2517,6 +2561,122 @@ fn build_rail_authority_defect_details(
             })
         })
         .collect()
+}
+
+fn build_rail_authority_topology_defect_records(
+    rail_authority_defect_details: &[PipelineRailAuthorityDefectRecord],
+    cities: &[City],
+    authority_networks: &BTreeMap<String, RailGeometryNetwork>,
+) -> Vec<PipelineRailAuthorityTopologyDefectRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+
+    rail_authority_defect_details
+        .iter()
+        .filter_map(|record| {
+            let from_city = cities_by_id.get(&record.from_city_id)?;
+            let to_city = cities_by_id.get(&record.to_city_id)?;
+            let direct_meters = geo_distance_meters(from_city.location, to_city.location);
+            let max_geometry_distance_meters = max_plausible_route_geometry_meters(direct_meters)
+                .ceil()
+                .clamp(0.0, u32::MAX as f64) as u32;
+            let diagnostics = authority_networks
+                .get(&record.source_id)
+                .map(|network| {
+                    network.route_topology_diagnostics(
+                        from_city.location,
+                        to_city.location,
+                        max_geometry_distance_meters,
+                    )
+                })
+                .unwrap_or_else(empty_rail_route_topology_diagnostics);
+            let source_loaded = authority_networks.contains_key(&record.source_id);
+
+            Some(PipelineRailAuthorityTopologyDefectRecord {
+                source_id: record.source_id.clone(),
+                from_city_id: record.from_city_id.clone(),
+                from_display_name: record.from_display_name.clone(),
+                from_country_code: record.from_country_code.clone(),
+                to_city_id: record.to_city_id.clone(),
+                to_display_name: record.to_display_name.clone(),
+                to_country_code: record.to_country_code.clone(),
+                authority_defect_reason: record.authority_defect_reason.clone(),
+                direct_distance_km: record.direct_distance_km,
+                routed_authority_distance_km: record.routed_authority_distance_km,
+                detour_ratio_x100: record.detour_ratio_x100,
+                nearest_start_snap_distance_m: diagnostics.nearest_start_snap_distance_m,
+                nearest_end_snap_distance_m: diagnostics.nearest_end_snap_distance_m,
+                nearest_start_component_id: diagnostics.nearest_start_component_id,
+                nearest_end_component_id: diagnostics.nearest_end_component_id,
+                nearest_candidates_same_component: diagnostics.nearest_candidates_same_component,
+                local_start_candidate_count: diagnostics.local_start_candidate_count,
+                local_end_candidate_count: diagnostics.local_end_candidate_count,
+                expanded_start_candidate_count: diagnostics.expanded_start_candidate_count,
+                expanded_end_candidate_count: diagnostics.expanded_end_candidate_count,
+                local_start_component_ids: diagnostics.local_start_component_ids.clone(),
+                local_end_component_ids: diagnostics.local_end_component_ids.clone(),
+                expanded_start_component_ids: diagnostics.expanded_start_component_ids.clone(),
+                expanded_end_component_ids: diagnostics.expanded_end_component_ids.clone(),
+                bounded_route_found: diagnostics.bounded_route_found,
+                bounded_route_distance_km: diagnostics
+                    .bounded_route_distance_m
+                    .map(|distance| meters_to_km_u32(distance as f64)),
+                bounded_route_point_count: diagnostics.bounded_route_point_count,
+                suggested_pipeline_rule: suggest_rail_authority_topology_rule(
+                    source_loaded,
+                    &diagnostics,
+                )
+                .to_string(),
+            })
+        })
+        .collect()
+}
+
+fn empty_rail_route_topology_diagnostics() -> RailRouteTopologyDiagnostics {
+    RailRouteTopologyDiagnostics {
+        local_start_candidate_count: 0,
+        local_end_candidate_count: 0,
+        expanded_start_candidate_count: 0,
+        expanded_end_candidate_count: 0,
+        nearest_start_snap_distance_m: None,
+        nearest_end_snap_distance_m: None,
+        nearest_start_component_id: None,
+        nearest_end_component_id: None,
+        nearest_candidates_same_component: false,
+        local_start_component_ids: Vec::new(),
+        local_end_component_ids: Vec::new(),
+        expanded_start_component_ids: Vec::new(),
+        expanded_end_component_ids: Vec::new(),
+        bounded_route_found: false,
+        bounded_route_distance_m: None,
+        bounded_route_point_count: None,
+    }
+}
+
+fn suggest_rail_authority_topology_rule(
+    source_loaded: bool,
+    diagnostics: &RailRouteTopologyDiagnostics,
+) -> &'static str {
+    if !source_loaded {
+        return "load_authority_network_artifact";
+    }
+    if diagnostics.expanded_start_candidate_count == 0
+        || diagnostics.expanded_end_candidate_count == 0
+    {
+        return "repair_authority_station_attachment";
+    }
+    if !diagnostics.nearest_candidates_same_component && !diagnostics.bounded_route_found {
+        return "node_or_stitch_authority_components_near_candidate_corridor";
+    }
+    if diagnostics.nearest_candidates_same_component && !diagnostics.bounded_route_found {
+        return "repair_under_noded_authority_component_or_add_corridor_policy";
+    }
+    if diagnostics.bounded_route_found {
+        return "prefer_bounded_authority_route_before_unbounded_detour";
+    }
+    "review_authority_topology_defect"
 }
 
 fn build_shape_plausibility_defect_details(
@@ -13185,5 +13345,57 @@ mod tests {
             Some("fallback_reference_gap")
         );
         assert_eq!(residuals[1].derived_parent_key.as_deref(), Some("wimmenau"));
+    }
+
+    #[test]
+    fn rail_authority_topology_rule_classifier_is_stable() {
+        let mut diagnostics = RailRouteTopologyDiagnostics {
+            local_start_candidate_count: 1,
+            local_end_candidate_count: 1,
+            expanded_start_candidate_count: 1,
+            expanded_end_candidate_count: 1,
+            nearest_start_snap_distance_m: Some(10),
+            nearest_end_snap_distance_m: Some(20),
+            nearest_start_component_id: Some(1),
+            nearest_end_component_id: Some(2),
+            nearest_candidates_same_component: false,
+            local_start_component_ids: vec![1],
+            local_end_component_ids: vec![2],
+            expanded_start_component_ids: vec![1],
+            expanded_end_component_ids: vec![2],
+            bounded_route_found: false,
+            bounded_route_distance_m: None,
+            bounded_route_point_count: None,
+        };
+
+        assert_eq!(
+            suggest_rail_authority_topology_rule(false, &diagnostics),
+            "load_authority_network_artifact"
+        );
+        assert_eq!(
+            suggest_rail_authority_topology_rule(true, &diagnostics),
+            "node_or_stitch_authority_components_near_candidate_corridor"
+        );
+
+        diagnostics.nearest_end_component_id = Some(1);
+        diagnostics.nearest_candidates_same_component = true;
+        assert_eq!(
+            suggest_rail_authority_topology_rule(true, &diagnostics),
+            "repair_under_noded_authority_component_or_add_corridor_policy"
+        );
+
+        diagnostics.bounded_route_found = true;
+        diagnostics.bounded_route_distance_m = Some(42_000);
+        diagnostics.bounded_route_point_count = Some(12);
+        assert_eq!(
+            suggest_rail_authority_topology_rule(true, &diagnostics),
+            "prefer_bounded_authority_route_before_unbounded_detour"
+        );
+
+        diagnostics.expanded_start_candidate_count = 0;
+        assert_eq!(
+            suggest_rail_authority_topology_rule(true, &diagnostics),
+            "repair_authority_station_attachment"
+        );
     }
 }

@@ -23,6 +23,7 @@ const EXPANDED_SNAP_LOCALITY_SLACK_METERS: u32 = 1_500;
 const MAX_SEGMENT_LENGTH_WITHOUT_VERTEX_METERS: u32 = 500;
 const COMPONENT_MICRO_STITCH_TOLERANCE_METERS: f64 = 60.0;
 const COMPONENT_ENDPOINT_STITCH_TOLERANCE_METERS: f64 = 150.0;
+const ENDPOINT_TO_SEGMENT_STITCH_TOLERANCE_METERS: f64 = 25.0;
 
 #[derive(Clone, Debug)]
 pub struct RailGeometryNetwork {
@@ -30,6 +31,27 @@ pub struct RailGeometryNetwork {
     adjacency: Vec<Vec<GraphEdge>>,
     endpoint_node_indexes: Vec<usize>,
     node_indexes_by_bucket: HashMap<(i32, i32), Vec<usize>>,
+    component_by_node: Vec<usize>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct RailRouteTopologyDiagnostics {
+    pub local_start_candidate_count: usize,
+    pub local_end_candidate_count: usize,
+    pub expanded_start_candidate_count: usize,
+    pub expanded_end_candidate_count: usize,
+    pub nearest_start_snap_distance_m: Option<u32>,
+    pub nearest_end_snap_distance_m: Option<u32>,
+    pub nearest_start_component_id: Option<usize>,
+    pub nearest_end_component_id: Option<usize>,
+    pub nearest_candidates_same_component: bool,
+    pub local_start_component_ids: Vec<usize>,
+    pub local_end_component_ids: Vec<usize>,
+    pub expanded_start_component_ids: Vec<usize>,
+    pub expanded_end_component_ids: Vec<usize>,
+    pub bounded_route_found: bool,
+    pub bounded_route_distance_m: Option<u32>,
+    pub bounded_route_point_count: Option<usize>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -151,14 +173,10 @@ impl RailGeometryNetwork {
         }
 
         add_endpoint_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
+        add_endpoint_to_segment_stitch_edges(&mut nodes, &mut adjacency);
         add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
 
-        RailGeometryNetwork {
-            node_indexes_by_bucket: build_node_bucket_index(&nodes),
-            nodes,
-            adjacency,
-            endpoint_node_indexes,
-        }
+        build_rail_geometry_network(nodes, adjacency, endpoint_node_indexes)
     }
 
     pub fn load_sncf_rfn_geojson(path: &Path) -> Result<Self> {
@@ -318,6 +336,60 @@ impl RailGeometryNetwork {
         )
     }
 
+    pub fn route_topology_diagnostics(
+        &self,
+        from: GeoPoint,
+        to: GeoPoint,
+        max_geometry_distance_meters: u32,
+    ) -> RailRouteTopologyDiagnostics {
+        let local_start_candidates = self.route_snap_candidates(from);
+        let local_end_candidates = self.route_snap_candidates(to);
+        let expanded_start_candidates = self.expanded_route_snap_candidates(from);
+        let expanded_end_candidates = self.expanded_route_snap_candidates(to);
+        let bounded_route = self.route_polyline_for_snap_candidates_bounded(
+            from,
+            to,
+            &local_start_candidates,
+            &local_end_candidates,
+            max_geometry_distance_meters,
+        );
+        let bounded_route_metrics = bounded_route
+            .as_ref()
+            .map(|points| (polyline_distance_meters(points), points.len()));
+        let nearest_start_component_id = local_start_candidates
+            .first()
+            .and_then(|(node, _)| self.component_by_node.get(*node).copied());
+        let nearest_end_component_id = local_end_candidates
+            .first()
+            .and_then(|(node, _)| self.component_by_node.get(*node).copied());
+
+        RailRouteTopologyDiagnostics {
+            local_start_candidate_count: local_start_candidates.len(),
+            local_end_candidate_count: local_end_candidates.len(),
+            expanded_start_candidate_count: expanded_start_candidates.len(),
+            expanded_end_candidate_count: expanded_end_candidates.len(),
+            nearest_start_snap_distance_m: local_start_candidates
+                .first()
+                .map(|(_, distance)| *distance),
+            nearest_end_snap_distance_m: local_end_candidates
+                .first()
+                .map(|(_, distance)| *distance),
+            nearest_start_component_id,
+            nearest_end_component_id,
+            nearest_candidates_same_component: nearest_start_component_id
+                .zip(nearest_end_component_id)
+                .is_some_and(|(start, end)| start == end),
+            local_start_component_ids: self.component_ids_for_candidates(&local_start_candidates),
+            local_end_component_ids: self.component_ids_for_candidates(&local_end_candidates),
+            expanded_start_component_ids: self
+                .component_ids_for_candidates(&expanded_start_candidates),
+            expanded_end_component_ids: self.component_ids_for_candidates(&expanded_end_candidates),
+            bounded_route_found: bounded_route_metrics.is_some(),
+            bounded_route_distance_m: bounded_route_metrics.map(|(distance, _)| distance),
+            bounded_route_point_count: bounded_route_metrics.map(|(_, point_count)| point_count),
+        }
+    }
+
     pub fn route_polyline_for_snap_candidates(
         &self,
         from: GeoPoint,
@@ -390,6 +462,16 @@ impl RailGeometryNetwork {
             ),
             slack_meters,
         )
+    }
+
+    fn component_ids_for_candidates(&self, candidates: &[(usize, u32)]) -> Vec<usize> {
+        let mut component_ids = candidates
+            .iter()
+            .filter_map(|(node, _)| self.component_by_node.get(*node).copied())
+            .collect::<Vec<_>>();
+        component_ids.sort_unstable();
+        component_ids.dedup();
+        component_ids
     }
 
     fn best_route_polyline_for_candidates(
@@ -859,13 +941,24 @@ fn build_network_from_polylines(polylines: &[Vec<GeoPoint>]) -> RailGeometryNetw
     }
 
     add_endpoint_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
+    add_endpoint_to_segment_stitch_edges(&mut nodes, &mut adjacency);
     add_component_stitch_edges(&nodes, &mut adjacency, &endpoint_node_indexes);
 
+    build_rail_geometry_network(nodes, adjacency, endpoint_node_indexes)
+}
+
+fn build_rail_geometry_network(
+    nodes: Vec<GeoPoint>,
+    adjacency: Vec<Vec<GraphEdge>>,
+    endpoint_node_indexes: Vec<usize>,
+) -> RailGeometryNetwork {
+    let component_by_node = connected_components(&adjacency);
     RailGeometryNetwork {
         node_indexes_by_bucket: build_node_bucket_index(&nodes),
         nodes,
         adjacency,
         endpoint_node_indexes,
+        component_by_node,
     }
 }
 
@@ -954,6 +1047,193 @@ fn add_endpoint_stitch_edges(
                 }
             }
         }
+    }
+}
+
+#[derive(Clone, Debug)]
+struct IndexedRailSegment {
+    from_node: usize,
+    to_node: usize,
+    from: GeoPoint,
+    to: GeoPoint,
+    component_id: usize,
+}
+
+fn add_endpoint_to_segment_stitch_edges(
+    nodes: &mut Vec<GeoPoint>,
+    adjacency: &mut Vec<Vec<GraphEdge>>,
+) {
+    let components = connected_components(adjacency);
+    let endpoint_node_indexes = adjacency
+        .iter()
+        .enumerate()
+        .filter_map(|(node_index, edges)| (edges.len() == 1).then_some(node_index))
+        .collect::<Vec<_>>();
+    if endpoint_node_indexes.is_empty() {
+        return;
+    }
+
+    let segments = indexed_rail_segments(nodes, adjacency, &components);
+    if segments.is_empty() {
+        return;
+    }
+
+    let mut segments_by_bucket = HashMap::<(i32, i32), Vec<usize>>::new();
+    for (segment_index, segment) in segments.iter().enumerate() {
+        for bucket in segment_bucket_keys(segment.from, segment.to) {
+            segments_by_bucket
+                .entry(bucket)
+                .or_default()
+                .push(segment_index);
+        }
+    }
+
+    let mut checked_pairs = HashSet::<(usize, usize)>::new();
+    let mut stitched_pairs = HashSet::<(usize, usize)>::new();
+    let mut node_index_by_key = nodes
+        .iter()
+        .enumerate()
+        .map(|(index, point)| (quantize_point_key(*point), index))
+        .collect::<HashMap<_, _>>();
+
+    for endpoint_node in endpoint_node_indexes {
+        let endpoint = nodes[endpoint_node];
+        let bucket = quantize_bucket_key(endpoint);
+        for lat_bucket in (bucket.0 - 1)..=(bucket.0 + 1) {
+            for lon_bucket in (bucket.1 - 1)..=(bucket.1 + 1) {
+                let Some(segment_indexes) = segments_by_bucket.get(&(lat_bucket, lon_bucket))
+                else {
+                    continue;
+                };
+
+                for segment_index in segment_indexes {
+                    if !checked_pairs.insert((endpoint_node, *segment_index)) {
+                        continue;
+                    }
+                    let segment = &segments[*segment_index];
+                    if components[endpoint_node] == segment.component_id
+                        || endpoint_node == segment.from_node
+                        || endpoint_node == segment.to_node
+                    {
+                        continue;
+                    }
+
+                    let segment_from_xy = project_to_local_meters(segment.from, endpoint);
+                    let segment_to_xy = project_to_local_meters(segment.to, endpoint);
+                    let Some((distance_meters, segment_fraction)) =
+                        closest_endpoint_to_segment((0.0, 0.0), segment_from_xy, segment_to_xy)
+                    else {
+                        continue;
+                    };
+                    if distance_meters > ENDPOINT_TO_SEGMENT_STITCH_TOLERANCE_METERS {
+                        continue;
+                    }
+
+                    let stitch_point = interpolate_geo(segment.from, segment.to, segment_fraction);
+                    let stitch_node = get_or_insert_exact_node(
+                        stitch_point,
+                        nodes,
+                        adjacency,
+                        &mut node_index_by_key,
+                    );
+                    for node_index in [endpoint_node, segment.from_node, segment.to_node] {
+                        let stitched_pair = if node_index < stitch_node {
+                            (node_index, stitch_node)
+                        } else {
+                            (stitch_node, node_index)
+                        };
+                        if stitched_pairs.insert(stitched_pair) {
+                            add_undirected_edge(
+                                adjacency,
+                                node_index,
+                                stitch_node,
+                                nodes[node_index],
+                                stitch_point,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn indexed_rail_segments(
+    nodes: &[GeoPoint],
+    adjacency: &[Vec<GraphEdge>],
+    components: &[usize],
+) -> Vec<IndexedRailSegment> {
+    let mut segments = Vec::new();
+    for (from_node, edges) in adjacency.iter().enumerate() {
+        for edge in edges {
+            if from_node >= edge.target {
+                continue;
+            }
+            segments.push(IndexedRailSegment {
+                from_node,
+                to_node: edge.target,
+                from: nodes[from_node],
+                to: nodes[edge.target],
+                component_id: components[from_node],
+            });
+        }
+    }
+    segments
+}
+
+fn segment_bucket_keys(from: GeoPoint, to: GeoPoint) -> Vec<(i32, i32)> {
+    let from_bucket = quantize_bucket_key(from);
+    let to_bucket = quantize_bucket_key(to);
+    let min_lat = from_bucket.0.min(to_bucket.0) - 1;
+    let max_lat = from_bucket.0.max(to_bucket.0) + 1;
+    let min_lon = from_bucket.1.min(to_bucket.1) - 1;
+    let max_lon = from_bucket.1.max(to_bucket.1) + 1;
+    let mut buckets = Vec::new();
+    for lat_bucket in min_lat..=max_lat {
+        for lon_bucket in min_lon..=max_lon {
+            buckets.push((lat_bucket, lon_bucket));
+        }
+    }
+    buckets
+}
+
+fn closest_endpoint_to_segment(
+    point: (f64, f64),
+    segment_from: (f64, f64),
+    segment_to: (f64, f64),
+) -> Option<(f64, f64)> {
+    let segment = (segment_to.0 - segment_from.0, segment_to.1 - segment_from.1);
+    let segment_len2 = dot_2d(segment, segment);
+    if segment_len2 <= f64::EPSILON {
+        return None;
+    }
+    let point_delta = (point.0 - segment_from.0, point.1 - segment_from.1);
+    let fraction = (dot_2d(point_delta, segment) / segment_len2).clamp(0.0, 1.0);
+    let closest = (
+        segment_from.0 + segment.0 * fraction,
+        segment_from.1 + segment.1 * fraction,
+    );
+    let distance = ((point.0 - closest.0).powi(2) + (point.1 - closest.1).powi(2)).sqrt();
+    Some((distance, fraction))
+}
+
+fn project_to_local_meters(point: GeoPoint, origin: GeoPoint) -> (f64, f64) {
+    let meters_per_lat_degree = 111_320.0;
+    let lon_scale = origin.lat.to_radians().cos().abs().max(0.1);
+    (
+        (point.lon - origin.lon) * meters_per_lat_degree * lon_scale,
+        (point.lat - origin.lat) * meters_per_lat_degree,
+    )
+}
+
+fn dot_2d(left: (f64, f64), right: (f64, f64)) -> f64 {
+    left.0 * right.0 + left.1 * right.1
+}
+
+fn interpolate_geo(from: GeoPoint, to: GeoPoint, fraction: f64) -> GeoPoint {
+    GeoPoint {
+        lat: from.lat + (to.lat - from.lat) * fraction,
+        lon: from.lon + (to.lon - from.lon) * fraction,
     }
 }
 
@@ -1488,6 +1768,157 @@ mod tests {
             .expect("route should cross endpoint-to-line topology gap");
 
         assert!(route.len() >= 3);
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn endpoint_to_segment_stitching_does_not_connect_arbitrary_crossings() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "100000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0000, 48.0000], [2.0200, 48.0000]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "200000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0100, 47.9900], [2.0100, 48.0100]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        assert!(
+            network
+                .route_polyline(
+                    GeoPoint {
+                        lat: 48.0,
+                        lon: 2.0,
+                    },
+                    GeoPoint {
+                        lat: 48.01,
+                        lon: 2.01,
+                    },
+                )
+                .is_none()
+        );
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn endpoint_to_segment_stitching_connects_endpoint_to_crossing_line() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "300000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0000, 48.0000], [2.0100, 48.0000]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "400000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0101, 47.9950], [2.0101, 48.0050]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let route = network
+            .route_polyline(
+                GeoPoint {
+                    lat: 48.0,
+                    lon: 2.0,
+                },
+                GeoPoint {
+                    lat: 48.005,
+                    lon: 2.0101,
+                },
+            )
+            .expect("route should cross stitched endpoint-to-line gap");
+
+        assert!(route.len() >= 4);
+
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn topology_diagnostics_explain_disconnected_authority_candidates() {
+        let path = write_test_geojson(
+            r#"{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "500000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.0000, 48.0000], [2.0100, 48.0000]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"mnemo": "EXPLOITE", "code_ligne": "600000"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[2.1000, 48.0000], [2.1100, 48.0000]]
+      }
+    }
+  ]
+}"#,
+        )
+        .expect("geojson should be created");
+        let network =
+            RailGeometryNetwork::load_sncf_rfn_geojson(&path).expect("network should parse");
+
+        let diagnostics = network.route_topology_diagnostics(
+            GeoPoint {
+                lat: 48.0,
+                lon: 2.0,
+            },
+            GeoPoint {
+                lat: 48.0,
+                lon: 2.11,
+            },
+            20_000,
+        );
+
+        assert!(diagnostics.local_start_candidate_count > 0);
+        assert!(diagnostics.local_end_candidate_count > 0);
+        assert!(
+            diagnostics.expanded_start_candidate_count >= diagnostics.local_start_candidate_count
+        );
+        assert!(diagnostics.expanded_end_candidate_count >= diagnostics.local_end_candidate_count);
+        assert!(!diagnostics.nearest_candidates_same_component);
+        assert!(!diagnostics.bounded_route_found);
+        assert_ne!(
+            diagnostics.nearest_start_component_id,
+            diagnostics.nearest_end_component_id
+        );
 
         let _ = fs::remove_file(path);
     }
