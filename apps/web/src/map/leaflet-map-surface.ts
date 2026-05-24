@@ -25,8 +25,7 @@ import {
 } from "./landmass-model.ts";
 import {
   buildLodProfile,
-  cityOpacityAtZoom,
-  computeCityAppearZoom,
+  cityPopFadeOpacity,
   createSpatialGrid,
   hitTestSpatialGrid,
   lineIntersectsViewport,
@@ -45,6 +44,12 @@ interface MapPlannerState {
   legDynMax: number;
   legMax: number;
   legMin: number;
+  /** True once the user has touched the population slider/inline-edit. While
+   *  false, the dot gate derives its threshold from the live camera zoom via
+   *  the injected `deriveAutoPopThreshold`; once true we honour `filterPop`
+   *  verbatim and stop auto-driving it from zoom. Mirrors the store's
+   *  `popFilterManual` flag (see state/planner-store.ts). */
+  popFilterManual: boolean;
   searchQuery: string;
   segments: (PlannerSegment | null)[];
   trip: string[];
@@ -88,7 +93,8 @@ interface VisibleCity extends MapPoint {
   city: PlannerCity;
   /** Smoothstepped fade opacity in [0, 1] for the current frame. Trip /
    *  keyboard-focused cities pin to 1; everyone else ramps with
-   *  `cityOpacityAtZoom(appearZoom, camera.zoom, fadeBand)`. */
+   *  `cityPopFadeOpacity(city.pop, popThreshold, fadeRatio)` as the
+   *  live-zoom-derived population threshold slides past the city. */
   fadeOpacity: number;
   inTrip: boolean;
   radius: number;
@@ -178,11 +184,6 @@ interface RouteSegmentRender {
 }
 
 interface PreparedCity {
-  /** Zoom at which this city reaches full opacity. Pre-computed at city
-   *  load via `computeCityAppearZoom` so the per-frame fade math is a
-   *  single smoothstep evaluation against the live `camera.zoom`,
-   *  decoupled from the frozen-during-interaction `frame.lod` thresholds. */
-  appearZoom: number;
   city: PlannerCity;
   renderPriority: number;
   world: WorldPoint;
@@ -258,6 +259,12 @@ export interface CreateLeafletMapSurfaceOptions {
   formatPopulation: (population: number) => string;
   graph: PlannerModelMetadata;
   labelThreshold: LabelThresholdFn;
+  /** Maps the *live* camera zoom to a population threshold (in thousands)
+   *  for the auto-driven city dot gate. Injected (like `labelThreshold`) so
+   *  the renderer never imports the product's population curve directly; the
+   *  shell wires in `state/auto-pop-scale.ts#derivePopThresholdForZoom`. Only
+   *  consulted while `popFilterManual` is false. */
+  deriveAutoPopThreshold: (zoom: number) => number;
   onCitySelect?: (name: string) => void;
   /**
    * Fired when the user clicks an existing trip segment on the routes
@@ -327,15 +334,16 @@ const PAN_SETTLE_DELAY_MS = 120;
 // interaction restores full network density.
 const INTERACTION_NETWORK_BUDGET_DIVISOR = 5;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
-// Zoom-units window over which a city fades from invisible → fully opaque
-// as the camera crosses its `appearZoom` threshold. Sized to ~2× the
-// per-notch wheel zoom step (WHEEL_PIXELS_PER_ZOOM_LEVEL=120 ⇒ ~0.83
-// zoom levels per notch) so a single wheel tick ramps a fading city
-// through ~50% opacity instead of collapsing the entire band into one
-// rAF frame. Combined with the fade-tail / LOD-budget decoupling in
-// buildRenderPlan, this is what makes the fade visible across a
-// multi-notch gesture rather than appearing only at settle.
-const CITY_FADE_BAND_ZOOM = 1.6;
+// Multiplicative half-width of the population fade band around the live
+// threshold: a city is fully opaque at pop >= threshold × ratio, invisible
+// at pop <= threshold ÷ ratio, and smoothsteps (in log space) between. 1.6×
+// means the ramp spans roughly threshold/1.6 .. threshold×1.6 — about ±0.7
+// zoom levels of the auto curve (which ~halves per level), so a single
+// wheel notch slides a fading city through ~50% opacity instead of
+// collapsing the band into one rAF frame. Combined with the fade-tail /
+// LOD-budget decoupling in buildRenderPlan, this is what makes the fade
+// visible across a multi-notch gesture rather than appearing only at settle.
+const CITY_POP_FADE_RATIO = 1.6;
 const OCEAN_FILL_COLOR = "#0f1729";
 const LANDMASS_FILL_COLOR = "#151d2e";
 const WHEEL_PIXELS_PER_ZOOM_LEVEL = 120;
@@ -379,6 +387,7 @@ export function createLeafletMapSurface({
   formatPopulation,
   graph,
   labelThreshold,
+  deriveAutoPopThreshold,
   onCitySelect,
   onSegmentSelect,
   onRenderStatsChange
@@ -499,7 +508,6 @@ export function createLeafletMapSurface({
       const world = mercatorProject(city.lon, city.lat);
       cityWorldByName.set(city.name, world);
       return {
-        appearZoom: computeCityAppearZoom(city),
         city,
         renderPriority: cityRenderPriority(city),
         world
@@ -2001,13 +2009,28 @@ export function createLeafletMapSurface({
     const visibleCities: VisibleCity[] = [];
     const labelCandidates: InternalLabelCandidate[] = [];
 
+    // Population gate threshold for this frame. In manual mode the user owns
+    // `filterPop` and we honour it verbatim; otherwise we derive it from the
+    // *live* camera zoom (frame.zoom is per-wheel-tick, not the settle-frozen
+    // semanticZoom) so dots fade continuously as the camera moves instead of
+    // resolving only when the gesture stops. Both are in thousands; ×1000 →
+    // absolute people to compare against city.pop. `popFadeLo` is the bottom
+    // of the fade band (threshold ÷ ratio): cities below it are invisible
+    // regardless, so the gate culls them outright; everything from popFadeLo
+    // up is admitted and gets a smoothstepped opacity.
+    const popThresholdK = plannerState.popFilterManual
+      ? plannerState.filterPop
+      : deriveAutoPopThreshold(frame.zoom);
+    const popThresholdAbs = popThresholdK * 1000;
+    const popFadeLo = popThresholdAbs <= 0 ? 0 : popThresholdAbs / CITY_POP_FADE_RATIO;
+
     for (const entry of preparedCities) {
       const city = entry.city;
       const inTrip = tripSet.has(city.name);
       let visible =
         inTrip ||
         (city.interest >= plannerState.filterInterest &&
-          city.pop >= plannerState.filterPop * 1000);
+          (popThresholdAbs <= 0 || city.pop >= popFadeLo));
 
       const travelTime = plannerState.distFromLast[city.name];
       if (visible && hasLegFilter && !inTrip) {
@@ -2035,7 +2058,7 @@ export function createLeafletMapSurface({
       const fadeOpacity =
         inTrip || isKeyboardFocused
           ? 1
-          : cityOpacityAtZoom(entry.appearZoom, frame.zoom, CITY_FADE_BAND_ZOOM);
+          : cityPopFadeOpacity(city.pop, popThresholdAbs, CITY_POP_FADE_RATIO);
       if (fadeOpacity <= 0) {
         culledByLod += 1;
         continue;
@@ -2053,11 +2076,11 @@ export function createLeafletMapSurface({
       // Only fully-opaque non-trip cities consume the LOD budget. Fade-tail
       // cities (mid-ramp during a wheel/pinch gesture) paint unconditionally
       // so the smoothstep is visible across the gesture — otherwise the
-      // frozen-semanticZoom budget cap would cull them at fadeOpacity=0.05
-      // and the user only ever sees them pop in at settle. The fade tail
-      // is bounded in size by the fade band (only cities whose appearZoom
-      // sits within CITY_FADE_BAND_ZOOM of camera.zoom qualify), so the
-      // dot layer's per-frame ceiling stays predictable.
+      // budget cap could cull them at fadeOpacity=0.05 and the user would
+      // only see them pop in at settle. The fade tail is bounded in size by
+      // the fade band (only cities whose population sits within
+      // CITY_POP_FADE_RATIO of the live threshold qualify), so the dot
+      // layer's per-frame ceiling stays predictable.
       const fullyOpaque = fadeOpacity >= 1;
       if (!inTrip && fullyOpaque && nonTripBudgetedCount >= frame.lod.cityBudget) {
         culledByLod += 1;
@@ -2622,6 +2645,7 @@ function createEmptyPlannerState(): MapPlannerState {
     legDynMax: 1440,
     legMax: 1440,
     legMin: 0,
+    popFilterManual: false,
     searchQuery: "",
     segments: [],
     trip: []
@@ -2638,7 +2662,12 @@ function normalizePlannerState(state: PlannerStateInput): MapPlannerState {
 function summarizePlannerRenderState(state: MapPlannerState): PlannerStateSignature {
   return {
     distRef: state.distFromLast,
-    filterKey: `${state.filterInterest}:${state.filterPop}`,
+    // popFilterManual is part of the key so toggling auto↔manual invalidates
+    // the render plan even when filterInterest/filterPop are unchanged — in
+    // auto mode the effective pop threshold comes from the live frame.zoom
+    // (which already varies frame.key), so filterPop alone wouldn't capture
+    // the switch.
+    filterKey: `${state.filterInterest}:${state.filterPop}:${state.popFilterManual ? "m" : "a"}`,
     legKey: `${state.legMin}:${state.legMax}:${state.legDynMax}`,
     segmentsRef: state.segments,
     tripKey: state.trip.join("\u0000")

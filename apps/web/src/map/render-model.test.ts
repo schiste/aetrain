@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   buildLodProfile,
+  cityPopFadeOpacity,
   createSpatialGrid,
   hitTestSpatialGrid,
   lineIntersectsViewport,
@@ -29,6 +30,47 @@ test("buildLodProfile interpolates between zoom levels", () => {
   assert.equal(profile.labelBudget > 24 && profile.labelBudget < 40, true);
   assert.equal(profile.minInterest < 6 && profile.minInterest > 4, true);
   assert.equal(profile.labelThreshold.interest < 8 && profile.labelThreshold.interest > 6, true);
+});
+
+test("cityPopFadeOpacity pins to 1 when threshold is 0 (show all)", () => {
+  assert.equal(cityPopFadeOpacity(1_000, 0, 1.6), 1);
+  assert.equal(cityPopFadeOpacity(50_000, 0, 1.6), 1);
+});
+
+test("cityPopFadeOpacity is a hard binary cut when fadeRatio <= 1", () => {
+  assert.equal(cityPopFadeOpacity(100_000, 100_000, 1), 1);
+  assert.equal(cityPopFadeOpacity(99_999, 100_000, 1), 0);
+  assert.equal(cityPopFadeOpacity(100_000, 100_000, 0.5), 1);
+});
+
+test("cityPopFadeOpacity saturates outside the fade band", () => {
+  // pop >= threshold * ratio → fully opaque; pop <= threshold / ratio → 0.
+  assert.equal(cityPopFadeOpacity(160_000, 100_000, 1.6), 1);
+  assert.equal(cityPopFadeOpacity(200_000, 100_000, 1.6), 1);
+  assert.equal(cityPopFadeOpacity(62_500, 100_000, 1.6), 0);
+  assert.equal(cityPopFadeOpacity(10_000, 100_000, 1.6), 0);
+});
+
+test("cityPopFadeOpacity is 0.5 at the threshold (log-space midpoint)", () => {
+  // lo and hi are symmetric in log space around `threshold`, so a city
+  // exactly at the threshold sits at the band's midpoint → smoothstep(0.5).
+  const mid = cityPopFadeOpacity(100_000, 100_000, 1.6);
+  assert.ok(Math.abs(mid - 0.5) < 1e-9, `expected ~0.5, got ${mid}`);
+});
+
+test("cityPopFadeOpacity ramps monotonically across the band", () => {
+  const samples = [65_000, 80_000, 100_000, 125_000, 155_000].map((pop) =>
+    cityPopFadeOpacity(pop, 100_000, 1.6)
+  );
+  for (let i = 1; i < samples.length; i += 1) {
+    assert.ok(
+      samples[i]! > samples[i - 1]!,
+      `opacity should increase with population: ${samples.join(", ")}`
+    );
+  }
+  // Endpoints land in (0, 1) — strictly inside the band, not clamped.
+  assert.ok(samples[0]! > 0 && samples[0]! < 1);
+  assert.ok(samples[samples.length - 1]! > 0 && samples[samples.length - 1]! <= 1);
 });
 
 test("pointInViewport respects padding", () => {

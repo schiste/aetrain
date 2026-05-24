@@ -2,10 +2,10 @@ import type { MapPoint, MapSize } from "./camera-model.ts";
 
 const DEFAULT_HIT_GRID_CELL_SIZE = 48;
 
-// The piecewise-linear curves driving per-city visibility. Kept exported so
-// the surface can derive each city's `appearZoom` once at load time (closed-
-// form invert below) instead of recomputing the LOD profile every frame.
-// Mirrors the curves inside `buildLodProfile` — keep them in sync.
+// The piecewise-linear LOD curves consumed by `buildLodProfile` to derive
+// the per-zoom `minInterest` / `minPopulation` thresholds. (City *dot*
+// visibility is gated separately in the surface by the injected pop curve;
+// these drive the label/network LOD knobs.)
 const MIN_INTEREST_CURVE: readonly ZoomPoint[] = [
   [3, 6.5],
   [4.5, 5.8],
@@ -228,38 +228,39 @@ export function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
-/** Lowest camera zoom at which `city` would satisfy the binary LOD gate
- *  (`interest >= minInterest(z) || pop >= minPopulation(z)`). Computed
- *  once at city load time so per-frame fade math is O(1) per city.
- *
- *  Because both curves are monotonically *decreasing* in zoom, we invert
- *  each independently and take the minimum (the OR semantics of the gate
- *  pick whichever criterion qualifies the city first). If a city sits
- *  above the first sample's threshold it appears at all zooms (returns
- *  the curve's minimum zoom); if it never qualifies it returns `+Infinity`
- *  so the fade math collapses to opacity 0. */
-export function computeCityAppearZoom(city: {
-  readonly interest: number;
-  readonly pop: number;
-}): number {
-  return Math.min(
-    invertDecreasingCurve(MIN_INTEREST_CURVE, city.interest),
-    invertDecreasingCurve(MIN_POPULATION_CURVE, city.pop)
-  );
-}
+/** A zoom → population-threshold curve (in thousands). The surface is given
+ *  one of these via dependency injection (mirroring `LabelThresholdFn`) so
+ *  it can gate city dots against the *live* camera zoom without baking the
+ *  product's population logic into the renderer. See
+ *  `state/auto-pop-scale.ts` for the concrete implementation. */
+export type AutoPopThresholdFn = (zoom: number) => number;
 
-/** Smoothstepped fade-in opacity for a city, in [0, 1]. `fadeBand` is the
- *  zoom-units window over which the city ramps from 0 → 1; the city is
- *  fully opaque at and beyond its `appearZoom`, and fully invisible at
- *  `appearZoom - fadeBand` or below. */
-export function cityOpacityAtZoom(
-  appearZoom: number,
-  zoom: number,
-  fadeBand: number
+/** Smoothstepped opacity for a city dot based on how its population sits
+ *  relative to the current threshold, in [0, 1]. Drives the soft edge as
+ *  the live-zoom-derived threshold slides past a city's population:
+ *
+ *    pop >= threshold * fadeRatio  → 1 (comfortably above the cut)
+ *    pop <= threshold / fadeRatio  → 0 (comfortably below)
+ *    in between                    → smoothstep ramp
+ *
+ *  `threshold` and `pop` are absolute populations (people, not thousands).
+ *  The ramp is computed in log space because population is heavy-tailed:
+ *  equal *ratios* (e.g. 0.8× vs 1.25×) then read as equal visual steps, so
+ *  a 40k town near a 50k cut fades at the same rate as a 400k city near a
+ *  500k cut. `fadeRatio <= 1` collapses to a hard binary cut; a threshold
+ *  of 0 ("show everything") pins to fully opaque. */
+export function cityPopFadeOpacity(
+  pop: number,
+  threshold: number,
+  fadeRatio: number
 ): number {
-  if (!Number.isFinite(appearZoom)) return 0;
-  if (fadeBand <= 0) return zoom >= appearZoom ? 1 : 0;
-  return smoothstep((zoom - appearZoom + fadeBand) / fadeBand);
+  if (threshold <= 0) return 1;
+  if (fadeRatio <= 1) return pop >= threshold ? 1 : 0;
+  const hi = threshold * fadeRatio;
+  const lo = threshold / fadeRatio;
+  if (pop >= hi) return 1;
+  if (pop <= lo) return 0;
+  return smoothstep((Math.log(pop) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)));
 }
 
 /** Hysteresis-aware label packer.
@@ -313,42 +314,6 @@ export function selectLabelCandidates<T extends LabelCandidate>(
   }
 
   return accepted;
-}
-
-/** Closed-form invert of a piecewise-linear curve where y is monotonically
- *  decreasing in x. Returns the smallest x where `curve(x) <= target`. */
-function invertDecreasingCurve(
-  curve: readonly ZoomPoint[],
-  target: number
-): number {
-  const first = curve[0];
-  if (!first) return Number.POSITIVE_INFINITY;
-  if (target >= first[1]) {
-    // Above the curve's max threshold — qualifies at the very first sample.
-    return first[0];
-  }
-
-  for (let index = 1; index < curve.length; index += 1) {
-    const previous = curve[index - 1];
-    const current = curve[index];
-    if (!previous || !current) continue;
-    // Segment spans (previous → current). y is decreasing, so we look for
-    // the first segment whose lower endpoint dips to/below `target`.
-    if (target > current[1]) continue;
-
-    const yRange = previous[1] - current[1];
-    if (yRange <= 0) {
-      // Flat segment — once we crossed `target` in an earlier segment we
-      // wouldn't be here; this point qualifies if it equals `target`.
-      return current[0];
-    }
-    const progress = (previous[1] - target) / yRange;
-    return previous[0] + (current[0] - previous[0]) * progress;
-  }
-
-  // City never qualifies on this curve. Return +Infinity so OR-callers
-  // ignore it; the surrounding `Math.min` will pick the other curve.
-  return Number.POSITIVE_INFINITY;
 }
 
 function estimateLabelBounds(candidate: LabelCandidate): LabelBounds {

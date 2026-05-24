@@ -207,6 +207,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       formatPopulation,
       graph,
       labelThreshold,
+      deriveAutoPopThreshold: derivePopThresholdForZoom,
       onCitySelect(name) {
         diagnostics.info("toggle city requested", { city_name: name });
         void plannerStore.toggleCity(name).catch((error: unknown) => {
@@ -324,7 +325,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
         // back at the default 100 between writes.
         plannerStore.clearManualFilterPop();
         const view = mapSurface.getViewState();
-        plannerStore.setAutoFilterPop(derivePopThresholdForZoom(view.zoom));
+        plannerStore.setAutoFilterPop(roundToSliderStep(derivePopThresholdForZoom(view.zoom)));
         plannerStore.setLegRange({ min: 0, max: snapshot.legDynMax });
       }
     };
@@ -393,9 +394,14 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     // manually overridden the slider, so we can listen unconditionally
     // here. Also fire once at boot so the initial zoom drives the
     // first threshold, not the store's hard-coded default of 100.
+    //
+    // This only syncs the *slider thumb* (cosmetic) — the map's dot gate
+    // samples the continuous curve against the live camera zoom itself.
+    // We round to the slider's step of 10 so the thumb doesn't sit on a
+    // non-multiple and look jittery; the gate stays continuous regardless.
     const applyAutoPopFromZoom = () => {
       const view = mapSurface.getViewState();
-      const next = derivePopThresholdForZoom(view.zoom);
+      const next = roundToSliderStep(derivePopThresholdForZoom(view.zoom));
       plannerStore.setAutoFilterPop(next);
     };
     applyAutoPopFromZoom();
@@ -496,6 +502,15 @@ async function scheduleEdgeGeometryUpgrade({
       error: summarizeError(error)
     });
   }
+}
+
+// The population slider has a step of 10; the auto curve returns continuous
+// thousands, so snap the value we write to the slider to the nearest step to
+// keep the thumb from landing on a non-multiple. Clamped to the curve's 0
+// floor. The map's dot gate does NOT use this — it samples the raw curve.
+const POP_SLIDER_STEP = 10;
+function roundToSliderStep(value: number): number {
+  return Math.max(0, Math.round(value / POP_SLIDER_STEP) * POP_SLIDER_STEP);
 }
 
 function createSeedState(): PlannerState {
