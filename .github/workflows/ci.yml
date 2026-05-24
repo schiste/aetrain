@@ -73,6 +73,14 @@ jobs:
       - name: Unit tests (node --test)
         run: npm test
 
+      # The routing wasm crate's pkg/ is gitignored, so vite cannot resolve the
+      # wasm glue module unless we generate it first. Shared with the prod
+      # Cloudflare build (scripts/build-for-pages.sh). The script self-locates
+      # the repo root, so the job's apps/web working-directory is irrelevant —
+      # invoke it by absolute path.
+      - name: Build routing WASM
+        run: bash "${GITHUB_WORKSPACE}/scripts/build-wasm.sh"
+
       - name: Production build
         run: npm run build
 
