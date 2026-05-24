@@ -617,6 +617,47 @@ pub struct PipelineQuarantinedPromotedAttachmentGapCityRecord {
     pub suggested_action: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PipelineCityRailProfileArtifact {
+    pub profiles: Vec<PipelineCityRailProfileRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PipelineCityRailProfileRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub map_location: GeoPoint,
+    pub anchor_strategy: String,
+    pub confidence: String,
+    pub terminal_count: usize,
+    pub terminal_station_ids: Vec<aetrain_domain::StationId>,
+    pub terminal_spread_m: u32,
+    pub civic_to_map_distance_m: u32,
+    pub terminals: Vec<PipelineCityRailTerminalAnchorRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PipelineCityRailTerminalAnchorRecord {
+    pub station_id: Option<aetrain_domain::StationId>,
+    pub display_name: Option<String>,
+    pub station_location: Option<GeoPoint>,
+    pub rail_location: GeoPoint,
+    pub station_to_rail_distance_m: Option<u32>,
+    pub edge_endpoint_use_count: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineCityRailEndpointMismatchRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub endpoint_role: String,
+    pub other_city_id: aetrain_domain::CityId,
+    pub other_display_name: String,
+    pub civic_endpoint_distance_m: u32,
+    pub map_endpoint_distance_m: u32,
+    pub classification: String,
+    pub geometry_source: EdgeGeometrySource,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
@@ -634,6 +675,7 @@ pub struct PipelineQualityReport {
     pub route_like_residuals: Vec<PipelineRouteLikeResidualRecord>,
     pub non_railway_route_geometries: Vec<PipelineRouteGeometryQualityRecord>,
     pub route_geometry_anomalies: Vec<PipelineRouteGeometryAnomalyRecord>,
+    pub city_rail_endpoint_mismatches: Vec<PipelineCityRailEndpointMismatchRecord>,
     pub domestic_geometry_backlog_by_country: Vec<PipelineDomesticGeometryBacklogRecord>,
     pub cross_border_geometry_backlog_by_corridor: Vec<PipelineCrossBorderGeometryBacklogRecord>,
     pub domestic_authority_onboarding_hotspots:
@@ -732,6 +774,10 @@ impl PipelineQualityReportSummary {
                 quality_detail_artifact(
                     "route-geometry-anomalies.json",
                     report.route_geometry_anomalies.len(),
+                ),
+                quality_detail_artifact(
+                    "city-rail-endpoint-mismatches.json",
+                    report.city_rail_endpoint_mismatches.len(),
                 ),
                 quality_detail_artifact(
                     "domestic-geometry-backlog-by-country.json",
@@ -967,10 +1013,29 @@ struct PipelineRailNetworkArtifactRecord {
     pub component_count: usize,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct WebDebugCityRecord {
+    pub city_id: aetrain_domain::CityId,
+    pub slug: String,
+    pub display_name: String,
+    pub country_code: String,
+    pub location: GeoPoint,
+    pub map_location: GeoPoint,
+    pub wikidata_qid: Option<String>,
+    pub population: Option<u64>,
+    pub interest_score: Option<u8>,
+    pub station_ids: Vec<aetrain_domain::StationId>,
+    pub aliases: Vec<String>,
+}
+
 const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
 const WEB_RUNTIME_ROUTE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
 const AGGREGATE_CITY_MERGE_DISTANCE_METERS: u32 = 20_000;
 const ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS: u32 = 5_000;
+const CITY_RAIL_TERMINAL_MATCH_MAX_DISTANCE_METERS: u32 = 2_000;
+const CITY_RAIL_MAX_RENDER_ANCHOR_SPREAD_METERS: u32 = 12_000;
+const CITY_RAIL_MAX_CIVIC_TO_MAP_ANCHOR_DISTANCE_METERS: u32 = 7_500;
+const CITY_RAIL_ENDPOINT_MISMATCH_AUDIT_DISTANCE_METERS: u32 = 750;
 
 struct MergedCityOutput {
     cities: Vec<aetrain_domain::City>,
@@ -1188,6 +1253,7 @@ fn export_pipeline_target(
 
     let quality_report = build_quality_report(
         &artifacts.canonical.cities,
+        &artifacts.canonical.stations,
         &artifacts.canonical.edges,
         &resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?,
         artifacts.station_mappings.as_ref(),
@@ -1323,6 +1389,10 @@ fn export_pipeline_target(
     write_json(
         &quality_dir.join("route-geometry-anomalies.json"),
         &quality_report.route_geometry_anomalies,
+    )?;
+    write_json(
+        &quality_dir.join("city-rail-endpoint-mismatches.json"),
+        &quality_report.city_rail_endpoint_mismatches,
     )?;
     write_json(
         &quality_dir.join("domestic-geometry-backlog-by-country.json"),
@@ -1532,6 +1602,11 @@ fn export_canonical_bundle(
 ) -> Result<()> {
     let edge_geometries =
         resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?;
+    let city_rail_profiles = build_city_rail_profile_artifact(
+        &artifacts.canonical.cities,
+        &artifacts.canonical.stations,
+        &edge_geometries,
+    );
     write_json(&output_dir.join("bundle.json"), &artifacts.canonical)?;
     write_json(&output_dir.join("meta.json"), &artifacts.canonical.meta)?;
     write_json(&output_dir.join("cities.json"), &artifacts.canonical.cities)?;
@@ -1541,6 +1616,10 @@ fn export_canonical_bundle(
     )?;
     write_json(&output_dir.join("edges.json"), &artifacts.canonical.edges)?;
     export_chunked_edge_geometries(output_dir, &edge_geometries)?;
+    write_json(
+        &output_dir.join("city-rail-profiles.json"),
+        &city_rail_profiles,
+    )?;
     write_json(
         &output_dir.join("aliases.json"),
         &artifacts.canonical.aliases,
@@ -1565,6 +1644,7 @@ fn export_canonical_bundle(
 
 fn build_quality_report(
     cities: &[aetrain_domain::City],
+    stations: &[aetrain_domain::Station],
     edges: &[aetrain_domain::TravelEdge],
     edge_geometries: &EdgeGeometryArtifact,
     station_mappings: Option<&StationMappingReport>,
@@ -1678,6 +1758,8 @@ fn build_quality_report(
         build_non_railway_route_geometry_records(cities, edges, edge_geometries);
     let route_geometry_anomalies =
         build_route_geometry_anomaly_records(cities, edges, edge_geometries);
+    let city_rail_endpoint_mismatches =
+        build_city_rail_endpoint_mismatch_records(cities, stations, edge_geometries);
     let domestic_geometry_backlog_by_country =
         build_domestic_geometry_backlog_by_country(&route_geometry_anomalies);
     let cross_border_geometry_backlog_by_corridor =
@@ -2159,6 +2241,7 @@ fn build_quality_report(
         route_like_residuals,
         non_railway_route_geometries,
         route_geometry_anomalies,
+        city_rail_endpoint_mismatches,
         domestic_geometry_backlog_by_country,
         cross_border_geometry_backlog_by_corridor,
         domestic_authority_onboarding_hotspots,
@@ -5354,10 +5437,17 @@ fn export_web_debug_bundle(
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
     let edge_geometries = resolved_edge_geometries(canonical, edge_geometries)?;
+    let city_rail_profiles =
+        build_city_rail_profile_artifact(&canonical.cities, &canonical.stations, &edge_geometries);
+    let web_cities = build_web_debug_city_records(&canonical.cities, &city_rail_profiles);
     write_json(&output_dir.join("meta.json"), meta)?;
-    write_json(&output_dir.join("cities.json"), &canonical.cities)?;
+    write_json(&output_dir.join("cities.json"), &web_cities)?;
     write_json(&output_dir.join("edges.json"), &canonical.edges)?;
     export_chunked_edge_geometries(output_dir, &edge_geometries)?;
+    write_json(
+        &output_dir.join("city-rail-profiles.json"),
+        &city_rail_profiles,
+    )?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
 }
@@ -5383,6 +5473,465 @@ fn export_web_runtime_bundle(
     export_chunked_web_runtime_route_geometries(output_dir, &runtime_edge_geometries)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
+}
+
+fn build_web_debug_city_records(
+    cities: &[City],
+    city_rail_profiles: &PipelineCityRailProfileArtifact,
+) -> Vec<WebDebugCityRecord> {
+    let profile_by_city_id = city_rail_profiles
+        .profiles
+        .iter()
+        .map(|profile| (profile.city_id.clone(), profile.clone()))
+        .collect::<BTreeMap<_, _>>();
+
+    cities
+        .iter()
+        .map(|city| {
+            let rail_profile = profile_by_city_id
+                .get(&city.city_id)
+                .cloned()
+                .unwrap_or_else(|| fallback_city_rail_profile(city));
+            WebDebugCityRecord {
+                city_id: city.city_id.clone(),
+                slug: city.slug.clone(),
+                display_name: city.display_name.clone(),
+                country_code: city.country_code.clone(),
+                location: city.location,
+                map_location: rail_profile.map_location,
+                wikidata_qid: city.wikidata_qid.clone(),
+                population: city.population,
+                interest_score: city.interest_score,
+                station_ids: city.station_ids.clone(),
+                aliases: city.aliases.clone(),
+            }
+        })
+        .collect()
+}
+
+fn build_city_rail_profile_artifact(
+    cities: &[City],
+    stations: &[aetrain_domain::Station],
+    edge_geometries: &EdgeGeometryArtifact,
+) -> PipelineCityRailProfileArtifact {
+    let stations_by_id = stations
+        .iter()
+        .map(|station| (station.station_id.clone(), station))
+        .collect::<BTreeMap<_, _>>();
+    let mut endpoint_records_by_city_id = BTreeMap::<aetrain_domain::CityId, Vec<GeoPoint>>::new();
+    for geometry in &edge_geometries.geometries {
+        if let Some(first) = geometry.points.first() {
+            endpoint_records_by_city_id
+                .entry(geometry.from_city_id.clone())
+                .or_default()
+                .push(polyline_point_to_geo(first));
+        }
+        if let Some(last) = geometry.points.last() {
+            endpoint_records_by_city_id
+                .entry(geometry.to_city_id.clone())
+                .or_default()
+                .push(polyline_point_to_geo(last));
+        }
+    }
+
+    PipelineCityRailProfileArtifact {
+        profiles: cities
+            .iter()
+            .map(|city| {
+                build_city_rail_profile(
+                    city,
+                    &stations_by_id,
+                    endpoint_records_by_city_id
+                        .get(&city.city_id)
+                        .map(Vec::as_slice)
+                        .unwrap_or_default(),
+                )
+            })
+            .collect(),
+    }
+}
+
+#[derive(Clone, Debug)]
+struct CityRailTerminalAccumulator {
+    station_id: Option<aetrain_domain::StationId>,
+    display_name: Option<String>,
+    station_location: Option<GeoPoint>,
+    weighted_lat_sum: f64,
+    weighted_lon_sum: f64,
+    edge_endpoint_use_count: u32,
+}
+
+fn build_city_rail_profile(
+    city: &City,
+    stations_by_id: &BTreeMap<aetrain_domain::StationId, &aetrain_domain::Station>,
+    endpoints: &[GeoPoint],
+) -> PipelineCityRailProfileRecord {
+    let city_stations = city
+        .station_ids
+        .iter()
+        .filter_map(|station_id| stations_by_id.get(station_id).copied())
+        .collect::<Vec<_>>();
+    let mut accumulators = BTreeMap::<String, CityRailTerminalAccumulator>::new();
+
+    for endpoint in endpoints {
+        let matched_station = nearest_station_for_city_rail_endpoint(*endpoint, &city_stations);
+        let key = matched_station
+            .as_ref()
+            .map(|station| station.station_id.to_string())
+            .unwrap_or_else(|| {
+                format!(
+                    "endpoint:{:.5}:{:.5}",
+                    (endpoint.lat * 100_000.0).round() / 100_000.0,
+                    (endpoint.lon * 100_000.0).round() / 100_000.0
+                )
+            });
+        let accumulator = accumulators
+            .entry(key)
+            .or_insert_with(|| CityRailTerminalAccumulator {
+                station_id: matched_station
+                    .as_ref()
+                    .map(|station| station.station_id.clone()),
+                display_name: matched_station
+                    .as_ref()
+                    .map(|station| station.display_name.clone()),
+                station_location: matched_station.as_ref().map(|station| station.location),
+                weighted_lat_sum: 0.0,
+                weighted_lon_sum: 0.0,
+                edge_endpoint_use_count: 0,
+            });
+        accumulator.weighted_lat_sum += endpoint.lat;
+        accumulator.weighted_lon_sum += endpoint.lon;
+        accumulator.edge_endpoint_use_count += 1;
+    }
+
+    if accumulators.is_empty() {
+        for station in &city_stations {
+            accumulators.insert(
+                station.station_id.to_string(),
+                CityRailTerminalAccumulator {
+                    station_id: Some(station.station_id.clone()),
+                    display_name: Some(station.display_name.clone()),
+                    station_location: Some(station.location),
+                    weighted_lat_sum: station.location.lat,
+                    weighted_lon_sum: station.location.lon,
+                    edge_endpoint_use_count: 0,
+                },
+            );
+        }
+    }
+
+    let mut terminals = accumulators
+        .into_values()
+        .map(|accumulator| {
+            let divisor = accumulator.edge_endpoint_use_count.max(1) as f64;
+            let rail_location = GeoPoint {
+                lat: accumulator.weighted_lat_sum / divisor,
+                lon: accumulator.weighted_lon_sum / divisor,
+            };
+            let station_to_rail_distance_m = accumulator.station_location.map(|station_location| {
+                geo_distance_meters(station_location, rail_location).round() as u32
+            });
+            PipelineCityRailTerminalAnchorRecord {
+                station_id: accumulator.station_id,
+                display_name: accumulator.display_name,
+                station_location: accumulator.station_location,
+                rail_location,
+                station_to_rail_distance_m,
+                edge_endpoint_use_count: accumulator.edge_endpoint_use_count,
+            }
+        })
+        .collect::<Vec<_>>();
+    terminals.sort_by(|left, right| {
+        right
+            .edge_endpoint_use_count
+            .cmp(&left.edge_endpoint_use_count)
+            .then_with(|| left.display_name.cmp(&right.display_name))
+    });
+
+    let terminal_spread_m = city_rail_terminal_spread_m(&terminals);
+    let candidate_map_location = city_rail_profile_map_location(city.location, &terminals);
+    let candidate_civic_to_map_distance_m =
+        geo_distance_meters(city.location, candidate_map_location).round() as u32;
+    let map_anchor_accepted = city_rail_profile_map_anchor_is_trusted(
+        &terminals,
+        terminal_spread_m,
+        candidate_civic_to_map_distance_m,
+    );
+    let map_location = if map_anchor_accepted {
+        candidate_map_location
+    } else {
+        city.location
+    };
+    let terminal_station_ids = terminals
+        .iter()
+        .filter_map(|terminal| terminal.station_id.clone())
+        .collect::<Vec<_>>();
+    let anchor_strategy = city_rail_anchor_strategy(
+        &terminals,
+        map_anchor_accepted,
+        terminal_spread_m,
+        candidate_civic_to_map_distance_m,
+    );
+    let confidence = city_rail_profile_confidence(&terminals, map_anchor_accepted);
+
+    PipelineCityRailProfileRecord {
+        city_id: city.city_id.clone(),
+        map_location,
+        anchor_strategy: anchor_strategy.to_string(),
+        confidence: confidence.to_string(),
+        terminal_count: terminals.len(),
+        terminal_station_ids,
+        terminal_spread_m,
+        civic_to_map_distance_m: geo_distance_meters(city.location, map_location).round() as u32,
+        terminals,
+    }
+}
+
+fn fallback_city_rail_profile(city: &City) -> PipelineCityRailProfileRecord {
+    PipelineCityRailProfileRecord {
+        city_id: city.city_id.clone(),
+        map_location: city.location,
+        anchor_strategy: "city_location".to_string(),
+        confidence: "city_location_only".to_string(),
+        terminal_count: 0,
+        terminal_station_ids: Vec::new(),
+        terminal_spread_m: 0,
+        civic_to_map_distance_m: 0,
+        terminals: Vec::new(),
+    }
+}
+
+fn nearest_station_for_city_rail_endpoint<'a>(
+    endpoint: GeoPoint,
+    stations: &'a [&aetrain_domain::Station],
+) -> Option<&'a aetrain_domain::Station> {
+    stations
+        .iter()
+        .filter_map(|station| {
+            let distance_meters = geo_distance_meters(endpoint, station.location).round() as u32;
+            (distance_meters <= CITY_RAIL_TERMINAL_MATCH_MAX_DISTANCE_METERS)
+                .then_some((*station, distance_meters))
+        })
+        .min_by_key(|(_, distance_meters)| *distance_meters)
+        .map(|(station, _)| station)
+}
+
+fn city_rail_profile_map_location(
+    fallback_location: GeoPoint,
+    terminals: &[PipelineCityRailTerminalAnchorRecord],
+) -> GeoPoint {
+    if terminals.is_empty() {
+        return fallback_location;
+    }
+    terminals
+        .iter()
+        .max_by_key(|terminal| {
+            let inverse_total_distance = terminals
+                .iter()
+                .map(|other| {
+                    geo_distance_meters(terminal.rail_location, other.rail_location).round() as u32
+                        * other.edge_endpoint_use_count.max(1)
+                })
+                .sum::<u32>();
+            (
+                terminal.edge_endpoint_use_count,
+                std::cmp::Reverse(inverse_total_distance),
+            )
+        })
+        .map(|terminal| terminal.rail_location)
+        .unwrap_or(fallback_location)
+}
+
+fn city_rail_terminal_spread_m(terminals: &[PipelineCityRailTerminalAnchorRecord]) -> u32 {
+    let mut spread = 0u32;
+    for (index, left) in terminals.iter().enumerate() {
+        for right in &terminals[index + 1..] {
+            spread = spread
+                .max(geo_distance_meters(left.rail_location, right.rail_location).round() as u32);
+        }
+    }
+    spread
+}
+
+fn city_rail_profile_map_anchor_is_trusted(
+    terminals: &[PipelineCityRailTerminalAnchorRecord],
+    terminal_spread_m: u32,
+    candidate_civic_to_map_distance_m: u32,
+) -> bool {
+    terminals.is_empty()
+        || (terminal_spread_m <= CITY_RAIL_MAX_RENDER_ANCHOR_SPREAD_METERS
+            && candidate_civic_to_map_distance_m
+                <= CITY_RAIL_MAX_CIVIC_TO_MAP_ANCHOR_DISTANCE_METERS)
+}
+
+fn city_rail_anchor_strategy(
+    terminals: &[PipelineCityRailTerminalAnchorRecord],
+    map_anchor_accepted: bool,
+    terminal_spread_m: u32,
+    candidate_civic_to_map_distance_m: u32,
+) -> &'static str {
+    if !map_anchor_accepted {
+        if terminal_spread_m > CITY_RAIL_MAX_RENDER_ANCHOR_SPREAD_METERS {
+            return "city_location_suspicious_terminal_spread";
+        }
+        if candidate_civic_to_map_distance_m > CITY_RAIL_MAX_CIVIC_TO_MAP_ANCHOR_DISTANCE_METERS {
+            return "city_location_suspicious_anchor_distance";
+        }
+        return "city_location_suspicious_rail_profile";
+    }
+
+    match terminals.len() {
+        0 => "city_location",
+        1 => {
+            if terminals[0].edge_endpoint_use_count == 0 {
+                "station_only"
+            } else {
+                "single_terminal"
+            }
+        }
+        _ => "multi_terminal_weighted_medoid",
+    }
+}
+
+fn city_rail_profile_confidence(
+    terminals: &[PipelineCityRailTerminalAnchorRecord],
+    map_anchor_accepted: bool,
+) -> &'static str {
+    if terminals.is_empty() {
+        return "city_location_only";
+    }
+    if !map_anchor_accepted {
+        return "rail_endpoint_suspicious";
+    }
+    if terminals
+        .iter()
+        .any(|terminal| terminal.edge_endpoint_use_count > 0)
+    {
+        if terminals
+            .iter()
+            .all(|terminal| terminal.station_id.is_some())
+        {
+            "rail_endpoint_matched_station"
+        } else {
+            "rail_endpoint_unmatched_station"
+        }
+    } else {
+        "station_only"
+    }
+}
+
+fn build_city_rail_endpoint_mismatch_records(
+    cities: &[City],
+    stations: &[aetrain_domain::Station],
+    edge_geometries: &EdgeGeometryArtifact,
+) -> Vec<PipelineCityRailEndpointMismatchRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let profiles = build_city_rail_profile_artifact(cities, stations, edge_geometries);
+    let profiles_by_city_id = profiles
+        .profiles
+        .iter()
+        .map(|profile| (profile.city_id.clone(), profile))
+        .collect::<BTreeMap<_, _>>();
+
+    let mut records = Vec::new();
+    for geometry in &edge_geometries.geometries {
+        if geometry.source == EdgeGeometrySource::StraightLineFallback {
+            continue;
+        }
+        if let Some(first) = geometry.points.first() {
+            if let Some(record) = city_rail_endpoint_mismatch_record(
+                &geometry.from_city_id,
+                "from",
+                &geometry.to_city_id,
+                polyline_point_to_geo(first),
+                &geometry.source,
+                &cities_by_id,
+                &profiles_by_city_id,
+            ) {
+                records.push(record);
+            }
+        }
+        if let Some(last) = geometry.points.last() {
+            if let Some(record) = city_rail_endpoint_mismatch_record(
+                &geometry.to_city_id,
+                "to",
+                &geometry.from_city_id,
+                polyline_point_to_geo(last),
+                &geometry.source,
+                &cities_by_id,
+                &profiles_by_city_id,
+            ) {
+                records.push(record);
+            }
+        }
+    }
+    records.sort_by(|left, right| {
+        right
+            .map_endpoint_distance_m
+            .cmp(&left.map_endpoint_distance_m)
+            .then_with(|| left.city_id.cmp(&right.city_id))
+            .then_with(|| left.other_city_id.cmp(&right.other_city_id))
+            .then_with(|| left.endpoint_role.cmp(&right.endpoint_role))
+    });
+    records
+}
+
+fn city_rail_endpoint_mismatch_record(
+    city_id: &aetrain_domain::CityId,
+    endpoint_role: &str,
+    other_city_id: &aetrain_domain::CityId,
+    endpoint: GeoPoint,
+    geometry_source: &EdgeGeometrySource,
+    cities_by_id: &BTreeMap<aetrain_domain::CityId, &City>,
+    profiles_by_city_id: &BTreeMap<aetrain_domain::CityId, &PipelineCityRailProfileRecord>,
+) -> Option<PipelineCityRailEndpointMismatchRecord> {
+    let city = cities_by_id.get(city_id)?;
+    let other_city = cities_by_id.get(other_city_id)?;
+    let profile = profiles_by_city_id.get(city_id);
+    let map_location = profile
+        .map(|profile| profile.map_location)
+        .unwrap_or(city.location);
+    let civic_endpoint_distance_m = geo_distance_meters(city.location, endpoint).round() as u32;
+    let map_endpoint_distance_m = geo_distance_meters(map_location, endpoint).round() as u32;
+    if map_endpoint_distance_m <= CITY_RAIL_ENDPOINT_MISMATCH_AUDIT_DISTANCE_METERS {
+        return None;
+    }
+
+    Some(PipelineCityRailEndpointMismatchRecord {
+        city_id: city.city_id.clone(),
+        display_name: city.display_name.clone(),
+        endpoint_role: endpoint_role.to_string(),
+        other_city_id: other_city.city_id.clone(),
+        other_display_name: other_city.display_name.clone(),
+        civic_endpoint_distance_m,
+        map_endpoint_distance_m,
+        classification: classify_city_rail_endpoint_mismatch(
+            profile.copied(),
+            civic_endpoint_distance_m,
+            map_endpoint_distance_m,
+        )
+        .to_string(),
+        geometry_source: geometry_source.clone(),
+    })
+}
+
+fn classify_city_rail_endpoint_mismatch(
+    profile: Option<&PipelineCityRailProfileRecord>,
+    civic_endpoint_distance_m: u32,
+    map_endpoint_distance_m: u32,
+) -> &'static str {
+    if profile.is_some_and(|profile| profile.terminal_count > 1) {
+        return "multi_terminal_city_requires_terminal_level_rendering";
+    }
+    if civic_endpoint_distance_m <= CITY_RAIL_ENDPOINT_MISMATCH_AUDIT_DISTANCE_METERS
+        && map_endpoint_distance_m > CITY_RAIL_ENDPOINT_MISMATCH_AUDIT_DISTANCE_METERS
+    {
+        return "map_anchor_away_from_civic_endpoint";
+    }
+    "rail_endpoint_not_attached_to_map_anchor"
 }
 
 fn build_web_runtime_bundle(
@@ -7764,6 +8313,7 @@ fn cleanup_station_like_and_zz_residual_cities(
         .iter()
         .map(|city| (city.city_id.clone(), parent_city_match_keys(city)))
         .collect::<BTreeMap<_, _>>();
+    let authoritative_parent_prefix_index = build_authoritative_parent_prefix_index(&snapshot);
     let mut remap = BTreeMap::<aetrain_domain::CityId, aetrain_domain::CityId>::new();
 
     for city in cities.iter_mut() {
@@ -7823,14 +8373,17 @@ fn cleanup_station_like_and_zz_residual_cities(
         if let Some(expanded_display_name) = explicit_abbreviation_expansion(city) {
             let original_display_name = city.display_name.clone();
             let expanded_key = comparable_place_key(&expanded_display_name);
-            let effective_country =
-                infer_country_code_from_station_mappings(city, station_mappings)
-                    .unwrap_or_else(|| city.country_code.clone());
+            let effective_country = effective_country_by_city
+                .get(&city.city_id)
+                .cloned()
+                .unwrap_or_else(|| city.country_code.clone());
             let mut candidates = snapshot
                 .iter()
                 .filter(|parent| parent.city_id != city.city_id)
                 .filter(|parent| {
-                    effective_country == effective_city_country_code(parent, station_mappings)
+                    effective_country_by_city
+                        .get(&parent.city_id)
+                        .is_some_and(|country| *country == effective_country)
                 })
                 .filter(|parent| {
                     comparable_place_key(&city_identity_key(&parent.display_name)) == expanded_key
@@ -7879,7 +8432,9 @@ fn cleanup_station_like_and_zz_residual_cities(
                 if city.display_name == "Berlin" {
                     if let Some(parent) = snapshot.iter().find(|parent| {
                         parent.city_id != city.city_id
-                            && effective_city_country_code(parent, station_mappings) == "DE"
+                            && effective_country_by_city
+                                .get(&parent.city_id)
+                                .is_some_and(|country| country == "DE")
                             && comparable_place_key(&city_identity_key(&parent.display_name))
                                 == "berlin"
                     }) {
@@ -7892,7 +8447,7 @@ fn cleanup_station_like_and_zz_residual_cities(
         if normalize_name(&city.display_name) == "s"
             && city.wikidata_qid.is_none()
             && let Some(parent) =
-                best_major_parent_for_generic_s_cluster(city, &snapshot, station_mappings)
+                best_major_parent_for_generic_s_cluster(city, &snapshot, &effective_country_by_city)
         {
             remap.insert(city.city_id.clone(), parent.city_id.clone());
             issues.push(NormalizationIssue {
@@ -7958,12 +8513,21 @@ fn cleanup_station_like_and_zz_residual_cities(
             continue;
         }
 
-        if !is_station_qualified_city_name(&city.display_name) || city.station_ids.len() != 1 {
+        let effective_country = effective_country_by_city
+            .get(&city.city_id)
+            .cloned()
+            .unwrap_or_else(|| city.country_code.clone());
+        let allow_prefixed_parent = is_weak_singleton_city(city)
+            && has_authoritative_prefixed_parent_candidate(
+                city,
+                &authoritative_parent_prefix_index,
+            );
+        if city.station_ids.len() != 1
+            || (!is_station_qualified_city_name(&city.display_name) && !allow_prefixed_parent)
+        {
             continue;
         }
 
-        let effective_country = infer_country_code_from_station_mappings(city, station_mappings)
-            .unwrap_or_else(|| city.country_code.clone());
         let child_keys = station_like_parent_keys(
             city,
             mapping_by_city
@@ -7981,6 +8545,7 @@ fn cleanup_station_like_and_zz_residual_cities(
                     &effective_country,
                     &child_keys,
                     allow_nearby_fallback,
+                    allow_prefixed_parent,
                 )
                 .map(|score| (parent, score))
             })
@@ -8044,6 +8609,44 @@ fn is_weak_singleton_city(city: &aetrain_domain::City) -> bool {
 
 fn is_authoritative_city(city: &aetrain_domain::City) -> bool {
     city.wikidata_qid.is_some() || city.population.is_some() || city_id_has_registry_qid(city)
+}
+
+fn build_authoritative_parent_prefix_index(
+    cities: &[aetrain_domain::City],
+) -> BTreeMap<String, Vec<String>> {
+    let mut index = BTreeMap::<String, Vec<String>>::new();
+    for city in cities {
+        if !is_authoritative_city(city) || city.station_ids.len() <= 1 {
+            continue;
+        }
+        let key = normalize_name(&city.display_name);
+        let Some(first_token) = key.split_whitespace().next() else {
+            continue;
+        };
+        index.entry(first_token.to_string()).or_default().push(key);
+    }
+    index
+}
+
+fn has_authoritative_prefixed_parent_candidate(
+    city: &aetrain_domain::City,
+    authoritative_parent_prefix_index: &BTreeMap<String, Vec<String>>,
+) -> bool {
+    let child_key = normalize_name(&city.display_name);
+    let Some(first_token) = child_key.split_whitespace().next() else {
+        return false;
+    };
+    authoritative_parent_prefix_index
+        .get(first_token)
+        .is_some_and(|parent_keys| {
+            parent_keys.iter().any(|parent_key| {
+                !parent_key.is_empty()
+                    && child_key != *parent_key
+                    && child_key
+                        .strip_prefix(parent_key)
+                        .is_some_and(|suffix| suffix.starts_with(' '))
+            })
+        })
 }
 
 fn best_authoritative_parent_for_alias_singleton<'a>(
@@ -8845,16 +9448,23 @@ fn explicit_abbreviation_expansion(city: &aetrain_domain::City) -> Option<String
 fn best_major_parent_for_generic_s_cluster<'a>(
     city: &aetrain_domain::City,
     snapshot: &'a [aetrain_domain::City],
-    station_mappings: &StationMappingReport,
+    effective_country_by_city: &BTreeMap<aetrain_domain::CityId, String>,
 ) -> Option<&'a aetrain_domain::City> {
     if normalize_name(&city.display_name) != "s" {
         return None;
     }
-    let effective_country = effective_city_country_code(city, station_mappings);
+    let effective_country = effective_country_by_city
+        .get(&city.city_id)
+        .cloned()
+        .unwrap_or_else(|| city.country_code.clone());
     snapshot
         .iter()
         .filter(|parent| parent.city_id != city.city_id)
-        .filter(|parent| effective_city_country_code(parent, station_mappings) == effective_country)
+        .filter(|parent| {
+            effective_country_by_city
+                .get(&parent.city_id)
+                .is_some_and(|country| *country == effective_country)
+        })
         .filter(|parent| normalize_name(&parent.display_name) != "s")
         .filter_map(|parent| {
             let distance_meters = geo_distance_meters(city.location, parent.location);
@@ -9280,8 +9890,14 @@ fn station_like_parent_match_score(
     effective_country: &str,
     child_keys: &BTreeSet<String>,
     allow_nearby_fallback: bool,
-) -> Option<(u8, u8, std::cmp::Reverse<u32>, usize)> {
-    if parent_city.country_code != effective_country
+    allow_prefixed_parent: bool,
+) -> Option<(u8, u8, u8, std::cmp::Reverse<u32>, usize)> {
+    let prefix_match = station_like_prefixed_parent_match(child_city, parent_city);
+    let country_match = parent_city.country_code == effective_country
+        || (prefix_match
+            && is_weak_singleton_city(child_city)
+            && is_authoritative_city(parent_city));
+    if !country_match
         || is_station_qualified_city_name(&parent_city.display_name)
         || route_like_candidate_record(parent_city).is_some()
     {
@@ -9298,9 +9914,16 @@ fn station_like_parent_match_score(
     let key_match =
         !child_keys.is_empty() && child_keys.iter().any(|key| parent_keys.contains(key));
     let fallback_match = allow_nearby_fallback && distance_meters <= 7_500;
-    if !key_match && !fallback_match {
+    if !key_match && !fallback_match && !(allow_prefixed_parent && prefix_match) {
         return None;
     }
+    let match_rank = if key_match {
+        3
+    } else if prefix_match {
+        2
+    } else {
+        1
+    };
 
     let authority_rank = if city_id_has_registry_qid(parent_city) {
         4
@@ -9310,11 +9933,32 @@ fn station_like_parent_match_score(
         city_identity_quality(parent_city)
     };
     Some((
+        match_rank,
         authority_rank,
         parent_city.station_ids.len() as u8,
         std::cmp::Reverse(distance_meters),
         parent_city.aliases.len(),
     ))
+}
+
+fn station_like_prefixed_parent_match(
+    child_city: &aetrain_domain::City,
+    parent_city: &aetrain_domain::City,
+) -> bool {
+    if !is_weak_singleton_city(child_city)
+        || !is_authoritative_city(parent_city)
+        || parent_city.station_ids.len() <= child_city.station_ids.len()
+    {
+        return false;
+    }
+
+    let child_key = normalize_name(&child_city.display_name);
+    let parent_key = normalize_name(&parent_city.display_name);
+    !parent_key.is_empty()
+        && child_key != parent_key
+        && child_key
+            .strip_prefix(&parent_key)
+            .is_some_and(|suffix| suffix.starts_with(' '))
 }
 
 fn route_like_parent_keys(display_name: &str) -> BTreeSet<String> {
@@ -11542,6 +12186,385 @@ mod tests {
     }
 
     #[test]
+    fn cleanup_station_like_and_zz_residual_cities_demotes_prefixed_terminal_singleton() {
+        let paris_id = CityId::new("paris-fr-q90").expect("valid city id");
+        let residual_id = CityId::new("paris-montparnasse-nl-a1c4abc9").expect("valid city id");
+        let residual_station_id =
+            StationId::new("station-nl-paris-montparnasse").expect("valid station id");
+        let mut cities = vec![
+            City {
+                city_id: paris_id.clone(),
+                slug: "paris".to_string(),
+                display_name: "Paris".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 48.8566,
+                    lon: 2.3522,
+                },
+                wikidata_qid: Some("Q90".to_string()),
+                population: Some(2_102_650),
+                interest_score: Some(10),
+                station_ids: vec![
+                    StationId::new("station-fr-paris-nord").expect("valid station id"),
+                    StationId::new("station-fr-paris-lyon").expect("valid station id"),
+                ],
+                aliases: Vec::new(),
+            },
+            City {
+                city_id: residual_id.clone(),
+                slug: "paris-montparnasse".to_string(),
+                display_name: "Paris Montparnasse Point Rencontre Groupes".to_string(),
+                country_code: "NL".to_string(),
+                location: GeoPoint {
+                    lat: 48.841158,
+                    lon: 2.318045,
+                },
+                wikidata_qid: None,
+                population: None,
+                interest_score: None,
+                station_ids: vec![residual_station_id.clone()],
+                aliases: Vec::new(),
+            },
+        ];
+        let station_mappings = StationMappingReport {
+            records: Vec::new(),
+        };
+        let mut remap = BTreeMap::new();
+        let mut issues = Vec::new();
+
+        cleanup_station_like_and_zz_residual_cities(
+            &mut cities,
+            &mut remap,
+            &station_mappings,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert!(!cities.iter().any(|city| city.city_id == residual_id));
+        assert_eq!(remap.get(&residual_id).cloned(), Some(paris_id.clone()));
+        let paris = cities
+            .iter()
+            .find(|city| city.city_id == paris_id)
+            .expect("Paris should remain");
+        assert!(paris.station_ids.contains(&residual_station_id));
+    }
+
+    #[test]
+    fn city_rail_profiles_expose_multi_terminal_city_anchors() {
+        let paris_id = CityId::new("paris-fr-q90").expect("valid city id");
+        let north_id = StationId::new("station-fr-paris-nord").expect("valid station id");
+        let montparnasse_id =
+            StationId::new("station-fr-paris-montparnasse").expect("valid station id");
+        let paris = City {
+            city_id: paris_id.clone(),
+            slug: "paris".to_string(),
+            display_name: "Paris".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.8566,
+                lon: 2.3522,
+            },
+            wikidata_qid: Some("Q90".to_string()),
+            population: Some(2_102_650),
+            interest_score: Some(10),
+            station_ids: vec![north_id.clone(), montparnasse_id.clone()],
+            aliases: Vec::new(),
+        };
+        let stations = vec![
+            Station {
+                station_id: north_id.clone(),
+                city_id: paris_id.clone(),
+                display_name: "Paris Nord".to_string(),
+                location: GeoPoint {
+                    lat: 48.8801,
+                    lon: 2.3546,
+                },
+                uic_code: None,
+                source_refs: Vec::new(),
+            },
+            Station {
+                station_id: montparnasse_id.clone(),
+                city_id: paris_id.clone(),
+                display_name: "Paris Montparnasse".to_string(),
+                location: GeoPoint {
+                    lat: 48.8412,
+                    lon: 2.3205,
+                },
+                uic_code: None,
+                source_refs: Vec::new(),
+            },
+        ];
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![
+                EdgeGeometryRecord {
+                    from_city_id: paris_id.clone(),
+                    to_city_id: CityId::new("lille-fr-q648").expect("valid city id"),
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_888_010,
+                            lon_e5: 235_460,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 5_063_000,
+                            lon_e5: 306_000,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: Vec::new(),
+                },
+                EdgeGeometryRecord {
+                    from_city_id: paris_id.clone(),
+                    to_city_id: CityId::new("rennes-fr-q647").expect("valid city id"),
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_884_120,
+                            lon_e5: 232_050,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_811_400,
+                            lon_e5: -167_900,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: Vec::new(),
+                },
+            ],
+        };
+
+        let artifact = build_city_rail_profile_artifact(&[paris], &stations, &edge_geometries);
+        let profile = artifact
+            .profiles
+            .iter()
+            .find(|profile| profile.city_id == paris_id)
+            .expect("Paris rail profile should exist");
+
+        assert_eq!(profile.terminal_count, 2);
+        assert_eq!(profile.anchor_strategy, "multi_terminal_weighted_medoid");
+        assert!(profile.terminal_station_ids.contains(&north_id));
+        assert!(profile.terminal_station_ids.contains(&montparnasse_id));
+        assert!(profile.civic_to_map_distance_m > 0);
+    }
+
+    #[test]
+    fn city_rail_profiles_keep_civic_anchor_for_suspicious_terminal_spread() {
+        let city_id = CityId::new("hasle-ch-f3a219c4").expect("valid city id");
+        let near_station_id = StationId::new("station-ch-hasle-a").expect("valid station id");
+        let far_station_id = StationId::new("station-ch-hasle-b").expect("valid station id");
+        let city = City {
+            city_id: city_id.clone(),
+            slug: "hasle".to_string(),
+            display_name: "Hasle".to_string(),
+            country_code: "CH".to_string(),
+            location: GeoPoint {
+                lat: 47.016,
+                lon: 8.050,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: vec![near_station_id.clone(), far_station_id.clone()],
+            aliases: Vec::new(),
+        };
+        let stations = vec![
+            Station {
+                station_id: near_station_id,
+                city_id: city_id.clone(),
+                display_name: "Hasle".to_string(),
+                location: GeoPoint {
+                    lat: 47.016,
+                    lon: 8.050,
+                },
+                uic_code: None,
+                source_refs: Vec::new(),
+            },
+            Station {
+                station_id: far_station_id,
+                city_id: city_id.clone(),
+                display_name: "Hasle Far".to_string(),
+                location: GeoPoint {
+                    lat: 47.286,
+                    lon: 8.050,
+                },
+                uic_code: None,
+                source_refs: Vec::new(),
+            },
+        ];
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![
+                EdgeGeometryRecord {
+                    from_city_id: city_id.clone(),
+                    to_city_id: CityId::new("other-ch-a").expect("valid city id"),
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_701_600,
+                            lon_e5: 805_000,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_702_000,
+                            lon_e5: 805_000,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: Vec::new(),
+                },
+                EdgeGeometryRecord {
+                    from_city_id: city_id.clone(),
+                    to_city_id: CityId::new("other-ch-b").expect("valid city id"),
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_728_600,
+                            lon_e5: 805_000,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_729_000,
+                            lon_e5: 805_000,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: Vec::new(),
+                },
+            ],
+        };
+
+        let artifact =
+            build_city_rail_profile_artifact(&[city.clone()], &stations, &edge_geometries);
+        let profile = &artifact.profiles[0];
+
+        assert_eq!(profile.map_location, city.location);
+        assert_eq!(
+            profile.anchor_strategy,
+            "city_location_suspicious_terminal_spread"
+        );
+        assert_eq!(profile.confidence, "rail_endpoint_suspicious");
+    }
+
+    #[test]
+    fn city_rail_endpoint_mismatch_audit_flags_multi_terminal_endpoint_gap() {
+        let paris_id = CityId::new("paris-fr-q90").expect("valid city id");
+        let lille_id = CityId::new("lille-fr-q648").expect("valid city id");
+        let rennes_id = CityId::new("rennes-fr-q647").expect("valid city id");
+        let north_id = StationId::new("station-fr-paris-nord").expect("valid station id");
+        let montparnasse_id =
+            StationId::new("station-fr-paris-montparnasse").expect("valid station id");
+        let paris = City {
+            city_id: paris_id.clone(),
+            slug: "paris".to_string(),
+            display_name: "Paris".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.8566,
+                lon: 2.3522,
+            },
+            wikidata_qid: Some("Q90".to_string()),
+            population: Some(2_102_650),
+            interest_score: Some(10),
+            station_ids: vec![north_id.clone(), montparnasse_id.clone()],
+            aliases: Vec::new(),
+        };
+        let lille = City {
+            city_id: lille_id.clone(),
+            slug: "lille".to_string(),
+            display_name: "Lille".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 50.63,
+                lon: 3.06,
+            },
+            wikidata_qid: Some("Q648".to_string()),
+            population: Some(236_000),
+            interest_score: Some(8),
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let rennes = City {
+            city_id: rennes_id.clone(),
+            slug: "rennes".to_string(),
+            display_name: "Rennes".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.114,
+                lon: -1.679,
+            },
+            wikidata_qid: Some("Q647".to_string()),
+            population: Some(225_000),
+            interest_score: Some(8),
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let stations = vec![
+            Station {
+                station_id: north_id,
+                city_id: paris_id.clone(),
+                display_name: "Paris Nord".to_string(),
+                location: GeoPoint {
+                    lat: 48.8801,
+                    lon: 2.3546,
+                },
+                uic_code: None,
+                source_refs: Vec::new(),
+            },
+            Station {
+                station_id: montparnasse_id,
+                city_id: paris_id.clone(),
+                display_name: "Paris Montparnasse".to_string(),
+                location: GeoPoint {
+                    lat: 48.8412,
+                    lon: 2.3205,
+                },
+                uic_code: None,
+                source_refs: Vec::new(),
+            },
+        ];
+        let edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![
+                EdgeGeometryRecord {
+                    from_city_id: paris_id.clone(),
+                    to_city_id: lille_id,
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_888_010,
+                            lon_e5: 235_460,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 5_063_000,
+                            lon_e5: 306_000,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: Vec::new(),
+                },
+                EdgeGeometryRecord {
+                    from_city_id: paris_id.clone(),
+                    to_city_id: rennes_id,
+                    points: vec![
+                        PolylinePointE5 {
+                            lat_e5: 4_884_120,
+                            lon_e5: 232_050,
+                        },
+                        PolylinePointE5 {
+                            lat_e5: 4_811_400,
+                            lon_e5: -167_900,
+                        },
+                    ],
+                    source: EdgeGeometrySource::InfrastructureGraphFallback,
+                    provenance: Vec::new(),
+                },
+            ],
+        };
+
+        let records = build_city_rail_endpoint_mismatch_records(
+            &[paris, lille, rennes],
+            &stations,
+            &edge_geometries,
+        );
+
+        assert!(records.iter().any(|record| {
+            record.city_id == paris_id
+                && record.classification == "multi_terminal_city_requires_terminal_level_rendering"
+        }));
+    }
+
+    #[test]
     fn cleaned_residual_city_display_name_strips_route_like_noise() {
         let city = City {
             city_id: CityId::new("wimmenau-d-919-rue-de-la-zz-af0f2d0d").expect("valid city id"),
@@ -12861,6 +13884,7 @@ mod tests {
         let report = build_quality_report(
             &cities,
             &[],
+            &[],
             &EdgeGeometryArtifact { geometries: vec![] },
             None,
             &[],
@@ -13060,6 +14084,7 @@ mod tests {
 
         let report = build_quality_report(
             &[paris, lyon],
+            &[],
             &edges,
             &edge_geometries,
             None,
@@ -13183,6 +14208,7 @@ mod tests {
 
         let report = build_quality_report(
             &[paris, lyon],
+            &[],
             &edges,
             &edge_geometries,
             None,
@@ -13317,6 +14343,7 @@ mod tests {
 
         let report = build_quality_report(
             &[orleans, saint_cyr],
+            &[],
             &edges,
             &edge_geometries,
             None,
@@ -13777,6 +14804,7 @@ mod tests {
 
         let report = build_quality_report(
             &[route_like, abbrev],
+            &[],
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
             None,
