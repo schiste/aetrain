@@ -28,8 +28,10 @@ import type { PlannerDataset } from "../../types/planner-dataset.ts";
 
 import "../components/ae-sidebar.ts";
 import "../components/ae-debug-toggles.ts";
+import "../components/ae-map-loader.ts";
 import "../components/ae-undo-toast.ts";
 import { setAppContext, type AppContext } from "../runtime/context.ts";
+import { beginMapLoading } from "./map-loading.ts";
 import { signal } from "../runtime/signal.ts";
 import {
   escapeHtml,
@@ -100,6 +102,7 @@ function ensureShellMarkup(host: HTMLElement): void {
         aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Plus Minus Enter Slash Escape"
         tabindex="0"
       ></div>
+      <ae-map-loader></ae-map-loader>
       <ae-debug-toggles></ae-debug-toggles>
       <div id="citycount" role="status" aria-live="polite">
         Showing <b id="cc-n">0</b> / <b id="cc-t">0</b> cities
@@ -119,6 +122,10 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
 
   bootInFlight = (async () => {
     diagnostics.info("booting ae-app shell");
+    // Surface the map loader from the first frame: this begins before the
+    // dataset fetch and ends once the surface has rendered (below). The
+    // <ae-map-loader> overlay reads this via the shared mapLoadingState.
+    const endBootLoading = beginMapLoading("Loading map…");
     const statusText = signal("Loading dataset…");
     const visibility = signal({ shown: 0, total: 0, reachable: 0 });
     const stateSignal = signal<PlannerState>(createSeedState());
@@ -144,6 +151,9 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       diagnostics.error("failed to load planner dataset", {
         error: summarizeError(error)
       });
+      // renderLoadError wipes the shell (and the loader element with it),
+      // but drain the ref-count anyway so the signal stays truthful.
+      endBootLoading();
       renderLoadError(host, error);
       return null;
     }
@@ -354,6 +364,10 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     stateSignal.set({ ...plannerStore.getState() });
     mapSurface.render(plannerStore.getState());
     diagnostics.info("ae-app shell mounted");
+    // The map is now interactive. End the boot-loading episode; if the
+    // deferred geometry upgrade below is still in flight it keeps its own
+    // ref-count, so the overlay stays up seamlessly until that finishes too.
+    endBootLoading();
 
     // Hot upgrade: kick off the deferred edge-geometry load *after* the
     // shell is interactive. Cold path remains under the small-payload
@@ -465,6 +479,12 @@ async function scheduleEdgeGeometryUpgrade({
     typeof performance !== "undefined" && typeof performance.now === "function"
       ? performance.now()
       : Date.now();
+  // Only surface the loader for the initial deferred load. View-change
+  // refetches are mostly no-op cache hits (the manifest has no per-chunk
+  // bboxes yet) and would flash the overlay on every pan; skip them until
+  // real viewport streaming makes each refetch meaningful.
+  const endLoading =
+    triggeredBy === "initial" ? beginMapLoading("Loading rail geometry…") : null;
   try {
     const result = await loadEdgeGeometries({
       viewport: mapSurface.getViewportBounds(),
@@ -501,6 +521,8 @@ async function scheduleEdgeGeometryUpgrade({
       triggered_by: triggeredBy,
       error: summarizeError(error)
     });
+  } finally {
+    endLoading?.();
   }
 }
 
