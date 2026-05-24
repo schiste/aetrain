@@ -440,6 +440,66 @@ ae-undo-toast .dismiss-btn:focus-visible { outline: 2px solid var(--ae-fg-muted)
   ae-undo-toast .undo-toast { animation: none; }
 }
 
+/* "Map is loading" badge, pinned to the top of the map column. The host
+   spans the map column (left offset tracks the sidebar width per breakpoint)
+   and flex-centers the pill, so it stays centered over the map at every
+   layout. pointer-events: none so it never intercepts map gestures; the
+   <ae-map-loader> render toggles [data-visible] off to hide it entirely. */
+ae-map-loader {
+  position: fixed;
+  top: calc(.75rem + env(safe-area-inset-top, 0px));
+  left: clamp(18rem, 28vw, 24rem);
+  right: 0;
+  z-index: 80;
+  display: none;
+  justify-content: center;
+  pointer-events: none;
+}
+ae-map-loader[data-visible="true"] { display: flex; }
+ae-map-loader .map-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .4rem .8rem .4rem .7rem;
+  background: rgba(15, 23, 41, .95);
+  border: 1px solid var(--ae-border);
+  border-radius: var(--ae-radius-md);
+  color: var(--ae-fg-dim);
+  font-family: var(--ae-font-display);
+  font-size: 12px;
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, .55), 0 0 0 1px rgba(129, 140, 248, .12);
+  animation: ae-map-loader-in 180ms ease-out;
+}
+ae-map-loader .map-loader-spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid rgba(129, 140, 248, .25);
+  border-top-color: var(--ae-suggest);
+  animation: ae-map-loader-spin 700ms linear infinite;
+}
+@keyframes ae-map-loader-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ae-map-loader-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Narrower sidebar column at this breakpoint — match its width so the
+   badge stays centered over the map. */
+@media (max-width: 1100px) {
+  ae-map-loader { left: clamp(17rem, 32vw, 22rem); }
+}
+/* Sidebar collapses to a bottom sheet and the map goes full-width, so the
+   loader spans the whole viewport. */
+@media (max-width: 800px) {
+  ae-map-loader { left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ae-map-loader .map-loader { animation: none; }
+  ae-map-loader .map-loader-spinner { animation-duration: 1400ms; }
+}
+
 /* Top-right map debug controls. Sits inside the right grid column via
    absolute positioning relative to the #app grid. The perf HUD docks
    below it (see perf-hud.ts top offset). */
