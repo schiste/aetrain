@@ -587,6 +587,14 @@ export function createLeafletMapSurface({
   let currentSignature = summarizePlannerRenderState(currentState);
   let currentFrame: MapFrame | null = null;
   let renderPlanCache: RenderPlanCache | null = null;
+  // Memo for the on-network station set. It depends only on edgeRefs (static
+  // after prep, save in-place bbox upgrades by refreshGeometry) and the
+  // viewport bbox, which frame.key fully determines. Keying on frame.key lets
+  // planner-state-only re-renders (slider/trip drags at a fixed camera) reuse
+  // the set instead of rebuilding ~25k bbox tests + a fresh Set every tick.
+  // Invalidated in refreshGeometry, the one path that mutates bboxes without
+  // moving the camera (so frame.key would otherwise stay stale).
+  let visibleStationsCache: { frameKey: string; stations: Set<string> } | null = null;
   let lastRenderStats: RenderStats = {
     citiesFading: 0,
     culledByFade: 0,
@@ -825,6 +833,9 @@ export function createLeafletMapSurface({
       // camera/state signature is preserved so the cache miss is the only
       // observable effect.
       renderPlanCache = null;
+      // The in-place bbox upgrades above can change which edges intersect the
+      // viewport while frame.key is unchanged, so the station memo must drop too.
+      visibleStationsCache = null;
       scheduleRender("refresh-geometry", createDirtyFlags({
         cities: false,
         frame: false,
@@ -2112,15 +2123,23 @@ export function createLeafletMapSurface({
     // network, so a set built during the draw would go stale and the dots
     // would disagree with the railways they're meant to sit on. Reusing
     // worldBboxIntersectsViewport (the predicate the draw uses at the network
-    // loop) keeps "in view" identical for both. Cost is one bbox test per
-    // edge; buildRenderPlan is already cached by the render-state summary, so
-    // this only recomputes when the viewport or state actually changes.
-    const visibleStations = new Set<string>();
-    for (const edge of edgeRefs) {
-      if (worldBboxIntersectsViewport(edge.worldBbox, frame.viewportWorldBbox)) {
-        visibleStations.add(edge.from);
-        visibleStations.add(edge.to);
+    // loop) keeps "in view" identical for both. The set is viewport-only, so
+    // we memo it on frame.key: getRenderPlan also rebuilds the plan on any
+    // planner-state change (slider/trip drag), but those leave the camera —
+    // and thus the visible network — untouched, so we reuse the set instead of
+    // re-running ~25k bbox tests + reallocating the Set on every such tick.
+    let visibleStations: Set<string>;
+    if (visibleStationsCache && visibleStationsCache.frameKey === frame.key) {
+      visibleStations = visibleStationsCache.stations;
+    } else {
+      visibleStations = new Set<string>();
+      for (const edge of edgeRefs) {
+        if (worldBboxIntersectsViewport(edge.worldBbox, frame.viewportWorldBbox)) {
+          visibleStations.add(edge.from);
+          visibleStations.add(edge.to);
+        }
       }
+      visibleStationsCache = { frameKey: frame.key, stations: visibleStations };
     }
 
     for (const entry of preparedCities) {
