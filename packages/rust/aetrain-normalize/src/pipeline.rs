@@ -3134,6 +3134,7 @@ fn build_promoted_domestic_authority_gap_details(
             let duration_min = edge_by_id
                 .get(&(record.from_city_id.clone(), record.to_city_id.clone()))
                 .map(|edge| edge.duration_min);
+            let direct_meters = geo_distance_meters(from_city.location, to_city.location);
             let (
                 start_snap_distance_m,
                 end_snap_distance_m,
@@ -3143,38 +3144,34 @@ fn build_promoted_domestic_authority_gap_details(
                 routed_authority_detour_ratio_x100,
                 routed_authority_implied_speed_kmh,
             ) = if let Some(network) = network {
-                let start_candidates = network.route_snap_candidates(from_city.location);
-                let end_candidates = network.route_snap_candidates(to_city.location);
-                let points = network.route_polyline_for_snap_candidates(
+                let max_geometry_distance_meters =
+                    max_plausible_route_geometry_meters(direct_meters)
+                        .ceil()
+                        .clamp(0.0, u32::MAX as f64) as u32;
+                let diagnostics = network.route_topology_diagnostics(
                     from_city.location,
                     to_city.location,
-                    &start_candidates,
-                    &end_candidates,
+                    max_geometry_distance_meters,
                 );
-                if let Some(points) = points {
-                    let points_e5 = points
-                        .into_iter()
-                        .map(scale_geo_point_e5_for_pipeline)
-                        .collect::<Vec<_>>();
-                    let metrics = route_geometry_metrics(
-                        &points_e5,
-                        from_city.location,
-                        to_city.location,
+                if let Some(distance_meters) = diagnostics.bounded_route_distance_m {
+                    let metrics = route_geometry_metrics_from_distances(
+                        distance_meters as f64,
+                        direct_meters,
                         duration_min,
                     );
                     (
-                        start_candidates.first().map(|(_, distance)| *distance),
-                        end_candidates.first().map(|(_, distance)| *distance),
+                        diagnostics.nearest_start_snap_distance_m,
+                        diagnostics.nearest_end_snap_distance_m,
                         true,
                         Some(meters_to_km_u32(metrics.geometry_meters)),
-                        Some(points_e5.len()),
+                        diagnostics.bounded_route_point_count,
                         metrics.detour_ratio_x100,
                         metrics.implied_speed_kmh,
                     )
                 } else {
                     (
-                        start_candidates.first().map(|(_, distance)| *distance),
-                        end_candidates.first().map(|(_, distance)| *distance),
+                        diagnostics.nearest_start_snap_distance_m,
+                        diagnostics.nearest_end_snap_distance_m,
                         false,
                         None,
                         None,
@@ -4408,6 +4405,14 @@ fn route_geometry_metrics(
 ) -> RouteGeometryMetrics {
     let geometry_meters = edge_geometry_length_meters(points);
     let direct_meters = geo_distance_meters(from_location, to_location);
+    route_geometry_metrics_from_distances(geometry_meters, direct_meters, duration_min)
+}
+
+fn route_geometry_metrics_from_distances(
+    geometry_meters: f64,
+    direct_meters: f64,
+    duration_min: Option<u32>,
+) -> RouteGeometryMetrics {
     let detour_ratio_x100 =
         (direct_meters >= 1.0).then(|| ((geometry_meters / direct_meters) * 100.0).round() as u32);
     let implied_speed_kmh =
