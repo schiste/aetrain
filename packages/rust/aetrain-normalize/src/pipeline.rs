@@ -888,6 +888,23 @@ pub struct PipelineArtifactManifest {
 const QUALITY_GATE_MAX_RESIDUAL_STATION_LIKE_CITIES: u64 = 100;
 const QUALITY_GATE_MAX_RESIDUAL_ZZ_CITIES: u64 = 250;
 const QUALITY_GATE_MAX_UNRESOLVED_ROUTE_LIKE_CITIES: u64 = 10;
+const CUSTOMER_FACING_HARD_GATE_METRICS: &[&str] = &[
+    "domestic_straight_line_fallback_count",
+    "foreign_domestic_feed_leakage_count",
+    "foreign_cross_border_feed_leakage_count",
+    "rejected_rail_authority_count",
+    "rejected_shape_plausibility_count",
+    "impossible_edge_speed_count",
+    "promoted_domestic_authority_gap_count",
+    "promoted_station_attachment_gap_count",
+    "promoted_topology_no_route_gap_count",
+    "promoted_implausible_authority_detour_count",
+    "promoted_cross_border_authority_gap_count",
+    "promoted_rejected_rail_authority_count",
+    "promoted_rejected_station_attachment_gap_count",
+    "promoted_rejected_topology_no_route_gap_count",
+    "promoted_rejected_implausible_authority_detour_count",
+];
 const CLOSE_NODE_WITHOUT_EDGE_MAX_DISTANCE_METERS: u32 = 5_000;
 const REGISTRY_OVERLAY_MAX_SPATIAL_MATCH_DISTANCE_METERS: u32 = 50_000;
 const INVALID_RAILWAY_GEOMETRY_REJECTED_PROVENANCE: &str = "geometry:invalid-railway-path-rejected";
@@ -1406,6 +1423,11 @@ fn export_pipeline_target(
     write_json(
         &quality_dir.join("quarantined-promoted-attachment-gap-cities.json"),
         &quality_report.quarantined_promoted_attachment_gap_cities,
+    )?;
+    enforce_customer_facing_geometry_quality(
+        target,
+        &artifacts.counters,
+        &quality_report.gate_results,
     )?;
     Ok(artifact_manifest)
 }
@@ -4649,6 +4671,35 @@ fn is_railway_layer_geometry_source(source: &EdgeGeometrySource) -> bool {
 
 fn counter_value(counters: &BTreeMap<String, u64>, key: &str) -> u64 {
     counters.get(key).copied().unwrap_or(0)
+}
+
+fn enforce_customer_facing_geometry_quality(
+    target: &TargetDefinition,
+    counters: &BTreeMap<String, u64>,
+    gate_results: &[PipelineQualityGateResult],
+) -> Result<()> {
+    if !target.customer_facing_scope_only {
+        return Ok(());
+    }
+    if counter_value(counters, "customer_facing_scope_edge_count") == 0 {
+        return Ok(());
+    }
+
+    let failed_hard_gates = gate_results
+        .iter()
+        .filter(|gate| gate.status == "fail")
+        .filter(|gate| CUSTOMER_FACING_HARD_GATE_METRICS.contains(&gate.metric.as_str()))
+        .map(|gate| format!("{}={} violates {}", gate.metric, gate.actual, gate.target))
+        .collect::<Vec<_>>();
+    if failed_hard_gates.is_empty() {
+        return Ok(());
+    }
+
+    bail!(
+        "customer-facing target {} is not releasable: {}",
+        target.id,
+        failed_hard_gates.join(", ")
+    );
 }
 
 fn quality_gate_equals(
@@ -11835,6 +11886,70 @@ mod tests {
         assert!(summary.recommended_next_steps.contains(
             &"do_not_enable_customer_facing_release_until_nonzero_edge_scope_exists".to_string()
         ));
+    }
+
+    #[test]
+    fn customer_facing_geometry_hard_gate_blocks_failed_geometry_metrics() {
+        let target = TargetDefinition {
+            id: "customer-facing".to_string(),
+            adapter: "aggregate_bundle".to_string(),
+            source_ids: Vec::new(),
+            input_target_ids: Vec::new(),
+            active: true,
+            canonical_export: true,
+            web_debug_export: true,
+            customer_facing_scope_only: true,
+            registry_overlay_path: None,
+            registry_source_manifest_path: None,
+            complete_registry_country_codes: Vec::new(),
+            geometry_authority_registry_path: None,
+            notes: None,
+        };
+        let counters = BTreeMap::from([("customer_facing_scope_edge_count".to_string(), 10)]);
+        let gate_results = vec![quality_gate_equals(
+            "domestic_straight_line_fallback_count_zero",
+            "domestic_straight_line_fallback_count",
+            1,
+            0,
+        )];
+
+        let error = enforce_customer_facing_geometry_quality(&target, &counters, &gate_results)
+            .expect_err("failed geometry gate should block release");
+
+        assert!(
+            error
+                .to_string()
+                .contains("domestic_straight_line_fallback_count=1")
+        );
+    }
+
+    #[test]
+    fn customer_facing_geometry_hard_gate_allows_empty_diagnostic_scope() {
+        let target = TargetDefinition {
+            id: "customer-facing-empty".to_string(),
+            adapter: "aggregate_bundle".to_string(),
+            source_ids: Vec::new(),
+            input_target_ids: Vec::new(),
+            active: true,
+            canonical_export: true,
+            web_debug_export: true,
+            customer_facing_scope_only: true,
+            registry_overlay_path: None,
+            registry_source_manifest_path: None,
+            complete_registry_country_codes: Vec::new(),
+            geometry_authority_registry_path: None,
+            notes: None,
+        };
+        let counters = BTreeMap::from([("customer_facing_scope_edge_count".to_string(), 0)]);
+        let gate_results = vec![quality_gate_equals(
+            "domestic_straight_line_fallback_count_zero",
+            "domestic_straight_line_fallback_count",
+            1,
+            0,
+        )];
+
+        enforce_customer_facing_geometry_quality(&target, &counters, &gate_results)
+            .expect("empty scope should remain diagnosable");
     }
 
     #[test]
