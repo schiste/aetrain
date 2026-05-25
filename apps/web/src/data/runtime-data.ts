@@ -13,6 +13,7 @@ import type {
 import {
   fetchEdgeGeometryArtifact,
   type EdgeGeometryBoundingBox,
+  type EdgeGeometryChunkResult,
   type EdgeGeometryManifest
 } from "./edge-geometry-artifacts.ts";
 import { buildProductionPlannerData } from "./production-adapter.ts";
@@ -68,9 +69,14 @@ interface WorkerLoadDatasetResponse {
 
 interface WorkerLoadGeometriesResponse {
   requestId?: string;
+  /** "geometry-chunk" for a streamed per-chunk message; absent on the
+   *  terminal ok/error response. */
+  type?: string;
   ok?: boolean;
   geometries?: RawEdgeGeometries;
   loadedChunkFiles?: string[];
+  /** Present only on "geometry-chunk" messages. */
+  chunk?: EdgeGeometryChunkResult;
   error?: SerializedWorkerError;
 }
 
@@ -95,6 +101,12 @@ export async function loadPlannerDataset(): Promise<PlannerDataset> {
  * upgrade the in-memory routing graph in place.
  */
 export interface LoadEdgeGeometriesResult {
+  /** The combined geometry artifact. NOTE: when an `onChunk` callback was
+   *  supplied and the worker path served the request, this is empty — every
+   *  geometry was already delivered through `onChunk` and the worker omits
+   *  the combined array to avoid a second large structured clone. Streaming
+   *  callers should apply per chunk and rely on `loadedChunkFiles` (not this
+   *  array) to detect the no-op case. */
   geometries: RawEdgeGeometries;
   /** The chunk `file` strings the loader actually fetched. Empty when
    *  every visible chunk was already in `seenChunkFiles`. Callers merge
@@ -131,6 +143,13 @@ export interface LoadEdgeGeometriesOptions {
   /** Files already fetched on previous calls. Lets the view-change
    *  re-fetcher avoid re-loading the same chunk on every pan. */
   seenChunkFiles?: ReadonlySet<string>;
+  /** When set, invoked once per chunk as it resolves so callers can apply
+   *  geometry progressively (the rail network fills in chunk-by-chunk). The
+   *  loader serializes these in resolution order and awaits each before the
+   *  next. Passing this also switches the worker into streaming mode, where
+   *  the combined `geometries` is omitted from the result (already delivered
+   *  per chunk) — so callers MUST apply via this callback, not the result. */
+  onChunk?(chunk: EdgeGeometryChunkResult): void | Promise<void>;
 }
 
 async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
@@ -182,7 +201,8 @@ async function loadEdgeGeometriesInline(
       },
       {
         viewport: options.viewport,
-        seenChunkFiles: options.seenChunkFiles
+        seenChunkFiles: options.seenChunkFiles,
+        onChunk: options.onChunk
       }
     );
     diagnostics.info("loaded edge geometries inline", {
@@ -283,6 +303,11 @@ async function loadEdgeGeometriesFromWorker(
 
     return new Promise<LoadEdgeGeometriesResult>((resolve, reject) => {
       const requestId = `geometries-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const streaming = Boolean(options.onChunk);
+      // Serial chain so per-chunk applies run one at a time in arrival order.
+      // Reassigned as each geometry-chunk message lands; drained on the
+      // terminal ok message before the loader resolves.
+      let applyChain: Promise<void> = Promise.resolve();
 
       function cleanup(): void {
         diagnostics.debug("terminating runtime data worker for geometry", {
@@ -291,7 +316,7 @@ async function loadEdgeGeometriesFromWorker(
         worker.terminate();
       }
 
-      worker.addEventListener("message", (event: MessageEvent<WorkerLoadGeometriesResponse>) => {
+      worker.addEventListener("message", async (event: MessageEvent<WorkerLoadGeometriesResponse>) => {
         const message: WorkerLoadGeometriesResponse = event.data || {};
         if ((message as unknown as { __aetrain_diag?: unknown }).__aetrain_diag) {
           return;
@@ -300,20 +325,44 @@ async function loadEdgeGeometriesFromWorker(
           return;
         }
 
-        cleanup();
-        if (message.ok && message.geometries) {
+        // Streamed per-chunk message: enqueue the apply onto the serial chain
+        // and keep the worker alive — more chunks and the terminal ok are
+        // still inbound. Don't cleanup() here.
+        if (message.type === "geometry-chunk" && message.chunk) {
+          const chunk = message.chunk;
+          applyChain = applyChain.then(() => options.onChunk?.(chunk));
+          return;
+        }
+
+        if (message.ok) {
+          // postMessage preserves order, so once ok lands every geometry-chunk
+          // has already been enqueued. Drain the chain before resolving so all
+          // chunks are applied before the caller proceeds. A throwing apply
+          // surfaces here and rejects the load.
+          try {
+            await applyChain;
+          } catch (error) {
+            cleanup();
+            reject(error instanceof Error ? error : new Error(String(error)));
+            return;
+          }
+          cleanup();
           diagnostics.info("runtime data worker loaded edge geometries", {
             request_id: requestId,
-            geometry_count: message.geometries.geometries.length,
-            loaded_chunk_count: message.loadedChunkFiles?.length ?? 0
+            geometry_count: message.geometries?.geometries.length ?? 0,
+            loaded_chunk_count: message.loadedChunkFiles?.length ?? 0,
+            streaming
           });
+          // geometries is omitted by the worker in streaming mode (delivered
+          // per chunk above); fall back to an empty artifact so the shape holds.
           resolve({
-            geometries: message.geometries,
+            geometries: message.geometries ?? { geometries: [] },
             loadedChunkFiles: message.loadedChunkFiles ?? []
           });
           return;
         }
 
+        cleanup();
         reject(deserializeWorkerError(message.error));
       });
 
@@ -333,7 +382,8 @@ async function loadEdgeGeometriesFromWorker(
         viewport: options.viewport,
         seenChunkFiles: options.seenChunkFiles
           ? Array.from(options.seenChunkFiles)
-          : undefined
+          : undefined,
+        stream: streaming
       });
     });
   });

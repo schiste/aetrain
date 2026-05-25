@@ -5,6 +5,7 @@ import {
 } from "../app-shell/diagnostics.ts";
 import {
   fetchEdgeGeometryArtifact,
+  type EdgeGeometryChunkResult,
   type EdgeGeometryManifest
 } from "../data/edge-geometry-artifacts.ts";
 import { buildProductionPlannerData } from "../data/production-adapter.ts";
@@ -28,6 +29,12 @@ interface IncomingMessage {
   /** Files already fetched on previous load-edge-geometries calls;
    *  the worker treats these as cache hits and skips them. */
   seenChunkFiles?: string[];
+  /** When true, the worker emits one `geometry-chunk` message per chunk
+   *  as each fetch resolves (resolution order) and OMITS the combined
+   *  geometries from the final `ok` message to avoid a second large
+   *  structured clone. When false/absent it keeps the legacy single
+   *  combined-payload contract. */
+  stream?: boolean;
 }
 
 interface FetchAssetError extends Error {
@@ -122,11 +129,13 @@ async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
   const seenChunkFiles = message.seenChunkFiles
     ? new Set<string>(message.seenChunkFiles)
     : undefined;
+  const stream = Boolean(message.stream);
   diagnostics.info("received runtime data worker geometry request", {
     request_id: requestId,
     base_path_count: basePaths.length,
     viewport_filtered: Boolean(viewport),
-    already_loaded_count: seenChunkFiles?.size ?? 0
+    already_loaded_count: seenChunkFiles?.size ?? 0,
+    streaming: stream
   });
 
   try {
@@ -143,7 +152,19 @@ async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
             fetchJsonFromBasePath,
             diagnostics
           },
-          { viewport, seenChunkFiles }
+          {
+            viewport,
+            seenChunkFiles,
+            // fetchEdgeGeometryArtifact serializes these emits in resolution
+            // order, so the geometry-chunk messages leave the worker in the
+            // same order chunks land. postMessage preserves that order on the
+            // wire, so the main thread receives them already sequenced.
+            onChunk: stream
+              ? (chunk: EdgeGeometryChunkResult) => {
+                  self.postMessage({ requestId, type: "geometry-chunk", chunk });
+                }
+              : undefined
+          }
         );
       },
       { request_id: requestId }
@@ -152,13 +173,18 @@ async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
     diagnostics.info("runtime data worker loaded edge geometries", {
       request_id: requestId,
       geometry_count: result.geometries.geometries.length,
-      loaded_chunk_count: result.loadedChunkFiles.length
+      loaded_chunk_count: result.loadedChunkFiles.length,
+      streaming: stream
     });
+    // Streamed loads already shipped every geometry via geometry-chunk
+    // messages, so the combined array is omitted here — re-sending it would
+    // duplicate a ~100MB structured clone. loadedChunkFiles is always sent so
+    // the caller can update its seen-set and detect the no-op (empty) case.
     self.postMessage({
       requestId,
       ok: true,
-      geometries: result.geometries,
-      loadedChunkFiles: result.loadedChunkFiles
+      loadedChunkFiles: result.loadedChunkFiles,
+      ...(stream ? {} : { geometries: result.geometries })
     });
   } catch (error) {
     diagnostics.error("runtime data worker geometry request failed", {
