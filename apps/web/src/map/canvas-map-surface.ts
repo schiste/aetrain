@@ -262,7 +262,7 @@ interface ZoomControls {
 
 type ViewChangeListener = (view: MapView) => void;
 
-export interface CreateLeafletMapSurfaceOptions {
+export interface CreateCanvasMapSurfaceOptions {
   borderData: RawBorderRecord[] | null | undefined;
   cities: PlannerCity[];
   stations?: PlannerStation[];
@@ -297,7 +297,7 @@ export interface MapViewportBounds {
   north: number;
 }
 
-export interface LeafletMapSurface {
+export interface CanvasMapSurface {
   flyToCity(name: string): void;
   getViewState(): MapView;
   /** Returns the visible map area as a lat/lon bounding box. Used by
@@ -396,7 +396,7 @@ const SEED_PULSE_MAX_RADIUS_PX = 22;
 
 const diagnostics = createDiagnostics("web/map/canvas-surface");
 
-export function createLeafletMapSurface({
+export function createCanvasMapSurface({
   borderData,
   cities,
   stations = [],
@@ -410,7 +410,7 @@ export function createLeafletMapSurface({
   onCitySelect,
   onSegmentSelect,
   onRenderStatsChange
-}: CreateLeafletMapSurfaceOptions): LeafletMapSurface {
+}: CreateCanvasMapSurfaceOptions): CanvasMapSurface {
   diagnostics.info("creating canvas map surface", {
     city_count: cities.length,
     station_count: stations.length,

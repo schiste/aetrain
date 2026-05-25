@@ -1,7 +1,7 @@
 // Top-level Aetrain shell. Mounted into <div id="app"> on boot. Owns:
 //   - planner client (worker or inline fallback)
 //   - planner store + URL state binding
-//   - leaflet map surface
+//   - canvas map surface
 //   - the sidebar custom element + #map / #citycount slots
 //
 // The shell builds a single AppContext, registers it via setAppContext, and
@@ -17,7 +17,7 @@ import {
   createPlannerClient,
   prewarmPlannerClient
 } from "../../engine/planner-client.ts";
-import { createLeafletMapSurface } from "../../map/leaflet-map-surface.ts";
+import { createCanvasMapSurface } from "../../map/canvas-map-surface.ts";
 import type { LabelThresholdValue } from "../../map/render-model.ts";
 import type { RawBorderRecord } from "../../map/landmass-model.ts";
 import { derivePopThresholdForZoom } from "../../state/auto-pop-scale.ts";
@@ -209,7 +209,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       }
     });
 
-    const mapSurface = createLeafletMapSurface({
+    const mapSurface = createCanvasMapSurface({
       borderData,
       cities: dataset.cities,
       stations: dataset.stations ?? [],
@@ -462,7 +462,7 @@ interface EdgeGeometryUpgradeArgs {
   };
   mapSurface: {
     refreshGeometry(): void;
-    getViewportBounds(): import("../../map/leaflet-map-surface.ts").MapViewportBounds;
+    getViewportBounds(): import("../../map/canvas-map-surface.ts").MapViewportBounds;
   };
   /** Mutated in place to record which chunk files have been fetched
    *  across all calls in this shell instance. Lets re-fetches dedupe. */

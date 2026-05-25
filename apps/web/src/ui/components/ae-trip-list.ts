@@ -346,7 +346,7 @@ function renderEmpty(): DocumentFragment {
   // role="status" announces this empty state to screen readers without
   // stealing focus (matches aria-live="polite" on the host). The pulse
   // hint draws the eye toward the map — see the matching pulse on the
-  // highest-interest visible city in leaflet-map-surface.ts.
+  // highest-interest visible city in canvas-map-surface.ts.
   return html`
     <div id="empty" role="status">
       <div class="icon" aria-hidden="true">🚂</div>

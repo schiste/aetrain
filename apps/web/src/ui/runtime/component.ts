@@ -5,7 +5,7 @@
 // disconnectedCallback.
 //
 // Light-DOM only: rendered nodes go directly into the host element so
-// existing #-id and CSS-class-based selectors (Playwright, the Leaflet
+// existing #-id and CSS-class-based selectors (Playwright, the canvas
 // surface, the URL state binding) keep working. No Shadow DOM.
 
 import { effect } from "./signal.ts";
