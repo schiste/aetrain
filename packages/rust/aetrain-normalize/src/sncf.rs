@@ -161,6 +161,7 @@ pub struct RejectedCityCandidateReport {
 struct ReferenceStation {
     raw_id: String,
     display_name: String,
+    segment_drg: Option<String>,
     code_insee: Option<String>,
     location: GeoPoint,
     uic_codes: Vec<String>,
@@ -198,6 +199,9 @@ struct CityCluster {
     station_keys: Vec<String>,
     station_ids: Vec<StationId>,
     display_names: Vec<String>,
+    display_name_priorities: HashMap<String, u8>,
+    preferred_display_name: Option<String>,
+    preferred_display_name_priority: u8,
     aliases: HashSet<String>,
     lat_sum: f64,
     lon_sum: f64,
@@ -592,18 +596,20 @@ fn load_station_references(path: &Path) -> Result<Vec<ReferenceStation>> {
         .map(normalize_header)
         .collect::<Vec<_>>();
 
-    let index_of = |name: &str| {
+    let required_index_of = |name: &str| {
         headers
             .iter()
             .position(|header| header == name)
             .with_context(|| format!("missing {name} column in {}", path.display()))
     };
+    let optional_index_of = |name: &str| headers.iter().position(|header| header == name);
 
-    let name_idx = index_of("nom")?;
-    let position_idx = index_of("position_geographique")?;
-    let code_insee_idx = index_of("codeinsee")?;
-    let codes_uic_idx = index_of("codes_uic")?;
-    let id_idx = index_of("id")?;
+    let name_idx = required_index_of("nom")?;
+    let segment_drg_idx = optional_index_of("segment_drg");
+    let position_idx = required_index_of("position_geographique")?;
+    let code_insee_idx = required_index_of("codeinsee")?;
+    let codes_uic_idx = required_index_of("codes_uic")?;
+    let id_idx = required_index_of("id")?;
 
     let mut rows = Vec::new();
     for record in reader.records() {
@@ -620,6 +626,7 @@ fn load_station_references(path: &Path) -> Result<Vec<ReferenceStation>> {
         rows.push(ReferenceStation {
             raw_id: record.get(id_idx).unwrap_or("").trim().to_string(),
             display_name: display_name.to_string(),
+            segment_drg: segment_drg_idx.and_then(|idx| non_empty(record.get(idx))),
             code_insee: non_empty(record.get(code_insee_idx)),
             location,
             uic_codes: extract_digit_sequences(record.get(codes_uic_idx).unwrap_or("")),
@@ -845,6 +852,9 @@ fn normalize_stations(
             station_keys: Vec::new(),
             station_ids: Vec::new(),
             display_names: Vec::new(),
+            display_name_priorities: HashMap::new(),
+            preferred_display_name: None,
+            preferred_display_name_priority: 0,
             aliases: HashSet::new(),
             lat_sum: 0.0,
             lon_sum: 0.0,
@@ -859,6 +869,18 @@ fn normalize_stations(
         cluster.station_keys.push(station.station_key.clone());
         cluster.station_ids.push(station_id);
         cluster.display_names.push(station.display_name.clone());
+        let segment_priority = matched_reference
+            .and_then(|reference| reference.segment_drg.as_deref())
+            .map(station_reference_segment_priority)
+            .unwrap_or(0);
+        record_display_name_priority(
+            &mut cluster.display_name_priorities,
+            &station.display_name,
+            segment_priority,
+        );
+        if let Some(reference) = matched_reference {
+            record_preferred_display_name(cluster, &reference.display_name, segment_priority);
+        }
         cluster.aliases.insert(station.display_name.clone());
         cluster.lat_sum += station.location.lat;
         cluster.lon_sum += station.location.lon;
@@ -886,6 +908,7 @@ fn normalize_stations(
             let parent_cluster = clusters
                 .get_mut(parent_cluster_key)
                 .expect("demoted GTFS-basic parent cluster should exist");
+            merge_preferred_display_name(parent_cluster, &child_cluster);
             parent_cluster
                 .station_keys
                 .extend(child_cluster.station_keys);
@@ -893,6 +916,10 @@ fn normalize_stations(
             parent_cluster
                 .display_names
                 .extend(child_cluster.display_names);
+            merge_display_name_priorities(
+                &mut parent_cluster.display_name_priorities,
+                child_cluster.display_name_priorities,
+            );
             parent_cluster.aliases.extend(child_cluster.aliases);
             parent_cluster.lat_sum += child_cluster.lat_sum;
             parent_cluster.lon_sum += child_cluster.lon_sum;
@@ -923,6 +950,9 @@ fn normalize_stations(
             cluster.aliases.insert(existing_name.clone());
         }
         cluster.display_names = vec![display_name.clone()];
+        cluster.display_name_priorities.clear();
+        record_display_name_priority(&mut cluster.display_name_priorities, display_name, u8::MAX);
+        record_preferred_display_name(cluster, display_name, u8::MAX);
         cluster.aliases.insert(display_name.clone());
     }
 
@@ -933,7 +963,7 @@ fn normalize_stations(
     let mut alias_keys = HashSet::new();
 
     for (cluster_key, cluster) in &clusters {
-        let display_name = derive_city_display_name(&cluster.display_names);
+        let display_name = derive_city_display_name_for_cluster(cluster);
         let slug = slugify(&display_name);
         let city_id = if let Some(manual_city_id) = &cluster.manual_city_id {
             manual_city_id.clone()
@@ -1152,6 +1182,9 @@ fn normalize_gtfs_only_stations(
             station_keys: Vec::new(),
             station_ids: Vec::new(),
             display_names: Vec::new(),
+            display_name_priorities: HashMap::new(),
+            preferred_display_name: None,
+            preferred_display_name_priority: 0,
             aliases: HashSet::new(),
             lat_sum: 0.0,
             lon_sum: 0.0,
@@ -1163,6 +1196,11 @@ fn normalize_gtfs_only_stations(
         cluster.station_keys.push(station.station_key.clone());
         cluster.station_ids.push(station_id);
         cluster.display_names.push(station.display_name.clone());
+        record_display_name_priority(
+            &mut cluster.display_name_priorities,
+            &station.display_name,
+            0,
+        );
         cluster.aliases.insert(station.display_name.clone());
         cluster.lat_sum += station.location.lat;
         cluster.lon_sum += station.location.lon;
@@ -1190,6 +1228,7 @@ fn normalize_gtfs_only_stations(
             let parent_cluster = clusters
                 .get_mut(parent_cluster_key)
                 .expect("demoted GTFS-basic parent cluster should exist");
+            merge_preferred_display_name(parent_cluster, &child_cluster);
             parent_cluster
                 .station_keys
                 .extend(child_cluster.station_keys);
@@ -1197,6 +1236,10 @@ fn normalize_gtfs_only_stations(
             parent_cluster
                 .display_names
                 .extend(child_cluster.display_names);
+            merge_display_name_priorities(
+                &mut parent_cluster.display_name_priorities,
+                child_cluster.display_name_priorities,
+            );
             parent_cluster.aliases.extend(child_cluster.aliases);
             parent_cluster.lat_sum += child_cluster.lat_sum;
             parent_cluster.lon_sum += child_cluster.lon_sum;
@@ -1227,6 +1270,9 @@ fn normalize_gtfs_only_stations(
             cluster.aliases.insert(existing_name.clone());
         }
         cluster.display_names = vec![display_name.clone()];
+        cluster.display_name_priorities.clear();
+        record_display_name_priority(&mut cluster.display_name_priorities, display_name, u8::MAX);
+        record_preferred_display_name(cluster, display_name, u8::MAX);
         cluster.aliases.insert(display_name.clone());
     }
 
@@ -1237,7 +1283,7 @@ fn normalize_gtfs_only_stations(
     let mut alias_keys = HashSet::new();
 
     for (cluster_key, cluster) in &clusters {
-        let display_name = derive_city_display_name(&cluster.display_names);
+        let display_name = derive_city_display_name_for_cluster(cluster);
         let slug = slugify(&display_name);
         let city_id = if let Some(manual_city_id) = &cluster.manual_city_id {
             manual_city_id.clone()
@@ -2292,6 +2338,95 @@ fn choose_name_match<'a>(
     let best = choose_nearest_reference(references, station_location)?;
     let distance = haversine_meters(best.location, station_location);
     (distance <= NAME_MATCH_DISTANCE_METERS).then_some(best)
+}
+
+fn station_reference_segment_priority(segment_drg: &str) -> u8 {
+    match segment_drg.trim().to_ascii_uppercase().as_str() {
+        "A" => 4,
+        "B" => 3,
+        "C" => 2,
+        "D" => 1,
+        _ => 1,
+    }
+}
+
+fn record_display_name_priority(priorities: &mut HashMap<String, u8>, name: &str, priority: u8) {
+    priorities
+        .entry(name.to_string())
+        .and_modify(|existing| *existing = (*existing).max(priority))
+        .or_insert(priority);
+}
+
+fn merge_display_name_priorities(target: &mut HashMap<String, u8>, source: HashMap<String, u8>) {
+    for (name, priority) in source {
+        record_display_name_priority(target, &name, priority);
+    }
+}
+
+fn record_preferred_display_name(cluster: &mut CityCluster, name: &str, priority: u8) {
+    if priority == 0 {
+        return;
+    }
+    let candidate = cleaned_city_name_candidate(name);
+    if normalize_name(&candidate).is_empty() {
+        return;
+    }
+
+    let should_replace = priority > cluster.preferred_display_name_priority
+        || (priority == cluster.preferred_display_name_priority
+            && cluster
+                .preferred_display_name
+                .as_ref()
+                .map(|existing| {
+                    city_name_candidate_quality(&candidate) > city_name_candidate_quality(existing)
+                })
+                .unwrap_or(true));
+
+    if should_replace {
+        cluster.preferred_display_name = Some(candidate);
+        cluster.preferred_display_name_priority = priority;
+    }
+}
+
+fn merge_preferred_display_name(target: &mut CityCluster, source: &CityCluster) {
+    if let Some(display_name) = &source.preferred_display_name {
+        record_preferred_display_name(target, display_name, source.preferred_display_name_priority);
+    }
+}
+
+fn derive_city_display_name_for_cluster(cluster: &CityCluster) -> String {
+    if cluster.preferred_display_name_priority > 0 {
+        if let Some(display_name) = &cluster.preferred_display_name {
+            return display_name.clone();
+        }
+    }
+
+    let highest_priority = cluster
+        .display_name_priorities
+        .values()
+        .copied()
+        .max()
+        .unwrap_or(0);
+    if highest_priority > 0 {
+        let preferred_names = cluster
+            .display_names
+            .iter()
+            .filter(|name| {
+                cluster
+                    .display_name_priorities
+                    .get(*name)
+                    .copied()
+                    .unwrap_or(0)
+                    == highest_priority
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        if !preferred_names.is_empty() {
+            return derive_city_display_name(&preferred_names);
+        }
+    }
+
+    derive_city_display_name(&cluster.display_names)
 }
 
 fn derive_city_display_name(names: &[String]) -> String {
@@ -3377,6 +3512,7 @@ mod tests {
         let references = vec![ReferenceStation {
             raw_id: "ref-paris-nord".to_string(),
             display_name: "Paris Nord".to_string(),
+            segment_drg: Some("A".to_string()),
             code_insee: Some("75056".to_string()),
             location: GeoPoint {
                 lat: 48.8809,
@@ -3425,6 +3561,80 @@ mod tests {
         assert_eq!(
             station_mappings.records[0].override_id.as_deref(),
             Some("paris-cluster")
+        );
+    }
+
+    #[test]
+    fn official_station_segment_guides_commune_display_name() {
+        let gtfs_stations = vec![
+            GtfsStationArea {
+                station_key: "StopArea:OCE87213058".to_string(),
+                display_name: "Haguenau".to_string(),
+                location: GeoPoint {
+                    lat: 48.813486,
+                    lon: 7.782757,
+                },
+                uic_code: Some("87213058".to_string()),
+            },
+            GtfsStationArea {
+                station_key: "StopArea:OCE87213603".to_string(),
+                display_name: "Marienthal".to_string(),
+                location: GeoPoint {
+                    lat: 48.781868,
+                    lon: 7.823352,
+                },
+                uic_code: Some("87213603".to_string()),
+            },
+        ];
+        let references = vec![
+            ReferenceStation {
+                raw_id: "ref-haguenau".to_string(),
+                display_name: "Haguenau".to_string(),
+                segment_drg: Some("B".to_string()),
+                code_insee: Some("67180".to_string()),
+                location: GeoPoint {
+                    lat: 48.8134498,
+                    lon: 7.7827255,
+                },
+                uic_codes: vec!["87213058".to_string()],
+            },
+            ReferenceStation {
+                raw_id: "ref-marienthal".to_string(),
+                display_name: "Marienthal".to_string(),
+                segment_drg: Some("C".to_string()),
+                code_insee: Some("67180".to_string()),
+                location: GeoPoint {
+                    lat: 48.781863,
+                    lon: 7.8231894,
+                },
+                uic_codes: vec!["87213603".to_string()],
+            },
+        ];
+        let mut issues = Vec::new();
+
+        let (cities, stations, _, _, aliases, _, _, _, _) = normalize_stations(
+            &gtfs_stations,
+            &references,
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            &ManualOverrideRegistry::default(),
+            &mut issues,
+        )
+        .expect("normalization should succeed");
+
+        assert_eq!(cities.len(), 1);
+        assert_eq!(cities[0].display_name, "Haguenau");
+        assert_eq!(cities[0].city_id.as_str(), "haguenau-fr-67180");
+        assert!(cities[0].aliases.iter().any(|alias| alias == "Marienthal"));
+        assert!(
+            stations
+                .iter()
+                .all(|station| station.city_id == cities[0].city_id)
+        );
+        assert!(
+            aliases
+                .iter()
+                .any(|alias| { alias.alias == "marienthal" && alias.city_id == cities[0].city_id })
         );
     }
 
