@@ -1,4 +1,5 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
+import type { DiagnosticsData } from "../types/diagnostics.ts";
 import type { PlannerCity, PlannerStation } from "../types/planner-dataset.ts";
 import type {
   PlannerEdge,
@@ -342,6 +343,13 @@ const VIEW_CHANGE_COMMIT_DELAY_MS = 140;
 const ZOOM_SETTLE_DELAY_MS = 120;
 const PAN_SETTLE_DELAY_MS = 120;
 const HOT_RENDER_INFO_INTERVAL_MS = 350;
+// Sampling interval for the per-frame layer/render metrics (landmass,
+// network, route, map-render) on the hot gesture path. During a sustained
+// pan/zoom these four fire every rAF frame (~240 events/sec); the diagnostics
+// store is a single 5000-entry FIFO across all levels, so a few seconds of
+// panning would otherwise evict the boot/info timeline. ~4 samples/sec is
+// dense enough to characterize a gesture without burying it.
+const HOT_RENDER_METRIC_INTERVAL_MS = 250;
 // Multiplicative half-width of the population fade band around the live
 // threshold: a city is fully opaque at pop >= threshold × ratio, invisible
 // at pop <= threshold ÷ ratio, and smoothsteps (in log space) between. 1.6×
@@ -656,6 +664,13 @@ export function createCanvasMapSurface({
   let zoomSettleTimeoutId = 0;
   let flyAnimationId = 0;
   let lastHotRenderInfoAt = 0;
+  // Throttle state for the per-frame layer/render metrics. `lastFrameMetricAt`
+  // is the wall-clock of the last emitted batch; `emitFrameMetricThisFrame` is
+  // the once-per-frame decision (computed at the top of flushRender) that all
+  // four metric sites read, so they emit or skip as a coherent batch rather
+  // than staggering across the sampling interval.
+  let lastFrameMetricAt = 0;
+  let emitFrameMetricThisFrame = true;
   let isZooming = false;
   // Tracks active pan (pointer drag or keyboard arrow). When set, the
   // next render uses the cheap interaction LOD profile so the network
@@ -1468,6 +1483,16 @@ export function createCanvasMapSurface({
     });
   }
 
+  // Per-frame metric emit, gated by the once-per-frame `emitFrameMetricThisFrame`
+  // decision made in flushRender. Skipping here only thins the diagnostics ring
+  // during sustained gestures — see HOT_RENDER_METRIC_INTERVAL_MS.
+  function recordFrameMetric(name: string, value: number, data: DiagnosticsData): void {
+    if (!emitFrameMetricThisFrame) {
+      return;
+    }
+    diagnostics.metric(name, value, data);
+  }
+
   function flushRender(): void {
     const dirty = pendingDirty;
     const reason = pendingReason || "render";
@@ -1476,6 +1501,18 @@ export function createCanvasMapSurface({
 
     const frame = getFrame();
     const startedAt = now();
+
+    // Decide once per frame whether the per-frame layer/render metrics emit,
+    // so the four sites (landmass, network, route, map-render) act as one
+    // batch. One-off renders (load, settle, resize, …) always emit; only the
+    // high-frequency gesture reasons are sampled. The live perf HUD reads
+    // lastRenderStats via onRenderStatsChange below, not the diagnostics ring,
+    // so sampling the ring costs no live signal.
+    emitFrameMetricThisFrame =
+      !isHotRenderReason(reason) || now() - lastFrameMetricAt >= HOT_RENDER_METRIC_INTERVAL_MS;
+    if (emitFrameMetricThisFrame) {
+      lastFrameMetricAt = now();
+    }
 
     if (dirty.network) {
       drawLandmass(frame);
@@ -1698,7 +1735,7 @@ export function createCanvasMapSurface({
     }
 
     backgroundContext.restore();
-    diagnostics.metric("landmass-layer-draw", landmassPolygons.length, {
+    recordFrameMetric("landmass-layer-draw", landmassPolygons.length, {
       polygon_count: landmassPolygons.length,
       zoom: frame.zoom
     });
@@ -1717,7 +1754,7 @@ export function createCanvasMapSurface({
     // redraw when it flips the flag, so the curved web appears as soon as it
     // lands.
     if (!networkGeometryLoaded) {
-      diagnostics.metric("network-layer-draw", 0, {
+      recordFrameMetric("network-layer-draw", 0, {
         drawn_edges: 0,
         geometry_loaded: false,
         zoom: frame.zoom
@@ -1803,6 +1840,14 @@ export function createCanvasMapSurface({
       // zoom sit entirely outside the viewport — skipping their points'
       // projection is the dominant settle-time win on the production
       // graph (39k edges × multi-point geometries).
+      //
+      // Note this filter is a no-op at the default continental zoom: the
+      // whole European network is inside the viewport, so every worldBbox
+      // intersects and nothing is culled (we project + draw all loaded
+      // chunks). It only earns its cost once zoomed in far enough that part
+      // of the network falls off-screen — which is also when the projection
+      // savings matter most. The same predicate gates the network-anchored
+      // station set below, so "in view" stays identical for dots and rails.
       if (!worldBboxIntersectsViewport(edge.worldBbox, frame.viewportWorldBbox)) {
         continue;
       }
@@ -1849,7 +1894,7 @@ export function createCanvasMapSurface({
       }
     }
     networkContext.restore();
-    diagnostics.metric("network-layer-draw", drawnEdges, {
+    recordFrameMetric("network-layer-draw", drawnEdges, {
       drawn_edges: drawnEdges,
       drawn_low_confidence: drawnLowConfidence,
       culled_stub_edges: culledStubEdges,
@@ -1938,7 +1983,7 @@ export function createCanvasMapSurface({
     }
 
     currentRouteSegments = nextSegments;
-    diagnostics.metric("route-layer-draw", drawnSegments, {
+    recordFrameMetric("route-layer-draw", drawnSegments, {
       drawn_segments: drawnSegments,
       zoom: frame.zoom
     });
@@ -2624,7 +2669,7 @@ export function createCanvasMapSurface({
       return;
     }
 
-    diagnostics.metric("map-render", stats.rendered, {
+    recordFrameMetric("map-render", stats.rendered, {
       cities_fading: stats.citiesFading,
       culled_by_fade: stats.culledByFade,
       culled_by_viewport: stats.culledByViewport,
@@ -2641,8 +2686,7 @@ export function createCanvasMapSurface({
       zoom: frame.zoom
     });
 
-    const renderedHotPath = reason === "planner-state" || reason === "wheel-zoom" || reason === "pointer-pan";
-    if (renderedHotPath && now() - lastHotRenderInfoAt < HOT_RENDER_INFO_INTERVAL_MS) {
+    if (isHotRenderReason(reason) && now() - lastHotRenderInfoAt < HOT_RENDER_INFO_INTERVAL_MS) {
       return;
     }
 
@@ -2662,6 +2706,14 @@ export function createCanvasMapSurface({
       zoom: frame.zoom
     });
   }
+}
+
+// The render reasons that can fire at gesture frequency (every rAF frame
+// while the camera moves). Used to scope both the info-log throttle and the
+// per-frame metric sampling — one-off reasons (load, settle, resize, …) are
+// never throttled.
+function isHotRenderReason(reason: string): boolean {
+  return reason === "planner-state" || reason === "wheel-zoom" || reason === "pointer-pan";
 }
 
 function buildLabelCandidate(
