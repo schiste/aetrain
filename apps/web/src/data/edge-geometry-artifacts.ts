@@ -35,6 +35,24 @@ export interface EdgeGeometryChunkPayload {
   geometries: RawEdgeGeometry[];
 }
 
+/**
+ * One chunk's worth of geometry, delivered the moment its fetch resolves.
+ * Emitted by the `onChunk` streaming callback (below) so callers can apply
+ * geometry progressively — the rail network fills in chunk-by-chunk rather
+ * than popping in all at once when the slowest of N chunks lands.
+ */
+export interface EdgeGeometryChunkResult {
+  /** This chunk's geometries in isolation, ready to augment on their own. */
+  geometries: RawEdgeGeometries;
+  /** The chunk's manifest `file` (so the caller can track what's loaded). */
+  chunkFile: string;
+  /** 1-based position in *resolution* order (not manifest order): "the Nth
+   *  chunk to finish downloading". This is the N in a "N of M" indicator. */
+  loadedCount: number;
+  /** Total chunks being fetched this call — the M in "N of M". */
+  totalCount: number;
+}
+
 export interface EdgeGeometryFetcherDeps {
   basePaths: readonly string[];
   fetchJsonWithFallback(fileName: string): Promise<unknown>;
@@ -54,6 +72,12 @@ export interface EdgeGeometryFetchOptions {
    *  Used by the view-change re-fetcher to avoid re-loading the same
    *  chunk on every pan. */
   seenChunkFiles?: ReadonlySet<string>;
+  /** When set, invoked once per chunk *as it resolves* (network order),
+   *  before the combined result is returned. Invocations are serialized
+   *  in resolution order and each is awaited before the next, so a slow
+   *  apply can't be lapped by a faster download. Lets callers reveal the
+   *  network progressively instead of waiting on the slowest chunk. */
+  onChunk?(chunk: EdgeGeometryChunkResult): void | Promise<void>;
 }
 
 /**
@@ -118,7 +142,7 @@ export async function fetchEdgeGeometryArtifact(
     fetchJsonFromBasePath,
     diagnostics
   } = deps;
-  const { viewport, seenChunkFiles } = options;
+  const { viewport, seenChunkFiles, onChunk } = options;
   const manifestResult = await fetchOptionalJsonWithFallback(EDGE_GEOMETRY_MANIFEST_FILE);
   if (manifestResult?.json) {
     const manifest = manifestResult.json;
@@ -129,16 +153,42 @@ export async function fetchEdgeGeometryArtifact(
       chunk_count_total: allChunks.length,
       chunk_count_visible: visible.length,
       total_geometry_count: manifest.total_geometry_count ?? null,
-      viewport_filtered: Boolean(viewport)
+      viewport_filtered: Boolean(viewport),
+      streaming: Boolean(onChunk)
     });
     if (visible.length === 0) {
       return { geometries: { geometries: [] }, loadedChunkFiles: [] };
     }
+    // Fire every chunk fetch in parallel (downloads still overlap), but emit
+    // `onChunk` strictly in resolution order through a serial chain so the
+    // caller applies one chunk at a time. `loadedCount` increments inside the
+    // chain, so it reflects emit order (1..N) rather than the order the
+    // promises happened to be created in.
+    const totalCount = visible.length;
+    let loadedCount = 0;
+    let emitChain: Promise<void> = Promise.resolve();
     const chunkPayloads = await Promise.all(
-      visible.map((chunk) =>
-        fetchJsonFromBasePath(manifestResult.basePath, chunk.file)
-      )
+      visible.map(async (chunk, index) => {
+        const payload = await fetchJsonFromBasePath(manifestResult.basePath, chunk.file);
+        if (onChunk) {
+          const geometries = chunkPayloadToGeometries(payload, index);
+          emitChain = emitChain.then(() => {
+            loadedCount += 1;
+            return onChunk({
+              geometries: { geometries },
+              chunkFile: chunk.file,
+              loadedCount,
+              totalCount
+            });
+          });
+        }
+        return payload;
+      })
     );
+    if (onChunk) {
+      // Drain any straggling emit so all chunks are applied before we return.
+      await emitChain;
+    }
     return {
       geometries: combineChunkedEdgeGeometryArtifact(
         { ...manifest, chunks: visible },
@@ -174,14 +224,7 @@ export function combineChunkedEdgeGeometryArtifact(
 
   const geometries: RawEdgeGeometry[] = [];
   for (let index = 0; index < chunkPayloads.length; index += 1) {
-    const chunkPayload = chunkPayloads[index];
-    const chunkGeometries = Array.isArray(chunkPayload)
-      ? (chunkPayload as RawEdgeGeometry[])
-      : (chunkPayload as { geometries?: RawEdgeGeometry[] } | undefined)?.geometries;
-    if (!Array.isArray(chunkGeometries)) {
-      throw new Error(`Edge geometry chunk ${index} is not an array payload`);
-    }
-    geometries.push(...chunkGeometries);
+    geometries.push(...chunkPayloadToGeometries(chunkPayloads[index], index));
   }
 
   if (
@@ -193,4 +236,23 @@ export function combineChunkedEdgeGeometryArtifact(
   }
 
   return { geometries };
+}
+
+/**
+ * Normalize one chunk payload to a geometry array. Chunks ship either as a
+ * bare array or wrapped in `{ geometries: [...] }`; both forms are accepted.
+ * Throws on anything else so a malformed chunk fails loudly rather than
+ * silently contributing zero geometries.
+ */
+function chunkPayloadToGeometries(
+  chunkPayload: unknown,
+  index: number
+): RawEdgeGeometry[] {
+  const chunkGeometries = Array.isArray(chunkPayload)
+    ? (chunkPayload as RawEdgeGeometry[])
+    : (chunkPayload as { geometries?: RawEdgeGeometry[] } | undefined)?.geometries;
+  if (!Array.isArray(chunkGeometries)) {
+    throw new Error(`Edge geometry chunk ${index} is not an array payload`);
+  }
+  return chunkGeometries;
 }
