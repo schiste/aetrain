@@ -2027,7 +2027,55 @@ fn load_trip_descriptors_from_gtfs(
         File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
     let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
     let allowed_routes = load_allowed_routes_for_source(&mut archive, gtfs_source_id)?;
-    load_trip_descriptors(&mut archive, &allowed_routes)
+    let mut trip_descriptors = load_trip_descriptors(&mut archive, &allowed_routes)?;
+    let non_rail_trip_ids = collect_source_non_rail_trip_ids(&mut archive, gtfs_source_id)?;
+    for trip_id in non_rail_trip_ids {
+        trip_descriptors.remove(&trip_id);
+    }
+    Ok(trip_descriptors)
+}
+
+fn collect_source_non_rail_trip_ids(
+    archive: &mut ZipArchive<File>,
+    gtfs_source_id: &str,
+) -> Result<HashSet<String>> {
+    if gtfs_source_id != "sncf-fr-gtfs" {
+        return Ok(HashSet::new());
+    }
+
+    let stop_times_entry = resolve_gtfs_archive_member_name(archive, "stop_times.txt")
+        .context("missing stop_times.txt in GTFS archive")?;
+    let stop_times = archive
+        .by_name(&stop_times_entry)
+        .context("missing stop_times.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().from_reader(stop_times);
+    let headers = reader
+        .headers()
+        .context("failed to read GTFS stop_times headers")?
+        .clone();
+    let trip_id_idx = csv_header_index(&headers, "trip_id")
+        .context("missing trip_id column in GTFS stop_times")?;
+    let stop_id_idx = csv_header_index(&headers, "stop_id")
+        .context("missing stop_id column in GTFS stop_times")?;
+    let mut trip_ids = HashSet::new();
+    let mut record = ByteRecord::new();
+
+    while reader
+        .read_byte_record(&mut record)
+        .context("failed to read GTFS stop time record")?
+    {
+        let Some(stop_id) = record.get(stop_id_idx).and_then(trim_ascii_bytes_to_str) else {
+            continue;
+        };
+        if !is_source_non_rail_stop_id(gtfs_source_id, stop_id) {
+            continue;
+        }
+        if let Some(trip_id) = record.get(trip_id_idx).and_then(trim_ascii_bytes_to_str) {
+            trip_ids.insert(trip_id.to_string());
+        }
+    }
+
+    Ok(trip_ids)
 }
 
 fn load_gtfs_shapes_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, Vec<GeoPoint>>> {
@@ -3380,6 +3428,17 @@ fn is_supported_rail_route(route: &GtfsRouteRow, gtfs_source_id: &str) -> bool {
     is_supported_rail_route_type(route.route_type)
 }
 
+fn is_source_non_rail_stop_id(gtfs_source_id: &str, stop_id: &str) -> bool {
+    match gtfs_source_id {
+        "sncf-fr-gtfs" => is_sncf_coach_stop_id(stop_id),
+        _ => false,
+    }
+}
+
+fn is_sncf_coach_stop_id(stop_id: &str) -> bool {
+    stop_id.trim().to_ascii_lowercase().contains("ocecar")
+}
+
 fn normalize_french_code_insee(input: &str) -> String {
     match input {
         "75101" | "75102" | "75103" | "75104" | "75105" | "75106" | "75107" | "75108" | "75109"
@@ -4561,6 +4620,61 @@ ref-lyon-part-dieu,Lyon Part Dieu,\"45.7604,4.8599\",69123,8772319\n",
             EdgeGeometrySource::GtfsShapeSegment
         );
         assert!(output.edge_geometries.geometries[0].points.len() >= 3);
+
+        let _ = fs::remove_file(zip_path);
+        let _ = fs::remove_file(stations_csv_path);
+    }
+
+    #[test]
+    fn sncf_dataset_filters_car_ter_coach_trips() {
+        let zip_path = write_test_gtfs_zip(
+            "aetrain-sncf-car-ter-test.zip",
+            &[
+                (
+                    "stops.txt",
+                    "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n\
+StopArea:OCE87174003,Châlons-en-Champagne,48.955252,4.348656,1,\n\
+StopArea:OCE87118000,Troyes,48.296069,4.065281,1,\n\
+StopPoint:OCECar TER-87174003,Châlons-en-Champagne,48.955252,4.348656,0,StopArea:OCE87174003\n\
+StopPoint:OCECar TER-87118000,Troyes,48.296069,4.065281,0,StopArea:OCE87118000\n",
+                ),
+                ("routes.txt", "route_id,route_type\nR1,2\n"),
+                ("trips.txt", "route_id,trip_id\nR1,T1\n"),
+                (
+                    "stop_times.txt",
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n\
+T1,10:30:00,10:30:00,StopPoint:OCECar TER-87118000,1\n\
+T1,11:40:00,11:40:00,StopPoint:OCECar TER-87174003,2\n",
+                ),
+            ],
+        )
+        .expect("test GTFS zip should be created");
+        let stations_csv_path = write_text_file(
+            "aetrain-sncf-car-ter-stations-test.csv",
+            "id,nom,position_geographique,codeinsee,codes_uic\n\
+ref-chalons,Châlons-en-Champagne,\"48.955252,4.348656\",51108,87174003\n\
+ref-troyes,Troyes,\"48.296069,4.065281\",10387,87118000\n",
+        )
+        .expect("station reference CSV should be created");
+
+        let output = build_sncf_dataset(
+            &zip_path,
+            &stations_csv_path,
+            None,
+            "sncf-fr-gtfs",
+            "sncf-fr-stations",
+            None,
+            "test-version",
+            "2026-05-08T18:00:00Z",
+            Vec::new(),
+            &ManualOverrideRegistry::default(),
+        )
+        .expect("sncf dataset should build");
+
+        assert_eq!(output.summary.city_count, 0);
+        assert_eq!(output.summary.station_count, 0);
+        assert_eq!(output.summary.edge_count, 0);
+        assert!(output.edge_geometries.geometries.is_empty());
 
         let _ = fs::remove_file(zip_path);
         let _ = fs::remove_file(stations_csv_path);
