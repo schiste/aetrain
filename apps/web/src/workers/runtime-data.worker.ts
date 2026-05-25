@@ -13,6 +13,7 @@ import type {
   RawCity,
   RawEdge,
   RawEdgeGeometries,
+  RawStationArtifact,
   RuntimeArtifactMeta
 } from "../types/planner-dataset.ts";
 
@@ -75,17 +76,19 @@ async function handleLoadDataset(message: IncomingMessage): Promise<void> {
     // arrive later via the load-edge-geometries message and augment the
     // planner model in place.
     const dataset = await diagnostics.timeAsync("load-production-dataset", async () => {
-      const [meta, rawCities, rawEdges] = await Promise.all([
+      const [meta, rawCities, rawEdges, rawStationsResult] = await Promise.all([
         fetchJsonWithFallback(basePaths, "meta.json") as Promise<RuntimeArtifactMeta>,
         fetchJsonWithFallback(basePaths, "cities.json") as Promise<RawCity[]>,
-        fetchJsonWithFallback(basePaths, "edges.json") as Promise<RawEdge[]>
+        fetchJsonWithFallback(basePaths, "edges.json") as Promise<RawEdge[]>,
+        fetchOptionalJsonWithFallback<RawStationArtifact>(basePaths, "stations.json")
       ]);
 
       const bundle: ProductionArtifactBundle = {
         meta,
         rawCities,
         rawEdges,
-        rawEdgeGeometries: { geometries: [] }
+        rawEdgeGeometries: { geometries: [] },
+        rawStations: rawStationsResult?.json ?? null
       };
       return buildProductionPlannerData(bundle);
     }, {
@@ -181,12 +184,20 @@ async function fetchJsonWithFallback(
 async function fetchOptionalJsonWithFallback(
   basePaths: string[],
   fileName: string
-): Promise<{ basePath: string; json: EdgeGeometryManifest } | null> {
+): Promise<{ basePath: string; json: EdgeGeometryManifest } | null>;
+async function fetchOptionalJsonWithFallback<T>(
+  basePaths: string[],
+  fileName: string
+): Promise<{ basePath: string; json: T } | null>;
+async function fetchOptionalJsonWithFallback<T = unknown>(
+  basePaths: string[],
+  fileName: string
+): Promise<{ basePath: string; json: T } | null> {
   let lastError: unknown = null;
   let sawNonNotFoundError = false;
   for (const basePath of basePaths) {
     try {
-      const json = (await fetchJsonFromBasePath(basePath, fileName)) as EdgeGeometryManifest;
+      const json = (await fetchJsonFromBasePath(basePath, fileName)) as T;
       return { basePath, json };
     } catch (error) {
       const status = (error as FetchAssetError | null)?.artifactStatus;

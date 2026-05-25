@@ -659,6 +659,17 @@ pub struct PipelineCityRailEndpointMismatchRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineStationLayerVisibilityRecord {
+    pub country_code: String,
+    pub city_id: aetrain_domain::CityId,
+    pub display_name: String,
+    pub station_count: usize,
+    pub distinct_station_name_count: usize,
+    pub hidden_station_name_count: usize,
+    pub station_display_names: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -676,6 +687,7 @@ pub struct PipelineQualityReport {
     pub non_railway_route_geometries: Vec<PipelineRouteGeometryQualityRecord>,
     pub route_geometry_anomalies: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub city_rail_endpoint_mismatches: Vec<PipelineCityRailEndpointMismatchRecord>,
+    pub station_layer_visibility_gaps: Vec<PipelineStationLayerVisibilityRecord>,
     pub domestic_geometry_backlog_by_country: Vec<PipelineDomesticGeometryBacklogRecord>,
     pub cross_border_geometry_backlog_by_corridor: Vec<PipelineCrossBorderGeometryBacklogRecord>,
     pub domestic_authority_onboarding_hotspots:
@@ -746,6 +758,10 @@ impl PipelineQualityReportSummary {
                 quality_detail_artifact(
                     "authoritative-zero-edge-cities.json",
                     report.authoritative_zero_edge_cities.len(),
+                ),
+                quality_detail_artifact(
+                    "station-layer-visibility-gaps.json",
+                    report.station_layer_visibility_gaps.len(),
                 ),
                 quality_detail_artifact(
                     "close-node-without-edge-summary.json",
@@ -1395,6 +1411,10 @@ fn export_pipeline_target(
         &quality_report.city_rail_endpoint_mismatches,
     )?;
     write_json(
+        &quality_dir.join("station-layer-visibility-gaps.json"),
+        &quality_report.station_layer_visibility_gaps,
+    )?;
+    write_json(
         &quality_dir.join("domestic-geometry-backlog-by-country.json"),
         &quality_report.domestic_geometry_backlog_by_country,
     )?;
@@ -1760,6 +1780,8 @@ fn build_quality_report(
         build_route_geometry_anomaly_records(cities, edges, edge_geometries);
     let city_rail_endpoint_mismatches =
         build_city_rail_endpoint_mismatch_records(cities, stations, edge_geometries);
+    let station_layer_visibility_gaps =
+        build_station_layer_visibility_gap_records(cities, stations);
     let domestic_geometry_backlog_by_country =
         build_domestic_geometry_backlog_by_country(&route_geometry_anomalies);
     let cross_border_geometry_backlog_by_corridor =
@@ -2242,6 +2264,7 @@ fn build_quality_report(
         non_railway_route_geometries,
         route_geometry_anomalies,
         city_rail_endpoint_mismatches,
+        station_layer_visibility_gaps,
         domestic_geometry_backlog_by_country,
         cross_border_geometry_backlog_by_corridor,
         domestic_authority_onboarding_hotspots,
@@ -5440,9 +5463,17 @@ fn export_web_debug_bundle(
     let city_rail_profiles =
         build_city_rail_profile_artifact(&canonical.cities, &canonical.stations, &edge_geometries);
     let web_cities = build_web_debug_city_records(&canonical.cities, &city_rail_profiles);
+    let city_index_by_id = canonical
+        .cities
+        .iter()
+        .enumerate()
+        .map(|(index, city)| (city.city_id.clone(), index as u32))
+        .collect::<HashMap<_, _>>();
+    let station_artifact = build_runtime_station_artifact(canonical, &city_index_by_id)?;
     write_json(&output_dir.join("meta.json"), meta)?;
     write_json(&output_dir.join("cities.json"), &web_cities)?;
     write_json(&output_dir.join("edges.json"), &canonical.edges)?;
+    write_json(&output_dir.join("stations.json"), &station_artifact)?;
     export_chunked_edge_geometries(output_dir, &edge_geometries)?;
     write_json(
         &output_dir.join("city-rail-profiles.json"),
@@ -5932,6 +5963,59 @@ fn classify_city_rail_endpoint_mismatch(
         return "map_anchor_away_from_civic_endpoint";
     }
     "rail_endpoint_not_attached_to_map_anchor"
+}
+
+fn build_station_layer_visibility_gap_records(
+    cities: &[City],
+    stations: &[aetrain_domain::Station],
+) -> Vec<PipelineStationLayerVisibilityRecord> {
+    let city_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let mut station_names_by_city = BTreeMap::<aetrain_domain::CityId, BTreeSet<String>>::new();
+    for station in stations {
+        station_names_by_city
+            .entry(station.city_id.clone())
+            .or_default()
+            .insert(station.display_name.clone());
+    }
+
+    let mut records = Vec::new();
+    for (city_id, station_names) in station_names_by_city {
+        let Some(city) = city_by_id.get(&city_id) else {
+            continue;
+        };
+        let city_name_key = normalize_name(&city.display_name);
+        let station_display_names = station_names.into_iter().collect::<Vec<_>>();
+        let hidden_station_name_count = station_display_names
+            .iter()
+            .filter(|name| normalize_name(name) != city_name_key)
+            .count();
+        if hidden_station_name_count == 0 {
+            continue;
+        }
+
+        records.push(PipelineStationLayerVisibilityRecord {
+            country_code: city.country_code.clone(),
+            city_id: city.city_id.clone(),
+            display_name: city.display_name.clone(),
+            station_count: city.station_ids.len(),
+            distinct_station_name_count: station_display_names.len(),
+            hidden_station_name_count,
+            station_display_names,
+        });
+    }
+
+    records.sort_by(|left, right| {
+        right
+            .hidden_station_name_count
+            .cmp(&left.hidden_station_name_count)
+            .then_with(|| right.station_count.cmp(&left.station_count))
+            .then_with(|| left.country_code.cmp(&right.country_code))
+            .then_with(|| left.display_name.cmp(&right.display_name))
+    });
+    records
 }
 
 fn build_web_runtime_bundle(

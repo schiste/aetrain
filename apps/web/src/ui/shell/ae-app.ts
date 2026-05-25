@@ -163,6 +163,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
 
     diagnostics.info("dataset loaded into ae-app", {
       city_count: dataset.cities.length,
+      station_count: dataset.stations?.length ?? 0,
       route_count: Object.keys(dataset.routeData).length,
       dataset_version: dataset.meta?.dataset_version || null
     });
@@ -211,6 +212,7 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
     const mapSurface = createLeafletMapSurface({
       borderData,
       cities: dataset.cities,
+      stations: dataset.stations ?? [],
       elementId: "map",
       escapeHtml,
       formatMinutes,

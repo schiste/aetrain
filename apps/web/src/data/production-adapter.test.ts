@@ -97,11 +97,34 @@ test("buildProductionPlannerData uses rail map locations for markers and fallbac
     ],
     rawEdgeGeometries: {
       geometries: []
+    },
+    rawStations: {
+      stations: [
+        {
+          city_index: 0,
+          display_name: "Paris Montparnasse",
+          lat_e5: 4_884_055,
+          lon_e5: 232_080,
+          station_id: "station-uic-87391003",
+          uic_code: "87391003"
+        }
+      ]
     }
   });
 
   assert.equal(dataset.cities[0]!.lat, 48.8801);
   assert.equal(dataset.cities[0]!.lon, 2.3546);
+  assert.deepEqual(dataset.stations, [
+    {
+      cityIndex: 0,
+      cityName: "Paris",
+      lat: 48.84055,
+      lon: 2.3208,
+      name: "Paris Montparnasse",
+      stationId: "station-uic-87391003",
+      uicCode: "87391003"
+    }
+  ]);
   assert.deepEqual(dataset.plannerArtifacts!.routePairs![0]!.geometry, [
     { lat: 48.8801, lon: 2.3546 },
     { lat: 45.7606, lon: 4.8594 }

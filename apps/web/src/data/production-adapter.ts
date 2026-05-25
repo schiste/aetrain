@@ -3,6 +3,7 @@ import type {
   GeoPoint,
   PlannerCity,
   PlannerDataset,
+  PlannerStation,
   PlannerRouteData,
   ProductionArtifactBundle,
   RawCityLocation,
@@ -35,17 +36,19 @@ export function buildProductionPlannerData({
   meta,
   rawCities,
   rawEdges,
-  rawEdgeGeometries
+  rawEdgeGeometries,
+  rawStations
 }: ProductionArtifactBundle): PlannerDataset {
   assertProductionArtifactBundle(
-    { meta, rawCities, rawEdges, rawEdgeGeometries },
+    { meta, rawCities, rawEdges, rawEdgeGeometries, rawStations },
     "Production runtime artifact bundle"
   );
   diagnostics.debug("adapting production runtime bundle", {
     dataset_version: meta.dataset_version,
     raw_city_count: rawCities.length,
     raw_edge_count: rawEdges.length,
-    raw_geometry_count: rawEdgeGeometries.geometries.length
+    raw_geometry_count: rawEdgeGeometries.geometries.length,
+    raw_station_count: rawStations?.stations.length ?? 0
   });
 
   const neighborMap = new Map<string, Set<string>>();
@@ -98,6 +101,28 @@ export function buildProductionPlannerData({
       interest
     };
   });
+
+  const plannerStations: PlannerStation[] = rawStations?.stations
+    ?.map((station): PlannerStation | null => {
+      const rawCity = rawCities[station.city_index];
+      if (!rawCity) {
+        return null;
+      }
+      const cityName = nameByCityId.get(rawCity.city_id);
+      if (!cityName) {
+        return null;
+      }
+      return {
+        stationId: station.station_id,
+        name: station.display_name,
+        cityIndex: station.city_index,
+        cityName,
+        lat: station.lat_e5 / 100_000,
+        lon: station.lon_e5 / 100_000,
+        uicCode: station.uic_code ?? undefined
+      };
+    })
+    .filter((station): station is PlannerStation => station !== null) ?? [];
 
   const fallbackLocationByCityId = new Map<string, RawCityLocation>(
     rawCities.map((city) => [city.city_id, city.map_location ?? city.location])
@@ -175,6 +200,7 @@ export function buildProductionPlannerData({
     description: `Validated Europe runtime snapshot · ${uniqueCountryCount} countries · ${rawCities.length} cities · ${Object.keys(routeData).length} undirected routes · interest/pop derived heuristics`,
     meta,
     cities,
+    stations: plannerStations,
     plannerArtifacts: {
       routePairs,
       searchIndex,
@@ -185,6 +211,7 @@ export function buildProductionPlannerData({
   diagnostics.info("adapted production planner dataset", {
     dataset_version: dataset.meta?.dataset_version || null,
     city_count: dataset.cities.length,
+    station_count: dataset.stations?.length ?? 0,
     route_count: Object.keys(dataset.routeData).length
   });
   return dataset;

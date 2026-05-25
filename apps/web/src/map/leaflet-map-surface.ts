@@ -1,5 +1,5 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
-import type { PlannerCity } from "../types/planner-dataset.ts";
+import type { PlannerCity, PlannerStation } from "../types/planner-dataset.ts";
 import type {
   PlannerEdge,
   PlannerModelMetadata,
@@ -196,6 +196,11 @@ interface PreparedCity {
   world: WorldPoint;
 }
 
+interface PreparedStation {
+  station: PlannerStation;
+  world: WorldPoint;
+}
+
 interface WorldBoundingBox {
   minX: number;
   maxX: number;
@@ -260,6 +265,7 @@ type ViewChangeListener = (view: MapView) => void;
 export interface CreateLeafletMapSurfaceOptions {
   borderData: RawBorderRecord[] | null | undefined;
   cities: PlannerCity[];
+  stations?: PlannerStation[];
   elementId: string;
   escapeHtml: (value: unknown) => string;
   formatMinutes: (minutes: number | null | undefined) => string;
@@ -375,6 +381,9 @@ const INTERACTION_NETWORK_EDGE_BUDGET = 7000;
 // segments, tunnel approaches, dead-flat coastal track) survive.
 const STRAIGHT_LINE_MIN_CHORD_WORLD = 0.005;
 const STRAIGHT_LINE_MAX_PATH_CHORD_RATIO = 1.02;
+const STATION_LAYER_MIN_ZOOM = 8.4;
+const STATION_LAYER_FULL_ZOOM = 9.7;
+const STATION_DOT_RADIUS_PX = 1.7;
 const ARRIVAL_PULSE_DURATION_MS = 600;
 const ARRIVAL_PULSE_MIN_RADIUS_PX = 8;
 const ARRIVAL_PULSE_MAX_RADIUS_PX = 28;
@@ -390,6 +399,7 @@ const diagnostics = createDiagnostics("web/map/canvas-surface");
 export function createLeafletMapSurface({
   borderData,
   cities,
+  stations = [],
   elementId,
   escapeHtml,
   formatMinutes,
@@ -403,6 +413,7 @@ export function createLeafletMapSurface({
 }: CreateLeafletMapSurfaceOptions): LeafletMapSurface {
   diagnostics.info("creating canvas map surface", {
     city_count: cities.length,
+    station_count: stations.length,
     edge_count: graph.edges.length
   });
 
@@ -523,6 +534,10 @@ export function createLeafletMapSurface({
       };
     })
     .sort((left, right) => right.renderPriority - left.renderPriority);
+  const preparedStations: PreparedStation[] = stations.map((station) => ({
+    station,
+    world: mercatorProject(station.lon, station.lat)
+  }));
   const landmassPolygons: WorldPoint[][][] = buildLandmassPolygons(borderData).map((polygon) =>
     polygon.map((ring) =>
       ring.map((point) => mercatorProject(point.lon, point.lat))
@@ -1966,8 +1981,10 @@ export function createLeafletMapSurface({
     context.restore();
   }
 
-  function drawCities(_frame: MapFrame, visibleCities: VisibleCity[]): void {
+  function drawCities(frame: MapFrame, visibleCities: VisibleCity[]): void {
     clearCanvas(cityContext, cityCanvas);
+
+    drawStations(frame);
 
     for (const visibleCity of visibleCities) {
       drawMarker(visibleCity, visibleCity.style);
@@ -1976,6 +1993,30 @@ export function createLeafletMapSurface({
     drawArrivalPulse(visibleCities);
     drawSeedPulse(visibleCities);
     drawKeyboardFocusRing(visibleCities);
+  }
+
+  function drawStations(frame: MapFrame): void {
+    if (preparedStations.length === 0 || frame.zoom <= STATION_LAYER_MIN_ZOOM) {
+      return;
+    }
+    const fadeSpan = Math.max(0.001, STATION_LAYER_FULL_ZOOM - STATION_LAYER_MIN_ZOOM);
+    const opacity = Math.min(1, (frame.zoom - STATION_LAYER_MIN_ZOOM) / fadeSpan);
+    if (opacity <= 0) {
+      return;
+    }
+
+    cityContext.save();
+    cityContext.fillStyle = `rgba(203, 213, 225, ${(0.42 * opacity).toFixed(3)})`;
+    for (const entry of preparedStations) {
+      const point = frame.projectWorld(entry.world);
+      if (!pointInViewport(point, frame.size, frame.lod.cityPadding)) {
+        continue;
+      }
+      cityContext.beginPath();
+      cityContext.arc(point.x, point.y, STATION_DOT_RADIUS_PX, 0, Math.PI * 2);
+      cityContext.fill();
+    }
+    cityContext.restore();
   }
 
   function drawKeyboardFocusRing(visibleCities: VisibleCity[]): void {

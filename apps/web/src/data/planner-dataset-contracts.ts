@@ -1,13 +1,16 @@
 import type {
   GeoPoint,
   PlannerArtifacts,
+  PlannerCity,
   PlannerDataset,
+  PlannerStation,
   ProductionArtifactBundle,
   RawCity,
   RawCityLocation,
   RawEdge,
   RawEdgeGeometries,
   RawEdgeGeometryPoint,
+  RawStationArtifact,
   RoutePair,
   RuntimeArtifactMeta,
   SearchIndexEntry
@@ -28,6 +31,10 @@ export function assertPlannerDataset(
   assertString(dataset.label, `${context}.label`);
   assertString(dataset.description, `${context}.description`);
   assertCities(dataset.cities, `${context}.cities`);
+  const cities = dataset.cities;
+  if (dataset.stations !== undefined) {
+    assertPlannerStations(dataset.stations, `${context}.stations`, cities.length);
+  }
   assertRouteData(dataset.routeData, `${context}.routeData`);
   if (dataset.plannerArtifacts !== undefined) {
     assertPlannerArtifacts(
@@ -51,6 +58,9 @@ export function assertProductionArtifactBundle(
   assertRuntimeArtifactMeta(bundle.meta, `${context}.meta`);
   assertRuntimeCities(bundle.rawCities, `${context}.rawCities`);
   assertRuntimeEdges(bundle.rawEdges, `${context}.rawEdges`);
+  if (bundle.rawStations !== undefined && bundle.rawStations !== null) {
+    assertRuntimeStationArtifact(bundle.rawStations, `${context}.rawStations`);
+  }
   assertRuntimeEdgeGeometries(
     bundle.rawEdgeGeometries,
     `${context}.rawEdgeGeometries`
@@ -77,7 +87,7 @@ function assertRuntimeArtifactMeta(
   }
 }
 
-function assertCities(cities: unknown, context: string): void {
+function assertCities(cities: unknown, context: string): asserts cities is PlannerCity[] {
   if (!Array.isArray(cities)) {
     throw new Error(`${context} must be an array`);
   }
@@ -92,6 +102,34 @@ function assertCities(cities: unknown, context: string): void {
     assertFiniteNumber(city.lon, `${cityContext}.lon`);
     assertFiniteNumber(city.pop, `${cityContext}.pop`);
     assertFiniteNumber(city.interest, `${cityContext}.interest`);
+  }
+}
+
+function assertPlannerStations(
+  stations: unknown,
+  context: string,
+  cityCount: number
+): asserts stations is PlannerStation[] {
+  if (!Array.isArray(stations)) {
+    throw new Error(`${context} must be an array`);
+  }
+
+  for (let index = 0; index < stations.length; index += 1) {
+    const stationContext = `${context}[${index}]`;
+    const station = stations[index];
+    assertRecord(station, stationContext);
+    assertString(station.stationId, `${stationContext}.stationId`);
+    assertString(station.name, `${stationContext}.name`);
+    assertString(station.cityName, `${stationContext}.cityName`);
+    assertFiniteNumber(station.cityIndex, `${stationContext}.cityIndex`);
+    assertFiniteNumber(station.lat, `${stationContext}.lat`);
+    assertFiniteNumber(station.lon, `${stationContext}.lon`);
+    if (station.cityIndex < 0 || station.cityIndex >= cityCount) {
+      throw new Error(`${stationContext}.cityIndex must reference a city`);
+    }
+    if (station.uicCode !== undefined && station.uicCode !== null) {
+      assertString(station.uicCode, `${stationContext}.uicCode`);
+    }
   }
 }
 
@@ -219,6 +257,30 @@ function assertRuntimeEdges(
     assertString(edge.from_city_id, `${edgeContext}.from_city_id`);
     assertString(edge.to_city_id, `${edgeContext}.to_city_id`);
     assertFiniteNumber(edge.duration_min, `${edgeContext}.duration_min`);
+  }
+}
+
+function assertRuntimeStationArtifact(
+  artifact: unknown,
+  context: string
+): asserts artifact is RawStationArtifact {
+  assertRecord(artifact, context);
+  if (!Array.isArray(artifact.stations)) {
+    throw new Error(`${context}.stations must be an array`);
+  }
+
+  for (let index = 0; index < artifact.stations.length; index += 1) {
+    const stationContext = `${context}.stations[${index}]`;
+    const station = artifact.stations[index];
+    assertRecord(station, stationContext);
+    assertString(station.station_id, `${stationContext}.station_id`);
+    assertString(station.display_name, `${stationContext}.display_name`);
+    assertFiniteNumber(station.city_index, `${stationContext}.city_index`);
+    assertFiniteNumber(station.lat_e5, `${stationContext}.lat_e5`);
+    assertFiniteNumber(station.lon_e5, `${stationContext}.lon_e5`);
+    if (station.uic_code !== undefined && station.uic_code !== null) {
+      assertString(station.uic_code, `${stationContext}.uic_code`);
+    }
   }
 }
 

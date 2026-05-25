@@ -7,7 +7,8 @@ import type { DiagnosticsEvent } from "../types/diagnostics.ts";
 import type {
   PlannerDataset,
   ProductionArtifactBundle,
-  RawEdgeGeometries
+  RawEdgeGeometries,
+  RawStationArtifact
 } from "../types/planner-dataset.ts";
 import {
   fetchEdgeGeometryArtifact,
@@ -143,10 +144,11 @@ async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
     // geometry artifact and lets buildProductionPlannerData synthesise
     // straight-line fallback geometry per edge. The real curves arrive via
     // loadEdgeGeometries() once the shell is interactive.
-    const [meta, rawCities, rawEdges] = await Promise.all([
+    const [meta, rawCities, rawEdges, rawStationsResult] = await Promise.all([
       fetchJsonWithFallback("meta.json"),
       fetchJsonWithFallback("cities.json"),
-      fetchJsonWithFallback("edges.json")
+      fetchJsonWithFallback("edges.json"),
+      fetchOptionalJsonWithFallback<RawStationArtifact>("stations.json")
     ]);
 
     const emptyGeometries: RawEdgeGeometries = { geometries: [] };
@@ -154,7 +156,8 @@ async function loadProductionDataSourceInline(): Promise<PlannerDataset> {
       meta,
       rawCities,
       rawEdges,
-      rawEdgeGeometries: emptyGeometries
+      rawEdgeGeometries: emptyGeometries,
+      rawStations: rawStationsResult?.json ?? null
     } as unknown as ProductionArtifactBundle);
     diagnostics.info("built production dataset inline (no geometry)", {
       dataset_version: dataset.meta?.dataset_version || null,
@@ -343,12 +346,18 @@ async function fetchJsonWithFallback(fileName: string): Promise<unknown> {
 
 async function fetchOptionalJsonWithFallback(
   fileName: string
-): Promise<{ basePath: string; json: EdgeGeometryManifest } | null> {
+): Promise<{ basePath: string; json: EdgeGeometryManifest } | null>;
+async function fetchOptionalJsonWithFallback<T>(
+  fileName: string
+): Promise<{ basePath: string; json: T } | null>;
+async function fetchOptionalJsonWithFallback<T = unknown>(
+  fileName: string
+): Promise<{ basePath: string; json: T } | null> {
   let lastError: unknown = null;
   let sawNonNotFoundError = false;
   for (const basePath of PRODUCTION_BASE_PATHS) {
     try {
-      const json = (await fetchJsonFromBasePath(basePath, fileName)) as EdgeGeometryManifest;
+      const json = (await fetchJsonFromBasePath(basePath, fileName)) as T;
       return { basePath, json };
     } catch (error) {
       const status = (error as FetchAssetError | null)?.artifactStatus;

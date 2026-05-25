@@ -17,6 +17,16 @@ export interface PlannerCity {
   interest: number;
 }
 
+export interface PlannerStation {
+  stationId: string;
+  name: string;
+  cityIndex: number;
+  cityName: string;
+  lat: number;
+  lon: number;
+  uicCode?: string | null;
+}
+
 export interface GeoPoint {
   lat: number;
   lon: number;
@@ -66,6 +76,7 @@ export interface PlannerDataset {
   label: string;
   description: string;
   cities: PlannerCity[];
+  stations?: PlannerStation[];
   routeData: PlannerRouteData;
   plannerArtifacts?: PlannerArtifacts;
   meta?: RuntimeArtifactMeta;
@@ -120,6 +131,19 @@ export interface RawEdge {
   [key: string]: unknown;
 }
 
+export interface RawStation {
+  station_id: string;
+  city_index: number;
+  display_name: string;
+  lat_e5: number;
+  lon_e5: number;
+  uic_code?: string | null;
+}
+
+export interface RawStationArtifact {
+  stations: RawStation[];
+}
+
 export interface RawEdgeGeometryPoint {
   lat_e5: number;
   lon_e5: number;
@@ -141,4 +165,5 @@ export interface ProductionArtifactBundle {
   rawCities: RawCity[];
   rawEdges: RawEdge[];
   rawEdgeGeometries: RawEdgeGeometries;
+  rawStations?: RawStationArtifact | null;
 }
