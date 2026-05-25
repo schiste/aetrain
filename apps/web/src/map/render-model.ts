@@ -234,6 +234,68 @@ export function cityPopFadeOpacity(
   return smoothstep((Math.log(pop) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)));
 }
 
+/** Inputs to the per-city visibility gate, evaluated once per city per frame
+ *  *before* the leg-range filter and the viewport cull. Every field is a plain
+ *  scalar/boolean so the decision is pure and unit-testable in isolation from
+ *  the canvas surface — camera projection, marker styling, and label packing
+ *  all happen downstream in the surface, only for cities this gate admits. */
+export interface CityVisibilityInput {
+  /** Lower bound of the interest slider. */
+  filterInterest: number;
+  /** City is part of the active trip — bypasses the network gate and filter. */
+  inTrip: boolean;
+  /** City interest score, compared against `filterInterest`. */
+  interest: number;
+  /** City currently holds keyboard focus — bypasses the network gate so the
+   *  focus ring can resolve even when the city's edges are off-screen. */
+  isKeyboardFocused: boolean;
+  /** City is a station on a rail edge currently in the viewport. */
+  onNetwork: boolean;
+  /** City population in absolute people, compared against `popFadeLo`. */
+  pop: number;
+  /** Bottom of the fade band (threshold ÷ fade ratio): cities below it are
+   *  invisible regardless of fade. Ignored when `popThresholdAbs <= 0`. */
+  popFadeLo: number;
+  /** Population gate threshold in absolute people; <= 0 disables the pop gate
+   *  ("show everything" / manual mode at the floor). */
+  popThresholdAbs: number;
+}
+
+export interface CityVisibilityDecision {
+  /** Admitted to the render plan. Still subject to the downstream leg-range
+   *  filter and the viewport cull, which the surface applies after projecting
+   *  the city — this gate is the pre-projection decision only. */
+  admitted: boolean;
+  /** Cleared the sliders but hidden solely because none of its rail edges are
+   *  in the viewport — the network-anchor gate doing its job. Surfaced so the
+   *  diagnostics emit can attribute the hidden dot to the network decision and
+   *  not a downstream leg-range cut. */
+  culledOffNetwork: boolean;
+  /** Cleared both sliders (interest floor + population floor). Exposed for
+   *  tests and call-site clarity even though `admitted`/`culledOffNetwork`
+   *  already fold it in. */
+  passesFilter: boolean;
+}
+
+/** The network-anchored city-visibility gate. A non-trip, non-focused city is
+ *  admitted only when it both clears the sliders *and* sits on the visible rail
+ *  network; trip and keyboard-focused cities bypass both. This replaced the old
+ *  fixed-count city budget (which was non-monotonic in the sliders) as the
+ *  continental-zoom flood guard — see the call site in canvas-map-surface.ts. */
+export function decideCityVisibility(
+  input: CityVisibilityInput
+): CityVisibilityDecision {
+  const passesFilter =
+    input.interest >= input.filterInterest
+    && (input.popThresholdAbs <= 0 || input.pop >= input.popFadeLo);
+  const admitted =
+    input.inTrip || input.isKeyboardFocused || (input.onNetwork && passesFilter);
+  const culledOffNetwork =
+    !input.inTrip && !input.isKeyboardFocused && passesFilter && !input.onNetwork;
+
+  return { admitted, culledOffNetwork, passesFilter };
+}
+
 /** Hysteresis-aware label packer.
  *
  *  Two-pass greedy pack:

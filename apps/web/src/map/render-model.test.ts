@@ -5,10 +5,12 @@ import {
   buildLodProfile,
   cityPopFadeOpacity,
   createSpatialGrid,
+  decideCityVisibility,
   hitTestSpatialGrid,
   lineIntersectsViewport,
   pointInViewport,
-  selectLabelCandidates
+  selectLabelCandidates,
+  type CityVisibilityInput
 } from "./render-model.ts";
 
 test("buildLodProfile tightens budgets at low zoom", () => {
@@ -95,6 +97,100 @@ test("spatial grid returns closest hit from neighboring buckets", () => {
 
   const hit = hitTestSpatialGrid(grid, { x: 80, y: 40 });
   assert.equal(hit?.city?.name, "Lyon");
+});
+
+// A passing, on-network city with both gates wide open. Each test overrides
+// only the field under examination so the asserted branch is the lone variable.
+function baseCity(): CityVisibilityInput {
+  return {
+    filterInterest: 5,
+    inTrip: false,
+    interest: 8,
+    isKeyboardFocused: false,
+    onNetwork: true,
+    pop: 200_000,
+    popFadeLo: 100_000,
+    popThresholdAbs: 160_000
+  };
+}
+
+test("decideCityVisibility admits an on-network city that clears both sliders", () => {
+  const decision = decideCityVisibility(baseCity());
+  assert.deepEqual(decision, {
+    admitted: true,
+    culledOffNetwork: false,
+    passesFilter: true
+  });
+});
+
+test("decideCityVisibility culls an off-network city that clears the sliders", () => {
+  // The whole point of the network-anchor gate: a city can pass both sliders
+  // and still be hidden because none of its rail edges are in the viewport.
+  const decision = decideCityVisibility({ ...baseCity(), onNetwork: false });
+  assert.equal(decision.admitted, false);
+  assert.equal(decision.culledOffNetwork, true);
+  assert.equal(decision.passesFilter, true);
+});
+
+test("decideCityVisibility lets trip cities bypass the network gate", () => {
+  const decision = decideCityVisibility({
+    ...baseCity(),
+    inTrip: true,
+    onNetwork: false
+  });
+  assert.equal(decision.admitted, true);
+  // A trip bypass is not a network cull — the dot is shown, not hidden.
+  assert.equal(decision.culledOffNetwork, false);
+});
+
+test("decideCityVisibility lets keyboard-focused cities bypass the network gate", () => {
+  const decision = decideCityVisibility({
+    ...baseCity(),
+    isKeyboardFocused: true,
+    onNetwork: false
+  });
+  assert.equal(decision.admitted, true);
+  assert.equal(decision.culledOffNetwork, false);
+});
+
+test("decideCityVisibility trip bypass overrides a failing filter", () => {
+  // Below both sliders, but in the trip — the trip wins.
+  const decision = decideCityVisibility({
+    ...baseCity(),
+    inTrip: true,
+    interest: 0,
+    pop: 1
+  });
+  assert.equal(decision.admitted, true);
+  assert.equal(decision.passesFilter, false);
+  assert.equal(decision.culledOffNetwork, false);
+});
+
+test("decideCityVisibility fails the filter below the interest floor", () => {
+  const decision = decideCityVisibility({ ...baseCity(), interest: 4 });
+  assert.equal(decision.passesFilter, false);
+  assert.equal(decision.admitted, false);
+  // Off-network cull requires passesFilter; a slider failure is not one.
+  assert.equal(decision.culledOffNetwork, false);
+});
+
+test("decideCityVisibility fails the filter below the population fade floor", () => {
+  const decision = decideCityVisibility({ ...baseCity(), pop: 99_999 });
+  assert.equal(decision.passesFilter, false);
+  assert.equal(decision.admitted, false);
+});
+
+test("decideCityVisibility disables the pop gate when threshold <= 0", () => {
+  // popThresholdAbs <= 0 is "show everything" / manual mode at the floor: a
+  // tiny-population city still passes as long as interest clears.
+  const decision = decideCityVisibility({
+    ...baseCity(),
+    pop: 1,
+    popFadeLo: 100_000,
+    popThresholdAbs: 0
+  });
+  assert.equal(decision.passesFilter, true);
+  assert.equal(decision.admitted, true);
 });
 
 test("selectLabelCandidates enforces overlap budget in priority order", () => {

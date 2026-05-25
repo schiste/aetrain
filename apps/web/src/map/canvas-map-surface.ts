@@ -27,6 +27,7 @@ import {
   buildLodProfile,
   cityPopFadeOpacity,
   createSpatialGrid,
+  decideCityVisibility,
   hitTestSpatialGrid,
   lineIntersectsViewport,
   pointInViewport,
@@ -2192,16 +2193,24 @@ export function createCanvasMapSurface({
       // edges are off-screen.
       const isKeyboardFocused =
         keyboardNavActive && keyboardFocusedCityName === city.name;
-      const onNetwork = visibleStations.has(city.name);
-      const passesFilter =
-        city.interest >= plannerState.filterInterest &&
-        (popThresholdAbs <= 0 || city.pop >= popFadeLo);
-      let visible = inTrip || isKeyboardFocused || (onNetwork && passesFilter);
+      // Pure network-anchor + slider gate, lifted into render-model.ts so the
+      // "which cities show" rule has a unit-tested home outside the renderer.
+      const decision = decideCityVisibility({
+        filterInterest: plannerState.filterInterest,
+        inTrip,
+        interest: city.interest,
+        isKeyboardFocused,
+        onNetwork: visibleStations.has(city.name),
+        pop: city.pop,
+        popFadeLo,
+        popThresholdAbs
+      });
+      let visible = decision.admitted;
 
       // A city that cleared the sliders but is hidden purely by the network
       // gate. Counted here, before the leg filter, so it attributes the
       // hidden dot to the network decision and not a downstream leg-range cut.
-      if (!inTrip && !isKeyboardFocused && passesFilter && !onNetwork) {
+      if (decision.culledOffNetwork) {
         culledOffNetwork += 1;
       }
 
