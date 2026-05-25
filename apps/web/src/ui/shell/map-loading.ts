@@ -25,6 +25,21 @@ export interface MapLoadingState {
 export const mapLoadingState = signal<MapLoadingState>({ active: 0, label: "" });
 
 /**
+ * Rewrite the in-flight load's label without touching the ref count. Used by
+ * the progressive geometry stream to advance "Loading rail geometry… N of M"
+ * under a single begin()/end() pair. No-op when nothing is loading, so a
+ * straggling chunk apply that lands after end() can't resurrect the overlay.
+ */
+export function updateMapLoadingLabel(label: string): void {
+  const current = mapLoadingState.peek();
+  if (current.active <= 0) {
+    return;
+  }
+  mapLoadingState.set({ active: current.active, label });
+  diagnostics.debug("map loading relabel", { label, active: current.active });
+}
+
+/**
  * Mark the start of a load and return an idempotent end() handle. Call the
  * handle (typically in a `finally`) when the load settles; calling it more
  * than once is a no-op so it's safe to wire into both success and error

@@ -31,7 +31,7 @@ import "../components/ae-debug-toggles.ts";
 import "../components/ae-map-loader.ts";
 import "../components/ae-undo-toast.ts";
 import { setAppContext, type AppContext } from "../runtime/context.ts";
-import { beginMapLoading } from "./map-loading.ts";
+import { beginMapLoading, updateMapLoadingLabel } from "./map-loading.ts";
 import { signal } from "../runtime/signal.ts";
 import {
   escapeHtml,
@@ -488,13 +488,36 @@ async function scheduleEdgeGeometryUpgrade({
   const endLoading =
     triggeredBy === "initial" ? beginMapLoading("Loading rail geometry…") : null;
   try {
+    let appliedChunks = 0;
     const result = await loadEdgeGeometries({
       viewport: mapSurface.getViewportBounds(),
-      seenChunkFiles: loadedChunkFiles
+      seenChunkFiles: loadedChunkFiles,
+      // Apply each chunk the moment its fetch resolves rather than waiting on
+      // the slowest of N. augmentGeometry only touches edges named in the
+      // chunk, so repeated disjoint calls fill the rail network in N steps and
+      // refreshGeometry redraws the (now partially real) network after each.
+      // Because chunks are applied here, the combined `result.geometries` is
+      // empty over the worker path and is intentionally NOT re-applied below.
+      onChunk: async (chunk) => {
+        loadedChunkFiles.add(chunk.chunkFile);
+        await planner.augmentGeometry(chunk.geometries);
+        mapSurface.refreshGeometry();
+        appliedChunks += 1;
+        // Only the load that owns the overlay (the initial deferred load)
+        // advances its label. updateMapLoadingLabel is a no-op when nothing is
+        // loading, so a view-change refetch can't resurrect or stomp it.
+        if (endLoading) {
+          updateMapLoadingLabel(
+            `Loading rail geometry… ${chunk.loadedCount} of ${chunk.totalCount}`
+          );
+        }
+      }
     });
-    if (result.geometries.geometries.length === 0) {
+    if (result.loadedChunkFiles.length === 0) {
       // Nothing new to apply (cache hit on every visible chunk). The
       // common case for view-change triggers once everything's loaded.
+      // Checked via loadedChunkFiles, not result.geometries — the latter is
+      // empty in streaming mode even when chunks were applied via onChunk.
       diagnostics.debug("geometry upgrade no-op", {
         triggered_by: triggeredBy,
         already_loaded_count: loadedChunkFiles.size
@@ -504,8 +527,10 @@ async function scheduleEdgeGeometryUpgrade({
     for (const file of result.loadedChunkFiles) {
       loadedChunkFiles.add(file);
     }
-    await planner.augmentGeometry(result.geometries);
-    mapSurface.refreshGeometry();
+    // Derived planner state (trip legs, summaries) only needs recomputing once
+    // the network is fully upgraded, so it stays out of the per-chunk path —
+    // we don't pay its O(routes) cost on every chunk for state the background
+    // reveal doesn't depend on.
     await plannerStore.refreshDerivedState();
     const now =
       typeof performance !== "undefined" && typeof performance.now === "function"
@@ -513,7 +538,7 @@ async function scheduleEdgeGeometryUpgrade({
         : Date.now();
     diagnostics.info("geometry augmented", {
       triggered_by: triggeredBy,
-      geometry_count: result.geometries.geometries.length,
+      applied_chunks: appliedChunks,
       newly_loaded_chunks: result.loadedChunkFiles.length,
       total_loaded_chunks: loadedChunkFiles.size,
       elapsed_ms: Math.round((now - startedAt) * 1000) / 1000
