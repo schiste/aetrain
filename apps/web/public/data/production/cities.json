@@ -517,7 +517,7 @@
     },
     "map_location": {
       "lat": 50.10217999999999,
-      "lon": 1.82454
+      "lon": 1.8245400000000003
     },
     "wikidata_qid": null,
     "population": null,
@@ -1802,7 +1802,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774125",
       "station-uic-87741256"
@@ -1819,8 +1819,8 @@
       "lon": 3.197912
     },
     "map_location": {
-      "lat": 46.01487,
-      "lon": 3.19791
+      "lat": 46.014869,
+      "lon": 3.197912
     },
     "wikidata_qid": null,
     "population": null,
@@ -1973,7 +1973,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774176",
       "station-uic-87741769"
@@ -2079,7 +2079,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771363",
       "station-uic-87713636"
@@ -2202,27 +2202,6 @@
     "aliases": []
   },
   {
-    "city_id": "ajain-fr-q673204",
-    "slug": "ajain",
-    "display_name": "Ajain",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.2075,
-      "lon": 1.9986111111111111
-    },
-    "map_location": {
-      "lat": 46.20715,
-      "lon": 1.99724
-    },
-    "wikidata_qid": "Q673204",
-    "population": 1028,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87417808"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "akkrum-voorzijde-station-galemaleane-nl-e6e97ef5",
     "slug": "akkrum-voorzijde",
     "display_name": "Akkrum Voorzijde",
@@ -2276,14 +2255,13 @@
       "lon": 4.7715274
     },
     "map_location": {
-      "lat": 45.75147,
-      "lon": 4.76699
+      "lat": 45.75174474,
+      "lon": 4.7715274
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-87698381",
       "station-uic-8772274"
     ],
     "aliases": []
@@ -2424,12 +2402,12 @@
       "lon": 5.948342
     },
     "map_location": {
-      "lat": 45.78594999999999,
-      "lon": 5.948339999999999
+      "lat": 45.78595,
+      "lon": 5.94834
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774611",
       "station-uic-87746115"
@@ -2472,7 +2450,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774164",
       "station-uic-87741645"
@@ -2556,21 +2534,17 @@
       "lon": 4.832852
     },
     "map_location": {
-      "lat": 45.874897,
-      "lon": 4.832852
+      "lat": 45.87474696,
+      "lon": 4.83267572
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697003",
       "station-uic-8772126",
       "station-uic-87721266"
     ],
-    "aliases": [
-      "Albigny Neuville",
-      "Albigny-Neuville-Arret-TCL-Gare"
-    ]
+    "aliases": []
   },
   {
     "city_id": "albizzate-solbiate-arno-ch-afdeea29",
@@ -2948,7 +2922,7 @@
       "lon": 4.084948
     },
     "map_location": {
-      "lat": 44.12783000000001,
+      "lat": 44.12783,
       "lon": 4.08495
     },
     "wikidata_qid": null,
@@ -2959,29 +2933,6 @@
       "station-uic-87775288"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "alet-les-bains-fr-q173787",
-    "slug": "alet-les-bains",
-    "display_name": "Alet-les-Bains",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.99638888888889,
-      "lon": 2.256388888888889
-    },
-    "map_location": {
-      "lat": 42.9974,
-      "lon": 2.25219
-    },
-    "wikidata_qid": "Q173787",
-    "population": 379,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87615187"
-    ],
-    "aliases": [
-      "Alet Les Bains"
-    ]
   },
   {
     "city_id": "alfafar-benetusser-es-a2924ec3",
@@ -3354,27 +3305,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8501035"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "allamps-e-s-a-t-zz-0dcf70bc",
-    "slug": "allamps-e-s-a-t",
-    "display_name": "Allamps E S A T",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.542768,
-      "lon": 5.796812
-    },
-    "map_location": {
-      "lat": 48.54277,
-      "lon": 5.79681
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87117465"
     ],
     "aliases": []
   },
@@ -4454,48 +4384,6 @@
     "aliases": []
   },
   {
-    "city_id": "alteckendorf-altdorf-zz-4b611c3d",
-    "slug": "alteckendorf-altdorf",
-    "display_name": "Alteckendorf Altdorf",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.794562,
-      "lon": 7.589267
-    },
-    "map_location": {
-      "lat": 48.79456,
-      "lon": 7.58927
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87639955"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "alteckendorf-eckendorf-zz-a8deb988",
-    "slug": "alteckendorf-eckendorf",
-    "display_name": "Alteckendorf Eckendorf",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.789785,
-      "lon": 7.601602
-    },
-    "map_location": {
-      "lat": 48.78979,
-      "lon": 7.6016
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87639930"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "altena-de-c4d5a801",
     "slug": "altena",
     "display_name": "Altena",
@@ -5307,7 +5195,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87574343"
     ],
@@ -5340,8 +5228,8 @@
     "display_name": "Ambronay Priay",
     "country_code": "FR",
     "location": {
-      "lat": 46.011728,
-      "lon": 5.338642
+      "lat": 46.011866,
+      "lon": 5.339141
     },
     "map_location": {
       "lat": 46.01187,
@@ -5351,13 +5239,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87695965",
       "station-uic-8774314",
       "station-uic-87743146"
     ],
-    "aliases": [
-      "Ambronay-Priay RD 1075"
-    ]
+    "aliases": []
   },
   {
     "city_id": "amersfoort-centraal-de-4437c1a4",
@@ -5440,7 +5325,7 @@
     },
     "map_location": {
       "lat": 49.89058,
-      "lon": 2.308279999999999
+      "lon": 2.3082799999999994
     },
     "wikidata_qid": null,
     "population": null,
@@ -5506,8 +5391,8 @@
       "lon": 4.326763
     },
     "map_location": {
-      "lat": 45.97101,
-      "lon": 4.32676
+      "lat": 45.971014,
+      "lon": 4.326763
     },
     "wikidata_qid": null,
     "population": null,
@@ -5868,8 +5753,8 @@
       "lon": 6.062342
     },
     "map_location": {
-      "lat": 49.05771,
-      "lon": 6.06234
+      "lat": 49.057714,
+      "lon": 6.062342
     },
     "wikidata_qid": null,
     "population": null,
@@ -6512,7 +6397,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774600",
       "station-uic-87746008",
@@ -6661,23 +6546,20 @@
     "display_name": "Anse",
     "country_code": "FR",
     "location": {
-      "lat": 45.93794231,
-      "lon": 4.71934117
+      "lat": 45.93888562,
+      "lon": 4.72036834
     },
     "map_location": {
-      "lat": 45.936999,
-      "lon": 4.718314
+      "lat": 45.93888562,
+      "lon": 4.72036834
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-87697011",
       "station-uic-8772132"
     ],
-    "aliases": [
-      "Anse Monument"
-    ]
+    "aliases": []
   },
   {
     "city_id": "anse-halte-fr-69009",
@@ -7031,10 +6913,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87191643",
-      "station-uic-87635854"
+      "station-uic-87191643"
     ],
     "aliases": []
   },
@@ -7590,8 +7471,8 @@
       "lon": -1.1688888888888889
     },
     "map_location": {
-      "lat": 44.658970000000004,
-      "lon": -1.1653199999999997
+      "lat": 44.65897,
+      "lon": -1.16532
     },
     "wikidata_qid": "Q191460",
     "population": 11092,
@@ -7695,12 +7576,12 @@
       "lon": 6.528105
     },
     "map_location": {
-      "lat": 48.1189,
-      "lon": 6.528110000000001
+      "lat": 48.118896,
+      "lon": 6.528105
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8714441",
       "station-uic-87144410"
@@ -8040,12 +7921,12 @@
       "lon": -0.025291
     },
     "map_location": {
-      "lat": 48.738550000000004,
-      "lon": -0.025289999999999993
+      "lat": 48.73855,
+      "lon": -0.025289999999999997
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87444539"
     ],
@@ -8069,48 +7950,6 @@
     "interest_score": 4,
     "station_ids": [
       "station-uic-8774685"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "argentine-la-combe-zz-e336362e",
-    "slug": "argentine-la-combe",
-    "display_name": "Argentine La Combe",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.502072,
-      "lon": 6.318651
-    },
-    "map_location": {
-      "lat": 45.50207,
-      "lon": 6.31865
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87697144"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "argentine-zz-a0dbe95b",
-    "slug": "argentine",
-    "display_name": "Argentine",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.497151,
-      "lon": 6.314943
-    },
-    "map_location": {
-      "lat": 45.49715,
-      "lon": 6.31494
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87741272"
     ],
     "aliases": []
   },
@@ -8586,8 +8425,8 @@
       "lon": 2.781314
     },
     "map_location": {
-      "lat": 50.28697000000004,
-      "lon": 2.781310000000001
+      "lat": 50.28697000000003,
+      "lon": 2.7813100000000004
     },
     "wikidata_qid": null,
     "population": null,
@@ -8722,27 +8561,6 @@
     "station_ids": [
       "station-uic-8719240",
       "station-uic-87192401"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "ars-sur-moselle-tim-republique-zz-b5d50606",
-    "slug": "ars-sur-moselle-tim-republique",
-    "display_name": "Ars Sur Moselle Tim Republique",
-    "country_code": "FR",
-    "location": {
-      "lat": 49.075907,
-      "lon": 6.076677
-    },
-    "map_location": {
-      "lat": 49.07591,
-      "lon": 6.07668
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87714378"
     ],
     "aliases": []
   },
@@ -9756,7 +9574,7 @@
       "lon": 2.592519
     },
     "map_location": {
-      "lat": 50.35289999999999,
+      "lat": 50.3529,
       "lon": 2.59252
     },
     "wikidata_qid": null,
@@ -9841,20 +9659,17 @@
       "lon": 5.971139
     },
     "map_location": {
-      "lat": 49.21617683,
-      "lon": 5.97151492
+      "lat": 49.216036,
+      "lon": 5.971139
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
       "station-uic-8719168",
-      "station-uic-87191684",
-      "station-uic-87742247"
+      "station-uic-87191684"
     ],
-    "aliases": [
-      "Auboue"
-    ]
+    "aliases": []
   },
   {
     "city_id": "aubrives-fr-08028",
@@ -10227,7 +10042,7 @@
     },
     "map_location": {
       "lat": 50.19748000000002,
-      "lon": 3.843329999999998
+      "lon": 3.8433299999999986
     },
     "wikidata_qid": null,
     "population": null,
@@ -10664,7 +10479,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771334",
       "station-uic-87713347"
@@ -10998,7 +10813,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771855",
       "station-uic-87718551"
@@ -11525,27 +11340,6 @@
     "aliases": [
       "Bachheim Bahnhof"
     ]
-  },
-  {
-    "city_id": "bachos-anos-zz-e4f35f28",
-    "slug": "bachos-anos",
-    "display_name": "Bachos Anos",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.897857,
-      "lon": 0.625231
-    },
-    "map_location": {
-      "lat": 42.89786,
-      "lon": 0.62523
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87170068"
-    ],
-    "aliases": []
   },
   {
     "city_id": "backnang-de-e302ab59",
@@ -13244,27 +13038,6 @@
     ]
   },
   {
-    "city_id": "bagneres-de-luchon-lycee-zz-4301e696",
-    "slug": "bagneres-de-luchon-lycee",
-    "display_name": "Bagneres De Luchon Lycee",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.791496,
-      "lon": 0.597762
-    },
-    "map_location": {
-      "lat": 42.7915,
-      "lon": 0.59776
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87695015"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "bagnols-chadenet-fr-48037",
     "slug": "bagnols-chadenet",
     "display_name": "Bagnols Chadenet",
@@ -13537,7 +13310,7 @@
       "lon": 1.325333
     },
     "map_location": {
-      "lat": 48.36693000000001,
+      "lat": 48.36693,
       "lon": 1.32533
     },
     "wikidata_qid": null,
@@ -14163,29 +13936,6 @@
     "aliases": []
   },
   {
-    "city_id": "balsieges-arret-zz-c66d50a1",
-    "slug": "balsieges-arret",
-    "display_name": "Balsieges Arret",
-    "country_code": "FR",
-    "location": {
-      "lat": 44.482325,
-      "lon": 3.456205
-    },
-    "map_location": {
-      "lat": 44.48233,
-      "lon": 3.45621
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87640656"
-    ],
-    "aliases": [
-      "Balsièges Arrêt RN88"
-    ]
-  },
-  {
     "city_id": "balsieges-fr-48016",
     "slug": "balsieges",
     "display_name": "Balsieges",
@@ -14790,30 +14540,6 @@
     "aliases": []
   },
   {
-    "city_id": "barisey-la-cote-zz-fd082ca7",
-    "slug": "barisey-la-cote",
-    "display_name": "Barisey La Cote",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.535008,
-      "lon": 5.83992
-    },
-    "map_location": {
-      "lat": 48.53501,
-      "lon": 5.83992
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87141754",
-      "station-uic-87405712"
-    ],
-    "aliases": [
-      "Barisey-la-Côte Gare"
-    ]
-  },
-  {
     "city_id": "barjac-fr-48018",
     "slug": "barjac",
     "display_name": "Barjac",
@@ -15254,8 +14980,8 @@
     "display_name": "Bartenheim",
     "country_code": "FR",
     "location": {
-      "lat": 47.634971,
-      "lon": 7.4816915
+      "lat": 47.634931,
+      "lon": 7.487256
     },
     "map_location": {
       "lat": 47.634931,
@@ -15266,12 +14992,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8718211",
-      "station-uic-87182113",
-      "station-uic-87659870"
+      "station-uic-87182113"
     ],
-    "aliases": [
-      "Bartenheim Pharmacie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "barvaux-be-57f32826",
@@ -15603,23 +15326,20 @@
     "display_name": "Basse Ham",
     "country_code": "FR",
     "location": {
-      "lat": 49.38072,
-      "lon": 6.2345805
+      "lat": 49.380546,
+      "lon": 6.234873
     },
     "map_location": {
-      "lat": 49.38089,
-      "lon": 6.23429
+      "lat": 49.38055,
+      "lon": 6.23487
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87191601",
-      "station-uic-87703769"
+      "station-uic-87191601"
     ],
-    "aliases": [
-      "Basse Ham Stade"
-    ]
+    "aliases": []
   },
   {
     "city_id": "basse-wavre-be-44363599",
@@ -16130,7 +15850,7 @@
       "lon": 6.32286
     },
     "map_location": {
-      "lat": 48.46805,
+      "lat": 48.468045,
       "lon": 6.32286
     },
     "wikidata_qid": null,
@@ -16504,27 +16224,6 @@
     "aliases": []
   },
   {
-    "city_id": "beauzac-zz-15ac791a",
-    "slug": "beauzac",
-    "display_name": "Beauzac",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.258168,
-      "lon": 4.099086
-    },
-    "map_location": {
-      "lat": 45.25817,
-      "lon": 4.09909
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87726794"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "bebra-de-64d1d880",
     "slug": "bebra",
     "display_name": "Bebra",
@@ -16583,7 +16282,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8778160",
       "station-uic-87781609"
@@ -17060,7 +16759,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8718400",
       "station-uic-87184002",
@@ -20209,8 +19908,8 @@
     "display_name": "Bettembourg",
     "country_code": "LU",
     "location": {
-      "lat": 49.5108135,
-      "lon": 6.102569750000001
+      "lat": 49.505238000000006,
+      "lon": 6.1029175
     },
     "map_location": {
       "lat": 49.51652000000001,
@@ -20218,15 +19917,13 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-000220102018",
       "station-uic-000400000064",
-      "station-uic-82006030",
-      "station-uic-82260018"
+      "station-uic-82006030"
     ],
     "aliases": [
-      "Bettembourg Gare",
       "Bettembourg, Gare",
       "Bettembourg-frontière"
     ]
@@ -20666,8 +20363,8 @@
     "display_name": "Beynost",
     "country_code": "FR",
     "location": {
-      "lat": 45.8353135,
-      "lon": 5.006227
+      "lat": 45.833898,
+      "lon": 5.006947
     },
     "map_location": {
       "lat": 45.833898,
@@ -20677,13 +20374,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87698415",
       "station-uic-8772354",
       "station-uic-87723544"
     ],
-    "aliases": [
-      "Beynost RD 1084 Gare"
-    ]
+    "aliases": []
   },
   {
     "city_id": "bezana-es-080246ef",
@@ -20738,7 +20432,7 @@
     },
     "map_location": {
       "lat": 43.3363,
-      "lon": 3.2189000000000005
+      "lon": 3.2189
     },
     "wikidata_qid": null,
     "population": null,
@@ -22089,8 +21783,8 @@
       "lon": 7.851654
     },
     "map_location": {
-      "lat": 48.76575,
-      "lon": 7.85165
+      "lat": 48.765753,
+      "lon": 7.851654
     },
     "wikidata_qid": null,
     "population": null,
@@ -22098,27 +21792,6 @@
     "station_ids": [
       "station-uic-8721361",
       "station-uic-87213611"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "bischwiller-vestra-zz-c9ee8e74",
-    "slug": "bischwiller-vestra",
-    "display_name": "Bischwiller Vestra",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.770589,
-      "lon": 7.847867
-    },
-    "map_location": {
-      "lat": 48.77059,
-      "lon": 7.84787
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659813"
     ],
     "aliases": []
   },
@@ -22214,8 +21887,8 @@
     "display_name": "Bitschwiller Les Thann",
     "country_code": "FR",
     "location": {
-      "lat": 47.828277,
-      "lon": 7.0791255
+      "lat": 47.827372,
+      "lon": 7.078514
     },
     "map_location": {
       "lat": 47.82737,
@@ -22226,12 +21899,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8718257",
-      "station-uic-87182576",
-      "station-uic-87659953"
+      "station-uic-87182576"
     ],
-    "aliases": [
-      "Bitschwiller Les Thann Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "bittelbronn-de-c0ea5f70",
@@ -22313,7 +21983,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8714113",
       "station-uic-87141135"
@@ -22767,27 +22437,6 @@
     "aliases": []
   },
   {
-    "city_id": "blenod-les-toul-les-naux-zz-d9a93961",
-    "slug": "blenod-les-toul-les-naux",
-    "display_name": "Blenod Les Toul Les Naux",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.59948,
-      "lon": 5.843568
-    },
-    "map_location": {
-      "lat": 48.59948,
-      "lon": 5.84357
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87141721"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "blere-la-croix-fr-37091",
     "slug": "blere-la-croix",
     "display_name": "Blere La Croix",
@@ -22970,7 +22619,7 @@
       "lon": 1.323759
     },
     "map_location": {
-      "lat": 47.585450000000016,
+      "lat": 47.58545000000001,
       "lon": 1.32376
     },
     "wikidata_qid": null,
@@ -23727,7 +23376,7 @@
       "lon": 4.57513
     },
     "map_location": {
-      "lat": 45.90655,
+      "lat": 45.906545,
       "lon": 4.57513
     },
     "wikidata_qid": null,
@@ -24465,7 +24114,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774633",
       "station-uic-87746339"
@@ -24510,7 +24159,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774559",
       "station-uic-87745596"
@@ -24752,8 +24401,8 @@
       "lon": -0.57944444444444
     },
     "map_location": {
-      "lat": 44.82586999999996,
-      "lon": -0.5566999999999996
+      "lat": 44.825869999999966,
+      "lon": -0.5566999999999998
     },
     "wikidata_qid": "Q1479",
     "population": 267991,
@@ -24914,27 +24563,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8011242"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "borne-haute-loire-zz-8ec0ad64",
-    "slug": "borne-haute-loire",
-    "display_name": "Borne Haute Loire",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.099563,
-      "lon": 3.799295
-    },
-    "map_location": {
-      "lat": 45.09956,
-      "lon": 3.7993
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87734681"
     ],
     "aliases": []
   },
@@ -25277,7 +24905,7 @@
       "lon": 3.33173
     },
     "map_location": {
-      "lat": 50.27814999999999,
+      "lat": 50.27815,
       "lon": 3.33173
     },
     "wikidata_qid": null,
@@ -25446,12 +25074,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8721477",
-      "station-uic-87214775",
-      "station-uic-87660886"
+      "station-uic-87214775"
     ],
-    "aliases": [
-      "Bourg Bruche Eglise"
-    ]
+    "aliases": []
   },
   {
     "city_id": "bourg-en-bresse-fr-01053",
@@ -25459,8 +25084,8 @@
     "display_name": "Bourg En Bresse",
     "country_code": "FR",
     "location": {
-      "lat": 46.1998045,
-      "lon": 5.215196
+      "lat": 46.200111,
+      "lon": 5.215011
     },
     "map_location": {
       "lat": 46.20011,
@@ -25468,19 +25093,12 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-87695999",
-      "station-uic-87696013",
-      "station-uic-87697672",
       "station-uic-8774300",
       "station-uic-87743005"
     ],
-    "aliases": [
-      "Bourg En Bresse",
-      "Bourg En Bresse Charite",
-      "Bourg En Bresse Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "bourg-leopold-be-11da814e",
@@ -25534,12 +25152,12 @@
       "lon": 6.771273
     },
     "map_location": {
-      "lat": 45.61904,
-      "lon": 6.77127
+      "lat": 45.619036,
+      "lon": 6.771273
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774179",
       "station-uic-87741793"
@@ -25599,12 +25217,12 @@
       "lon": 5.273362
     },
     "map_location": {
-      "lat": 45.58398,
-      "lon": 5.27336
+      "lat": 45.583982,
+      "lon": 5.273362
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772342",
       "station-uic-87723429"
@@ -26195,27 +25813,6 @@
     "aliases": []
   },
   {
-    "city_id": "brassac-les-mines-lycee-rabelais-zz-4968e72e",
-    "slug": "brassac-les-mines-lycee-rabelais",
-    "display_name": "Brassac Les Mines Lycee Rabelais",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.413632,
-      "lon": 3.32142
-    },
-    "map_location": {
-      "lat": 45.41363,
-      "lon": 3.32142
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87395657"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "brassac-les-mines-sainte-florine-fr-63050",
     "slug": "brassac-les-mines-sainte-florine",
     "display_name": "Brassac Les Mines Sainte Florine",
@@ -26225,8 +25822,8 @@
       "lon": 3.330167
     },
     "map_location": {
-      "lat": 45.414249999999996,
-      "lon": 3.33017
+      "lat": 45.41425,
+      "lon": 3.3301699999999994
     },
     "wikidata_qid": null,
     "population": null,
@@ -26488,8 +26085,8 @@
       "lon": 0.417489
     },
     "map_location": {
-      "lat": 49.6034,
-      "lon": 0.41748999999999997
+      "lat": 49.60340000000001,
+      "lon": 0.41749
     },
     "wikidata_qid": null,
     "population": null,
@@ -26682,7 +26279,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87756833"
     ],
@@ -26750,27 +26347,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87182659"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "breitenbach-restaurant-breit-s-bar-zz-a8ad6947",
-    "slug": "breitenbach-restaurant-breit-s-bar",
-    "display_name": "Breitenbach Restaurant Breit S Bar",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.026744,
-      "lon": 7.098981
-    },
-    "map_location": {
-      "lat": 48.02674,
-      "lon": 7.09898
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87665562"
     ],
     "aliases": []
   },
@@ -27882,7 +27458,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87417501",
       "station-uic-8774745",
@@ -27990,12 +27566,12 @@
       "lon": 3.37856
     },
     "map_location": {
-      "lat": 45.30056,
+      "lat": 45.300561,
       "lon": 3.37856
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773426",
       "station-uic-87734269"
@@ -28784,8 +28360,8 @@
     "display_name": "Brumath",
     "country_code": "FR",
     "location": {
-      "lat": 48.728104,
-      "lon": 7.7055155
+      "lat": 48.725332,
+      "lon": 7.702508
     },
     "map_location": {
       "lat": 48.71759,
@@ -28793,15 +28369,13 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87212126",
       "station-uic-8721213",
-      "station-uic-87212134",
-      "station-uic-87654673"
+      "station-uic-87212134"
     ],
     "aliases": [
-      "Brumath Mairie",
       "Stephansfeld"
     ]
   },
@@ -29127,8 +28701,8 @@
       "lon": 6.718908
     },
     "map_location": {
-      "lat": 48.20502,
-      "lon": 6.71891
+      "lat": 48.205021,
+      "lon": 6.718908
     },
     "wikidata_qid": null,
     "population": null,
@@ -29724,7 +29298,7 @@
       "lon": 1.443436
     },
     "map_location": {
-      "lat": 48.925369999999994,
+      "lat": 48.92537,
       "lon": 1.44344
     },
     "wikidata_qid": null,
@@ -31488,7 +31062,7 @@
     },
     "map_location": {
       "lat": 49.176349999999985,
-      "lon": -0.34760999999999975
+      "lon": -0.3476099999999998
     },
     "wikidata_qid": null,
     "population": null,
@@ -32163,12 +31737,12 @@
       "lon": 3.241197
     },
     "map_location": {
-      "lat": 50.176580000000016,
+      "lat": 50.17658000000001,
       "lon": 3.2411999999999996
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87345520"
     ],
@@ -34934,8 +34508,8 @@
       "lon": 3.1706925
     },
     "map_location": {
-      "lat": 43.81215,
-      "lon": 3.1553
+      "lat": 43.77971,
+      "lon": 3.18608
     },
     "wikidata_qid": null,
     "population": null,
@@ -35390,23 +34964,20 @@
     "display_name": "Cernay",
     "country_code": "FR",
     "location": {
-      "lat": 47.805555885,
-      "lon": 7.174241165
+      "lat": 47.80179077,
+      "lon": 7.17369433
     },
     "map_location": {
-      "lat": 47.80932,
-      "lon": 7.17479
+      "lat": 47.80179077,
+      "lon": 7.17369433
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-8718241",
-      "station-uic-87659987"
+      "station-uic-8718241"
     ],
-    "aliases": [
-      "Cernay Eglise"
-    ]
+    "aliases": []
   },
   {
     "city_id": "cernay-haut-rhin-fr-68063",
@@ -35418,8 +34989,8 @@
       "lon": 7.1737
     },
     "map_location": {
-      "lat": 47.80200000000001,
-      "lon": 7.173699999999998
+      "lat": 47.802,
+      "lon": 7.173699999999999
     },
     "wikidata_qid": null,
     "population": null,
@@ -35755,27 +35326,6 @@
     "aliases": []
   },
   {
-    "city_id": "cevins-echangeur-zz-fa67b99f",
-    "slug": "cevins-echangeur",
-    "display_name": "Cevins Echangeur",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.595002,
-      "lon": 6.446614
-    },
-    "map_location": {
-      "lat": 45.595,
-      "lon": 6.44661
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87741686"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ceyzeriat-fr-01072",
     "slug": "ceyzeriat",
     "display_name": "Ceyzeriat",
@@ -36002,8 +35552,8 @@
       "lon": 4.348656
     },
     "map_location": {
-      "lat": 48.95525,
-      "lon": 4.34866
+      "lat": 48.955252,
+      "lon": 4.348656
     },
     "wikidata_qid": null,
     "population": null,
@@ -36390,8 +35940,8 @@
       "lon": 6.206743
     },
     "map_location": {
-      "lat": 45.55757,
-      "lon": 6.20674
+      "lat": 45.557574,
+      "lon": 6.206743
     },
     "wikidata_qid": null,
     "population": null,
@@ -36501,8 +36051,8 @@
       "lon": 6.701165
     },
     "map_location": {
-      "lat": 47.70303,
-      "lon": 6.70117
+      "lat": 47.703031,
+      "lon": 6.701165
     },
     "wikidata_qid": null,
     "population": null,
@@ -36544,8 +36094,8 @@
       "lon": 5.9149215
     },
     "map_location": {
-      "lat": 46.749320000000004,
-      "lon": 5.910049999999999
+      "lat": 46.74255,
+      "lon": 5.91979
     },
     "wikidata_qid": null,
     "population": null,
@@ -36693,27 +36243,6 @@
     "aliases": []
   },
   {
-    "city_id": "chantenay-saint-imbert-bourg-zz-5dafa8e7",
-    "slug": "chantenay-saint-imbert-bourg",
-    "display_name": "Chantenay Saint Imbert Bourg",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.733098,
-      "lon": 3.183146
-    },
-    "map_location": {
-      "lat": 46.7331,
-      "lon": 3.18315
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87497222"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "chantenay-saint-imbert-fr-58057",
     "slug": "chantenay-saint-imbert",
     "display_name": "Chantenay Saint Imbert",
@@ -36723,8 +36252,8 @@
       "lon": 3.171472
     },
     "map_location": {
-      "lat": 46.72856,
-      "lon": 3.17147
+      "lat": 46.728556,
+      "lon": 3.171472
     },
     "wikidata_qid": null,
     "population": null,
@@ -36946,12 +36475,12 @@
       "lon": 4.7290175
     },
     "map_location": {
-      "lat": 49.76763,
-      "lon": 4.72434
+      "lat": 49.75276,
+      "lon": 4.73369
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8717200",
       "station-uic-87172007",
@@ -36971,8 +36500,8 @@
       "lon": 6.301475
     },
     "map_location": {
-      "lat": 48.37797,
-      "lon": 6.30148
+      "lat": 48.377967,
+      "lon": 6.301475
     },
     "wikidata_qid": null,
     "population": null,
@@ -37010,23 +36539,20 @@
     "display_name": "Chartres",
     "country_code": "FR",
     "location": {
-      "lat": 48.4477415,
-      "lon": 1.4811525
+      "lat": 48.448202,
+      "lon": 1.481313
     },
     "map_location": {
-      "lat": 48.44820000000001,
+      "lat": 48.448200000000014,
       "lon": 1.4813100000000003
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-87394007",
-      "station-uic-87746933"
+      "station-uic-87394007"
     ],
-    "aliases": [
-      "Chartres Gare Rue Nicole"
-    ]
+    "aliases": []
   },
   {
     "city_id": "chasse-sur-rhone-fr-38087",
@@ -38152,27 +37678,6 @@
     "aliases": []
   },
   {
-    "city_id": "chenimenil-filature-zz-ad8976ed",
-    "slug": "chenimenil-filature",
-    "display_name": "Chenimenil Filature",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.133949,
-      "lon": 6.600507
-    },
-    "map_location": {
-      "lat": 48.13395,
-      "lon": 6.60051
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87732693"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "chenonceaux-fr-37073",
     "slug": "chenonceaux",
     "display_name": "Chenonceaux",
@@ -38269,8 +37774,8 @@
       "lon": 4.622304
     },
     "map_location": {
-      "lat": 45.88552,
-      "lon": 4.6223
+      "lat": 45.885524,
+      "lon": 4.622304
     },
     "wikidata_qid": null,
     "population": null,
@@ -38525,7 +38030,7 @@
       "lon": 5.84691
     },
     "map_location": {
-      "lat": 45.80347,
+      "lat": 45.803471,
       "lon": 5.84691
     },
     "wikidata_qid": null,
@@ -38552,7 +38057,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87571687"
     ],
@@ -38973,72 +38478,6 @@
     "aliases": []
   },
   {
-    "city_id": "cier-de-luchon-castera-zz-3503dbc0",
-    "slug": "cier-de-luchon-castera",
-    "display_name": "Cier De Luchon Castera",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.852815,
-      "lon": 0.603076
-    },
-    "map_location": {
-      "lat": 42.85282,
-      "lon": 0.60308
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87611228"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "cier-de-luchon-pratviel-zz-989b4623",
-    "slug": "cier-de-luchon-pratviel",
-    "display_name": "Cier De Luchon Pratviel",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.844267,
-      "lon": 0.603856
-    },
-    "map_location": {
-      "lat": 42.84427,
-      "lon": 0.60386
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87173823"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "cierp-gaud-centre-zz-cb2e3917",
-    "slug": "cierp-gaud-centre",
-    "display_name": "Cierp Gaud Centre",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.914483000000004,
-      "lon": 0.6437045
-    },
-    "map_location": {
-      "lat": 42.91433,
-      "lon": 0.648
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87170795",
-      "station-uic-87170811"
-    ],
-    "aliases": [
-      "Cierp Gaud"
-    ]
-  },
-  {
     "city_id": "cieza-es-72c51261",
     "slug": "cieza",
     "display_name": "Cieza",
@@ -39150,8 +38589,8 @@
     "display_name": "Cintegabelle",
     "country_code": "FR",
     "location": {
-      "lat": 43.3053945,
-      "lon": 1.5208270000000002
+      "lat": 43.305408,
+      "lon": 1.520477
     },
     "map_location": {
       "lat": 43.30541,
@@ -39159,14 +38598,11 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87611376",
-      "station-uic-87697821"
+      "station-uic-87611376"
     ],
-    "aliases": [
-      "Cintegabelle Rond Point"
-    ]
+    "aliases": []
   },
   {
     "city_id": "cinuos-chel-brail-ch-22dea41c",
@@ -39302,24 +38738,21 @@
     "display_name": "Civrieux D Azergues",
     "country_code": "FR",
     "location": {
-      "lat": 45.858517,
-      "lon": 4.7152135
+      "lat": 45.859038,
+      "lon": 4.718311
     },
     "map_location": {
-      "lat": 45.858,
-      "lon": 4.71212
+      "lat": 45.859038,
+      "lon": 4.718311
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697185",
       "station-uic-8772174",
       "station-uic-87721746"
     ],
-    "aliases": [
-      "Civrieux-d'Azergues D 385"
-    ]
+    "aliases": []
   },
   {
     "city_id": "cize-bolozon-fr-01051",
@@ -39374,8 +38807,8 @@
       "lon": 3.520767
     },
     "map_location": {
-      "lat": 47.4667,
-      "lon": 3.52077
+      "lat": 47.466698,
+      "lon": 3.520767
     },
     "wikidata_qid": null,
     "population": null,
@@ -39486,7 +38919,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 7,
     "station_ids": [
       "station-uic-87396895",
       "station-uic-8773400",
@@ -39850,27 +39283,6 @@
     ]
   },
   {
-    "city_id": "col-de-puberg-zz-3ba409c9",
-    "slug": "col-de-puberg",
-    "display_name": "Col De Puberg",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.916898,
-      "lon": 7.318055
-    },
-    "map_location": {
-      "lat": 48.9169,
-      "lon": 7.31806
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87642371"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "colegio-es-5d0db26b",
     "slug": "colegio",
     "display_name": "Colegio",
@@ -40040,14 +39452,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697029",
       "station-uic-8772122",
       "station-uic-87721225"
     ],
-    "aliases": [
-      "Collonges Fontaines",
-      "Collonges Fontaines Arret Tcl Gare"
-    ]
+    "aliases": []
   },
   {
     "city_id": "collonges-les-premieres-fr-21183",
@@ -40127,8 +39535,8 @@
       "lon": 7.342236333333333
     },
     "map_location": {
-      "lat": 48.08601000000001,
-      "lon": 7.333670000000001
+      "lat": 48.08601,
+      "lon": 7.33367
     },
     "wikidata_qid": null,
     "population": null,
@@ -40145,27 +39553,6 @@
       "Colmar Mésanges",
       "Colmar Saint-Joseph"
     ]
-  },
-  {
-    "city_id": "colmar-st-joseph-rue-du-val-st-gregoire-zz-ab85bc22",
-    "slug": "colmar-st-joseph-rue-du-val-st-gregoire",
-    "display_name": "Colmar St Joseph Rue Du Val St Gregoire",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.080688,
-      "lon": 7.347182
-    },
-    "map_location": {
-      "lat": 48.08069,
-      "lon": 7.34718
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87665240"
-    ],
-    "aliases": []
   },
   {
     "city_id": "colmegna-ch-715ead4b",
@@ -40820,27 +40207,6 @@
     "aliases": []
   },
   {
-    "city_id": "corbigny-fr-58083",
-    "slug": "corbigny",
-    "display_name": "Corbigny",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.254807,
-      "lon": 3.677323
-    },
-    "map_location": {
-      "lat": 47.25481,
-      "lon": 3.67732
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87696617"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "corcapolo-ch-ce9ee9ad",
     "slug": "corcapolo",
     "display_name": "Corcapolo",
@@ -40908,27 +40274,6 @@
       "Corcelles-Peseux",
       "Corcelles-Sud"
     ]
-  },
-  {
-    "city_id": "corcieux-le-conti-zz-dfe5acd1",
-    "slug": "corcieux-le-conti",
-    "display_name": "Corcieux Le Conti",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.170746,
-      "lon": 6.882863
-    },
-    "map_location": {
-      "lat": 48.170746,
-      "lon": 6.882863
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87716696"
-    ],
-    "aliases": []
   },
   {
     "city_id": "corcos-aguilarejo-es-58a5db38",
@@ -41969,7 +41314,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87394494"
     ],
@@ -42268,14 +41613,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697037",
       "station-uic-8772124",
       "station-uic-87721241"
     ],
-    "aliases": [
-      "Couzon Au Mont D Or",
-      "Couzon-Au-Mont-D'Or-Arret-Tcl-Gare"
-    ]
+    "aliases": []
   },
   {
     "city_id": "covas-de-viveiro-es-429798c8",
@@ -42679,7 +42020,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8776178",
       "station-uic-87761783"
@@ -43343,7 +42684,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774107",
       "station-uic-87741074"
@@ -43986,11 +43327,11 @@
     },
     "map_location": {
       "lat": 48.53715,
-      "lon": 7.500280000000003
+      "lon": 7.500280000000002
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8721455",
       "station-uic-87214551",
@@ -44336,7 +43677,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771831",
       "station-uic-87718312"
@@ -45824,8 +45165,8 @@
       "lon": 7.465077
     },
     "map_location": {
-      "lat": 48.75192,
-      "lon": 7.46508
+      "lat": 48.751916,
+      "lon": 7.465077
     },
     "wikidata_qid": null,
     "population": null,
@@ -47313,27 +46654,6 @@
     "aliases": []
   },
   {
-    "city_id": "docelles-monument-zz-6cb064a9",
-    "slug": "docelles-monument",
-    "display_name": "Docelles Monument",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.146158,
-      "lon": 6.618587
-    },
-    "map_location": {
-      "lat": 48.14616,
-      "lon": 6.61859
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87752394"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "doetinchem-de-huet-nl-97d49c77",
     "slug": "doetinchem-de-huet",
     "display_name": "Doetinchem De Huet",
@@ -47822,27 +47142,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8504125"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "domessin-le-bonnard-zz-066eb439",
-    "slug": "domessin-le-bonnard",
-    "display_name": "Domessin Le Bonnard",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.524916,
-      "lon": 5.694931
-    },
-    "map_location": {
-      "lat": 45.52492,
-      "lon": 5.69493
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87741462"
     ],
     "aliases": []
   },
@@ -48449,7 +47748,7 @@
     },
     "map_location": {
       "lat": 49.07908,
-      "lon": 3.64184
+      "lon": 3.641835
     },
     "wikidata_qid": null,
     "population": null,
@@ -49813,7 +49112,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87281006"
     ],
@@ -50768,27 +50067,6 @@
     "aliases": []
   },
   {
-    "city_id": "ecully-arret-tcl-demi-lune-vauboin-zz-56c2c3e3",
-    "slug": "ecully-arret-tcl-demi-lune-vauboin",
-    "display_name": "Ecully Arret Tcl Demi Lune Vauboin",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.764424,
-      "lon": 4.782094
-    },
-    "map_location": {
-      "lat": 45.76442,
-      "lon": 4.78209
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87698274"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ecully-la-demi-lune-ch-1b7bb2ad",
     "slug": "ecully-la-demi-lune",
     "display_name": "Ecully La Demi Lune",
@@ -51242,7 +50520,7 @@
       "lon": 2.065209
     },
     "map_location": {
-      "lat": 45.40247999999999,
+      "lat": 45.40248,
       "lon": 2.06521
     },
     "wikidata_qid": null,
@@ -51250,27 +50528,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87594168"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "egletons-ville-zz-73dc1810",
-    "slug": "egletons-ville",
-    "display_name": "Egletons Ville",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.403678,
-      "lon": 2.046053
-    },
-    "map_location": {
-      "lat": 45.40368,
-      "lon": 2.04605
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87693390"
     ],
     "aliases": []
   },
@@ -54426,8 +53683,8 @@
     "display_name": "Epernon",
     "country_code": "FR",
     "location": {
-      "lat": 48.6049785,
-      "lon": 1.6811225
+      "lat": 48.605204,
+      "lon": 1.681364
     },
     "map_location": {
       "lat": 48.60520000000001,
@@ -54435,14 +53692,11 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87394114",
-      "station-uic-87746800"
+      "station-uic-87394114"
     ],
-    "aliases": [
-      "Epernon Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "epesses-ch-e53f66da",
@@ -54560,8 +53814,8 @@
       "lon": 6.441787
     },
     "map_location": {
-      "lat": 48.17801,
-      "lon": 6.44179
+      "lat": 48.178005,
+      "lon": 6.441787
     },
     "wikidata_qid": null,
     "population": null,
@@ -56940,27 +56194,6 @@
     ]
   },
   {
-    "city_id": "ettendorf-zz-9b441ed3",
-    "slug": "ettendorf",
-    "display_name": "Ettendorf",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.80816,
-      "lon": 7.585292
-    },
-    "map_location": {
-      "lat": 48.80816,
-      "lon": 7.58529
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87213827"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ettenhausen-emmetschloo-ch-c2f3b2ee",
     "slug": "ettenhausen-emmetschloo",
     "display_name": "Ettenhausen Emmetschloo",
@@ -57343,8 +56576,8 @@
       "lon": 6.577469
     },
     "map_location": {
-      "lat": 46.39792,
-      "lon": 6.57747
+      "lat": 46.397916,
+      "lon": 6.577469
     },
     "wikidata_qid": null,
     "population": null,
@@ -57585,27 +56818,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87592121"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "eyrein-zz-d57e2856",
-    "slug": "eyrein",
-    "display_name": "Eyrein",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.341936,
-      "lon": 1.932601
-    },
-    "map_location": {
-      "lat": 45.34194,
-      "lon": 1.9326
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87417865"
     ],
     "aliases": []
   },
@@ -58224,7 +57436,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87413542"
     ],
@@ -58266,7 +57478,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721226",
       "station-uic-87212266"
@@ -58622,23 +57834,20 @@
     "display_name": "Fellering",
     "country_code": "FR",
     "location": {
-      "lat": 47.897082825,
-      "lon": 6.986372275
+      "lat": 47.89776865,
+      "lon": 6.98695255
     },
     "map_location": {
-      "lat": 47.896397,
-      "lon": 6.985792
+      "lat": 47.89776865,
+      "lon": 6.98695255
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-8718262",
-      "station-uic-87659896"
+      "station-uic-8718262"
     ],
-    "aliases": [
-      "Fellering Eglise"
-    ]
+    "aliases": []
   },
   {
     "city_id": "fels-am-wagram-at-2c2ca988",
@@ -59815,29 +59024,6 @@
     "aliases": []
   },
   {
-    "city_id": "fix-saint-geneys-zz-798f45a5",
-    "slug": "fix-saint-geneys",
-    "display_name": "Fix Saint Geneys",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.142783,
-      "lon": 3.668554
-    },
-    "map_location": {
-      "lat": 45.14278,
-      "lon": 3.6685500000000006
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87680728"
-    ],
-    "aliases": [
-      "Fix Saint-Geneys Rn102 Bourg"
-    ]
-  },
-  {
     "city_id": "flaca-es-2927c4b5",
     "slug": "flaca",
     "display_name": "Flaca",
@@ -60190,29 +59376,6 @@
     "aliases": []
   },
   {
-    "city_id": "fleurieux-zz-ff37aa48",
-    "slug": "fleurieux",
-    "display_name": "Fleurieux",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.840513,
-      "lon": 4.653622
-    },
-    "map_location": {
-      "lat": 45.84051,
-      "lon": 4.65362
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87698282"
-    ],
-    "aliases": [
-      "Fleurieux RN7"
-    ]
-  },
-  {
     "city_id": "fleurus-be-b9d58b11",
     "slug": "fleurus",
     "display_name": "Fleurus",
@@ -60273,27 +59436,6 @@
     "interest_score": 4,
     "station_ids": [
       "station-uic-8754301"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "flez-cuzy-tannay-fr-58286",
-    "slug": "flez-cuzy-tannay",
-    "display_name": "Flez Cuzy Tannay",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.362336,
-      "lon": 3.615881
-    },
-    "map_location": {
-      "lat": 47.36234,
-      "lon": 3.61588
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87696633"
     ],
     "aliases": []
   },
@@ -62061,7 +61203,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771830",
       "station-uic-87718304"
@@ -63387,27 +62529,6 @@
     "aliases": []
   },
   {
-    "city_id": "frohmuhl-lavoir-zz-698c7ba5",
-    "slug": "frohmuhl-lavoir",
-    "display_name": "Frohmuhl Lavoir",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.907795,
-      "lon": 7.280985
-    },
-    "map_location": {
-      "lat": 48.9078,
-      "lon": 7.28099
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87642389"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "frohnleiten-at-59c9c965",
     "slug": "frohnleiten",
     "display_name": "Frohnleiten",
@@ -64414,8 +63535,8 @@
       "lon": 1.9158915
     },
     "map_location": {
-      "lat": 43.90598,
-      "lon": 1.89483
+      "lat": 43.92842,
+      "lon": 1.93695
     },
     "wikidata_qid": null,
     "population": null,
@@ -64744,8 +63865,8 @@
       "lon": 7.879179
     },
     "map_location": {
-      "lat": 48.69491,
-      "lon": 7.87918
+      "lat": 48.694909,
+      "lon": 7.879179
     },
     "wikidata_qid": null,
     "population": null,
@@ -64753,27 +63874,6 @@
     "station_ids": [
       "station-uic-8721233",
       "station-uic-87212332"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "gambsheim-garage-peugeot-zz-524c577c",
-    "slug": "gambsheim-garage-peugeot",
-    "display_name": "Gambsheim Garage Peugeot",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.688786,
-      "lon": 7.872003
-    },
-    "map_location": {
-      "lat": 48.68879,
-      "lon": 7.872
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659730"
     ],
     "aliases": []
   },
@@ -64965,52 +64065,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773240",
       "station-uic-87732404"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "gannat-lycee-eiffel-zz-4e90cf92",
-    "slug": "gannat-lycee-eiffel",
-    "display_name": "Gannat Lycee Eiffel",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.086182,
-      "lon": 3.197861
-    },
-    "map_location": {
-      "lat": 46.08618,
-      "lon": 3.19786
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87589564"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "gannat-lycee-ste-procule-zz-02d0d81d",
-    "slug": "gannat-lycee-ste-procule",
-    "display_name": "Gannat Lycee Ste Procule",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.099225,
-      "lon": 3.19001
-    },
-    "map_location": {
-      "lat": 46.09923,
-      "lon": 3.19001
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87589572"
     ],
     "aliases": []
   },
@@ -66311,8 +65369,8 @@
     "display_name": "Geneve",
     "country_code": "CH",
     "location": {
-      "lat": 46.212217323999994,
-      "lon": 6.1466103924999995
+      "lat": 46.212079161999995,
+      "lon": 6.151089446249999
     },
     "map_location": {
       "lat": 46.21020999999999,
@@ -66329,10 +65387,12 @@
       "station-uic-8516273",
       "station-uic-8516283",
       "station-uic-85162727",
+      "station-uic-85162735",
       "station-uic-85162834"
     ],
     "aliases": [
       "Geneve Champel",
+      "Geneve Eaux Vives",
       "Geneve Secheron",
       "Genève-Aéroport",
       "Genève-Champel",
@@ -66360,30 +65420,6 @@
       "station-uic-85010082"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "geneve-eaux-vives-zz-bcb0702d",
-    "slug": "geneve-eaux-vives",
-    "display_name": "Geneve Eaux Vives",
-    "country_code": "CH",
-    "location": {
-      "lat": 46.20011,
-      "lon": 6.1643
-    },
-    "map_location": {
-      "lat": 46.201444,
-      "lon": 6.16658
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-85162735",
-      "station-uic-85928291"
-    ],
-    "aliases": [
-      "Genève Eaux-Vives Gare"
-    ]
   },
   {
     "city_id": "genk-be-af3292bb",
@@ -67377,8 +66413,8 @@
       "lon": 2.636205
     },
     "map_location": {
-      "lat": 47.69909,
-      "lon": 2.63621
+      "lat": 47.699088,
+      "lon": 2.636205
     },
     "wikidata_qid": null,
     "population": null,
@@ -68679,27 +67715,6 @@
     ]
   },
   {
-    "city_id": "goderville-zz-599a15bd",
-    "slug": "goderville",
-    "display_name": "Goderville",
-    "country_code": "FR",
-    "location": {
-      "lat": 49.645581,
-      "lon": 0.367785
-    },
-    "map_location": {
-      "lat": 49.64558,
-      "lon": 0.36779
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87430785"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "godinne-be-aa22ba64",
     "slug": "godinne",
     "display_name": "Godinne",
@@ -69725,27 +68740,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-2992832"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "gourdan-polignan-lycee-zz-fedad66f",
-    "slug": "gourdan-polignan-lycee",
-    "display_name": "Gourdan Polignan Lycee",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.076553,
-      "lon": 0.58441
-    },
-    "map_location": {
-      "lat": 43.07655,
-      "lon": 0.58441
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87176974"
     ],
     "aliases": []
   },
@@ -70949,24 +69943,17 @@
       "lon": 5.7263888888889
     },
     "map_location": {
-      "lat": 45.192690000000006,
-      "lon": 5.714370000000001
+      "lat": 45.191489999999995,
+      "lon": 5.714550000000001
     },
     "wikidata_qid": "Q1289",
     "population": 166037,
-    "interest_score": 9,
+    "interest_score": 7,
     "station_ids": [
-      "station-uic-87697482",
-      "station-uic-87742056",
-      "station-uic-87697490",
-      "station-uic-87335521",
       "station-uic-8774700",
       "station-uic-87747006"
     ],
-    "aliases": [
-      "Grenoble Cite Internationale",
-      "Grenoble Europole"
-    ]
+    "aliases": []
   },
   {
     "city_id": "grenoble-universites-gieres-fr-38179",
@@ -71093,27 +70080,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87746107"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "gresy-sur-aix-le-chevret-ondea-zz-36c1d786",
-    "slug": "gresy-sur-aix-le-chevret-ondea",
-    "display_name": "Gresy Sur Aix Le Chevret Ondea",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.723536,
-      "lon": 5.922275
-    },
-    "map_location": {
-      "lat": 45.72354,
-      "lon": 5.92228
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87698308"
     ],
     "aliases": []
   },
@@ -72875,7 +71841,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8759760",
       "station-uic-87597609"
@@ -73275,29 +72241,6 @@
     "aliases": []
   },
   {
-    "city_id": "gunsbach-zz-7bfc5668",
-    "slug": "gunsbach",
-    "display_name": "Gunsbach",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.042642,
-      "lon": 7.17419
-    },
-    "map_location": {
-      "lat": 48.04264,
-      "lon": 7.17419
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87665471"
-    ],
-    "aliases": [
-      "Gunsbach D417"
-    ]
-  },
-  {
     "city_id": "gunskirchen-at-08e60eac",
     "slug": "gunskirchen",
     "display_name": "Gunskirchen",
@@ -73431,27 +72374,6 @@
     "station_ids": [
       "station-de-delfi-gtfs-1c5ae3cf",
       "station-de-delfi-gtfs-2b8e8999"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "guran-artigueplan-zz-481d7710",
-    "slug": "guran-artigueplan",
-    "display_name": "Guran Artigueplan",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.884874,
-      "lon": 0.616732
-    },
-    "map_location": {
-      "lat": 42.88487,
-      "lon": 0.61673
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87611970"
     ],
     "aliases": []
   },
@@ -73846,8 +72768,8 @@
       "lon": 7.418008
     },
     "map_location": {
-      "lat": 47.73769,
-      "lon": 7.41801
+      "lat": 47.737689,
+      "lon": 7.418008
     },
     "wikidata_qid": null,
     "population": null,
@@ -74245,12 +73167,12 @@
       "lon": 7.8030545
     },
     "map_location": {
-      "lat": 48.81349,
-      "lon": 7.78276
+      "lat": 48.813486,
+      "lon": 7.782757
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721305",
       "station-uic-87213058",
@@ -74259,27 +73181,6 @@
     "aliases": [
       "Marienthal"
     ]
-  },
-  {
-    "city_id": "haguenau-statuette-zz-b158fac8",
-    "slug": "haguenau-statuette",
-    "display_name": "Haguenau Statuette",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.804194,
-      "lon": 7.798091
-    },
-    "map_location": {
-      "lat": 48.80419,
-      "lon": 7.79809
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659847"
-    ],
-    "aliases": []
   },
   {
     "city_id": "haiding-at-0d7d0f19",
@@ -77366,20 +76267,17 @@
       "lon": 5.907426
     },
     "map_location": {
-      "lat": 49.19379763,
-      "lon": 5.90733029
+      "lat": 49.193936,
+      "lon": 5.907426
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
       "station-uic-8719272",
-      "station-uic-87192724",
-      "station-uic-87742254"
+      "station-uic-87192724"
     ],
-    "aliases": [
-      "Hatrize"
-    ]
+    "aliases": []
   },
   {
     "city_id": "hattersheim-main-de-d7248643",
@@ -81790,12 +80688,12 @@
       "lon": 7.572281
     },
     "map_location": {
-      "lat": 48.75542,
-      "lon": 7.57228
+      "lat": 48.755416,
+      "lon": 7.572281
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721216",
       "station-uic-87212167"
@@ -82082,24 +80980,21 @@
     "display_name": "Hoerdt",
     "country_code": "FR",
     "location": {
-      "lat": 48.700575,
-      "lon": 7.781774
+      "lat": 48.70296,
+      "lon": 7.779415
     },
     "map_location": {
-      "lat": 48.69819,
-      "lon": 7.78413
+      "lat": 48.70296,
+      "lon": 7.779415
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
       "station-uic-8721368",
-      "station-uic-87213686",
-      "station-uic-87659763"
+      "station-uic-87213686"
     ],
-    "aliases": [
-      "Hoerdt Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "hoevelaken-nl-94b17c75",
@@ -85119,7 +84014,7 @@
     },
     "map_location": {
       "lat": 48.30401,
-      "lon": 1.2449200000000002
+      "lon": 1.24492
     },
     "wikidata_qid": null,
     "population": null,
@@ -85502,27 +84397,6 @@
     "aliases": [
       "Turckheim"
     ]
-  },
-  {
-    "city_id": "ingersheim-lycee-r-turckheim-zz-08f6404e",
-    "slug": "ingersheim-lycee-r-turckheim",
-    "display_name": "Ingersheim Lycee R Turckheim",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.09179,
-      "lon": 7.297819
-    },
-    "map_location": {
-      "lat": 48.09179,
-      "lon": 7.29782
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87665265"
-    ],
-    "aliases": []
   },
   {
     "city_id": "ingolstadt-at-a962eb30",
@@ -86265,73 +85139,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773420",
       "station-uic-87734202"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "issoire-lycee-deville-zz-58901e66",
-    "slug": "issoire-lycee-deville",
-    "display_name": "Issoire Lycee Deville",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.539947,
-      "lon": 3.258023
-    },
-    "map_location": {
-      "lat": 45.53995,
-      "lon": 3.25802
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87395665"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "issoire-lycee-murat-zz-fb0b2e3d",
-    "slug": "issoire-lycee-murat",
-    "display_name": "Issoire Lycee Murat",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.55041,
-      "lon": 3.249955
-    },
-    "map_location": {
-      "lat": 45.55041,
-      "lon": 3.24996
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87395673"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "issou-porcheville-fr-78314",
-    "slug": "issou-porcheville",
-    "display_name": "Issou Porcheville",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.97931,
-      "lon": 1.78532
-    },
-    "map_location": {
-      "lat": 48.97931,
-      "lon": 1.78532
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87381574"
     ],
     "aliases": []
   },
@@ -88411,8 +87222,8 @@
     "display_name": "Jouy",
     "country_code": "FR",
     "location": {
-      "lat": 48.510232,
-      "lon": 1.5573925
+      "lat": 48.510247,
+      "lon": 1.557462
     },
     "map_location": {
       "lat": 48.51024999999999,
@@ -88420,14 +87231,11 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87394155",
-      "station-uic-87746917"
+      "station-uic-87394155"
     ],
-    "aliases": [
-      "Jouy Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "judenburg-at-ca2f9168",
@@ -88474,27 +87282,6 @@
     "aliases": [
       "Judendorf-Straßengel Bahnhof 2"
     ]
-  },
-  {
-    "city_id": "jumeaux-zz-f085d8c2",
-    "slug": "jumeaux",
-    "display_name": "Jumeaux",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.430201,
-      "lon": 3.339211
-    },
-    "map_location": {
-      "lat": 45.4302,
-      "lon": 3.33921
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87721696"
-    ],
-    "aliases": []
   },
   {
     "city_id": "juneda-es-ffad2491",
@@ -89310,27 +88097,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8508161"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "kaltenhouse-rue-de-bischwiller-zz-1db0d96b",
-    "slug": "kaltenhouse-rue-de-bischwiller",
-    "display_name": "Kaltenhouse Rue De Bischwiller",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.789926,
-      "lon": 7.836572
-    },
-    "map_location": {
-      "lat": 48.78993,
-      "lon": 7.83657
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659821"
     ],
     "aliases": []
   },
@@ -91648,24 +90414,21 @@
     "display_name": "Kilstett",
     "country_code": "FR",
     "location": {
-      "lat": 48.679256,
-      "lon": 7.855053
+      "lat": 48.679287,
+      "lon": 7.854769
     },
     "map_location": {
-      "lat": 48.67923,
-      "lon": 7.85534
+      "lat": 48.679287,
+      "lon": 7.854769
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721232",
-      "station-uic-87212324",
-      "station-uic-87658948"
+      "station-uic-87212324"
     ],
-    "aliases": [
-      "Kilstett 13 Route Nationale"
-    ]
+    "aliases": []
   },
   {
     "city_id": "kimpling-at-13b1b8d3",
@@ -93333,36 +92096,14 @@
       "lon": 6.27355
     },
     "map_location": {
-      "lat": 49.39642,
-      "lon": 6.27991
+      "lat": 49.39655,
+      "lon": 6.27355
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87191619",
-      "station-uic-87635821"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "koenigsmacker-metrich-ecole-zz-21431ef3",
-    "slug": "koenigsmacker-metrich-ecole",
-    "display_name": "Koenigsmacker Metrich Ecole",
-    "country_code": "FR",
-    "location": {
-      "lat": 49.407556,
-      "lon": 6.2978
-    },
-    "map_location": {
-      "lat": 49.40756,
-      "lon": 6.2978
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87703694"
+      "station-uic-87191619"
     ],
     "aliases": []
   },
@@ -96749,26 +95490,21 @@
     "display_name": "Kurtzenhouse",
     "country_code": "FR",
     "location": {
-      "lat": 48.7406915,
-      "lon": 7.80972225
+      "lat": 48.741894,
+      "lon": 7.813039
     },
     "map_location": {
-      "lat": 48.74260999999999,
-      "lon": 7.81257
+      "lat": 48.741894,
+      "lon": 7.813039
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721366",
-      "station-uic-87213660",
-      "station-uic-87659789",
-      "station-uic-87659797"
+      "station-uic-87213660"
     ],
-    "aliases": [
-      "Kurtzenhouse 71 Route Principale",
-      "Kurtzenhouse Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "kurzrickenbach-seepark-ch-7f41a388",
@@ -97145,12 +95881,12 @@
       "lon": 4.618262
     },
     "map_location": {
-      "lat": 45.83329,
-      "lon": 4.61826
+      "lat": 45.833285,
+      "lon": 4.618262
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772143",
       "station-uic-87721431"
@@ -97340,7 +96076,7 @@
       "lon": 6.21327
     },
     "map_location": {
-      "lat": 47.16921,
+      "lat": 47.169212,
       "lon": 6.21327
     },
     "wikidata_qid": null,
@@ -97657,27 +96393,6 @@
     "aliases": []
   },
   {
-    "city_id": "la-bathie-zz-cdb2f951",
-    "slug": "la-bathie",
-    "display_name": "La Bathie",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.630508,
-      "lon": 6.445101
-    },
-    "map_location": {
-      "lat": 45.63051,
-      "lon": 6.4451
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87741678"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "la-baule-escoublac-fr-44055",
     "slug": "la-baule-escoublac",
     "display_name": "La Baule Escoublac",
@@ -97761,48 +96476,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87387142"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "la-bridoire-abris-bus-le-haut-zz-037c8482",
-    "slug": "la-bridoire-abris-bus-le-haut",
-    "display_name": "La Bridoire Abris Bus Le Haut",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.532004,
-      "lon": 5.743918
-    },
-    "map_location": {
-      "lat": 45.532,
-      "lon": 5.74392
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87697508"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "la-bridoire-zz-1caab40a",
-    "slug": "la-bridoire",
-    "display_name": "La Bridoire",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.53104,
-      "lon": 5.742902
-    },
-    "map_location": {
-      "lat": 45.53104,
-      "lon": 5.7429
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87741447"
     ],
     "aliases": []
   },
@@ -97972,27 +96645,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87486308"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "la-chambre-zz-8c602b96",
-    "slug": "la-chambre",
-    "display_name": "La Chambre",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.359174,
-      "lon": 6.299657
-    },
-    "map_location": {
-      "lat": 45.35917,
-      "lon": 6.29966
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87697698"
     ],
     "aliases": []
   },
@@ -98240,27 +96892,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8501265"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "la-chomette-zz-a6237913",
-    "slug": "la-chomette",
-    "display_name": "La Chomette",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.229495,
-      "lon": 3.474501
-    },
-    "map_location": {
-      "lat": 45.2295,
-      "lon": 3.4745
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87407692"
     ],
     "aliases": []
   },
@@ -98962,7 +97593,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8754312",
       "station-uic-87543124"
@@ -99187,27 +97818,6 @@
     "aliases": []
   },
   {
-    "city_id": "la-gauterie-zz-c15b7c12",
-    "slug": "la-gauterie",
-    "display_name": "La Gauterie",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.139636,
-      "lon": 1.491477
-    },
-    "map_location": {
-      "lat": 47.13964,
-      "lon": 1.49148
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87576355"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "la-gineta-es-f9745308",
     "slug": "la-gineta",
     "display_name": "La Gineta",
@@ -99356,27 +97966,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-429301a8"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "la-grave-carrefour-zz-c25cf07d",
-    "slug": "la-grave-carrefour",
-    "display_name": "La Grave Carrefour",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.533453,
-      "lon": 2.61985
-    },
-    "map_location": {
-      "lat": 46.53345,
-      "lon": 2.61985
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87407726"
     ],
     "aliases": []
   },
@@ -99675,27 +98264,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8500180"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "la-lechere-les-bains-petit-coeur-zz-adaa1e6a",
-    "slug": "la-lechere-les-bains-petit-coeur",
-    "display_name": "La Lechere Les Bains Petit Coeur",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.520481,
-      "lon": 6.484015
-    },
-    "map_location": {
-      "lat": 45.52048,
-      "lon": 6.48402
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87741702"
     ],
     "aliases": []
   },
@@ -100193,27 +98761,6 @@
       "La Garde",
       "La Pauline"
     ]
-  },
-  {
-    "city_id": "la-pelletiere-crepieux-la-pape-arret-tcl-zz-299e673a",
-    "slug": "la-pelletiere-crepieux-la-pape-arret-tcl",
-    "display_name": "La Pelletiere Crepieux La Pape Arret Tcl",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.807316,
-      "lon": 4.892888
-    },
-    "map_location": {
-      "lat": 45.80732,
-      "lon": 4.89289
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87748525"
-    ],
-    "aliases": []
   },
   {
     "city_id": "la-pena-de-bilbao-es-f9603371",
@@ -101289,38 +99836,15 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87208553",
-      "station-uic-87698324",
       "station-uic-8772154",
       "station-uic-87721548"
     ],
     "aliases": [
-      "Casino Lacroix Laval",
-      "La Tour De Salvagny"
+      "Casino Lacroix Laval"
     ]
-  },
-  {
-    "city_id": "la-tour-de-salvagny-hippodrome-zz-c98c3661",
-    "slug": "la-tour-de-salvagny-hippodrome",
-    "display_name": "La Tour De Salvagny Hippodrome",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.813816,
-      "lon": 4.716954
-    },
-    "map_location": {
-      "lat": 45.81382,
-      "lon": 4.71695
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87698316"
-    ],
-    "aliases": []
   },
   {
     "city_id": "la-tour-du-pin-fr-38509",
@@ -101560,49 +100084,25 @@
     "aliases": []
   },
   {
-    "city_id": "la-ville-gozet-square-h-duna-zz-86bf708f",
-    "slug": "la-ville-gozet-square-h-duna",
-    "display_name": "La Ville Gozet Square H Duna",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.347927,
-      "lon": 2.593626
-    },
-    "map_location": {
-      "lat": 46.34793,
-      "lon": 2.5936300000000005
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87589580"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "la-villette-saint-prest-fr-28358",
     "slug": "la-villette-saint-prest",
     "display_name": "La Villette Saint Prest",
     "country_code": "FR",
     "location": {
-      "lat": 48.482738999999995,
-      "lon": 1.522918
+      "lat": 48.482752,
+      "lon": 1.522905
     },
     "map_location": {
       "lat": 48.48275,
-      "lon": 1.5229100000000002
+      "lon": 1.52291
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87394171",
-      "station-uic-87746925"
+      "station-uic-87394171"
     ],
-    "aliases": [
-      "La Villette Saint Prest Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "la-vuarpilliere-ch-fd8d16e7",
@@ -101643,12 +100143,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8721231",
-      "station-uic-87212316",
-      "station-uic-87757419"
+      "station-uic-87212316"
     ],
-    "aliases": [
-      "La Wantzenau Eglise"
-    ]
+    "aliases": []
   },
   {
     "city_id": "la-zaida-sastago-es-271fa8e9",
@@ -101907,7 +100404,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771521",
       "station-uic-87715219"
@@ -101953,27 +100450,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87582551"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "labroquere-moulin-zz-0ec796d6",
-    "slug": "labroquere-moulin",
-    "display_name": "Labroquere Moulin",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.035796,
-      "lon": 0.593307
-    },
-    "map_location": {
-      "lat": 43.0358,
-      "lon": 0.59331
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87611160"
     ],
     "aliases": []
   },
@@ -102959,7 +101435,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8754314",
       "station-uic-87543140"
@@ -103270,7 +101746,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87474239"
     ],
@@ -103642,36 +102118,15 @@
       "lon": 3.490605
     },
     "map_location": {
-      "lat": 45.10125,
-      "lon": 3.49061
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-uic-8773431",
-      "station-uic-87734319"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "langeac-le-treuil-zz-a3e19e65",
-    "slug": "langeac-le-treuil",
-    "display_name": "Langeac Le Treuil",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.108772,
-      "lon": 3.521472
-    },
-    "map_location": {
-      "lat": 45.10877,
-      "lon": 3.52147
+      "lat": 45.101252,
+      "lon": 3.490605
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87407981"
+      "station-uic-8773431",
+      "station-uic-87734319"
     ],
     "aliases": []
   },
@@ -104287,7 +102742,7 @@
       "lon": -0.255534
     },
     "map_location": {
-      "lat": 44.555410000000016,
+      "lat": 44.55541000000001,
       "lon": -0.2555299999999999
     },
     "wikidata_qid": null,
@@ -104491,27 +102946,6 @@
     "aliases": []
   },
   {
-    "city_id": "lanthenas-zz-29ce417c",
-    "slug": "lanthenas",
-    "display_name": "Lanthenas",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.102324,
-      "lon": 3.773763
-    },
-    "map_location": {
-      "lat": 45.10232,
-      "lon": 3.77376
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87407932"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "lantueno-santiurde-es-bb5e3bf4",
     "slug": "lantueno-santiurde",
     "display_name": "Lantueno Santiurde",
@@ -104631,8 +103065,8 @@
       "lon": 2.893315
     },
     "map_location": {
-      "lat": 46.22676,
-      "lon": 2.89332
+      "lat": 46.226759,
+      "lon": 2.893315
     },
     "wikidata_qid": null,
     "population": null,
@@ -104721,8 +103155,8 @@
       "lon": 2.193081
     },
     "map_location": {
-      "lat": 44.96427,
-      "lon": 2.19308
+      "lat": 44.964267,
+      "lon": 2.193081
     },
     "wikidata_qid": null,
     "population": null,
@@ -105795,27 +104229,6 @@
     "aliases": []
   },
   {
-    "city_id": "laval-sur-vologne-rue-de-la-vologne-zz-c6a15eee",
-    "slug": "laval-sur-vologne-rue-de-la-vologne",
-    "display_name": "Laval Sur Vologne Rue De La Vologne",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.195389,
-      "lon": 6.702722
-    },
-    "map_location": {
-      "lat": 48.19539,
-      "lon": 6.70272
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87752410"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "lavaufranche-fr-23104",
     "slug": "lavaufranche",
     "display_name": "Lavaufranche",
@@ -106128,12 +104541,12 @@
       "lon": 3.168938
     },
     "map_location": {
-      "lat": 43.69120999999999,
-      "lon": 3.1689400000000005
+      "lat": 43.69121,
+      "lon": 3.16894
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8778158",
       "station-uic-87781583"
@@ -106162,27 +104575,6 @@
     "aliases": []
   },
   {
-    "city_id": "le-breuil-rhone-zz-4baaab00",
-    "slug": "le-breuil-rhone",
-    "display_name": "Le Breuil Rhone",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.896591,
-      "lon": 4.591384
-    },
-    "map_location": {
-      "lat": 45.89659,
-      "lon": 4.59138
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87721779"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "le-breuil-sur-couze-fr-63052",
     "slug": "le-breuil-sur-couze",
     "display_name": "Le Breuil Sur Couze",
@@ -106192,36 +104584,15 @@
       "lon": 3.262221
     },
     "map_location": {
-      "lat": 45.467099999999995,
-      "lon": 3.2622200000000006
+      "lat": 45.4671,
+      "lon": 3.26222
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773422",
       "station-uic-87734228"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "le-breuil-sur-couze-lycee-agricole-zz-fec4ae4e",
-    "slug": "le-breuil-sur-couze-lycee-agricole",
-    "display_name": "Le Breuil Sur Couze Lycee Agricole",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.462636,
-      "lon": 3.281165
-    },
-    "map_location": {
-      "lat": 45.46264,
-      "lon": 3.28117
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87395830"
     ],
     "aliases": []
   },
@@ -106231,24 +104602,22 @@
     "display_name": "Le Bruel",
     "country_code": "FR",
     "location": {
-      "lat": 44.478894,
-      "lon": 3.3539713333333334
+      "lat": 44.477654,
+      "lon": 3.3518685
     },
     "map_location": {
-      "lat": 44.47398,
-      "lon": 3.34541
+      "lat": 44.48133,
+      "lon": 3.35833
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 6,
     "station_ids": [
-      "station-uic-87640680",
       "station-uic-87783530",
       "station-uic-87783548"
     ],
     "aliases": [
-      "Chanac",
-      "Le Bruel Route Nationale 88"
+      "Chanac"
     ]
   },
   {
@@ -107013,7 +105382,7 @@
       "lon": 0.183751
     },
     "map_location": {
-      "lat": 47.99561999999999,
+      "lat": 47.995619999999995,
       "lon": 0.1926100000000001
     },
     "wikidata_qid": null,
@@ -107163,27 +105532,6 @@
     "aliases": [
       "Le Monastier"
     ]
-  },
-  {
-    "city_id": "le-mont-saint-michel-zz-a95580a1",
-    "slug": "le-mont-saint-michel",
-    "display_name": "Le Mont Saint Michel",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.552761,
-      "lon": -1.505646
-    },
-    "map_location": {
-      "lat": 48.55276,
-      "lon": -1.50565
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87321992"
-    ],
-    "aliases": []
   },
   {
     "city_id": "le-muids-bif-ch-c3b3198d",
@@ -107518,57 +105866,15 @@
       "lon": 3.892421
     },
     "map_location": {
-      "lat": 45.04287,
-      "lon": 3.89242
+      "lat": 45.042866,
+      "lon": 3.892421
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773469",
       "station-uic-87734699"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "le-puy-en-velay-hopital-e-roux-zz-5d00dda4",
-    "slug": "le-puy-en-velay-hopital-e-roux",
-    "display_name": "Le Puy En Velay Hopital E Roux",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.049219,
-      "lon": 3.8772
-    },
-    "map_location": {
-      "lat": 45.04922,
-      "lon": 3.8772
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87589598"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "le-puy-en-velay-lafayette-zz-4572ab5e",
-    "slug": "le-puy-en-velay-lafayette",
-    "display_name": "Le Puy En Velay Lafayette",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.043962,
-      "lon": 3.879959
-    },
-    "map_location": {
-      "lat": 45.04396,
-      "lon": 3.87996
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87024380"
     ],
     "aliases": []
   },
@@ -108058,27 +106364,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87611350"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "le-vernet-zz-6a99787d",
-    "slug": "le-vernet",
-    "display_name": "Le Vernet",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.184272,
-      "lon": 1.609749
-    },
-    "map_location": {
-      "lat": 43.18427,
-      "lon": 1.60975
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87130880"
     ],
     "aliases": []
   },
@@ -109181,7 +107466,7 @@
       "lon": 2.8109135
     },
     "map_location": {
-      "lat": 50.426869999999994,
+      "lat": 50.42687,
       "lon": 2.828299999999999
     },
     "wikidata_qid": null,
@@ -109231,7 +107516,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8756691",
       "station-uic-87566919",
@@ -109500,27 +107785,6 @@
     ]
   },
   {
-    "city_id": "lepanges-vologn-r-poste-zz-af0a9f6f",
-    "slug": "lepanges-vologn-r-poste",
-    "display_name": "Lepanges Vologn R Poste",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.172701,
-      "lon": 6.671589
-    },
-    "map_location": {
-      "lat": 48.1727,
-      "lon": 6.67159
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87716472"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "lepin-le-lac-la-bauche-fr-73145",
     "slug": "lepin-le-lac-la-bauche",
     "display_name": "Lepin Le Lac La Bauche",
@@ -109535,7 +107799,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774143",
       "station-uic-87741439"
@@ -109676,8 +107940,8 @@
     "display_name": "Les Aubrais",
     "country_code": "FR",
     "location": {
-      "lat": 47.926733999999996,
-      "lon": 1.9070464999999999
+      "lat": 47.926801,
+      "lon": 1.906629
     },
     "map_location": {
       "lat": 47.92679999999998,
@@ -109685,14 +107949,11 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
-      "station-uic-87543017",
-      "station-uic-87737411"
+      "station-uic-87543017"
     ],
-    "aliases": [
-      "Les Aubrais Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "les-avants-ch-4c2cd48a",
@@ -109919,14 +108180,13 @@
       "lon": 1.686299
     },
     "map_location": {
-      "lat": 42.78486,
-      "lon": 1.68838
+      "lat": 42.78629,
+      "lon": 1.6863
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87130823",
       "station-uic-87611574"
     ],
     "aliases": []
@@ -109970,27 +108230,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8501151"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "les-chavannes-saint-remy-zz-b9183c52",
-    "slug": "les-chavannes-saint-remy",
-    "display_name": "Les Chavannes Saint Remy",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.387608,
-      "lon": 6.275897
-    },
-    "map_location": {
-      "lat": 45.38761,
-      "lon": 6.2759
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87741298"
     ],
     "aliases": []
   },
@@ -110505,27 +108744,6 @@
     "station_ids": [
       "station-uic-8771311",
       "station-uic-87713115"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "les-longevilles-rochejean-zz-20846592",
-    "slug": "les-longevilles-rochejean",
-    "display_name": "Les Longevilles Rochejean",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.750918,
-      "lon": 6.309156
-    },
-    "map_location": {
-      "lat": 46.75092,
-      "lon": 6.30916
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87715227"
     ],
     "aliases": []
   },
@@ -111192,27 +109410,6 @@
     "station_ids": [
       "station-uic-8764137",
       "station-uic-87641373"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "les-trilliers-pn-carrefour-zz-b49f0d76",
-    "slug": "les-trilliers-pn-carrefour",
-    "display_name": "Les Trilliers Pn Carrefour",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.414351,
-      "lon": 2.599774
-    },
-    "map_location": {
-      "lat": 46.41435,
-      "lon": 2.59977
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87680504"
     ],
     "aliases": []
   },
@@ -111951,12 +110148,12 @@
       "lon": 3.385986
     },
     "map_location": {
-      "lat": 45.821220000000004,
+      "lat": 45.82122,
       "lon": 3.38599
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773444",
       "station-uic-87734442"
@@ -112770,8 +110967,8 @@
       "lon": 3.0575
     },
     "map_location": {
-      "lat": 50.63658000000002,
-      "lon": 3.0698699999999985
+      "lat": 50.636580000000016,
+      "lon": 3.069869999999999
     },
     "wikidata_qid": "Q648",
     "population": 238695,
@@ -113016,7 +111213,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87598755",
       "station-uic-87615161"
@@ -113725,29 +111922,6 @@
       "station-uic-8891629"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "lissieu-bois-dieu-zz-0215b3c6",
-    "slug": "lissieu-bois-dieu",
-    "display_name": "Lissieu Bois Dieu",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.840796,
-      "lon": 4.736866
-    },
-    "map_location": {
-      "lat": 45.8408,
-      "lon": 4.73687
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87697227"
-    ],
-    "aliases": [
-      "Lissieu-Le Bois Dieu RD306"
-    ]
   },
   {
     "city_id": "lissone-muggio-ch-f1025742",
@@ -114497,27 +112671,6 @@
     "interest_score": 4,
     "station_ids": [
       "station-uic-8718234"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "logelbach-hirn-zz-64b35e97",
-    "slug": "logelbach-hirn",
-    "display_name": "Logelbach Hirn",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.088748,
-      "lon": 7.321808
-    },
-    "map_location": {
-      "lat": 48.08875,
-      "lon": 7.32181
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87665331"
     ],
     "aliases": []
   },
@@ -116724,27 +114877,6 @@
     "aliases": []
   },
   {
-    "city_id": "lucay-le-male-zz-f5942ec3",
-    "slug": "lucay-le-male",
-    "display_name": "Lucay Le Male",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.132858,
-      "lon": 1.436103
-    },
-    "map_location": {
-      "lat": 47.13286,
-      "lon": 1.4361
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87576363"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "luce-fr-28218",
     "slug": "luce",
     "display_name": "Luce",
@@ -116754,7 +114886,7 @@
       "lon": 1.452958
     },
     "map_location": {
-      "lat": 48.43612000000001,
+      "lat": 48.43612,
       "lon": 1.45296
     },
     "wikidata_qid": null,
@@ -116817,8 +114949,8 @@
       "lon": 0.596649
     },
     "map_location": {
-      "lat": 42.79734,
-      "lon": 0.59665
+      "lat": 42.797336,
+      "lon": 0.596649
     },
     "wikidata_qid": null,
     "population": null,
@@ -117747,24 +115879,21 @@
     "display_name": "Lus La Croix Haute",
     "country_code": "FR",
     "location": {
-      "lat": 44.6680735,
-      "lon": 5.701333
+      "lat": 44.671073,
+      "lon": 5.697382
     },
     "map_location": {
-      "lat": 44.67096151,
-      "lon": 5.69728621
+      "lat": 44.671073,
+      "lon": 5.697382
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697516",
       "station-uic-8774766",
       "station-uic-87747667"
     ],
-    "aliases": [
-      "Lus-la-Croix-Haute RD 1075"
-    ]
+    "aliases": []
   },
   {
     "city_id": "luscherz-ch-1f778ec7",
@@ -118045,27 +116174,6 @@
     "aliases": []
   },
   {
-    "city_id": "luttenbach-fronzell-zz-fac11f39",
-    "slug": "luttenbach-fronzell",
-    "display_name": "Luttenbach Fronzell",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.032459,
-      "lon": 7.109984
-    },
-    "map_location": {
-      "lat": 48.03246,
-      "lon": 7.10998
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87665513"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "luttenbach-pres-munster-fr-68193",
     "slug": "luttenbach-pres-munster",
     "display_name": "Luttenbach Pres Munster",
@@ -118098,7 +116206,7 @@
     },
     "map_location": {
       "lat": 47.75821,
-      "lon": 7.2769900000000005
+      "lon": 7.27699
     },
     "wikidata_qid": null,
     "population": null,
@@ -118266,8 +116374,8 @@
     "display_name": "Luxembourg",
     "country_code": "LU",
     "location": {
-      "lat": 49.599506,
-      "lon": 6.134185
+      "lat": 49.5998455,
+      "lon": 6.134481
     },
     "map_location": {
       "lat": 49.59996999999999,
@@ -118278,11 +116386,9 @@
     "interest_score": 7,
     "station_ids": [
       "station-uic-000200405060",
-      "station-uic-82001000",
-      "station-uic-82916015"
+      "station-uic-82001000"
     ],
     "aliases": [
-      "Luxembourg Gare",
       "Luxembourg, Gare Centrale"
     ]
   },
@@ -118338,8 +116444,8 @@
       "lon": 6.372671
     },
     "map_location": {
-      "lat": 47.81492,
-      "lon": 6.37267
+      "lat": 47.814918,
+      "lon": 6.372671
     },
     "wikidata_qid": null,
     "population": null,
@@ -118536,8 +116642,8 @@
       "lon": 4.835
     },
     "map_location": {
-      "lat": 45.76106,
-      "lon": 4.86298
+      "lat": 45.760600000000004,
+      "lon": 4.85941
     },
     "wikidata_qid": "Q456",
     "population": 522969,
@@ -118551,27 +116657,19 @@
       "station-es-renfe-mainline-gtfs-240b8cce",
       "station-uic-000008700152",
       "station-uic-87282624",
-      "station-uic-87697128",
       "station-uic-87721001",
       "station-uic-87721159",
       "station-uic-87721175",
       "station-uic-87722025",
-      "station-uic-87723197",
-      "station-uic-87698340",
-      "station-uic-87698332",
-      "station-uic-87697045"
+      "station-uic-87723197"
     ],
     "aliases": [
       "Lyon Gorge de Loup",
       "Lyon Jean Macé",
       "Lyon Part Dieu",
-      "Lyon Part Dieu Gare Routiere",
       "Lyon Perrache",
-      "Lyon Saint Paul La Feuillee",
-      "Lyon Saint Paul Quai De Bondy",
       "Lyon Saint-Paul",
-      "Lyon Vaise",
-      "Lyon Vaise Gare Routiere"
+      "Lyon Vaise"
     ]
   },
   {
@@ -118945,12 +117043,12 @@
       "lon": 6.328197
     },
     "map_location": {
-      "lat": 46.25129,
-      "lon": 6.3282
+      "lat": 46.251292,
+      "lon": 6.328197
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774558",
       "station-uic-87745588"
@@ -119424,12 +117522,12 @@
       "lon": 2.602987
     },
     "map_location": {
-      "lat": 46.46415,
-      "lon": 2.60299
+      "lat": 46.464146,
+      "lon": 2.602987
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8764136",
       "station-uic-87641365"
@@ -119639,23 +117737,20 @@
     "display_name": "Maintenon",
     "country_code": "FR",
     "location": {
-      "lat": 48.5854305,
-      "lon": 1.592001
+      "lat": 48.585479,
+      "lon": 1.592065
     },
     "map_location": {
-      "lat": 48.58548,
-      "lon": 1.59207
+      "lat": 48.585480000000004,
+      "lon": 1.5920699999999999
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87394130",
-      "station-uic-87746891"
+      "station-uic-87394130"
     ],
-    "aliases": [
-      "Maintenon Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "mainz-de-dc5a7a59",
@@ -120439,8 +118534,8 @@
       "lon": 6.161833
     },
     "map_location": {
-      "lat": 47.1999,
-      "lon": 6.16183
+      "lat": 47.199903,
+      "lon": 6.161833
     },
     "wikidata_qid": null,
     "population": null,
@@ -120802,12 +118897,12 @@
       "lon": 1.70337
     },
     "map_location": {
-      "lat": 48.989839999999994,
-      "lon": 1.7033699999999998
+      "lat": 48.98984000000001,
+      "lon": 1.70337
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8738150",
       "station-uic-87381509"
@@ -121579,27 +119674,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-de-delfi-gtfs-9dd436ce"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "marienthal-basilique-notre-dame-zz-2340f518",
-    "slug": "marienthal-basilique-notre-dame",
-    "display_name": "Marienthal Basilique Notre Dame",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.780133,
-      "lon": 7.816475
-    },
-    "map_location": {
-      "lat": 48.78013,
-      "lon": 7.81648
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659839"
     ],
     "aliases": []
   },
@@ -122695,8 +120769,8 @@
       "lon": 3.281119
     },
     "map_location": {
-      "lat": 44.54467999999999,
-      "lon": 3.281120000000001
+      "lat": 44.54468,
+      "lon": 3.28112
     },
     "wikidata_qid": null,
     "population": null,
@@ -123332,7 +121406,7 @@
     },
     "map_location": {
       "lat": 50.272949999999994,
-      "lon": 3.9667699999999995
+      "lon": 3.96677
     },
     "wikidata_qid": null,
     "population": null,
@@ -123544,27 +121618,6 @@
     "station_ids": [
       "station-uic-8764516",
       "station-uic-87645168"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "maussac-le-poteau-zz-bcfa2fda",
-    "slug": "maussac-le-poteau",
-    "display_name": "Maussac Le Poteau",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.468338,
-      "lon": 2.143238
-    },
-    "map_location": {
-      "lat": 45.46834,
-      "lon": 2.14324
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87417881"
     ],
     "aliases": []
   },
@@ -125184,27 +123237,6 @@
     "aliases": []
   },
   {
-    "city_id": "mercus-garrabet-zz-e0f47723",
-    "slug": "mercus-garrabet",
-    "display_name": "Mercus Garrabet",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.877269,
-      "lon": 1.627479
-    },
-    "map_location": {
-      "lat": 42.87727,
-      "lon": 1.62748
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87618348"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "merelbeke-be-3ade4c23",
     "slug": "merelbeke",
     "display_name": "Merelbeke",
@@ -125605,36 +123637,15 @@
       "lon": 7.302333
     },
     "map_location": {
-      "lat": 47.91319,
-      "lon": 7.30233
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 6,
-    "station_ids": [
-      "station-uic-8718272",
-      "station-uic-87182725"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "merxheim-pl-general-de-gaulle-zz-28387f09",
-    "slug": "merxheim-pl-general-de-gaulle",
-    "display_name": "Merxheim Pl General De Gaulle",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.910654,
-      "lon": 7.29265
-    },
-    "map_location": {
-      "lat": 47.91065,
-      "lon": 7.29265
+      "lat": 47.913189,
+      "lon": 7.302333
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87654541"
+      "station-uic-8718272",
+      "station-uic-87182725"
     ],
     "aliases": []
   },
@@ -125909,7 +123920,7 @@
       "lon": 6.172295
     },
     "map_location": {
-      "lat": 49.109469999999995,
+      "lat": 49.10947,
       "lon": 6.17705
     },
     "wikidata_qid": null,
@@ -126095,31 +124106,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772358",
       "station-uic-87723585"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "meymac-bourg-zz-c7d3b065",
-    "slug": "meymac-bourg",
-    "display_name": "Meymac Bourg",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.535035,
-      "lon": 2.146824
-    },
-    "map_location": {
-      "lat": 45.53504,
-      "lon": 2.14682
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87450064"
     ],
     "aliases": []
   },
@@ -126811,12 +124801,12 @@
       "lon": 3.07457
     },
     "map_location": {
-      "lat": 44.10234000000001,
-      "lon": 3.074570000000001
+      "lat": 44.10233999999999,
+      "lon": 3.0745700000000005
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8778300",
       "station-uic-87783001"
@@ -126834,7 +124824,7 @@
     },
     "map_location": {
       "lat": 49.50385,
-      "lon": 1.9887499999999998
+      "lon": 1.98875
     },
     "wikidata_qid": null,
     "population": null,
@@ -127086,27 +125076,6 @@
     "aliases": []
   },
   {
-    "city_id": "minversheim-rue-principale-zz-5868e01f",
-    "slug": "minversheim-rue-principale",
-    "display_name": "Minversheim Rue Principale",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.784366,
-      "lon": 7.620869
-    },
-    "map_location": {
-      "lat": 48.78437,
-      "lon": 7.62087
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87639922"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "mionnay-fr-01248",
     "slug": "mionnay",
     "display_name": "Mionnay",
@@ -127262,23 +125231,20 @@
     "display_name": "Miribel",
     "country_code": "FR",
     "location": {
-      "lat": 45.823242975,
-      "lon": 4.954127529999999
+      "lat": 45.82202295,
+      "lon": 4.95406506
     },
     "map_location": {
-      "lat": 45.82446,
-      "lon": 4.95419
+      "lat": 45.82202295,
+      "lon": 4.95406506
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-87698571",
       "station-uic-8772352"
     ],
-    "aliases": [
-      "Miribel-RD1084-Élysée"
-    ]
+    "aliases": []
   },
   {
     "city_id": "miribilla-es-d1bfd249",
@@ -128302,7 +126268,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721214",
       "station-uic-87212142"
@@ -128319,8 +126285,8 @@
       "lon": 7.419747
     },
     "map_location": {
-      "lat": 43.738409999999995,
-      "lon": 7.41975
+      "lat": 43.73841,
+      "lon": 7.419749999999999
     },
     "wikidata_qid": null,
     "population": null,
@@ -128408,20 +126374,17 @@
       "lon": 5.633977
     },
     "map_location": {
-      "lat": 44.912,
-      "lon": 5.63398
+      "lat": 44.912002,
+      "lon": 5.633977
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697524",
       "station-uic-8774759",
       "station-uic-87747592"
     ],
-    "aliases": [
-      "Monestier De Clermont"
-    ]
+    "aliases": []
   },
   {
     "city_id": "moneteau-gurgy-fr-89263",
@@ -128844,7 +126807,7 @@
     },
     "map_location": {
       "lat": 45.35469,
-      "lon": 1.9797499999999997
+      "lon": 1.97975
     },
     "wikidata_qid": null,
     "population": null,
@@ -128947,8 +126910,8 @@
     "display_name": "Montastruc La Conseillere",
     "country_code": "FR",
     "location": {
-      "lat": 43.719488,
-      "lon": 1.5923985
+      "lat": 43.715984,
+      "lon": 1.598016
     },
     "map_location": {
       "lat": 43.71598,
@@ -128956,14 +126919,11 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87165852",
       "station-uic-87615369"
     ],
-    "aliases": [
-      "Montastruc-la-Conseillère RN 88"
-    ]
+    "aliases": []
   },
   {
     "city_id": "montataire-fr-60414",
@@ -129701,27 +127661,6 @@
     "aliases": []
   },
   {
-    "city_id": "montgaillard-zz-45379b9b",
-    "slug": "montgaillard",
-    "display_name": "Montgaillard",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.933631,
-      "lon": 1.634198
-    },
-    "map_location": {
-      "lat": 42.93363,
-      "lon": 1.6342
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87455006"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "montgat-es-759e6281",
     "slug": "montgat",
     "display_name": "Montgat",
@@ -129773,7 +127712,7 @@
       "lon": 4.751881
     },
     "map_location": {
-      "lat": 49.85831000000001,
+      "lat": 49.85831,
       "lon": 4.76323
     },
     "wikidata_qid": null,
@@ -129937,12 +127876,12 @@
       "lon": 2.5995399999999997
     },
     "map_location": {
-      "lat": 46.3381,
-      "lon": 2.59616
+      "lat": 46.35006,
+      "lon": 2.59169
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-87323675",
       "station-uic-8764100",
@@ -129985,12 +127924,12 @@
       "lon": 5.05753
     },
     "map_location": {
-      "lat": 45.84778,
+      "lat": 45.847783,
       "lon": 5.05753
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772356",
       "station-uic-87723569"
@@ -130157,7 +128096,7 @@
     },
     "map_location": {
       "lat": 43.60474,
-      "lon": 3.88067
+      "lon": 3.8806699999999994
     },
     "wikidata_qid": "Q6441",
     "population": 310240,
@@ -130227,7 +128166,7 @@
       "lon": 0.57359
     },
     "map_location": {
-      "lat": 43.078089999999996,
+      "lat": 43.07809,
       "lon": 0.5735900000000002
     },
     "wikidata_qid": null,
@@ -130677,24 +128616,21 @@
     "display_name": "Moosch",
     "country_code": "FR",
     "location": {
-      "lat": 47.8604775,
-      "lon": 7.0500869999999995
+      "lat": 47.861087,
+      "lon": 7.050554
     },
     "map_location": {
-      "lat": 47.85987,
-      "lon": 7.04962
+      "lat": 47.86109,
+      "lon": 7.05055
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8718259",
-      "station-uic-87182592",
-      "station-uic-87659938"
+      "station-uic-87182592"
     ],
-    "aliases": [
-      "Moosch Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "moosseedorf-ch-6e0a6882",
@@ -131369,7 +129305,7 @@
     },
     "map_location": {
       "lat": 47.05372,
-      "lon": 6.6047899999999995
+      "lon": 6.60479
     },
     "wikidata_qid": null,
     "population": null,
@@ -131790,7 +129726,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771883",
       "station-uic-87718833"
@@ -132011,27 +129947,6 @@
     "aliases": []
   },
   {
-    "city_id": "moutiers-lycee-zz-319ed65b",
-    "slug": "moutiers-lycee",
-    "display_name": "Moutiers Lycee",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.483121,
-      "lon": 6.527204
-    },
-    "map_location": {
-      "lat": 45.48312,
-      "lon": 6.5272
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87696443"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "moutiers-salins-brides-les-bai-ch-531f34c0",
     "slug": "moutiers-salins-brides-les-bai",
     "display_name": "Moutiers Salins Brides Les Bai",
@@ -132063,7 +129978,7 @@
     },
     "map_location": {
       "lat": 45.48647,
-      "lon": 6.5314
+      "lon": 6.531399999999999
     },
     "wikidata_qid": null,
     "population": null,
@@ -132375,24 +130290,21 @@
     "display_name": "Muhlbach Sur Munster",
     "country_code": "FR",
     "location": {
-      "lat": 48.0249975,
-      "lon": 7.0861015
+      "lat": 48.024586,
+      "lon": 7.087727
     },
     "map_location": {
-      "lat": 48.02541,
-      "lon": 7.08448
+      "lat": 48.02459,
+      "lon": 7.08773
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8718273",
-      "station-uic-87182733",
-      "station-uic-87665620"
+      "station-uic-87182733"
     ],
-    "aliases": [
-      "Muhlbach Sur Munster Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "muhldorf-mollbrucke-at-6e7912af",
@@ -132805,12 +130717,12 @@
       "lon": 7.325851500000001
     },
     "map_location": {
-      "lat": 47.742689999999996,
-      "lon": 7.343159999999999
+      "lat": 47.74699,
+      "lon": 7.308539999999999
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-87182055",
       "station-uic-8718206",
@@ -133374,8 +131286,8 @@
     "display_name": "Munster",
     "country_code": "FR",
     "location": {
-      "lat": 48.039373000000005,
-      "lon": 7.145208
+      "lat": 48.0387785,
+      "lon": 7.1427065
     },
     "map_location": {
       "lat": 48.03862,
@@ -133383,16 +131295,14 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8718239",
       "station-uic-87182394",
-      "station-uic-87386540",
-      "station-uic-87665489"
+      "station-uic-87386540"
     ],
     "aliases": [
-      "Munster Badischhof",
-      "Munster Inter. D417-Badischhof"
+      "Munster Badischhof"
     ]
   },
   {
@@ -134137,27 +132047,6 @@
     "aliases": []
   },
   {
-    "city_id": "mutzig-passage-a-niveau-zz-86cd25c0",
-    "slug": "mutzig-passage-a-niveau",
-    "display_name": "Mutzig Passage A Niveau",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.533919,
-      "lon": 7.46108
-    },
-    "map_location": {
-      "lat": 48.53392,
-      "lon": 7.46108
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87660548"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "myslowice-de-94947a9a",
     "slug": "myslowice",
     "display_name": "Myslowice",
@@ -134449,12 +132338,12 @@
       "lon": 6.174579
     },
     "map_location": {
-      "lat": 48.68986,
-      "lon": 6.17458
+      "lat": 48.689857,
+      "lon": 6.174579
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8714100",
       "station-uic-87141002"
@@ -136226,8 +134115,8 @@
     "display_name": "Neufchateau",
     "country_code": "FR",
     "location": {
-      "lat": 48.363896,
-      "lon": 5.699115000000001
+      "lat": 48.358092,
+      "lon": 5.691036
     },
     "map_location": {
       "lat": 48.35809,
@@ -136238,31 +134127,7 @@
     "interest_score": 6,
     "station_ids": [
       "station-uic-8714129",
-      "station-uic-87141291",
-      "station-uic-87405746"
-    ],
-    "aliases": [
-      "Neufchateau Hopital"
-    ]
-  },
-  {
-    "city_id": "neufchateau-lycee-professionnel-zz-41f8ab9a",
-    "slug": "neufchateau-lycee-professionnel",
-    "display_name": "Neufchateau Lycee Professionnel",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.360794,
-      "lon": 5.702226
-    },
-    "map_location": {
-      "lat": 48.36079,
-      "lon": 5.70223
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87458869"
+      "station-uic-87141291"
     ],
     "aliases": []
   },
@@ -136513,27 +134378,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87571547"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "neuilly-les-dijon-zz-1048195d",
-    "slug": "neuilly-les-dijon",
-    "display_name": "Neuilly Les Dijon",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.281564,
-      "lon": 5.111183
-    },
-    "map_location": {
-      "lat": 47.28156,
-      "lon": 5.11118
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87712182"
     ],
     "aliases": []
   },
@@ -137488,7 +135332,7 @@
     },
     "map_location": {
       "lat": 46.98728,
-      "lon": 3.15074
+      "lon": 3.1507400000000003
     },
     "wikidata_qid": null,
     "population": null,
@@ -137575,8 +135419,8 @@
       "lon": 7.2683333333333
     },
     "map_location": {
-      "lat": 43.72269,
-      "lon": 7.291669999999999
+      "lat": 43.70555,
+      "lon": 7.29018
     },
     "wikidata_qid": "Q33959",
     "population": 357737,
@@ -139055,7 +136899,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8711819",
       "station-uic-87118190"
@@ -139562,7 +137406,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774169",
       "station-uic-87741694"
@@ -142804,8 +140648,8 @@
     "display_name": "Oderen",
     "country_code": "FR",
     "location": {
-      "lat": 47.9099725,
-      "lon": 6.9746505
+      "lat": 47.910485,
+      "lon": 6.97373
     },
     "map_location": {
       "lat": 47.91049,
@@ -142816,12 +140660,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8718263",
-      "station-uic-87182634",
-      "station-uic-87659888"
+      "station-uic-87182634"
     ],
-    "aliases": [
-      "Oderen La Poste"
-    ]
+    "aliases": []
   },
   {
     "city_id": "oed-piesting-at-1965b030",
@@ -142900,8 +140741,8 @@
       "lon": 7.131732
     },
     "map_location": {
-      "lat": 49.00037,
-      "lon": 7.13173
+      "lat": 49.000372,
+      "lon": 7.131732
     },
     "wikidata_qid": null,
     "population": null,
@@ -144336,27 +142177,6 @@
     "aliases": []
   },
   {
-    "city_id": "orleans-avenue-de-paris-zz-4d7622de",
-    "slug": "orleans-avenue-de-paris",
-    "display_name": "Orleans Avenue De Paris",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.908277,
-      "lon": 1.904229
-    },
-    "map_location": {
-      "lat": 47.90828,
-      "lon": 1.90423
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87744243"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "orleans-fr-45234",
     "slug": "orleans",
     "display_name": "Orleans",
@@ -144366,12 +142186,12 @@
       "lon": 1.904242
     },
     "map_location": {
-      "lat": 47.907889999999995,
+      "lat": 47.90789,
       "lon": 1.9042400000000004
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 7,
+    "interest_score": 6,
     "station_ids": [
       "station-uic-8754300",
       "station-uic-87543009"
@@ -146335,8 +144155,8 @@
       "lon": 5.201054
     },
     "map_location": {
-      "lat": 47.04624999999999,
-      "lon": 5.201050000000001
+      "lat": 47.04625,
+      "lon": 5.20105
     },
     "wikidata_qid": null,
     "population": null,
@@ -146666,9 +144486,8 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87130831",
       "station-uic-87611343"
     ],
     "aliases": []
@@ -147067,8 +144886,8 @@
       "lon": 3.216771
     },
     "map_location": {
-      "lat": 45.61442,
-      "lon": 3.21677
+      "lat": 45.614416,
+      "lon": 3.216771
     },
     "wikidata_qid": null,
     "population": null,
@@ -147110,7 +144929,7 @@
       "lon": 2.352222222222222
     },
     "map_location": {
-      "lat": 48.84116999999996,
+      "lat": 48.84116999999997,
       "lon": 2.320509999999999
     },
     "wikidata_qid": "Q90",
@@ -147124,7 +144943,6 @@
       "station-uic-8754700",
       "station-uic-8768600",
       "station-uic-8768666",
-      "station-uic-87737429",
       "station-uic-87113001",
       "station-uic-87271007",
       "station-uic-87384008",
@@ -147133,13 +144951,11 @@
       "station-uic-87547000",
       "station-uic-87686006",
       "station-uic-87686667",
-      "station-uic-87746792",
       "station-uic-8727100",
       "station-uic-2993634"
     ],
     "aliases": [
       "Paris Austerlitz",
-      "Paris Austerlitz Routiere",
       "Paris Bercy Bourg. Pays d'Auv.",
       "Paris Bercy Bourgogne Pays D Auvergne",
       "Paris Est",
@@ -147147,7 +144963,6 @@
       "Paris Gare de Lyon Hall 1 - 2",
       "Paris Gare du Nord",
       "Paris Montparnasse Hall 1 - 2",
-      "Paris Montparnasse Point Rencontre Groupes",
       "Paris Montparnasse Vaugirard",
       "Paris Nord",
       "Paris Nord Fr",
@@ -147278,12 +145093,12 @@
       "lon": 2.174641
     },
     "map_location": {
-      "lat": 46.19839,
-      "lon": 2.17464
+      "lat": 46.19861662,
+      "lon": 2.17444401
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8759772",
       "station-uic-87597724"
@@ -147577,24 +145392,21 @@
     "display_name": "Paulhaguet",
     "country_code": "FR",
     "location": {
-      "lat": 45.2088685,
-      "lon": 3.5055195
+      "lat": 45.21023,
+      "lon": 3.500626
     },
     "map_location": {
       "lat": 45.21023,
-      "lon": 3.5006299999999997
+      "lon": 3.500626
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87409474",
       "station-uic-8773429",
       "station-uic-87734293"
     ],
-    "aliases": [
-      "Paulhaguet Monument"
-    ]
+    "aliases": []
   },
   {
     "city_id": "pavia-ch-6052d1f9",
@@ -148387,10 +146199,9 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-80251967",
-      "station-uic-87697839"
+      "station-uic-80251967"
     ],
     "aliases": []
   },
@@ -148584,12 +146395,12 @@
       "lon": 6.424888
     },
     "map_location": {
-      "lat": 46.30334,
-      "lon": 6.42489
+      "lat": 46.303341,
+      "lon": 6.424888
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774562",
       "station-uic-87745620"
@@ -151544,8 +149355,8 @@
     "display_name": "Polliat",
     "country_code": "FR",
     "location": {
-      "lat": 46.2470085,
-      "lon": 5.1250915
+      "lat": 46.244657,
+      "lon": 5.123894
     },
     "map_location": {
       "lat": 46.244657,
@@ -151555,13 +149366,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87697706",
       "station-uic-8772584",
       "station-uic-87725846"
     ],
-    "aliases": [
-      "Polliat Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "polling-de-f1fcedbd",
@@ -151851,8 +149659,8 @@
       "lon": 6.051021
     },
     "map_location": {
-      "lat": 48.90035,
-      "lon": 6.05102
+      "lat": 48.900348,
+      "lon": 6.051021
     },
     "wikidata_qid": null,
     "population": null,
@@ -151942,11 +149750,11 @@
     },
     "map_location": {
       "lat": 46.05401,
-      "lon": 5.3343300000000005
+      "lon": 5.33433
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774312",
       "station-uic-87743120"
@@ -152299,7 +150107,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772580",
       "station-uic-87725804"
@@ -152498,27 +150306,6 @@
     "station_ids": [
       "station-uic-8768313",
       "station-uic-87683136"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "pontamafrey-zz-a08321d9",
-    "slug": "pontamafrey",
-    "display_name": "Pontamafrey",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.31251,
-      "lon": 6.340528
-    },
-    "map_location": {
-      "lat": 45.31251,
-      "lon": 6.34053
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87697714"
     ],
     "aliases": []
   },
@@ -152810,8 +150597,8 @@
     "display_name": "Pontmort",
     "country_code": "FR",
     "location": {
-      "lat": 45.9419505,
-      "lon": 3.163457
+      "lat": 45.940101,
+      "lon": 3.160014
     },
     "map_location": {
       "lat": 45.940101,
@@ -152821,13 +150608,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87409417",
       "station-uic-8773410",
       "station-uic-87734103"
     ],
-    "aliases": [
-      "Pontmort RN9-D17"
-    ]
+    "aliases": []
   },
   {
     "city_id": "pontorson-mont-saint-michel-fr-50410",
@@ -156770,8 +154554,8 @@
       "lon": 7.284047
     },
     "map_location": {
-      "lat": 47.88691,
-      "lon": 7.28405
+      "lat": 47.886906,
+      "lon": 7.284047
     },
     "wikidata_qid": null,
     "population": null,
@@ -157149,27 +154933,6 @@
     "aliases": [
       "Rankweil Bahnhof"
     ]
-  },
-  {
-    "city_id": "ranspach-ancienne-fonderie-zz-20d52fcc",
-    "slug": "ranspach-ancienne-fonderie",
-    "display_name": "Ranspach Ancienne Fonderie",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.881405,
-      "lon": 7.009459
-    },
-    "map_location": {
-      "lat": 47.88141,
-      "lon": 7.00946
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659904"
-    ],
-    "aliases": []
   },
   {
     "city_id": "ranspach-fr-68262",
@@ -158638,8 +156401,8 @@
       "lon": 4.0286111111111
     },
     "map_location": {
-      "lat": 49.2596,
-      "lon": 4.02392
+      "lat": 49.242536,
+      "lon": 4.013869
     },
     "wikidata_qid": "Q41876",
     "population": 187206,
@@ -158982,8 +156745,8 @@
       "lon": 6.598879
     },
     "map_location": {
-      "lat": 48.01634,
-      "lon": 6.59888
+      "lat": 48.016342,
+      "lon": 6.598879
     },
     "wikidata_qid": null,
     "population": null,
@@ -159436,12 +157199,12 @@
       "lon": 4.036062
     },
     "map_location": {
-      "lat": 45.201339999999995,
+      "lat": 45.20134,
       "lon": 4.03606
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773474",
       "station-uic-87734749"
@@ -159491,50 +157254,6 @@
       "station-uic-8504302"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "reugny-rue-de-la-bascul-zz-6e74726d",
-    "slug": "reugny-rue-de-la-bascul",
-    "display_name": "Reugny Rue De La Bascul",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.462807,
-      "lon": 2.61546
-    },
-    "map_location": {
-      "lat": 46.46281,
-      "lon": 2.61546
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87589804"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "reugny-zz-204aaf44",
-    "slug": "reugny",
-    "display_name": "Reugny",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.462027,
-      "lon": 2.615508
-    },
-    "map_location": {
-      "lat": 46.46203,
-      "lon": 2.61551
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87408971"
-    ],
-    "aliases": [
-      "Reugny RN144"
-    ]
   },
   {
     "city_id": "reuilly-fr-36171",
@@ -161823,12 +159542,12 @@
       "lon": 5.491895
     },
     "map_location": {
-      "lat": 45.357589999999995,
+      "lat": 45.35759,
       "lon": 5.4919
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774724",
       "station-uic-87747246"
@@ -161878,27 +159597,6 @@
     "aliases": []
   },
   {
-    "city_id": "rixheim-arret-solea-barrieres-zz-62b368f7",
-    "slug": "rixheim-arret-solea-barrieres",
-    "display_name": "Rixheim Arret Solea Barrieres",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.748244,
-      "lon": 7.409291
-    },
-    "map_location": {
-      "lat": 47.74824,
-      "lon": 7.40929
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659854"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "rixheim-fr-68278",
     "slug": "rixheim",
     "display_name": "Rixheim",
@@ -161926,24 +159624,21 @@
     "display_name": "Roanne",
     "country_code": "FR",
     "location": {
-      "lat": 46.040316000000004,
-      "lon": 4.0620705
+      "lat": 46.039383,
+      "lon": 4.063207
     },
     "map_location": {
-      "lat": 46.04125,
-      "lon": 4.06093
+      "lat": 46.03938,
+      "lon": 4.06321
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87698639",
       "station-uic-8772680",
       "station-uic-87726802"
     ],
-    "aliases": [
-      "Roanne Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "robledo-de-chavela-es-3f3507cd",
@@ -163783,8 +161478,8 @@
       "lon": 7.491065
     },
     "map_location": {
-      "lat": 48.5052,
-      "lon": 7.49107
+      "lat": 48.505196,
+      "lon": 7.491065
     },
     "wikidata_qid": null,
     "population": null,
@@ -163838,27 +161533,6 @@
     "aliases": [
       "Rosières"
     ]
-  },
-  {
-    "city_id": "rosiers-d-egletons-zz-1a009d21",
-    "slug": "rosiers-d-egletons",
-    "display_name": "Rosiers D Egletons",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.376418,
-      "lon": 2.008132
-    },
-    "map_location": {
-      "lat": 45.37642,
-      "lon": 2.00813
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87361980"
-    ],
-    "aliases": []
   },
   {
     "city_id": "rosmalen-nl-3fc298fb",
@@ -164740,8 +162414,8 @@
       "lon": 1.1025
     },
     "map_location": {
-      "lat": 49.44827379310346,
-      "lon": 1.0946793103448282
+      "lat": 49.44819333333334,
+      "lon": 1.0948000000000004
     },
     "wikidata_qid": "Q30974",
     "population": 117662,
@@ -164755,27 +162429,6 @@
     ]
   },
   {
-    "city_id": "rouffach-chs-zz-5ccd7214",
-    "slug": "rouffach-chs",
-    "display_name": "Rouffach Chs",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.950572,
-      "lon": 7.291129
-    },
-    "map_location": {
-      "lat": 47.95057,
-      "lon": 7.29113
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87654475"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "rouffach-fr-68287",
     "slug": "rouffach",
     "display_name": "Rouffach",
@@ -164785,8 +162438,8 @@
       "lon": 7.312529
     },
     "map_location": {
-      "lat": 47.96019,
-      "lon": 7.31253
+      "lat": 47.960188,
+      "lon": 7.312529
     },
     "wikidata_qid": null,
     "population": null,
@@ -167169,12 +164822,12 @@
       "lon": 2.485989
     },
     "map_location": {
-      "lat": 46.72651,
+      "lat": 46.726510000000005,
       "lon": 2.4859900000000006
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87576322"
     ],
@@ -167199,27 +164852,6 @@
     "station_ids": [
       "station-uic-8718260",
       "station-uic-87182600"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "saint-amarin-hotel-le-cheval-blanc-zz-a2e8e25e",
-    "slug": "saint-amarin-hotel-le-cheval-blanc",
-    "display_name": "Saint Amarin Hotel Le Cheval Blanc",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.874738,
-      "lon": 7.028348
-    },
-    "map_location": {
-      "lat": 47.87474,
-      "lon": 7.02835
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659912"
     ],
     "aliases": []
   },
@@ -167255,12 +164887,12 @@
       "lon": 4.948804
     },
     "map_location": {
-      "lat": 45.92594,
-      "lon": 4.9488
+      "lat": 45.925942,
+      "lon": 4.948804
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772373",
       "station-uic-87723734"
@@ -167331,27 +164963,6 @@
     "aliases": [
       "Saint-André"
     ]
-  },
-  {
-    "city_id": "saint-angel-zz-ca8c3c10",
-    "slug": "saint-angel",
-    "display_name": "Saint Angel",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.503952,
-      "lon": 2.231627
-    },
-    "map_location": {
-      "lat": 45.50395,
-      "lon": 2.23163
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87344598"
-    ],
-    "aliases": []
   },
   {
     "city_id": "saint-antoine-de-breuilh-fr-24335",
@@ -167554,11 +165165,11 @@
     },
     "map_location": {
       "lat": 45.35312,
-      "lon": 6.3028699999999995
+      "lon": 6.30287
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774130",
       "station-uic-87741306"
@@ -167601,7 +165212,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774145",
       "station-uic-87741454"
@@ -167750,8 +165361,8 @@
       "lon": 3.270857
     },
     "map_location": {
-      "lat": 44.80178999999999,
-      "lon": 3.2708599999999994
+      "lat": 44.80179,
+      "lon": 3.27086
     },
     "wikidata_qid": null,
     "population": null,
@@ -168067,27 +165678,6 @@
     "aliases": []
   },
   {
-    "city_id": "saint-eble-zz-e2013cb1",
-    "slug": "saint-eble",
-    "display_name": "Saint Eble",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.12974,
-      "lon": 3.557808
-    },
-    "map_location": {
-      "lat": 45.12974,
-      "lon": 3.55781
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87409698"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "saint-egreve-saint-robert-fr-38382",
     "slug": "saint-egreve-saint-robert",
     "display_name": "Saint Egreve Saint Robert",
@@ -168175,27 +165765,6 @@
     ]
   },
   {
-    "city_id": "saint-etienne-de-cuines-zz-18c7ce07",
-    "slug": "saint-etienne-de-cuines",
-    "display_name": "Saint Etienne De Cuines",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.342056,
-      "lon": 6.291754
-    },
-    "map_location": {
-      "lat": 45.34206,
-      "lon": 6.29175
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87697722"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "saint-etienne-de-montluc-fr-44158",
     "slug": "saint-etienne-de-montluc",
     "display_name": "Saint Etienne De Montluc",
@@ -168252,7 +165821,7 @@
     },
     "wikidata_qid": "Q42716",
     "population": 199000,
-    "interest_score": 10,
+    "interest_score": 9,
     "station_ids": [
       "station-uic-8772600",
       "station-uic-8772615",
@@ -168443,27 +166012,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87571851"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "saint-georges-d-aurac-bourg-zz-d1a00568",
-    "slug": "saint-georges-d-aurac-bourg",
-    "display_name": "Saint Georges D Aurac Bourg",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.156213,
-      "lon": 3.54073
-    },
-    "map_location": {
-      "lat": 45.156209999999994,
-      "lon": 3.54073
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87731802"
     ],
     "aliases": []
   },
@@ -168719,11 +166267,11 @@
     },
     "map_location": {
       "lat": 45.90642,
-      "lon": 6.7013300000000005
+      "lon": 6.70133
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87746479"
     ],
@@ -168798,28 +166346,25 @@
     "display_name": "Saint Gilles Lycee Haut Rhin",
     "country_code": "FR",
     "location": {
-      "lat": 48.06682166666667,
-      "lon": 7.252489166666667
+      "lat": 48.073767333333336,
+      "lon": 7.271886333333334
     },
     "map_location": {
-      "lat": 48.07585,
-      "lon": 7.26098
+      "lat": 48.0873,
+      "lon": 7.321090000000001
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 7,
     "station_ids": [
       "station-uic-8718155",
       "station-uic-87181552",
       "station-uic-87182345",
-      "station-uic-87182360",
-      "station-uic-87665455"
+      "station-uic-87182360"
     ],
     "aliases": [
       "Logelbach",
-      "Walbach - La Forge",
-      "Walbach Forge",
-      "Walbach La Forge Abri D 417"
+      "Walbach - La Forge"
     ]
   },
   {
@@ -169002,8 +166547,8 @@
       "lon": 5.244298
     },
     "map_location": {
-      "lat": 47.0998,
-      "lon": 5.2443
+      "lat": 47.099795,
+      "lon": 5.244298
     },
     "wikidata_qid": null,
     "population": null,
@@ -169344,12 +166889,12 @@
       "lon": 5.951374
     },
     "map_location": {
-      "lat": 46.57482000000001,
-      "lon": 5.95137
+      "lat": 46.574822,
+      "lon": 5.951374
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771541",
       "station-uic-87715417"
@@ -169531,27 +167076,6 @@
       "Saint-Louis (Haut-Rhin)",
       "Saint-Louis la Chaussée"
     ]
-  },
-  {
-    "city_id": "saint-loup-sur-semouse-zz-c7bde4e2",
-    "slug": "saint-loup-sur-semouse",
-    "display_name": "Saint Loup Sur Semouse",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.885625,
-      "lon": 6.275672
-    },
-    "map_location": {
-      "lat": 47.88563,
-      "lon": 6.27567
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87185330"
-    ],
-    "aliases": []
   },
   {
     "city_id": "saint-macaire-fr-33435",
@@ -169765,27 +167289,6 @@
     "aliases": []
   },
   {
-    "city_id": "saint-martin-du-mont-le-farget-zz-80e0894a",
-    "slug": "saint-martin-du-mont-le-farget",
-    "display_name": "Saint Martin Du Mont Le Farget",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.072799,
-      "lon": 5.323927
-    },
-    "map_location": {
-      "lat": 46.0728,
-      "lon": 5.32393
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87696500"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "saint-martin-le-beau-fr-37225",
     "slug": "saint-martin-le-beau",
     "display_name": "Saint Martin Le Beau",
@@ -169816,14 +167319,13 @@
       "lon": 0.934754
     },
     "map_location": {
-      "lat": 43.14114,
-      "lon": 0.93062
+      "lat": 43.13867,
+      "lon": 0.93475
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87449181",
       "station-uic-87611103"
     ],
     "aliases": []
@@ -169857,8 +167359,8 @@
     "display_name": "Saint Maurice De Beynost",
     "country_code": "FR",
     "location": {
-      "lat": 45.828312,
-      "lon": 4.977247500000001
+      "lat": 45.827421,
+      "lon": 4.976986
     },
     "map_location": {
       "lat": 45.82742,
@@ -169868,13 +167370,10 @@
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87698696",
       "station-uic-8772353",
       "station-uic-87723536"
     ],
-    "aliases": [
-      "St-Maurice-Beynost D1084 Cte"
-    ]
+    "aliases": []
   },
   {
     "city_id": "saint-medard-d-eyrans-fr-33448",
@@ -170139,27 +167638,6 @@
     "aliases": []
   },
   {
-    "city_id": "saint-paul-college-zz-629c0041",
-    "slug": "saint-paul-college",
-    "display_name": "Saint Paul College",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.594529,
-      "lon": 6.440971
-    },
-    "map_location": {
-      "lat": 45.59453,
-      "lon": 6.44097
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87696658"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "saint-paul-de-varax-fr-01383",
     "slug": "saint-paul-de-varax",
     "display_name": "Saint Paul De Varax",
@@ -170169,12 +167647,12 @@
       "lon": 5.128263
     },
     "map_location": {
-      "lat": 46.10011,
-      "lon": 5.12826
+      "lat": 46.100114,
+      "lon": 5.128263
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772378",
       "station-uic-87723783"
@@ -170229,8 +167707,8 @@
     "display_name": "Saint Piat",
     "country_code": "FR",
     "location": {
-      "lat": 48.5432995,
-      "lon": 1.5895215
+      "lat": 48.542953,
+      "lon": 1.590489
     },
     "map_location": {
       "lat": 48.54295,
@@ -170238,14 +167716,11 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87394148",
-      "station-uic-87746909"
+      "station-uic-87394148"
     ],
-    "aliases": [
-      "Saint Piat Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "saint-pierre-d-albigny-fr-73270",
@@ -170258,11 +167733,11 @@
     },
     "map_location": {
       "lat": 45.5574,
-      "lon": 6.156290000000001
+      "lon": 6.15629
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774122",
       "station-uic-87741223"
@@ -170389,7 +167864,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8769629",
       "station-uic-87696294"
@@ -170545,12 +168020,12 @@
       "lon": 5.099982
     },
     "map_location": {
-      "lat": 45.63816,
-      "lon": 5.09998
+      "lat": 45.638164,
+      "lon": 5.099982
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772338",
       "station-uic-87723387"
@@ -170968,7 +168443,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-87615344"
     ],
@@ -171184,7 +168659,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771832",
       "station-uic-87718320"
@@ -171300,27 +168775,6 @@
     "aliases": []
   },
   {
-    "city_id": "sainte-eugenie-de-villeneuve-zz-c57f0cec",
-    "slug": "sainte-eugenie-de-villeneuve",
-    "display_name": "Sainte Eugenie De Villeneuve",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.138352,
-      "lon": 3.623917
-    },
-    "map_location": {
-      "lat": 45.13835,
-      "lon": 3.6239199999999996
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87409532"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "sainte-eulalie-carbon-blanc-fr-33397",
     "slug": "sainte-eulalie-carbon-blanc",
     "display_name": "Sainte Eulalie Carbon Blanc",
@@ -171338,27 +168792,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-87491282"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "sainte-florine-lycee-claude-favard-zz-05fefadc",
-    "slug": "sainte-florine-lycee-claude-favard",
-    "display_name": "Sainte Florine Lycee Claude Favard",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.40158,
-      "lon": 3.321074
-    },
-    "map_location": {
-      "lat": 45.40158,
-      "lon": 3.321074
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87395962"
     ],
     "aliases": []
   },
@@ -171456,7 +168889,7 @@
       "lon": 0.577219
     },
     "map_location": {
-      "lat": 47.11095999999999,
+      "lat": 47.11096,
       "lon": 0.57722
     },
     "wikidata_qid": null,
@@ -171614,29 +169047,6 @@
       "station-uic-87543165"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "salelles-embranchement-zz-251b5987",
-    "slug": "salelles-embranchement",
-    "display_name": "Salelles Embranchement",
-    "country_code": "FR",
-    "location": {
-      "lat": 44.483291,
-      "lon": 3.278319
-    },
-    "map_location": {
-      "lat": 44.48329,
-      "lon": 3.27832
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87640672"
-    ],
-    "aliases": [
-      "Les Salelles Embranchement RN 88"
-    ]
   },
   {
     "city_id": "salem-ch-e9815666",
@@ -174471,7 +171881,7 @@
     },
     "map_location": {
       "lat": 47.20957,
-      "lon": 6.10138
+      "lon": 6.101379
     },
     "wikidata_qid": null,
     "population": null,
@@ -174759,7 +172169,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8719361",
       "station-uic-87193615"
@@ -175136,7 +172546,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8771362",
       "station-uic-87713628"
@@ -176558,27 +173968,6 @@
     ]
   },
   {
-    "city_id": "schirmeck-cite-scolaire-zz-c62c4867",
-    "slug": "schirmeck-cite-scolaire",
-    "display_name": "Schirmeck Cite Scolaire",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.483402,
-      "lon": 7.231295
-    },
-    "map_location": {
-      "lat": 48.4834,
-      "lon": 7.2313
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87742197"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "schirmeck-la-broque-fr-67448",
     "slug": "schirmeck-la-broque",
     "display_name": "Schirmeck La Broque",
@@ -176588,12 +173977,12 @@
       "lon": 7.216339
     },
     "map_location": {
-      "lat": 48.47999,
-      "lon": 7.21634
+      "lat": 48.479989,
+      "lon": 7.216339
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721469",
       "station-uic-87214692"
@@ -178818,27 +176207,6 @@
     "aliases": []
   },
   {
-    "city_id": "schwindratzheim-general-leclerc-zz-14820574",
-    "slug": "schwindratzheim-general-leclerc",
-    "display_name": "Schwindratzheim General Leclerc",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.754103,
-      "lon": 7.600012
-    },
-    "map_location": {
-      "lat": 48.7541,
-      "lon": 7.60001
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87658716"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "schworstadt-ch-34308cfc",
     "slug": "schworstadt",
     "display_name": "Schworstadt",
@@ -179670,27 +177038,6 @@
     ]
   },
   {
-    "city_id": "seilhan-le-bazert-zz-6aa7b668",
-    "slug": "seilhan-le-bazert",
-    "display_name": "Seilhan Le Bazert",
-    "country_code": "FR",
-    "location": {
-      "lat": 43.060332,
-      "lon": 0.591127
-    },
-    "map_location": {
-      "lat": 43.06033,
-      "lon": 0.59113
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87612358"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "sela-es-21efa59e",
     "slug": "sela",
     "display_name": "Sela",
@@ -179743,8 +177090,8 @@
       "lon": 1.922242
     },
     "map_location": {
-      "lat": 47.38837999999999,
-      "lon": 1.9222400000000002
+      "lat": 47.38838,
+      "lon": 1.92224
     },
     "wikidata_qid": null,
     "population": null,
@@ -180861,7 +178208,7 @@
       "lon": 3.056945
     },
     "map_location": {
-      "lat": 44.324650000000005,
+      "lat": 44.32465,
       "lon": 3.05695
     },
     "wikidata_qid": null,
@@ -181314,12 +178661,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8718210",
-      "station-uic-87182105",
-      "station-uic-87659862"
+      "station-uic-87182105"
     ],
-    "aliases": [
-      "Sierentz"
-    ]
+    "aliases": []
   },
   {
     "city_id": "sierndorf-an-der-march-at-bcb4d1e3",
@@ -182316,29 +179660,6 @@
       "station-uic-8014599"
     ],
     "aliases": []
-  },
-  {
-    "city_id": "siradan-zz-39f0a50d",
-    "slug": "siradan",
-    "display_name": "Siradan",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.966455,
-      "lon": 0.629584
-    },
-    "map_location": {
-      "lat": 42.966455,
-      "lon": 0.629584
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87173906"
-    ],
-    "aliases": [
-      "Siradan D825"
-    ]
   },
   {
     "city_id": "sirnach-ch-c4c2cd0c",
@@ -183968,7 +181289,7 @@
     },
     "map_location": {
       "lat": 43.87659,
-      "lon": 7.453789999999999
+      "lon": 7.45379
     },
     "wikidata_qid": null,
     "population": null,
@@ -185596,27 +182917,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8504310"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "st-jean-sur-veyle-zz-e9ce2ac4",
-    "slug": "st-jean-sur-veyle",
-    "display_name": "St Jean Sur Veyle",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.260585,
-      "lon": 4.915607
-    },
-    "map_location": {
-      "lat": 46.26059,
-      "lon": 4.91561
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87725812"
     ],
     "aliases": []
   },
@@ -188497,23 +185797,20 @@
     "display_name": "Stephansfeld",
     "country_code": "FR",
     "location": {
-      "lat": 48.71739442,
-      "lon": 7.70532244
+      "lat": 48.71777684,
+      "lon": 7.70448188
     },
     "map_location": {
-      "lat": 48.71701,
-      "lon": 7.70616
+      "lat": 48.71777684,
+      "lon": 7.70448188
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-8721212",
-      "station-uic-87654590"
+      "station-uic-8721212"
     ],
-    "aliases": [
-      "Stephansfeld Hopital"
-    ]
+    "aliases": []
   },
   {
     "city_id": "sternen-bei-teufen-ch-7060cb92",
@@ -189078,7 +186375,7 @@
     },
     "wikidata_qid": "Q6602",
     "population": 293771,
-    "interest_score": 9,
+    "interest_score": 8,
     "station_ids": [
       "station-uic-8733852",
       "station-de-delfi-gtfs-c5f971b6",
@@ -191134,27 +188431,6 @@
     ]
   },
   {
-    "city_id": "tarascon-sur-ariege-espace-francois-mitterrand-zz-1bef2e08",
-    "slug": "tarascon-sur-ariege-espace-francois-mitterrand",
-    "display_name": "Tarascon Sur Ariege Espace Francois Mitterrand",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.846536,
-      "lon": 1.604316
-    },
-    "map_location": {
-      "lat": 42.84654,
-      "lon": 1.60432
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87137158"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "tarascon-sur-ariege-fr-09306",
     "slug": "tarascon-sur-ariege",
     "display_name": "Tarascon Sur Ariege",
@@ -191164,7 +188440,7 @@
       "lon": 1.600042
     },
     "map_location": {
-      "lat": 42.84949999999999,
+      "lat": 42.8495,
       "lon": 1.60004
     },
     "wikidata_qid": null,
@@ -191386,27 +188662,6 @@
     "interest_score": 4,
     "station_ids": [
       "station-uic-8772151"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "tassin-le-baraillon-zz-90212725",
-    "slug": "tassin-le-baraillon",
-    "display_name": "Tassin Le Baraillon",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.764511,
-      "lon": 4.758132
-    },
-    "map_location": {
-      "lat": 45.76451,
-      "lon": 4.75813
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87698738"
     ],
     "aliases": []
   },
@@ -192704,25 +189959,23 @@
     "display_name": "Thann",
     "country_code": "FR",
     "location": {
-      "lat": 47.810546895,
-      "lon": 7.101518779999999
+      "lat": 47.81082079,
+      "lon": 7.100523559999999
     },
     "map_location": {
-      "lat": 47.81027,
-      "lon": 7.10251
+      "lat": 47.81006268,
+      "lon": 7.10096673
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8718256",
       "station-uic-8718288",
-      "station-uic-8747260",
-      "station-uic-87659961"
+      "station-uic-8747260"
     ],
     "aliases": [
       "Thann Centre",
-      "Thann La Poste",
       "Thann Saint-Jacques"
     ]
   },
@@ -192762,12 +190015,12 @@
       "lon": 6.416337
     },
     "map_location": {
-      "lat": 48.24469,
-      "lon": 6.41634
+      "lat": 48.244686,
+      "lon": 6.416337
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8714409",
       "station-uic-87144097"
@@ -193176,12 +190429,12 @@
       "lon": 6.481673
     },
     "map_location": {
-      "lat": 46.36899,
-      "lon": 6.48167
+      "lat": 46.368989,
+      "lon": 6.481673
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774564",
       "station-uic-87745646"
@@ -193547,7 +190800,7 @@
     },
     "map_location": {
       "lat": 48.90636,
-      "lon": 7.25542
+      "lon": 7.255418
     },
     "wikidata_qid": null,
     "population": null,
@@ -194901,24 +192154,21 @@
     "display_name": "Toul",
     "country_code": "FR",
     "location": {
-      "lat": 48.6764005,
-      "lon": 5.8833545
+      "lat": 48.679011,
+      "lon": 5.880499
     },
     "map_location": {
-      "lat": 48.67379,
-      "lon": 5.88621
+      "lat": 48.679011,
+      "lon": 5.880499
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
       "station-uic-8714104",
-      "station-uic-87141044",
-      "station-uic-87405753"
+      "station-uic-87141044"
     ],
-    "aliases": [
-      "Toul Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "toulon-fr-q44160",
@@ -194955,8 +192205,8 @@
       "lon": 1.4433333333333334
     },
     "map_location": {
-      "lat": 43.61121000000002,
-      "lon": 1.4536200000000006
+      "lat": 43.611210000000014,
+      "lon": 1.4536200000000004
     },
     "wikidata_qid": "Q7880",
     "population": 514819,
@@ -195148,7 +192398,7 @@
     },
     "map_location": {
       "lat": 47.38986999999998,
-      "lon": 0.6928300000000004
+      "lon": 0.6928300000000003
     },
     "wikidata_qid": null,
     "population": null,
@@ -196685,12 +193935,12 @@
       "lon": 4.065281
     },
     "map_location": {
-      "lat": 48.29606999999999,
-      "lon": 4.0652800000000004
+      "lat": 48.29607,
+      "lon": 4.06528
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8711800",
       "station-uic-87118000"
@@ -197037,7 +194287,7 @@
     },
     "map_location": {
       "lat": 45.25873,
-      "lon": 1.7564500000000003
+      "lon": 1.75645
     },
     "wikidata_qid": null,
     "population": null,
@@ -199109,27 +196359,6 @@
     "aliases": []
   },
   {
-    "city_id": "urcay-hotel-du-lyon-d-or-zz-6632bf9b",
-    "slug": "urcay-hotel-du-lyon-d-or",
-    "display_name": "Urcay Hotel Du Lyon D Or",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.626834,
-      "lon": 2.589442
-    },
-    "map_location": {
-      "lat": 46.62683,
-      "lon": 2.58944
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87409490"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "urcay-la-perche-fr-18178",
     "slug": "urcay-la-perche",
     "display_name": "Urcay La Perche",
@@ -199225,12 +196454,12 @@
       "lon": 7.3251285
     },
     "map_location": {
-      "lat": 48.52598,
-      "lon": 7.3383
+      "lat": 48.525984,
+      "lon": 7.338299
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8721463",
       "station-uic-87214635",
@@ -199436,27 +196665,6 @@
     "aliases": []
   },
   {
-    "city_id": "ussat-les-bains-zz-1e54bb60",
-    "slug": "ussat-les-bains",
-    "display_name": "Ussat Les Bains",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.821052,
-      "lon": 1.621331
-    },
-    "map_location": {
-      "lat": 42.82105,
-      "lon": 1.62133
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87611582"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "ussel-fr-19275",
     "slug": "ussel",
     "display_name": "Ussel",
@@ -199471,7 +196679,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87594093"
     ],
@@ -200147,8 +197355,8 @@
       "lon": 6.328568
     },
     "map_location": {
-      "lat": 47.14973,
-      "lon": 6.34227
+      "lat": 47.15105,
+      "lon": 6.31486
     },
     "wikidata_qid": null,
     "population": null,
@@ -200524,27 +197732,6 @@
     "aliases": []
   },
   {
-    "city_id": "valencay-college-alain-fournier-zz-cb4e3e2a",
-    "slug": "valencay-college-alain-fournier",
-    "display_name": "Valencay College Alain Fournier",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.164462,
-      "lon": 1.564392
-    },
-    "map_location": {
-      "lat": 47.16446,
-      "lon": 1.56439
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87766824"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "valencay-fr-36228",
     "slug": "valencay",
     "display_name": "Valencay",
@@ -200559,7 +197746,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-87576215"
     ],
@@ -200592,8 +197779,8 @@
     "display_name": "Valence",
     "country_code": "FR",
     "location": {
-      "lat": 44.975696215,
-      "lon": 4.9572473575
+      "lat": 44.97580359,
+      "lon": 4.9573806075
     },
     "map_location": {
       "lat": 44.92808,
@@ -200601,18 +197788,16 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 8,
+    "interest_score": 7,
     "station_ids": [
       "station-es-renfe-mainline-gtfs-a40be0a7",
       "station-es-renfe-mainline-gtfs-a5e448e4",
-      "station-uic-87556506",
       "station-uic-8776100",
       "station-uic-87761007",
       "station-uic-8776302",
       "station-uic-87763029"
     ],
     "aliases": [
-      "Valence Gare Routiere",
       "Valence TGV",
       "Valence Tgv Rhone Alpes Sud",
       "Valence Ville"
@@ -201025,27 +198210,6 @@
     "aliases": []
   },
   {
-    "city_id": "vallon-en-sully-marche-couvert-zz-a626fb45",
-    "slug": "vallon-en-sully-marche-couvert",
-    "display_name": "Vallon En Sully Marche Couvert",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.535873,
-      "lon": 2.607845
-    },
-    "map_location": {
-      "lat": 46.535869999999996,
-      "lon": 2.6078499999999996
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87765990"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "vallorbe-ch-5612f22a",
     "slug": "vallorbe",
     "display_name": "Vallorbe",
@@ -201055,8 +198219,8 @@
       "lon": 6.370567265
     },
     "map_location": {
-      "lat": 46.71242,
-      "lon": 6.37057
+      "lat": 46.71240999999999,
+      "lon": 6.370559999999999
     },
     "wikidata_qid": null,
     "population": null,
@@ -201403,14 +198567,13 @@
       "lon": 1.628318
     },
     "map_location": {
-      "lat": 43.04159,
-      "lon": 1.62832
+      "lat": 43.04158999999999,
+      "lon": 1.6283200000000002
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
-      "station-uic-87130898",
       "station-uic-87611327"
     ],
     "aliases": []
@@ -201655,29 +198818,6 @@
     "aliases": []
   },
   {
-    "city_id": "vavrette-tossiat-zz-4b2da104",
-    "slug": "vavrette-tossiat",
-    "display_name": "Vavrette Tossiat",
-    "country_code": "FR",
-    "location": {
-      "lat": 46.134616,
-      "lon": 5.290295
-    },
-    "map_location": {
-      "lat": 46.13462,
-      "lon": 5.2903
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87743104"
-    ],
-    "aliases": [
-      "La Vavrette Tossiat RD1075"
-    ]
-  },
-  {
     "city_id": "vayrac-fr-46330",
     "slug": "vayrac",
     "display_name": "Vayrac",
@@ -201735,31 +198875,10 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772620",
       "station-uic-87726208"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "vebre-zz-70c2332b",
-    "slug": "vebre",
-    "display_name": "Vebre",
-    "country_code": "FR",
-    "location": {
-      "lat": 42.773927,
-      "lon": 1.719881
-    },
-    "map_location": {
-      "lat": 42.77393,
-      "lon": 1.71988
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87611566"
     ],
     "aliases": []
   },
@@ -202547,8 +199666,8 @@
       "lon": 4.888007
     },
     "map_location": {
-      "lat": 45.70561,
-      "lon": 4.88801
+      "lat": 45.705608,
+      "lon": 4.888007
     },
     "wikidata_qid": null,
     "population": null,
@@ -202722,7 +199841,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
       "station-uic-83045013"
     ],
@@ -202780,8 +199899,8 @@
       "lon": 5.379672
     },
     "map_location": {
-      "lat": 49.16544,
-      "lon": 5.37967
+      "lat": 49.165441,
+      "lon": 5.379672
     },
     "wikidata_qid": null,
     "population": null,
@@ -203323,7 +200442,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8773442",
       "station-uic-87734426"
@@ -203601,8 +200720,8 @@
       "lon": 6.788761200000001
     },
     "map_location": {
-      "lat": 45.92449,
-      "lon": 6.76347
+      "lat": 45.8995,
+      "lon": 6.82582
     },
     "wikidata_qid": null,
     "population": null,
@@ -204030,27 +201149,6 @@
     ]
   },
   {
-    "city_id": "vieille-brioude-zz-c719a09e",
-    "slug": "vieille-brioude",
-    "display_name": "Vieille Brioude",
-    "country_code": "FR",
-    "location": {
-      "lat": 45.264187,
-      "lon": 3.404474
-    },
-    "map_location": {
-      "lat": 45.26419,
-      "lon": 3.40447
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87409482"
-    ],
-    "aliases": []
-  },
-  {
     "city_id": "vieilleville-fr-23137",
     "slug": "vieilleville",
     "display_name": "Vieilleville",
@@ -204120,23 +201218,20 @@
     "display_name": "Vienne",
     "country_code": "FR",
     "location": {
-      "lat": 45.521145325,
-      "lon": 4.87419723
+      "lat": 45.52102765,
+      "lon": 4.87440246
     },
     "map_location": {
-      "lat": 45.521260000000005,
-      "lon": 4.87399
+      "lat": 45.52102765,
+      "lon": 4.87440246
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-87698803",
       "station-uic-8772258"
     ],
-    "aliases": [
-      "Vienne Gare Routiere"
-    ]
+    "aliases": []
   },
   {
     "city_id": "vierkirchen-esterhofen-de-a297c018",
@@ -204256,8 +201351,8 @@
       "lon": 2.0801425
     },
     "map_location": {
-      "lat": 47.22646999999998,
-      "lon": 2.059870000000001
+      "lat": 47.22646999999999,
+      "lon": 2.05987
     },
     "wikidata_qid": null,
     "population": null,
@@ -205584,12 +202679,12 @@
       "lon": 5.028415
     },
     "map_location": {
-      "lat": 46.00427,
-      "lon": 5.02842
+      "lat": 46.004273,
+      "lon": 5.028415
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772375",
       "station-uic-87723759"
@@ -205801,7 +202896,7 @@
       "lon": -1.225418
     },
     "map_location": {
-      "lat": 48.83415000000001,
+      "lat": 48.83415,
       "lon": -1.22542
     },
     "wikidata_qid": null,
@@ -205956,7 +203051,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8772133",
       "station-uic-87721332"
@@ -206015,8 +203110,8 @@
       "lon": 1.797256
     },
     "map_location": {
-      "lat": 47.36939999999999,
-      "lon": 1.7972599999999999
+      "lat": 47.3694,
+      "lon": 1.79726
     },
     "wikidata_qid": null,
     "population": null,
@@ -206078,7 +203173,7 @@
       "lon": -0.547257
     },
     "map_location": {
-      "lat": 44.76834000000001,
+      "lat": 44.76834,
       "lon": -0.54726
     },
     "wikidata_qid": null,
@@ -206186,20 +203281,17 @@
       "lon": 3.247165
     },
     "map_location": {
-      "lat": 46.65911879,
-      "lon": 3.24698754
+      "lat": 46.658954,
+      "lon": 3.247165
     },
     "wikidata_qid": null,
     "population": null,
     "interest_score": 5,
     "station_ids": [
-      "station-uic-87668004",
       "station-uic-8769631",
       "station-uic-87696310"
     ],
-    "aliases": [
-      "Villeneuve Sur Allier"
-    ]
+    "aliases": []
   },
   {
     "city_id": "villeneuve-sur-yonne-fr-89464",
@@ -206389,27 +203481,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8872579"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "villers-les-pots-zz-887682e8",
-    "slug": "villers-les-pots",
-    "display_name": "Villers Les Pots",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.206732,
-      "lon": 5.347963
-    },
-    "map_location": {
-      "lat": 47.20673,
-      "lon": 5.34796
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87713339"
     ],
     "aliases": []
   },
@@ -207020,7 +204091,7 @@
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8774720",
       "station-uic-87747204"
@@ -208019,8 +205090,8 @@
       "lon": 4.991831
     },
     "map_location": {
-      "lat": 46.22715,
-      "lon": 4.99183
+      "lat": 46.227149,
+      "lon": 4.991831
     },
     "wikidata_qid": null,
     "population": null,
@@ -211706,8 +208777,8 @@
       "lon": 6.9923470000000005
     },
     "map_location": {
-      "lat": 47.88969,
-      "lon": 6.99756
+      "lat": 47.89759,
+      "lon": 6.98714
     },
     "wikidata_qid": null,
     "population": null,
@@ -212075,27 +209146,6 @@
     "station_ids": [
       "station-uic-8721367",
       "station-uic-87213678"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "weyersheim-rue-republique-zz-268213a2",
-    "slug": "weyersheim-rue-republique",
-    "display_name": "Weyersheim Rue Republique",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.717811,
-      "lon": 7.800244
-    },
-    "map_location": {
-      "lat": 48.71781,
-      "lon": 7.80024
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87659771"
     ],
     "aliases": []
   },
@@ -212715,24 +209765,21 @@
     "display_name": "Wihr Au Val Soultzbach",
     "country_code": "FR",
     "location": {
-      "lat": 48.046411000000006,
-      "lon": 7.209369499999999
+      "lat": 48.046052,
+      "lon": 7.209535
     },
     "map_location": {
-      "lat": 48.04677,
-      "lon": 7.2092
+      "lat": 48.04605,
+      "lon": 7.20954
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 6,
+    "interest_score": 5,
     "station_ids": [
       "station-uic-8718237",
-      "station-uic-87182378",
-      "station-uic-87665463"
+      "station-uic-87182378"
     ],
-    "aliases": [
-      "Wihr-au-Val - Soultzbach  D417"
-    ]
+    "aliases": []
   },
   {
     "city_id": "wijchen-voorzijde-station-stationslaan-ri-oss-nl-736c03c9",
@@ -213224,8 +210271,8 @@
     "display_name": "Willer Sur Thur",
     "country_code": "FR",
     "location": {
-      "lat": 47.842847000000006,
-      "lon": 7.070342500000001
+      "lat": 47.842623,
+      "lon": 7.069281
     },
     "map_location": {
       "lat": 47.84262,
@@ -213236,12 +210283,9 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8718258",
-      "station-uic-87182584",
-      "station-uic-87659946"
+      "station-uic-87182584"
     ],
-    "aliases": [
-      "Willer Sur Thur Mairie"
-    ]
+    "aliases": []
   },
   {
     "city_id": "willisau-ch-989e975e",
@@ -213394,27 +210438,6 @@
     "station_ids": [
       "station-uic-8721217",
       "station-uic-87212175"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "wilwisheim-haute-montee-zz-a489f921",
-    "slug": "wilwisheim-haute-montee",
-    "display_name": "Wilwisheim Haute Montee",
-    "country_code": "FR",
-    "location": {
-      "lat": 48.748004,
-      "lon": 7.506757
-    },
-    "map_location": {
-      "lat": 48.748,
-      "lon": 7.50676
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 5,
-    "station_ids": [
-      "station-uic-87658740"
     ],
     "aliases": []
   },
@@ -213703,8 +210726,8 @@
       "lon": 7.380538
     },
     "map_location": {
-      "lat": 48.92009,
-      "lon": 7.38054
+      "lat": 48.920092,
+      "lon": 7.380538
     },
     "wikidata_qid": null,
     "population": null,
@@ -214038,23 +211061,20 @@
     "display_name": "Wisches",
     "country_code": "FR",
     "location": {
-      "lat": 48.508049959999994,
-      "lon": 7.26953919
+      "lat": 48.50746492,
+      "lon": 7.27018238
     },
     "map_location": {
-      "lat": 48.508635,
-      "lon": 7.268896
+      "lat": 48.50746492,
+      "lon": 7.27018238
     },
     "wikidata_qid": null,
     "population": null,
-    "interest_score": 5,
+    "interest_score": 4,
     "station_ids": [
-      "station-uic-8721467",
-      "station-uic-87660688"
+      "station-uic-8721467"
     ],
-    "aliases": [
-      "Wisches Eglise"
-    ]
+    "aliases": []
   },
   {
     "city_id": "wissembourg-fr-67544",
@@ -217562,27 +214582,6 @@
     "interest_score": 5,
     "station_ids": [
       "station-uic-8504490"
-    ],
-    "aliases": []
-  },
-  {
-    "city_id": "zillisheim-auberge-mohn-zz-f215f50a",
-    "slug": "zillisheim-auberge-mohn",
-    "display_name": "Zillisheim Auberge Mohn",
-    "country_code": "FR",
-    "location": {
-      "lat": 47.693805,
-      "lon": 7.294209
-    },
-    "map_location": {
-      "lat": 47.69381,
-      "lon": 7.29421
-    },
-    "wikidata_qid": null,
-    "population": null,
-    "interest_score": 4,
-    "station_ids": [
-      "station-uic-87654574"
     ],
     "aliases": []
   },

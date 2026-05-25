@@ -1,35 +1,31 @@
 {
   "version": 1,
-  "total_geometry_count": 24984,
+  "total_geometry_count": 24385,
   "chunk_target_bytes": 20971520,
   "chunks": [
     {
       "file": "edge-geometries/chunk-0000.json",
-      "geometry_count": 3682
+      "geometry_count": 3723
     },
     {
       "file": "edge-geometries/chunk-0001.json",
-      "geometry_count": 4814
+      "geometry_count": 5083
     },
     {
       "file": "edge-geometries/chunk-0002.json",
-      "geometry_count": 5024
+      "geometry_count": 4489
     },
     {
       "file": "edge-geometries/chunk-0003.json",
-      "geometry_count": 3580
+      "geometry_count": 3990
     },
     {
       "file": "edge-geometries/chunk-0004.json",
-      "geometry_count": 4166
+      "geometry_count": 4154
     },
     {
       "file": "edge-geometries/chunk-0005.json",
-      "geometry_count": 3672
-    },
-    {
-      "file": "edge-geometries/chunk-0006.json",
-      "geometry_count": 46
+      "geometry_count": 2946
     }
   ]
 }
