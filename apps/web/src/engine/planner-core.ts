@@ -401,20 +401,25 @@ export function createPlannerModel(
 
   const nameByCityId = options.nameByCityId;
 
-  function augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): void {
+  function augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): PlannerEdge[] {
     if (!nameByCityId) {
-      return;
+      return [];
     }
     const geometryByName = decodeRawEdgeGeometriesByName(
       rawEdgeGeometries,
       nameByCityId
     );
 
+    // Edges that received a real polyline this call. Mirrors the wasm adapter:
+    // the worker echoes only these back, not the whole edge array.
+    const touchedEdges: PlannerEdge[] = [];
+
     for (const edge of edges) {
       const directGeometry = geometryByName.get(`${edge.from} ${edge.to}`);
       if (directGeometry) {
         edge.geometry = directGeometry;
         edge.isStubGeometry = false;
+        touchedEdges.push(edge);
         const fromAdj = adjacency[edge.fromIndex];
         if (fromAdj) {
           for (const entry of fromAdj) {
@@ -444,6 +449,7 @@ export function createPlannerModel(
           if (forward) {
             edge.geometry = forward;
             edge.isStubGeometry = false;
+            touchedEdges.push(edge);
             const fromAdj = adjacency[edge.fromIndex];
             if (fromAdj) {
               for (const entry of fromAdj) {
@@ -468,6 +474,8 @@ export function createPlannerModel(
         }
       }
     }
+
+    return touchedEdges;
   }
 
   return {

@@ -152,17 +152,22 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
       if (!rawEdgeGeometries) {
         throw new Error("augment-geometry payload missing rawEdgeGeometries");
       }
-      model.augmentGeometry(rawEdgeGeometries);
+      const touchedEdges = model.augmentGeometry(rawEdgeGeometries);
       diagnostics.info("planner worker augmented geometry", {
         request_id: message.requestId,
         engine_kind: activeEngineKind,
         geometry_count: rawEdgeGeometries.geometries.length,
+        touched_edge_count: touchedEdges.length,
+        total_edge_count: model.edges.length,
         duration_ms: elapsedSince(startedAt)
       });
-      // Echo the updated edges back so the shell-side metadata stays in
-      // sync (the map surface re-projects geometry from this list).
+      // Echo only the edges this augment actually touched so the shell-side
+      // metadata stays in sync. The main-thread merge keys by edge.key and
+      // skips edges with no fresh geometry, so omitting the untouched ~13k
+      // edges is behaviour-preserving and avoids structure-cloning the full
+      // network back across the boundary on every chunk.
       postSuccess(message.requestId, {
-        edges: model.edges
+        edges: touchedEdges
       });
       return;
     }

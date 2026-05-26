@@ -373,13 +373,13 @@ export async function createWasmPlannerModel(
     return [{ lat: city.lat, lon: city.lon }];
   }
 
-  function augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): void {
+  function augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): PlannerEdge[] {
     const startedAt = now();
     if (!nameByCityId) {
       diagnostics.warn("augmentGeometry skipped: missing nameByCityId mapping", {
         geometry_count: rawEdgeGeometries.geometries.length
       });
-      return;
+      return [];
     }
 
     // Decode raw geometry → display-name keyed lookup using the same
@@ -391,8 +391,10 @@ export async function createWasmPlannerModel(
       nameByCityId
     );
 
-    let updatedEdges = 0;
     let updatedAdjacency = 0;
+    // Edges that received a real polyline this call. Returned to the worker so
+    // only these — not all ~13k — are echoed back across the boundary.
+    const touchedEdges: PlannerEdge[] = [];
 
     // Index edge metadata + adjacency in place. The WASM PlannerGraph is
     // geometry-agnostic, so no rebuild is required — only the JS-side
@@ -407,7 +409,7 @@ export async function createWasmPlannerModel(
         if (reversed) {
           edgeGeometryIndex.set(geometryKey(edge.to, edge.from), reversed);
         }
-        updatedEdges += 1;
+        touchedEdges.push(edge);
       } else {
         const reversedKey = geometryKey(edge.to, edge.from);
         const reverseDirectGeometry = geometryByName.get(reversedKey);
@@ -419,9 +421,12 @@ export async function createWasmPlannerModel(
             edge.geometry = forward;
             edge.isStubGeometry = false;
             edgeGeometryIndex.set(geometryKey(edge.from, edge.to), forward);
+            // Only echo edges that actually carry geometry now: the
+            // main-thread merge keys off fresh.geometry, so an edge left
+            // without a polyline (mirror failed) would be a no-op anyway.
+            touchedEdges.push(edge);
           }
           edgeGeometryIndex.set(reversedKey, reverseDirectGeometry);
-          updatedEdges += 1;
         }
       }
     }
@@ -461,10 +466,12 @@ export async function createWasmPlannerModel(
     diagnostics.info("augment-geometry:end", {
       geometry_count: rawEdgeGeometries.geometries.length,
       decoded_geometry_count: geometryByName.size,
-      updated_edge_count: updatedEdges,
+      updated_edge_count: touchedEdges.length,
       updated_adjacency_count: updatedAdjacency,
       duration_ms: elapsedSince(startedAt)
     });
+
+    return touchedEdges;
   }
 }
 

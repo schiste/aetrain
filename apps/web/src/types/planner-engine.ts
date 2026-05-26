@@ -95,8 +95,13 @@ export interface PlannerModel extends PlannerModelMetadata {
    * the model's geometry index (and the metadata edges array) without
    * rebuilding the routing graph. Routing continues to use straight-line
    * fallbacks until the next derive that observes the augmented geometry.
+   *
+   * Returns the edges this call actually touched (those a real polyline was
+   * merged onto). The worker echoes only these back across the boundary
+   * instead of the full ~13k-edge array, so a per-chunk augment clones a
+   * handful of edges rather than the whole network — see planner.worker.ts.
    */
-  augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): void;
+  augmentGeometry(rawEdgeGeometries: RawEdgeGeometries): PlannerEdge[];
 }
 
 export interface PlannerEngine {

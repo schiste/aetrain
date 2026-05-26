@@ -463,6 +463,17 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
   }
 }
 
+// Coalesce window for streamed geometry chunks. Each chunk that lands within
+// this window of an open flush joins the same batch, so the boot burst of 7
+// chunks collapses into one (or few) merged `augmentGeometry` calls instead of
+// 7 serial round-trips on the single-threaded planner worker. That worker also
+// serves derive-trip, so fewer augments == less queue contention during the
+// post-boot window where the perf test adds stops and measures derive-trip P50.
+// A leading-edge throttle (not a reset debounce): the first un-flushed chunk
+// opens the window, later chunks join it, and the window still fires on time so
+// a slow trickle of chunks can't starve the flush indefinitely.
+const GEOMETRY_AUGMENT_COALESCE_MS = 250;
+
 interface EdgeGeometryUpgradeArgs {
   planner: {
     augmentGeometry(rawEdgeGeometries: import("../../types/planner-dataset.ts").RawEdgeGeometries): Promise<void>;
@@ -499,19 +510,52 @@ async function scheduleEdgeGeometryUpgrade({
     triggeredBy === "initial" ? beginMapLoading("Loading rail geometry…") : null;
   try {
     let appliedChunks = 0;
+    let flushedBatches = 0;
+    // Geometries buffered behind the coalesce window, the open-window timer,
+    // and a serial chain so two flushes can never race an augment onto the
+    // worker concurrently.
+    let pendingGeometries: import("../../types/planner-dataset.ts").RawEdgeGeometry[] = [];
+    let flushTimer: ReturnType<typeof setTimeout> | null = null;
+    let flushChain: Promise<void> = Promise.resolve();
+
+    const flushPending = async (): Promise<void> => {
+      if (pendingGeometries.length === 0) {
+        return;
+      }
+      const batch = pendingGeometries;
+      pendingGeometries = [];
+      await planner.augmentGeometry({ geometries: batch });
+      mapSurface.refreshGeometry();
+      flushedBatches += 1;
+    };
+
+    const scheduleFlush = (): void => {
+      // Leading-edge throttle: the first buffered chunk opens the window;
+      // chunks arriving before it fires simply join the same batch.
+      if (flushTimer !== null) {
+        return;
+      }
+      flushTimer = setTimeout(() => {
+        flushTimer = null;
+        flushChain = flushChain.then(flushPending);
+      }, GEOMETRY_AUGMENT_COALESCE_MS);
+    };
+
     const result = await loadEdgeGeometries({
       viewport: mapSurface.getViewportBounds(),
       seenChunkFiles: loadedChunkFiles,
-      // Apply each chunk the moment its fetch resolves rather than waiting on
-      // the slowest of N. augmentGeometry only touches edges named in the
-      // chunk, so repeated disjoint calls fill the rail network in N steps and
-      // refreshGeometry redraws the (now partially real) network after each.
-      // Because chunks are applied here, the combined `result.geometries` is
-      // empty over the worker path and is intentionally NOT re-applied below.
-      onChunk: async (chunk) => {
+      // Buffer each chunk and let the coalesce window merge the boot burst
+      // into one (or few) augments instead of one worker round-trip per chunk.
+      // augmentGeometry walks all edges regardless of batch size, so a merged
+      // batch fills the same edges in a single O(edges) pass and refreshGeometry
+      // redraws the (now partially real) network once per flush. The combined
+      // `result.geometries` stays empty over the worker path and is
+      // intentionally NOT re-applied below.
+      onChunk: (chunk) => {
         loadedChunkFiles.add(chunk.chunkFile);
-        await planner.augmentGeometry(chunk.geometries);
-        mapSurface.refreshGeometry();
+        for (const geometry of chunk.geometries.geometries) {
+          pendingGeometries.push(geometry);
+        }
         appliedChunks += 1;
         // Only the load that owns the overlay (the initial deferred load)
         // advances its label. updateMapLoadingLabel is a no-op when nothing is
@@ -521,8 +565,19 @@ async function scheduleEdgeGeometryUpgrade({
             `Loading rail geometry… ${chunk.loadedCount} of ${chunk.totalCount}`
           );
         }
+        scheduleFlush();
       }
     });
+
+    // Drain whatever is still buffered behind the throttle window so the final
+    // batch is augmented before derived state recomputes against it.
+    if (flushTimer !== null) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+    flushChain = flushChain.then(flushPending);
+    await flushChain;
+
     if (result.loadedChunkFiles.length === 0) {
       // Nothing new to apply (cache hit on every visible chunk). The
       // common case for view-change triggers once everything's loaded.
@@ -549,6 +604,10 @@ async function scheduleEdgeGeometryUpgrade({
     diagnostics.info("geometry augmented", {
       triggered_by: triggeredBy,
       applied_chunks: appliedChunks,
+      // The coalesce ratio: how many streamed chunks collapsed into how many
+      // worker augment round-trips. The boot burst (7 chunks) should land as 1
+      // (or few) flushes — the headline metric for this contention fix.
+      flushed_batches: flushedBatches,
       newly_loaded_chunks: result.loadedChunkFiles.length,
       total_loaded_chunks: loadedChunkFiles.size,
       elapsed_ms: Math.round((now - startedAt) * 1000) / 1000
