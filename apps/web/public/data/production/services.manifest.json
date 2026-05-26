@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "schema_version": 1,
+  "total_pattern_count": 7421,
+  "rail_pattern_count": 5452,
+  "replacement_bus_pattern_count": 1969,
+  "chunk_target_bytes": 5242880,
+  "chunks": [
+    {
+      "file": "services/chunk-0000.json",
+      "pattern_count": 1456,
+      "rail_pattern_count": 1072,
+      "replacement_bus_pattern_count": 384
+    },
+    {
+      "file": "services/chunk-0001.json",
+      "pattern_count": 1557,
+      "rail_pattern_count": 1121,
+      "replacement_bus_pattern_count": 436
+    },
+    {
+      "file": "services/chunk-0002.json",
+      "pattern_count": 1661,
+      "rail_pattern_count": 1283,
+      "replacement_bus_pattern_count": 378
+    },
+    {
+      "file": "services/chunk-0003.json",
+      "pattern_count": 1498,
+      "rail_pattern_count": 1132,
+      "replacement_bus_pattern_count": 366
+    },
+    {
+      "file": "services/chunk-0004.json",
+      "pattern_count": 1249,
+      "rail_pattern_count": 844,
+      "replacement_bus_pattern_count": 405
+    }
+  ]
+}
