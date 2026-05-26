@@ -8,7 +8,6 @@ import type {
   PlannerDataset,
   ProductionArtifactBundle,
   RawEdgeGeometries,
-  RawServicePatternArtifact,
   RawStationArtifact
 } from "../types/planner-dataset.ts";
 import {
@@ -20,6 +19,7 @@ import {
 import { buildProductionPlannerData } from "./production-adapter.ts";
 import {
   fetchServicePatternArtifact,
+  type RawServicePatternArtifact,
   type ServicePatternChunkResult,
   type ServicePatternManifest
 } from "./service-pattern-artifacts.ts";

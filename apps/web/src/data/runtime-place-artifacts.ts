@@ -8,16 +8,39 @@
 //   - registry-places (registry_place)       — standalone authority municipalities
 //
 // This module owns BOTH the wire format and the renderable `PlannerPlace`
-// projection. The canonical raw shapes live in types/planner-dataset.ts; we
-// import them read-only and keep the browser-facing projection here (the
+// projection: the raw chunk shapes are declared here so the place layer is
+// self-contained, and the browser-facing projection lives here too (the
 // production-adapter that would otherwise host it carries unrelated in-flight
 // changes). A single `manifestFile` arg lets one fetcher serve both layers.
 
 import type { Diagnostics } from "../types/diagnostics.ts";
-import type {
-  RawRuntimePlace,
-  RawRuntimePlaceRole
-} from "../types/planner-dataset.ts";
+
+/** Role discriminator carried on every place chunk entry. */
+export type RawRuntimePlaceRole =
+  | "rail_city"
+  | "replacement_bus_stop"
+  | "registry_place";
+
+/**
+ * One entry as it appears on the wire (e5 fixed-point lat/lon, snake_case).
+ * Decoded into `PlannerPlace` by `adaptRuntimePlaces`.
+ */
+export interface RawRuntimePlace {
+  place_id: string;
+  role: RawRuntimePlaceRole;
+  display_name: string;
+  country_code?: string | null;
+  lat_e5: number;
+  lon_e5: number;
+  linked_city_id?: string | null;
+  linked_city_index?: number | null;
+  linked_station_id?: string | null;
+  wikidata_qid?: string | null;
+  population?: number | null;
+  source_ids?: string[];
+  source_stop_ids?: string[];
+  service_pattern_count: number;
+}
 
 export interface RuntimePlaceManifestChunk {
   file: string;

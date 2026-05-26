@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { adaptRuntimePlaces } from "./runtime-place-artifacts.ts";
-import type { RawRuntimePlace, RawRuntimePlaceRole } from "../types/planner-dataset.ts";
+import {
+  adaptRuntimePlaces,
+  type RawRuntimePlace,
+  type RawRuntimePlaceRole
+} from "./runtime-place-artifacts.ts";
 
 function rawPlace(
   overrides: Partial<RawRuntimePlace> & {

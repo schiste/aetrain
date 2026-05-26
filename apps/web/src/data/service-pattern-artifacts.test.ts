@@ -4,10 +4,10 @@ import assert from "node:assert/strict";
 import {
   combineChunkedServicePatternArtifact,
   fetchServicePatternArtifact,
+  type RawServicePattern,
   type ServicePatternChunkResult,
   type ServicePatternFetcherDeps
 } from "./service-pattern-artifacts.ts";
-import type { RawServicePattern } from "../types/planner-dataset.ts";
 
 function servicePattern(id: string, replacementBus = false): RawServicePattern {
   return {

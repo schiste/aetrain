@@ -1,8 +1,45 @@
 import type { Diagnostics } from "../types/diagnostics.ts";
-import type {
-  RawServicePattern,
-  RawServicePatternArtifact
-} from "../types/planner-dataset.ts";
+
+export type RawServicePatternMode = "rail" | "replacement_bus";
+
+export interface RawServicePatternStop {
+  stop_index: number;
+  stop_sequence: number;
+  source_stop_id: string;
+  station_key: string;
+  station_id?: string | null;
+  city_id?: string | null;
+  display_name: string;
+  lat_e5: number;
+  lon_e5: number;
+  arrival_seconds?: number | null;
+  departure_seconds?: number | null;
+}
+
+export interface RawServicePattern {
+  pattern_id: string;
+  source_id: string;
+  route_id: string;
+  route_type: number;
+  mode: RawServicePatternMode;
+  replacement_bus: boolean;
+  trip_count: number;
+  sample_trip_ids: string[];
+  service_ids: string[];
+  headsigns: string[];
+  service_date_count: number;
+  first_service_date?: string | null;
+  last_service_date?: string | null;
+  stop_count: number;
+  mapped_city_count: number;
+  direct_journey_pair_count: number;
+  stops: RawServicePatternStop[];
+}
+
+export interface RawServicePatternArtifact {
+  schema_version: number;
+  patterns: RawServicePattern[];
+}
 
 const SERVICE_PATTERN_MANIFEST_FILE = "services.manifest.json";
 const SERVICE_PATTERN_LEGACY_FILE = "services.json";
