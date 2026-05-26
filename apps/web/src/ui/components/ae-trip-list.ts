@@ -225,6 +225,10 @@ defineComponent("ae-trip-list", (host) => {
       if (cityName === undefined) continue;
       const city = ctx.graph.cityMap[cityName];
       const segment = index > 0 ? segments[index - 1] : null;
+      const intermediateStops =
+        segment?.path && segment.path.length > 2
+          ? segment.path.slice(1, -1)
+          : [];
 
       let badge: DocumentFragment | null = null;
       if (segment?.time) {
@@ -268,6 +272,14 @@ defineComponent("ae-trip-list", (host) => {
             </div>
             <div class="cc">${meta}</div>
             ${badge}
+            ${intermediateStops.length > 0
+              ? html`
+                <div class="via">
+                  <span class="via-k">via</span>
+                  ${intermediateStops.join(" · ")}
+                </div>
+              `
+              : null}
           </div>
           <button
             class="tx"

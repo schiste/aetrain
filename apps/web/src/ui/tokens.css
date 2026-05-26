@@ -240,6 +240,8 @@ ae-app, ae-sidebar { display: contents; }
 .ti .cc { font-size: 10px; color: var(--ae-fg-dim); }
 .ti .tt { display: inline-flex; align-items: center; gap: 3px; font-family: var(--ae-font-mono); font-size: 10px; color: var(--ae-success); margin-top: 3px; background: rgba(16, 185, 129, .08); padding: 1px 7px; border-radius: var(--ae-radius-sm); }
 .ti .tt.err { color: var(--ae-danger); background: rgba(244, 63, 94, .08); }
+.ti .via { margin-top: 4px; font-size: 10px; line-height: 1.35; color: var(--ae-fg-muted); }
+.ti .via-k { color: var(--ae-accent); font-family: var(--ae-font-mono); text-transform: uppercase; letter-spacing: .04em; margin-right: 4px; }
 /* WCAG 2.5.5 AAA: interactive targets ≥ 44×44px. The previous 32×32 was
    below even the new 2.5.8 AA bar of 24×24 once you factor in the
    surrounding padding, and pointer users with motor impairments
