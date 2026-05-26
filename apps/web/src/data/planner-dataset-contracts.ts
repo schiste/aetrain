@@ -127,8 +127,32 @@ function assertPlannerStations(
     if (station.cityIndex < 0 || station.cityIndex >= cityCount) {
       throw new Error(`${stationContext}.cityIndex must reference a city`);
     }
+    if (station.railAnchorLat !== undefined && station.railAnchorLat !== null) {
+      assertFiniteNumber(station.railAnchorLat, `${stationContext}.railAnchorLat`);
+    }
+    if (station.railAnchorLon !== undefined && station.railAnchorLon !== null) {
+      assertFiniteNumber(station.railAnchorLon, `${stationContext}.railAnchorLon`);
+    }
+    if (station.stationKind !== undefined && station.stationKind !== null) {
+      assertString(station.stationKind, `${stationContext}.stationKind`);
+    }
+    if (station.stationScope !== undefined && station.stationScope !== null) {
+      assertString(station.stationScope, `${stationContext}.stationScope`);
+    }
+    if (
+      station.stationComplexId !== undefined &&
+      station.stationComplexId !== null
+    ) {
+      assertString(station.stationComplexId, `${stationContext}.stationComplexId`);
+    }
+    if (station.wikidataQid !== undefined && station.wikidataQid !== null) {
+      assertString(station.wikidataQid, `${stationContext}.wikidataQid`);
+    }
     if (station.uicCode !== undefined && station.uicCode !== null) {
       assertString(station.uicCode, `${stationContext}.uicCode`);
+    }
+    if (station.prominence !== undefined && station.prominence !== null) {
+      assertFiniteNumber(station.prominence, `${stationContext}.prominence`);
     }
   }
 }
@@ -278,8 +302,44 @@ function assertRuntimeStationArtifact(
     assertFiniteNumber(station.city_index, `${stationContext}.city_index`);
     assertFiniteNumber(station.lat_e5, `${stationContext}.lat_e5`);
     assertFiniteNumber(station.lon_e5, `${stationContext}.lon_e5`);
+    if (
+      station.rail_anchor_lat_e5 !== undefined &&
+      station.rail_anchor_lat_e5 !== null
+    ) {
+      assertFiniteNumber(
+        station.rail_anchor_lat_e5,
+        `${stationContext}.rail_anchor_lat_e5`
+      );
+    }
+    if (
+      station.rail_anchor_lon_e5 !== undefined &&
+      station.rail_anchor_lon_e5 !== null
+    ) {
+      assertFiniteNumber(
+        station.rail_anchor_lon_e5,
+        `${stationContext}.rail_anchor_lon_e5`
+      );
+    }
+    if (station.station_kind !== undefined && station.station_kind !== null) {
+      assertString(station.station_kind, `${stationContext}.station_kind`);
+    }
+    if (station.station_scope !== undefined && station.station_scope !== null) {
+      assertString(station.station_scope, `${stationContext}.station_scope`);
+    }
+    if (
+      station.station_complex_id !== undefined &&
+      station.station_complex_id !== null
+    ) {
+      assertString(station.station_complex_id, `${stationContext}.station_complex_id`);
+    }
+    if (station.wikidata_qid !== undefined && station.wikidata_qid !== null) {
+      assertString(station.wikidata_qid, `${stationContext}.wikidata_qid`);
+    }
     if (station.uic_code !== undefined && station.uic_code !== null) {
       assertString(station.uic_code, `${stationContext}.uic_code`);
+    }
+    if (station.prominence !== undefined && station.prominence !== null) {
+      assertFiniteNumber(station.prominence, `${stationContext}.prominence`);
     }
   }
 }

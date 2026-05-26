@@ -105,8 +105,15 @@ test("buildProductionPlannerData uses rail map locations for markers and fallbac
           display_name: "Paris Montparnasse",
           lat_e5: 4_884_055,
           lon_e5: 232_080,
+          rail_anchor_lat_e5: 4_884_060,
+          rail_anchor_lon_e5: 232_100,
           station_id: "station-uic-87391003",
-          uic_code: "87391003"
+          station_kind: "mainline_rail",
+          station_scope: "customer_station",
+          station_complex_id: "complex-paris-montparnasse",
+          wikidata_qid: "Q3094940",
+          uic_code: "87391003",
+          prominence: 900
         }
       ]
     }
@@ -121,8 +128,15 @@ test("buildProductionPlannerData uses rail map locations for markers and fallbac
       lat: 48.84055,
       lon: 2.3208,
       name: "Paris Montparnasse",
+      railAnchorLat: 48.8406,
+      railAnchorLon: 2.321,
       stationId: "station-uic-87391003",
-      uicCode: "87391003"
+      stationKind: "mainline_rail",
+      stationScope: "customer_station",
+      stationComplexId: "complex-paris-montparnasse",
+      wikidataQid: "Q3094940",
+      uicCode: "87391003",
+      prominence: 900
     }
   ]);
   assert.deepEqual(dataset.plannerArtifacts!.routePairs![0]!.geometry, [

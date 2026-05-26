@@ -24,7 +24,14 @@ export interface PlannerStation {
   cityName: string;
   lat: number;
   lon: number;
+  railAnchorLat?: number | null;
+  railAnchorLon?: number | null;
+  stationKind?: string | null;
+  stationScope?: string | null;
+  stationComplexId?: string | null;
+  wikidataQid?: string | null;
   uicCode?: string | null;
+  prominence?: number | null;
 }
 
 export interface GeoPoint {
@@ -137,7 +144,14 @@ export interface RawStation {
   display_name: string;
   lat_e5: number;
   lon_e5: number;
+  rail_anchor_lat_e5?: number | null;
+  rail_anchor_lon_e5?: number | null;
+  station_kind?: string | null;
+  station_scope?: string | null;
+  station_complex_id?: string | null;
+  wikidata_qid?: string | null;
   uic_code?: string | null;
+  prominence?: number | null;
 }
 
 export interface RawStationArtifact {
@@ -158,6 +172,72 @@ export interface RawEdgeGeometry {
 
 export interface RawEdgeGeometries {
   geometries: RawEdgeGeometry[];
+}
+
+export type RawServicePatternMode = "rail" | "replacement_bus";
+
+export interface RawServicePatternStop {
+  stop_index: number;
+  stop_sequence: number;
+  source_stop_id: string;
+  station_key: string;
+  station_id?: string | null;
+  city_id?: string | null;
+  display_name: string;
+  lat_e5: number;
+  lon_e5: number;
+  arrival_seconds?: number | null;
+  departure_seconds?: number | null;
+}
+
+export interface RawServicePattern {
+  pattern_id: string;
+  source_id: string;
+  route_id: string;
+  route_type: number;
+  mode: RawServicePatternMode;
+  replacement_bus: boolean;
+  trip_count: number;
+  sample_trip_ids: string[];
+  service_ids: string[];
+  headsigns: string[];
+  service_date_count: number;
+  first_service_date?: string | null;
+  last_service_date?: string | null;
+  stop_count: number;
+  mapped_city_count: number;
+  direct_journey_pair_count: number;
+  stops: RawServicePatternStop[];
+}
+
+export interface RawServicePatternArtifact {
+  schema_version: number;
+  patterns: RawServicePattern[];
+}
+
+export type RawRuntimePlaceRole = "rail_city" | "replacement_bus_stop" | "registry_place";
+
+export interface RawRuntimePlace {
+  place_id: string;
+  role: RawRuntimePlaceRole;
+  display_name: string;
+  country_code?: string | null;
+  lat_e5: number;
+  lon_e5: number;
+  linked_city_id?: string | null;
+  linked_city_index?: number | null;
+  linked_station_id?: string | null;
+  wikidata_qid?: string | null;
+  population?: number | null;
+  source_ids?: string[];
+  source_stop_ids?: string[];
+  service_pattern_count: number;
+}
+
+export interface RawRuntimePlaceLayerArtifact {
+  schema_version: number;
+  layer_id: string;
+  places: RawRuntimePlace[];
 }
 
 export interface ProductionArtifactBundle {

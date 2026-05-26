@@ -119,7 +119,20 @@ export function buildProductionPlannerData({
         cityName,
         lat: station.lat_e5 / 100_000,
         lon: station.lon_e5 / 100_000,
-        uicCode: station.uic_code ?? undefined
+        railAnchorLat:
+          station.rail_anchor_lat_e5 === undefined || station.rail_anchor_lat_e5 === null
+            ? undefined
+            : station.rail_anchor_lat_e5 / 100_000,
+        railAnchorLon:
+          station.rail_anchor_lon_e5 === undefined || station.rail_anchor_lon_e5 === null
+            ? undefined
+            : station.rail_anchor_lon_e5 / 100_000,
+        stationKind: station.station_kind ?? undefined,
+        stationScope: station.station_scope ?? undefined,
+        stationComplexId: station.station_complex_id ?? undefined,
+        wikidataQid: station.wikidata_qid ?? undefined,
+        uicCode: station.uic_code ?? undefined,
+        prominence: station.prominence ?? undefined
       };
     })
     .filter((station): station is PlannerStation => station !== null) ?? [];
