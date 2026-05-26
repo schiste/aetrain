@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     fs::File,
     hash::{Hash, Hasher},
     path::Path,
@@ -7,7 +7,8 @@ use std::{
 
 use aetrain_dataset::{
     AliasRecord, DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord,
-    EdgeGeometrySource, PolylinePointE5, SourceSnapshot,
+    EdgeGeometrySource, PolylinePointE5, ServicePatternArtifact, ServicePatternJourneyPairRecord,
+    ServicePatternMode, ServicePatternRecord, ServicePatternStopRecord, SourceSnapshot,
 };
 use aetrain_domain::{
     City, CityId, GeoPoint, ServiceClass, ServiceKind, SourceRef, Station, StationId, TravelEdge,
@@ -58,6 +59,8 @@ pub struct SncfBuildSummary {
     pub city_count: usize,
     pub station_count: usize,
     pub edge_count: usize,
+    pub service_pattern_count: usize,
+    pub replacement_bus_pattern_count: usize,
     pub duplicate_count: usize,
     pub issue_count: usize,
 }
@@ -70,6 +73,7 @@ pub struct SncfBuildOutput {
     pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
     pub edge_geometries: EdgeGeometryArtifact,
+    pub services: ServicePatternArtifact,
     pub rejected_city_candidates: RejectedCityCandidateReport,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
@@ -83,6 +87,8 @@ pub struct BasicGtfsBuildSummary {
     pub city_count: usize,
     pub station_count: usize,
     pub edge_count: usize,
+    pub service_pattern_count: usize,
+    pub replacement_bus_pattern_count: usize,
     pub duplicate_count: usize,
     pub issue_count: usize,
 }
@@ -95,6 +101,7 @@ pub struct BasicGtfsBuildOutput {
     pub station_mappings: StationMappingReport,
     pub edges: Vec<TravelEdge>,
     pub edge_geometries: EdgeGeometryArtifact,
+    pub services: ServicePatternArtifact,
     pub rejected_city_candidates: RejectedCityCandidateReport,
     pub aliases: Vec<AliasRecord>,
     pub duplicates: DuplicateCityReport,
@@ -271,6 +278,10 @@ struct GtfsTripRow {
     route_id: String,
     trip_id: String,
     #[serde(default)]
+    service_id: Option<String>,
+    #[serde(default)]
+    trip_headsign: Option<String>,
+    #[serde(default)]
     shape_id: Option<String>,
 }
 
@@ -297,6 +308,52 @@ struct TripDescriptor {
     shape_id: Option<String>,
 }
 
+#[derive(Clone, Debug)]
+struct GtfsServiceTripDescriptor {
+    route_id: String,
+    route_type: i16,
+    service_id: Option<String>,
+    trip_headsign: Option<String>,
+}
+
+#[derive(Clone, Debug, Default)]
+struct GtfsServiceCalendarSummary {
+    date_count: u32,
+    first_date: Option<String>,
+    last_date: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct GtfsCalendarDateRow {
+    service_id: String,
+    date: String,
+}
+
+#[derive(Clone, Debug)]
+struct RawServiceStop {
+    stop_sequence: u32,
+    source_stop_id: String,
+    station_key: String,
+    station_id: Option<StationId>,
+    city_id: Option<CityId>,
+    display_name: String,
+    location: GeoPoint,
+    arrival_seconds: Option<u32>,
+    departure_seconds: Option<u32>,
+}
+
+#[derive(Clone, Debug)]
+struct ServicePatternAccumulator {
+    source_id: String,
+    route_id: String,
+    route_type: i16,
+    mode: ServicePatternMode,
+    stops: Vec<RawServiceStop>,
+    trip_ids: BTreeSet<String>,
+    service_ids: BTreeSet<String>,
+    headsigns: BTreeSet<String>,
+}
+
 #[allow(clippy::too_many_arguments)] // Public API re-exported from aetrain-normalize.
 pub fn build_sncf_dataset(
     gtfs_path: &Path,
@@ -312,6 +369,7 @@ pub fn build_sncf_dataset(
 ) -> Result<SncfBuildOutput> {
     let station_references = load_station_references(stations_csv_path)?;
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
+    let all_gtfs_stations = gtfs_stations.clone();
     let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path, gtfs_source_id)?;
     let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
     let rail_geometry_network = rail_geometry_path
@@ -369,6 +427,14 @@ pub fn build_sncf_dataset(
         },
         &mut issues,
     )?;
+    let services = build_gtfs_service_patterns(
+        gtfs_path,
+        gtfs_source_id,
+        &stop_to_station_key,
+        &all_gtfs_stations,
+        &station_mappings,
+        &station_key_to_city,
+    )?;
     let duplicates =
         detect_duplicate_cities(&cities, generated_at, DEFAULT_DUPLICATE_DISTANCE_METERS);
 
@@ -388,6 +454,12 @@ pub fn build_sncf_dataset(
         city_count: cities.len(),
         station_count: stations.len(),
         edge_count: edges.len(),
+        service_pattern_count: services.patterns.len(),
+        replacement_bus_pattern_count: services
+            .patterns
+            .iter()
+            .filter(|pattern| pattern.replacement_bus)
+            .count(),
         duplicate_count: duplicates.candidates.len(),
         issue_count: issues.len(),
     };
@@ -399,6 +471,7 @@ pub fn build_sncf_dataset(
         station_mappings,
         edges,
         edge_geometries,
+        services,
         rejected_city_candidates,
         aliases,
         duplicates,
@@ -488,6 +561,7 @@ pub fn build_gtfs_basic_dataset_with_loaded_rail_geometry(
     overrides: &ManualOverrideRegistry,
 ) -> Result<BasicGtfsBuildOutput> {
     let (gtfs_stations, stop_to_station_key) = load_gtfs_stations(gtfs_path)?;
+    let all_gtfs_stations = gtfs_stations.clone();
     let trip_descriptors = load_trip_descriptors_from_gtfs(gtfs_path, gtfs_source_id)?;
     let shapes_by_id = load_gtfs_shapes_from_gtfs(gtfs_path)?;
     let used_station_keys =
@@ -538,6 +612,14 @@ pub fn build_gtfs_basic_dataset_with_loaded_rail_geometry(
         },
         &mut issues,
     )?;
+    let services = build_gtfs_service_patterns(
+        gtfs_path,
+        gtfs_source_id,
+        &stop_to_station_key,
+        &all_gtfs_stations,
+        &station_mappings,
+        &station_key_to_city,
+    )?;
     let duplicates =
         detect_duplicate_cities(&cities, generated_at, DEFAULT_DUPLICATE_DISTANCE_METERS);
 
@@ -554,6 +636,12 @@ pub fn build_gtfs_basic_dataset_with_loaded_rail_geometry(
         city_count: cities.len(),
         station_count: stations.len(),
         edge_count: edges.len(),
+        service_pattern_count: services.patterns.len(),
+        replacement_bus_pattern_count: services
+            .patterns
+            .iter()
+            .filter(|pattern| pattern.replacement_bus)
+            .count(),
         duplicate_count: duplicates.candidates.len(),
         issue_count: issues.len(),
     };
@@ -565,6 +653,7 @@ pub fn build_gtfs_basic_dataset_with_loaded_rail_geometry(
         station_mappings,
         edges,
         edge_geometries,
+        services,
         rejected_city_candidates,
         aliases,
         duplicates,
@@ -1060,7 +1149,16 @@ fn normalize_stations(
                 city_id,
                 display_name: station.display_name,
                 location: station.location,
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: station.uic_code,
+                aliases: Vec::new(),
+                operators: vec!["SNCF".to_string()],
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: station.source_refs,
             }
         })
@@ -1381,7 +1479,16 @@ fn normalize_gtfs_only_stations(
                 city_id,
                 display_name: station.display_name,
                 location: station.location,
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: station.uic_code,
+                aliases: Vec::new(),
+                operators: vec!["SNCF".to_string()],
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: station.source_refs,
             }
         })
@@ -1961,9 +2068,16 @@ fn nearest_shape_point_index(
 
 fn scale_geo_point_e5(point: GeoPoint) -> Result<PolylinePointE5> {
     Ok(PolylinePointE5 {
-        lat_e5: (point.lat * 100_000.0).round() as i32,
-        lon_e5: (point.lon * 100_000.0).round() as i32,
+        lat_e5: scale_coord_e5(point.lat)?,
+        lon_e5: scale_coord_e5(point.lon)?,
     })
+}
+
+fn scale_coord_e5(value: f64) -> Result<i32> {
+    if !value.is_finite() {
+        return Err(anyhow::anyhow!("coordinate must be finite"));
+    }
+    Ok((value * 100_000.0).round() as i32)
 }
 
 fn load_allowed_routes_for_source(
@@ -2160,6 +2274,411 @@ fn collect_used_station_keys(
     }
 
     Ok(station_keys)
+}
+
+fn build_gtfs_service_patterns(
+    gtfs_path: &Path,
+    gtfs_source_id: &str,
+    stop_to_station_key: &HashMap<String, String>,
+    gtfs_stations: &[GtfsStationArea],
+    station_mappings: &StationMappingReport,
+    station_key_to_city: &HashMap<String, CityId>,
+) -> Result<ServicePatternArtifact> {
+    let route_types = load_route_types_from_gtfs(gtfs_path)?;
+    let trip_descriptors = load_service_trip_descriptors_from_gtfs(gtfs_path, &route_types)?;
+    let calendar_summaries = load_service_calendar_summaries_from_gtfs(gtfs_path)?;
+    let gtfs_station_by_key = gtfs_stations
+        .iter()
+        .map(|station| (station.station_key.clone(), station))
+        .collect::<HashMap<_, _>>();
+    let station_id_by_key = station_mappings
+        .records
+        .iter()
+        .map(|record| (record.station_key.clone(), record.station_id.clone()))
+        .collect::<HashMap<_, _>>();
+
+    let file =
+        File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
+    let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
+    let stop_times_entry = resolve_gtfs_archive_member_name(&mut archive, "stop_times.txt")
+        .context("missing stop_times.txt in GTFS archive")?;
+    let stop_times = archive
+        .by_name(&stop_times_entry)
+        .context("missing stop_times.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(stop_times);
+    let mut stops_by_trip = HashMap::<String, Vec<RawServiceStop>>::new();
+
+    for row in reader.deserialize::<GtfsStopTimeRow>() {
+        let row = row.context("failed to parse GTFS stop time")?;
+        if !trip_descriptors.contains_key(&row.trip_id) {
+            continue;
+        }
+        let Some(station_key) = stop_to_station_key.get(&row.stop_id) else {
+            continue;
+        };
+        let Some(gtfs_station) = gtfs_station_by_key.get(station_key) else {
+            continue;
+        };
+        stops_by_trip
+            .entry(row.trip_id)
+            .or_default()
+            .push(RawServiceStop {
+                stop_sequence: row.stop_sequence,
+                source_stop_id: row.stop_id,
+                station_key: station_key.clone(),
+                station_id: station_id_by_key.get(station_key).cloned(),
+                city_id: station_key_to_city.get(station_key).cloned(),
+                display_name: gtfs_station.display_name.clone(),
+                location: gtfs_station.location,
+                arrival_seconds: parse_gtfs_time(&row.arrival_time),
+                departure_seconds: parse_gtfs_time(&row.departure_time),
+            });
+    }
+
+    let mut pattern_accumulators = BTreeMap::<String, ServicePatternAccumulator>::new();
+    for (trip_id, mut stops) in stops_by_trip {
+        stops.sort_by_key(|stop| stop.stop_sequence);
+        stops.dedup_by(|right, left| {
+            right.stop_sequence == left.stop_sequence && right.station_key == left.station_key
+        });
+        if stops.len() < 2 {
+            continue;
+        }
+        let Some(descriptor) = trip_descriptors.get(&trip_id) else {
+            continue;
+        };
+        let Some(mode) = service_pattern_mode_for_trip(
+            gtfs_source_id,
+            &descriptor.route_id,
+            descriptor.route_type,
+            &stops,
+        ) else {
+            continue;
+        };
+        let key = service_pattern_key(gtfs_source_id, &descriptor.route_id, &mode, &stops);
+        let accumulator =
+            pattern_accumulators
+                .entry(key)
+                .or_insert_with(|| ServicePatternAccumulator {
+                    source_id: gtfs_source_id.to_string(),
+                    route_id: descriptor.route_id.clone(),
+                    route_type: descriptor.route_type,
+                    mode: mode.clone(),
+                    stops: stops.clone(),
+                    trip_ids: BTreeSet::new(),
+                    service_ids: BTreeSet::new(),
+                    headsigns: BTreeSet::new(),
+                });
+        accumulator.trip_ids.insert(trip_id);
+        if let Some(service_id) = non_empty(descriptor.service_id.as_deref()) {
+            accumulator.service_ids.insert(service_id);
+        }
+        if let Some(headsign) = non_empty(descriptor.trip_headsign.as_deref()) {
+            accumulator.headsigns.insert(headsign);
+        }
+    }
+
+    let mut patterns = pattern_accumulators
+        .into_values()
+        .map(|accumulator| service_pattern_record(accumulator, &calendar_summaries))
+        .collect::<Result<Vec<_>>>()?;
+    patterns.sort_by(|left, right| {
+        left.source_id
+            .cmp(&right.source_id)
+            .then_with(|| left.route_id.cmp(&right.route_id))
+            .then_with(|| left.pattern_id.cmp(&right.pattern_id))
+    });
+
+    Ok(ServicePatternArtifact {
+        schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+        patterns,
+    })
+}
+
+fn load_route_types_from_gtfs(gtfs_path: &Path) -> Result<HashMap<String, i16>> {
+    let file =
+        File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
+    let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
+    let routes_entry = resolve_gtfs_archive_member_name(&mut archive, "routes.txt")
+        .context("missing routes.txt in GTFS archive")?;
+    let routes = archive
+        .by_name(&routes_entry)
+        .context("missing routes.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(routes);
+    let mut route_types = HashMap::new();
+    for row in reader.deserialize::<GtfsRouteRow>() {
+        let row = row.context("failed to parse GTFS route")?;
+        route_types.insert(row.route_id, row.route_type);
+    }
+    Ok(route_types)
+}
+
+fn load_service_trip_descriptors_from_gtfs(
+    gtfs_path: &Path,
+    route_types: &HashMap<String, i16>,
+) -> Result<HashMap<String, GtfsServiceTripDescriptor>> {
+    let file =
+        File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
+    let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
+    let trips_entry = resolve_gtfs_archive_member_name(&mut archive, "trips.txt")
+        .context("missing trips.txt in GTFS archive")?;
+    let trips = archive
+        .by_name(&trips_entry)
+        .context("missing trips.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new().trim(Trim::All).from_reader(trips);
+    let mut descriptors = HashMap::new();
+    for row in reader.deserialize::<GtfsTripRow>() {
+        let row = row.context("failed to parse GTFS trip")?;
+        let Some(route_type) = route_types.get(&row.route_id).copied() else {
+            continue;
+        };
+        descriptors.insert(
+            row.trip_id,
+            GtfsServiceTripDescriptor {
+                route_id: row.route_id,
+                route_type,
+                service_id: row.service_id.and_then(|value| non_empty(Some(&value))),
+                trip_headsign: row.trip_headsign.and_then(|value| non_empty(Some(&value))),
+            },
+        );
+    }
+    Ok(descriptors)
+}
+
+fn load_service_calendar_summaries_from_gtfs(
+    gtfs_path: &Path,
+) -> Result<HashMap<String, GtfsServiceCalendarSummary>> {
+    let file =
+        File::open(gtfs_path).with_context(|| format!("failed to open {}", gtfs_path.display()))?;
+    let mut archive = ZipArchive::new(file).context("failed to open GTFS archive")?;
+    let Some(calendar_dates_entry) =
+        resolve_gtfs_archive_member_name(&mut archive, "calendar_dates.txt")
+    else {
+        return Ok(HashMap::new());
+    };
+    let calendar_dates = archive
+        .by_name(&calendar_dates_entry)
+        .context("missing calendar_dates.txt in GTFS archive")?;
+    let mut reader = ReaderBuilder::new()
+        .trim(Trim::All)
+        .from_reader(calendar_dates);
+    let mut summaries = HashMap::<String, GtfsServiceCalendarSummary>::new();
+    for row in reader.deserialize::<GtfsCalendarDateRow>() {
+        let row = row.context("failed to parse GTFS calendar date")?;
+        let service_id = row.service_id.trim();
+        let date = row.date.trim();
+        if service_id.is_empty() || date.is_empty() {
+            continue;
+        }
+        let summary = summaries.entry(service_id.to_string()).or_default();
+        summary.date_count = summary.date_count.saturating_add(1);
+        if summary
+            .first_date
+            .as_deref()
+            .is_none_or(|existing| date < existing)
+        {
+            summary.first_date = Some(date.to_string());
+        }
+        if summary
+            .last_date
+            .as_deref()
+            .is_none_or(|existing| date > existing)
+        {
+            summary.last_date = Some(date.to_string());
+        }
+    }
+    Ok(summaries)
+}
+
+fn service_pattern_mode_for_trip(
+    gtfs_source_id: &str,
+    route_id: &str,
+    route_type: i16,
+    stops: &[RawServiceStop],
+) -> Option<ServicePatternMode> {
+    let contains_source_non_rail_stop = stops
+        .iter()
+        .any(|stop| is_source_non_rail_stop_id(gtfs_source_id, &stop.source_stop_id));
+    if gtfs_source_id == "sncf-fr-gtfs" && (route_type == 3 || contains_source_non_rail_stop) {
+        return Some(ServicePatternMode::ReplacementBus);
+    }
+
+    let route = GtfsRouteRow {
+        route_id: route_id.to_string(),
+        route_type,
+    };
+    is_supported_rail_route(&route, gtfs_source_id).then_some(ServicePatternMode::Rail)
+}
+
+fn service_pattern_key(
+    source_id: &str,
+    route_id: &str,
+    mode: &ServicePatternMode,
+    stops: &[RawServiceStop],
+) -> String {
+    let stop_key = stops
+        .iter()
+        .map(|stop| stop.station_key.as_str())
+        .collect::<Vec<_>>()
+        .join(">");
+    format!(
+        "{source_id}|{route_id}|{}|{stop_key}",
+        service_mode_label(mode)
+    )
+}
+
+fn service_pattern_record(
+    accumulator: ServicePatternAccumulator,
+    calendar_summaries: &HashMap<String, GtfsServiceCalendarSummary>,
+) -> Result<ServicePatternRecord> {
+    let pattern_key = service_pattern_key(
+        &accumulator.source_id,
+        &accumulator.route_id,
+        &accumulator.mode,
+        &accumulator.stops,
+    );
+    let service_ids = accumulator.service_ids.into_iter().collect::<Vec<_>>();
+    let (service_date_count, first_service_date, last_service_date) =
+        summarize_pattern_calendar(&service_ids, calendar_summaries);
+    let direct_journey_pair_count = build_service_journey_pairs(&accumulator.stops)
+        .len()
+        .min(u32::MAX as usize) as u32;
+    let mapped_city_count = accumulator
+        .stops
+        .iter()
+        .filter_map(|stop| stop.city_id.clone())
+        .collect::<BTreeSet<_>>()
+        .len()
+        .min(u16::MAX as usize) as u16;
+    let stops = accumulator
+        .stops
+        .iter()
+        .enumerate()
+        .map(|(index, stop)| {
+            Ok(ServicePatternStopRecord {
+                stop_index: index.min(u16::MAX as usize) as u16,
+                stop_sequence: stop.stop_sequence,
+                source_stop_id: stop.source_stop_id.clone(),
+                station_key: stop.station_key.clone(),
+                station_id: stop.station_id.clone(),
+                city_id: stop.city_id.clone(),
+                display_name: stop.display_name.clone(),
+                lat_e5: scale_coord_e5(stop.location.lat)?,
+                lon_e5: scale_coord_e5(stop.location.lon)?,
+                arrival_seconds: stop.arrival_seconds,
+                departure_seconds: stop.departure_seconds,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+
+    Ok(ServicePatternRecord {
+        pattern_id: format!(
+            "service-{}-{}",
+            slugify(&accumulator.source_id),
+            stable_hash(&pattern_key)
+        ),
+        source_id: accumulator.source_id,
+        route_id: accumulator.route_id,
+        route_type: accumulator.route_type,
+        replacement_bus: accumulator.mode == ServicePatternMode::ReplacementBus,
+        mode: accumulator.mode,
+        trip_count: accumulator.trip_ids.len().min(u32::MAX as usize) as u32,
+        sample_trip_ids: accumulator.trip_ids.into_iter().take(5).collect(),
+        service_ids,
+        headsigns: accumulator.headsigns.into_iter().collect(),
+        service_date_count,
+        first_service_date,
+        last_service_date,
+        stop_count: stops.len().min(u16::MAX as usize) as u16,
+        mapped_city_count,
+        direct_journey_pair_count,
+        stops,
+    })
+}
+
+fn summarize_pattern_calendar(
+    service_ids: &[String],
+    calendar_summaries: &HashMap<String, GtfsServiceCalendarSummary>,
+) -> (u32, Option<String>, Option<String>) {
+    let mut service_date_count = 0u32;
+    let mut first_service_date: Option<String> = None;
+    let mut last_service_date: Option<String> = None;
+    for service_id in service_ids {
+        let Some(summary) = calendar_summaries.get(service_id) else {
+            continue;
+        };
+        service_date_count = service_date_count.saturating_add(summary.date_count);
+        if let Some(date) = summary.first_date.as_deref() {
+            if first_service_date
+                .as_deref()
+                .is_none_or(|existing| date < existing)
+            {
+                first_service_date = Some(date.to_string());
+            }
+        }
+        if let Some(date) = summary.last_date.as_deref() {
+            if last_service_date
+                .as_deref()
+                .is_none_or(|existing| date > existing)
+            {
+                last_service_date = Some(date.to_string());
+            }
+        }
+    }
+    (service_date_count, first_service_date, last_service_date)
+}
+
+fn build_service_journey_pairs(stops: &[RawServiceStop]) -> Vec<ServicePatternJourneyPairRecord> {
+    let mut pairs = Vec::new();
+    for from_index in 0..stops.len() {
+        let from = &stops[from_index];
+        let Some(from_city_id) = from.city_id.clone() else {
+            continue;
+        };
+        for to_index in from_index + 1..stops.len() {
+            let to = &stops[to_index];
+            let Some(to_city_id) = to.city_id.clone() else {
+                continue;
+            };
+            if from_city_id == to_city_id {
+                continue;
+            }
+            let duration_min =
+                from.departure_seconds
+                    .zip(to.arrival_seconds)
+                    .and_then(|(departure, arrival)| {
+                        (arrival >= departure).then(|| (arrival - departure).div_ceil(60))
+                    });
+            let mut intermediate_city_ids = Vec::<CityId>::new();
+            for intermediate in &stops[from_index + 1..to_index] {
+                let Some(city_id) = intermediate.city_id.clone() else {
+                    continue;
+                };
+                if city_id == from_city_id || city_id == to_city_id {
+                    continue;
+                }
+                if intermediate_city_ids.last() != Some(&city_id) {
+                    intermediate_city_ids.push(city_id);
+                }
+            }
+            pairs.push(ServicePatternJourneyPairRecord {
+                from_stop_index: from_index.min(u16::MAX as usize) as u16,
+                to_stop_index: to_index.min(u16::MAX as usize) as u16,
+                from_city_id: from_city_id.clone(),
+                to_city_id,
+                duration_min,
+                intermediate_city_ids,
+            });
+        }
+    }
+    pairs
+}
+
+fn service_mode_label(mode: &ServicePatternMode) -> &'static str {
+    match mode {
+        ServicePatternMode::Rail => "rail",
+        ServicePatternMode::ReplacementBus => "replacement_bus",
+    }
 }
 
 fn csv_header_index(headers: &StringRecord, name: &str) -> Option<usize> {
@@ -4675,6 +5194,13 @@ ref-troyes,Troyes,\"48.296069,4.065281\",10387,87118000\n",
         assert_eq!(output.summary.station_count, 0);
         assert_eq!(output.summary.edge_count, 0);
         assert!(output.edge_geometries.geometries.is_empty());
+        assert_eq!(output.services.patterns.len(), 1);
+        assert_eq!(
+            output.services.patterns[0].mode,
+            ServicePatternMode::ReplacementBus
+        );
+        assert!(output.services.patterns[0].replacement_bus);
+        assert_eq!(output.services.patterns[0].direct_journey_pair_count, 0);
 
         let _ = fs::remove_file(zip_path);
         let _ = fs::remove_file(stations_csv_path);

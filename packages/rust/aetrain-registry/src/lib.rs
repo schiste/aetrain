@@ -17,7 +17,13 @@ mod seed;
 mod slice;
 mod sncf;
 mod source_quality;
+mod station_authority;
+mod station_complex;
+mod station_match;
+mod station_quality;
+mod station_rail_anchor;
 mod wikidata;
+mod wikidata_station;
 
 pub use artifacts::{
     RegistryAuditArtifacts, RegistryBuildLayout, RegistryCanonicalArtifacts, read_json,
@@ -67,4 +73,27 @@ pub use source_quality::{
     RegistrySourceCoverageReport, audit_registry_source_contract,
     build_registry_source_coverage_report, city_authority_strength,
 };
+pub use station_authority::{
+    StationAuthorityArtifact, StationAuthorityRecord, StationAuthorityRef, StationAuthorityRefKind,
+    StationEnrichmentArtifact, StationEnrichmentRecord, StationIdentityResolutionStatus,
+    StationMatchEvidence, StationMatchEvidenceKind, build_station_authority_artifact,
+    build_station_enrichment_artifact,
+};
+pub use station_complex::{
+    StationComplexArtifact, StationComplexRecord, build_station_complex_artifact,
+};
+pub use station_match::{
+    is_customer_facing_rail_station, is_non_mainline_transport, is_valid_wikidata_qid,
+};
+pub use station_quality::{
+    StationQualityArtifact, StationQualityFlag, StationQualityFlagKind, StationQualityRecord,
+    StationQualitySeverity, audit_station_quality,
+};
+pub use station_rail_anchor::{
+    StationRailAnchorArtifact, StationRailAnchorRecord, StationRailAnchorStrategy,
+    build_station_rail_anchor_artifact,
+};
 pub use wikidata::{WikidataCityObservation, WikidataStationObservation};
+pub use wikidata_station::{
+    WikidataStationClaimSnapshot, WikidataStationClassification, classify_wikidata_station,
+};

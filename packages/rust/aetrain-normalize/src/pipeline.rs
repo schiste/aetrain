@@ -8,17 +8,22 @@ use aetrain_dataset::{
     AliasRecord, DatasetBundle, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord,
     EdgeGeometrySource, PolylinePointE5, RuntimeAliasIndex, RuntimeAliasRecord,
     RuntimeCountryRecord, RuntimeDatasetBundle, RuntimeDatasetMeta, RuntimeEdgeGeometryArtifact,
-    RuntimeEdgeGeometryRecord, RuntimeGraph, RuntimeStationArtifact, RuntimeStationRecord,
-    SourceSnapshot,
+    RuntimeEdgeGeometryRecord, RuntimeGraph, RuntimePlaceLayerArtifact, RuntimePlaceRecord,
+    RuntimePlaceRole, RuntimeStationArtifact, RuntimeStationRecord, ServicePatternArtifact,
+    ServicePatternJourneyPairRecord, ServicePatternMode, ServicePatternRecord,
+    ServicePatternStopRecord, SourceSnapshot,
 };
 use aetrain_domain::{City, GeoPoint, ServiceClass, ServiceKind};
 use aetrain_registry::{
-    RegistryCanonicalBundle, RegistryManifest, RegistrySourceCoverageReport,
-    build_registry_source_coverage_report,
+    RegistryCanonicalBundle, RegistryManifest, RegistrySourceCoverageReport, StationQualityRecord,
+    audit_station_quality, build_registry_source_coverage_report, build_station_authority_artifact,
+    build_station_complex_artifact, build_station_enrichment_artifact,
+    build_station_rail_anchor_artifact,
 };
 use anyhow::{Context, Result, bail};
 use deunicode::deunicode;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use sha2::{Digest, Sha256};
 
 use crate::{
     CorridorGeometryAuthorityDefinition, CountryGeometryAuthorityDefinition, DuplicateCityReport,
@@ -104,6 +109,7 @@ impl<'a> AdapterBuildRequest<'a> {
 pub struct AdapterBuildArtifacts {
     pub canonical: DatasetBundle,
     pub edge_geometries: Option<EdgeGeometryArtifact>,
+    pub services: ServicePatternArtifact,
     pub station_mappings: Option<StationMappingReport>,
     pub rejected_city_candidates: Option<crate::RejectedCityCandidateReport>,
     pub plain_name_fallback_gap_registry_candidates:
@@ -145,11 +151,16 @@ pub struct PipelineRegistryMatchReport {
     pub authoritative_city_count: usize,
     pub cities_with_wikidata_qid: usize,
     pub cities_with_population: usize,
+    pub stations_with_wikidata_qid: usize,
     pub matched_count: u64,
     pub unmatched_count: u64,
     pub ambiguous_count: u64,
     pub country_correction_count: u64,
     pub station_rescue_count: u64,
+    pub station_qid_match_count: u64,
+    pub station_qid_applied_count: u64,
+    pub station_qid_unmatched_count: u64,
+    pub station_qid_conflict_count: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -670,6 +681,26 @@ pub struct PipelineStationLayerVisibilityRecord {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PipelineServiceGraphAuditRecord {
+    pub pattern_id: String,
+    pub source_id: String,
+    pub route_id: String,
+    pub route_type: i16,
+    pub mode: String,
+    pub issue_kind: String,
+    pub from_city_id: aetrain_domain::CityId,
+    pub from_display_name: String,
+    pub to_city_id: aetrain_domain::CityId,
+    pub to_display_name: String,
+    pub from_stop_index: u16,
+    pub to_stop_index: u16,
+    pub trip_count: u32,
+    pub duration_min: Option<u32>,
+    pub intermediate_city_ids: Vec<aetrain_domain::CityId>,
+    pub suggested_action: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PipelineQualityReport {
     pub gate_results: Vec<PipelineQualityGateResult>,
     pub registry_match_report: PipelineRegistryMatchReport,
@@ -688,6 +719,8 @@ pub struct PipelineQualityReport {
     pub route_geometry_anomalies: Vec<PipelineRouteGeometryAnomalyRecord>,
     pub city_rail_endpoint_mismatches: Vec<PipelineCityRailEndpointMismatchRecord>,
     pub station_layer_visibility_gaps: Vec<PipelineStationLayerVisibilityRecord>,
+    pub service_graph_audit: Vec<PipelineServiceGraphAuditRecord>,
+    pub station_identity_quality: Vec<StationQualityRecord>,
     pub domestic_geometry_backlog_by_country: Vec<PipelineDomesticGeometryBacklogRecord>,
     pub cross_border_geometry_backlog_by_corridor: Vec<PipelineCrossBorderGeometryBacklogRecord>,
     pub domestic_authority_onboarding_hotspots:
@@ -762,6 +795,14 @@ impl PipelineQualityReportSummary {
                 quality_detail_artifact(
                     "station-layer-visibility-gaps.json",
                     report.station_layer_visibility_gaps.len(),
+                ),
+                quality_detail_artifact(
+                    "service-graph-audit.json",
+                    report.service_graph_audit.len(),
+                ),
+                quality_detail_artifact(
+                    "station-identity-quality.json",
+                    report.station_identity_quality.len(),
                 ),
                 quality_detail_artifact(
                     "close-node-without-edge-summary.json",
@@ -966,6 +1007,7 @@ const CUSTOMER_FACING_HARD_GATE_METRICS: &[&str] = &[
     "promoted_rejected_station_attachment_gap_count",
     "promoted_rejected_topology_no_route_gap_count",
     "promoted_rejected_implausible_authority_detour_count",
+    "station_identity_error_count",
 ];
 const CLOSE_NODE_WITHOUT_EDGE_MAX_DISTANCE_METERS: u32 = 5_000;
 const REGISTRY_OVERLAY_MAX_SPATIAL_MATCH_DISTANCE_METERS: u32 = 50_000;
@@ -1013,6 +1055,47 @@ struct ChunkedRouteGeometryManifestChunk {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedServicePatternManifest {
+    pub version: u8,
+    pub schema_version: u16,
+    pub total_pattern_count: usize,
+    pub rail_pattern_count: usize,
+    pub replacement_bus_pattern_count: usize,
+    pub chunk_target_bytes: usize,
+    pub chunks: Vec<ChunkedServicePatternManifestChunk>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedServicePatternManifestChunk {
+    pub file: String,
+    pub pattern_count: usize,
+    pub rail_pattern_count: usize,
+    pub replacement_bus_pattern_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedPlaceLayerManifest {
+    pub version: u8,
+    pub schema_version: u16,
+    pub layer_id: String,
+    pub total_place_count: usize,
+    pub rail_city_count: usize,
+    pub replacement_bus_stop_count: usize,
+    pub registry_place_count: usize,
+    pub chunk_target_bytes: usize,
+    pub chunks: Vec<ChunkedPlaceLayerManifestChunk>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct ChunkedPlaceLayerManifestChunk {
+    pub file: String,
+    pub place_count: usize,
+    pub rail_city_count: usize,
+    pub replacement_bus_stop_count: usize,
+    pub registry_place_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct PipelineRailNetworkArtifactManifest {
     pub version: u8,
     pub source_count: usize,
@@ -1044,8 +1127,45 @@ struct WebDebugCityRecord {
     pub aliases: Vec<String>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct WebDebugDatasetMeta {
+    pub schema_version: u16,
+    pub dataset_version: String,
+    pub generated_at: String,
+    pub source_snapshots: Vec<SourceSnapshot>,
+    pub attribution_path: String,
+    pub route_geometry_artifact_path: Option<String>,
+    pub station_artifact_path: Option<String>,
+    pub station_complex_artifact_path: Option<String>,
+    pub station_rail_anchor_artifact_path: Option<String>,
+    pub service_pattern_artifact_path: Option<String>,
+    pub service_place_artifact_path: Option<String>,
+    pub registry_place_artifact_path: Option<String>,
+}
+
+impl WebDebugDatasetMeta {
+    fn from_dataset_meta(meta: &DatasetMeta) -> Self {
+        Self {
+            schema_version: meta.schema_version,
+            dataset_version: meta.dataset_version.clone(),
+            generated_at: meta.generated_at.clone(),
+            source_snapshots: meta.source_snapshots.clone(),
+            attribution_path: meta.attribution_path.clone(),
+            route_geometry_artifact_path: Some("edge-geometries.manifest.json".to_string()),
+            station_artifact_path: Some("stations.json".to_string()),
+            station_complex_artifact_path: Some("station-complexes.json".to_string()),
+            station_rail_anchor_artifact_path: Some("station-rail-anchors.json".to_string()),
+            service_pattern_artifact_path: Some("services.manifest.json".to_string()),
+            service_place_artifact_path: Some("service-places.manifest.json".to_string()),
+            registry_place_artifact_path: Some("registry-places.manifest.json".to_string()),
+        }
+    }
+}
+
 const WEB_DEBUG_EDGE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
 const WEB_RUNTIME_ROUTE_GEOMETRY_CHUNK_TARGET_BYTES: usize = 20 * 1024 * 1024;
+const WEB_RUNTIME_SERVICE_PATTERN_CHUNK_TARGET_BYTES: usize = 5 * 1024 * 1024;
+const WEB_RUNTIME_PLACE_LAYER_CHUNK_TARGET_BYTES: usize = 5 * 1024 * 1024;
 const AGGREGATE_CITY_MERGE_DISTANCE_METERS: u32 = 20_000;
 const ROUTE_LIKE_PARENT_MAX_DISTANCE_METERS: u32 = 5_000;
 const CITY_RAIL_TERMINAL_MATCH_MAX_DISTANCE_METERS: u32 = 2_000;
@@ -1068,6 +1188,14 @@ struct RegistryOverlayStats {
     ambiguous_count: u64,
     country_corrected_count: u64,
     station_promoted_count: u64,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct RegistryStationOverlayStats {
+    matched_count: u64,
+    applied_count: u64,
+    unmatched_count: u64,
+    conflict_count: u64,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -1223,6 +1351,7 @@ fn export_pipeline_target(
     };
 
     let authority_registry = load_geometry_authority_registry(manifest_dir, target)?;
+    let registry_overlay = load_registry_overlay_bundle(manifest_dir, target)?;
     let rail_network_dir = export_rail_network_artifacts(
         authority_registry.as_ref(),
         &attribution.sources,
@@ -1232,7 +1361,12 @@ fn export_pipeline_target(
     let canonical_dir = if target.canonical_export {
         let canonical_dir = target_root.join("canonical");
         recreate_dir(&canonical_dir)?;
-        export_canonical_bundle(&canonical_dir, artifacts, &attribution)?;
+        export_canonical_bundle(
+            &canonical_dir,
+            artifacts,
+            registry_overlay.as_ref(),
+            &attribution,
+        )?;
         Some(canonical_dir)
     } else {
         None
@@ -1245,6 +1379,8 @@ fn export_pipeline_target(
             &runtime_dir,
             &artifacts.canonical,
             &artifacts.edge_geometries,
+            &artifacts.services,
+            registry_overlay.as_ref(),
             &attribution,
         )?;
         Some(runtime_dir)
@@ -1260,6 +1396,8 @@ fn export_pipeline_target(
             &artifacts.canonical.meta,
             &artifacts.canonical,
             &artifacts.edge_geometries,
+            &artifacts.services,
+            registry_overlay.as_ref(),
             &attribution,
         )?;
         Some(runtime_dir)
@@ -1272,6 +1410,7 @@ fn export_pipeline_target(
         &artifacts.canonical.stations,
         &artifacts.canonical.edges,
         &resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?,
+        &artifacts.services,
         artifacts.station_mappings.as_ref(),
         &artifacts.plain_name_fallback_gap_registry_candidates,
         &artifacts.quarantined_fallback_gap_cities,
@@ -1413,6 +1552,14 @@ fn export_pipeline_target(
     write_json(
         &quality_dir.join("station-layer-visibility-gaps.json"),
         &quality_report.station_layer_visibility_gaps,
+    )?;
+    write_json(
+        &quality_dir.join("service-graph-audit.json"),
+        &quality_report.service_graph_audit,
+    )?;
+    write_json(
+        &quality_dir.join("station-identity-quality.json"),
+        &quality_report.station_identity_quality,
     )?;
     write_json(
         &quality_dir.join("domestic-geometry-backlog-by-country.json"),
@@ -1618,15 +1765,43 @@ fn load_registry_overlay_bundle(
 fn export_canonical_bundle(
     output_dir: &Path,
     artifacts: &AdapterBuildArtifacts,
+    registry_overlay: Option<&RegistryCanonicalBundle>,
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
     let edge_geometries =
         resolved_edge_geometries(&artifacts.canonical, &artifacts.edge_geometries)?;
+    let station_complexes = build_station_complex_artifact(&artifacts.canonical.stations);
+    let station_authority = build_station_authority_artifact(&artifacts.canonical.stations);
+    let station_enrichment = build_station_enrichment_artifact(&artifacts.canonical.stations);
+    let station_rail_anchors = build_station_rail_anchor_artifact(&artifacts.canonical.stations);
+    let station_quality = audit_station_quality(
+        &artifacts.canonical.cities,
+        &artifacts.canonical.stations,
+        &station_complexes,
+        &station_rail_anchors,
+    );
     let city_rail_profiles = build_city_rail_profile_artifact(
         &artifacts.canonical.cities,
         &artifacts.canonical.stations,
         &edge_geometries,
     );
+    let city_index_by_id = artifacts
+        .canonical
+        .cities
+        .iter()
+        .enumerate()
+        .map(|(index, city)| (city.city_id.clone(), index as u32))
+        .collect::<HashMap<_, _>>();
+    let service_places = build_runtime_service_place_layer(
+        &artifacts.canonical,
+        &artifacts.services,
+        &city_index_by_id,
+    )?;
+    let registry_places = build_runtime_registry_place_layer(
+        &artifacts.canonical,
+        registry_overlay,
+        &city_index_by_id,
+    )?;
     write_json(&output_dir.join("bundle.json"), &artifacts.canonical)?;
     write_json(&output_dir.join("meta.json"), &artifacts.canonical.meta)?;
     write_json(&output_dir.join("cities.json"), &artifacts.canonical.cities)?;
@@ -1634,7 +1809,27 @@ fn export_canonical_bundle(
         &output_dir.join("stations.json"),
         &artifacts.canonical.stations,
     )?;
+    write_json(
+        &output_dir.join("station-complexes.json"),
+        &station_complexes,
+    )?;
+    write_json(
+        &output_dir.join("station-authority.json"),
+        &station_authority,
+    )?;
+    write_json(
+        &output_dir.join("station-enrichment.json"),
+        &station_enrichment,
+    )?;
+    write_json(
+        &output_dir.join("station-rail-anchors.json"),
+        &station_rail_anchors,
+    )?;
+    write_json(&output_dir.join("station-quality.json"), &station_quality)?;
     write_json(&output_dir.join("edges.json"), &artifacts.canonical.edges)?;
+    write_json(&output_dir.join("services.json"), &artifacts.services)?;
+    write_json(&output_dir.join("service-places.json"), &service_places)?;
+    write_json(&output_dir.join("registry-places.json"), &registry_places)?;
     export_chunked_edge_geometries(output_dir, &edge_geometries)?;
     write_json(
         &output_dir.join("city-rail-profiles.json"),
@@ -1667,6 +1862,7 @@ fn build_quality_report(
     stations: &[aetrain_domain::Station],
     edges: &[aetrain_domain::TravelEdge],
     edge_geometries: &EdgeGeometryArtifact,
+    services: &ServicePatternArtifact,
     station_mappings: Option<&StationMappingReport>,
     plain_name_fallback_gap_registry_candidates: &[PipelinePlainNameFallbackGapRegistryRecord],
     quarantined_fallback_gap_cities: &[PipelineQuarantinedFallbackGapCityRecord],
@@ -1698,6 +1894,10 @@ fn build_quality_report(
             .iter()
             .filter(|city| city.population.is_some())
             .count(),
+        stations_with_wikidata_qid: stations
+            .iter()
+            .filter(|station| station.wikidata_qid.is_some())
+            .count(),
         matched_count: counter_value(counters, "registry_overlay_match_count"),
         unmatched_count: counter_value(counters, "registry_overlay_unmatched_count"),
         ambiguous_count: counter_value(counters, "registry_overlay_ambiguous_count"),
@@ -1706,6 +1906,22 @@ fn build_quality_report(
             "registry_overlay_country_correction_count",
         ),
         station_rescue_count: counter_value(counters, "registry_overlay_station_rescue_count"),
+        station_qid_match_count: counter_value(
+            counters,
+            "registry_overlay_station_qid_match_count",
+        ),
+        station_qid_applied_count: counter_value(
+            counters,
+            "registry_overlay_station_qid_applied_count",
+        ),
+        station_qid_unmatched_count: counter_value(
+            counters,
+            "registry_overlay_station_qid_unmatched_count",
+        ),
+        station_qid_conflict_count: counter_value(
+            counters,
+            "registry_overlay_station_qid_conflict_count",
+        ),
     };
 
     let mut grouped = BTreeMap::<String, PipelineCountryQualityRecord>::new();
@@ -1782,6 +1998,11 @@ fn build_quality_report(
         build_city_rail_endpoint_mismatch_records(cities, stations, edge_geometries);
     let station_layer_visibility_gaps =
         build_station_layer_visibility_gap_records(cities, stations);
+    let service_graph_audit = build_service_graph_audit_records(cities, edges, services);
+    let station_complexes = build_station_complex_artifact(stations);
+    let station_rail_anchors = build_station_rail_anchor_artifact(stations);
+    let station_identity_quality =
+        audit_station_quality(cities, stations, &station_complexes, &station_rail_anchors);
     let domestic_geometry_backlog_by_country =
         build_domestic_geometry_backlog_by_country(&route_geometry_anomalies);
     let cross_border_geometry_backlog_by_corridor =
@@ -1915,20 +2136,16 @@ fn build_quality_report(
         .iter()
         .filter(|record| {
             record.anomaly_type == "straight_line_fallback"
-                && infer_home_country_code_from_provenance(&record.provenance).is_some_and(
-                    |home_country_code| {
-                        cities_by_id
-                            .get(&record.from_city_id)
-                            .zip(cities_by_id.get(&record.to_city_id))
-                            .is_some_and(|(from_city, to_city)| {
-                                is_foreign_domestic_feed_leakage(
-                                    home_country_code,
-                                    &from_city.country_code,
-                                    &to_city.country_code,
-                                )
-                            })
-                    },
-                )
+                && cities_by_id
+                    .get(&record.from_city_id)
+                    .zip(cities_by_id.get(&record.to_city_id))
+                    .is_some_and(|(from_city, to_city)| {
+                        is_foreign_domestic_feed_leakage_from_provenance(
+                            &record.provenance,
+                            &from_city.country_code,
+                            &to_city.country_code,
+                        )
+                    })
         })
         .count() as u64;
     let foreign_cross_border_feed_leakage_count = route_geometry_anomalies
@@ -2191,6 +2408,28 @@ fn build_quality_report(
         ),
     ];
     let mut gate_results = gate_results;
+    let station_identity_error_count = station_identity_quality
+        .records
+        .iter()
+        .filter(|record| {
+            record
+                .flags
+                .iter()
+                .any(|flag| flag.severity == aetrain_registry::StationQualitySeverity::Error)
+        })
+        .count() as u64;
+    gate_results.push(quality_gate_equals(
+        "station_identity_error_count_zero",
+        "station_identity_error_count",
+        station_identity_error_count,
+        0,
+    ));
+    gate_results.push(quality_gate_equals(
+        "service_graph_audit_issue_count_zero",
+        "service_graph_audit_issue_count",
+        service_graph_audit.len() as u64,
+        0,
+    ));
     if counters.contains_key("customer_facing_scope_edge_count") {
         gate_results.push(quality_gate_greater_than(
             "customer_facing_scope_edge_count_nonzero",
@@ -2265,6 +2504,8 @@ fn build_quality_report(
         route_geometry_anomalies,
         city_rail_endpoint_mismatches,
         station_layer_visibility_gaps,
+        service_graph_audit,
+        station_identity_quality: station_identity_quality.records,
         domestic_geometry_backlog_by_country,
         cross_border_geometry_backlog_by_corridor,
         domestic_authority_onboarding_hotspots,
@@ -4125,12 +4366,13 @@ fn build_domestic_authority_gap_clusters(
         }
 
         let country_code = record.from_country_code.clone();
-        let home_country_code =
-            infer_home_country_code_from_provenance(&record.provenance).map(str::to_string);
+        let home_country_code = infer_home_country_codes_label_from_provenance(&record.provenance);
         let feed_source_family = infer_feed_source_family_from_provenance(&record.provenance);
-        let scope_classification =
-            classify_domestic_authority_gap_scope(&country_code, home_country_code.as_deref())
-                .to_string();
+        let scope_classification = classify_domestic_authority_gap_scope_from_provenance(
+            &country_code,
+            &record.provenance,
+        )
+        .to_string();
         let authority = authority_registry.and_then(|registry| registry.country(&country_code));
         let authority_status = authority
             .map(|entry| geometry_authority_status_label(&entry.status).to_string())
@@ -4411,17 +4653,22 @@ fn is_domestic_authority_gap_cluster_candidate(
         )
 }
 
-fn classify_domestic_authority_gap_scope(
+fn classify_domestic_authority_gap_scope_from_provenance(
     country_code: &str,
-    home_country_code: Option<&str>,
+    provenance: &[String],
 ) -> &'static str {
-    match home_country_code {
-        Some(home_country_code) if home_country_code.eq_ignore_ascii_case(country_code) => {
-            "home_domestic_authority_gap"
-        }
-        Some(_) => "foreign_feed_domestic_scope_leak",
-        None => "unknown_feed_scope",
+    let home_country_codes = infer_home_country_codes_from_provenance(provenance);
+    if home_country_codes.is_empty() {
+        return "unknown_feed_scope";
     }
+    if home_country_codes
+        .iter()
+        .any(|home_country_code| home_country_code.eq_ignore_ascii_case(country_code))
+    {
+        return "home_domestic_authority_gap";
+    }
+
+    "foreign_feed_domestic_scope_leak"
 }
 
 fn domestic_authority_gap_cluster_suggested_action(
@@ -4551,55 +4798,85 @@ fn route_geometry_speed_is_physically_impossible(metrics: &RouteGeometryMetrics)
     metrics.implied_speed_kmh.is_some_and(|speed| speed > 380)
 }
 
-fn infer_home_country_code_from_provenance(provenance: &[String]) -> Option<&'static str> {
+fn infer_home_country_codes_from_provenance(provenance: &[String]) -> BTreeSet<&'static str> {
+    let mut countries = BTreeSet::new();
     for entry in provenance {
         if entry.starts_with("sncf-fr-gtfs:") {
-            return Some("FR");
+            countries.insert("FR");
         }
         if entry.starts_with("ch-gtfs:") {
-            return Some("CH");
+            countries.insert("CH");
         }
         if entry.starts_with("de-delfi-gtfs:") {
-            return Some("DE");
+            countries.insert("DE");
         }
         if entry.starts_with("be-sncb-gtfs:") {
-            return Some("BE");
+            countries.insert("BE");
         }
         if entry.starts_with("nl-ovapi-gtfs:") {
-            return Some("NL");
+            countries.insert("NL");
         }
         if entry.starts_with("es-renfe-mainline-gtfs:")
             || entry.starts_with("es-renfe-cercanias-gtfs:")
         {
-            return Some("ES");
+            countries.insert("ES");
         }
         if entry.starts_with("at-oebb-gtfs:") {
-            return Some("AT");
+            countries.insert("AT");
         }
     }
-    None
+    countries
 }
 
-fn is_foreign_domestic_feed_leakage(
-    home_country_code: &str,
+fn infer_home_country_codes_label_from_provenance(provenance: &[String]) -> Option<String> {
+    let countries = infer_home_country_codes_from_provenance(provenance);
+    if countries.is_empty() {
+        return None;
+    }
+
+    Some(countries.into_iter().collect::<Vec<_>>().join("+"))
+}
+
+fn provenance_has_home_country(provenance: &[String], country_code: &str) -> bool {
+    infer_home_country_codes_from_provenance(provenance)
+        .iter()
+        .any(|home_country_code| home_country_code.eq_ignore_ascii_case(country_code))
+}
+
+fn is_foreign_domestic_feed_leakage_from_provenance(
+    provenance: &[String],
     from_country_code: &str,
     to_country_code: &str,
 ) -> bool {
-    from_country_code == to_country_code
-        && from_country_code != "ZZ"
-        && !from_country_code.eq_ignore_ascii_case(home_country_code)
+    if from_country_code != to_country_code || from_country_code == "ZZ" {
+        return false;
+    }
+
+    let home_country_codes = infer_home_country_codes_from_provenance(provenance);
+    !home_country_codes.is_empty()
+        && !home_country_codes
+            .iter()
+            .any(|home_country_code| home_country_code.eq_ignore_ascii_case(from_country_code))
 }
 
-fn is_foreign_cross_border_feed_leakage(
-    home_country_code: &str,
+fn is_foreign_cross_border_feed_leakage_from_provenance(
+    provenance: &[String],
     from_country_code: &str,
     to_country_code: &str,
 ) -> bool {
-    from_country_code != "ZZ"
-        && to_country_code != "ZZ"
-        && !from_country_code.eq_ignore_ascii_case(to_country_code)
-        && !from_country_code.eq_ignore_ascii_case(home_country_code)
-        && !to_country_code.eq_ignore_ascii_case(home_country_code)
+    if from_country_code == "ZZ"
+        || to_country_code == "ZZ"
+        || from_country_code.eq_ignore_ascii_case(to_country_code)
+    {
+        return false;
+    }
+
+    let home_country_codes = infer_home_country_codes_from_provenance(provenance);
+    !home_country_codes.is_empty()
+        && !home_country_codes.iter().any(|home_country_code| {
+            home_country_code.eq_ignore_ascii_case(from_country_code)
+                || home_country_code.eq_ignore_ascii_case(to_country_code)
+        })
 }
 
 fn classify_geometry_resolution_status(
@@ -4627,27 +4904,36 @@ fn classify_geometry_resolution_status(
         return "resolved";
     }
 
-    let Some(home_country_code) = infer_home_country_code_from_provenance(provenance) else {
+    let home_country_codes = infer_home_country_codes_from_provenance(provenance);
+    if home_country_codes.is_empty() {
         return "unclassified_straight_line";
     };
 
     if from_country_code == to_country_code {
-        if is_foreign_domestic_feed_leakage(home_country_code, from_country_code, to_country_code) {
+        if is_foreign_domestic_feed_leakage_from_provenance(
+            provenance,
+            from_country_code,
+            to_country_code,
+        ) {
             return "foreign_domestic_leakage";
         }
-        if from_country_code.eq_ignore_ascii_case(home_country_code) {
+        if provenance_has_home_country(provenance, from_country_code) {
             return "missing_domestic_authority";
         }
         return "foreign_domestic_leakage";
     }
 
-    if home_country_code.eq_ignore_ascii_case(from_country_code)
-        || home_country_code.eq_ignore_ascii_case(to_country_code)
+    if provenance_has_home_country(provenance, from_country_code)
+        || provenance_has_home_country(provenance, to_country_code)
     {
         return "cross_border_unresolved";
     }
 
-    if is_foreign_cross_border_feed_leakage(home_country_code, from_country_code, to_country_code) {
+    if is_foreign_cross_border_feed_leakage_from_provenance(
+        provenance,
+        from_country_code,
+        to_country_code,
+    ) {
         return "foreign_cross_border_leakage";
     }
 
@@ -5457,11 +5743,15 @@ fn export_web_debug_bundle(
     meta: &DatasetMeta,
     canonical: &DatasetBundle,
     edge_geometries: &Option<EdgeGeometryArtifact>,
+    services: &ServicePatternArtifact,
+    registry_overlay: Option<&RegistryCanonicalBundle>,
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
     let edge_geometries = resolved_edge_geometries(canonical, edge_geometries)?;
     let city_rail_profiles =
         build_city_rail_profile_artifact(&canonical.cities, &canonical.stations, &edge_geometries);
+    let station_complexes = build_station_complex_artifact(&canonical.stations);
+    let station_rail_anchors = build_station_rail_anchor_artifact(&canonical.stations);
     let web_cities = build_web_debug_city_records(&canonical.cities, &city_rail_profiles);
     let city_index_by_id = canonical
         .cities
@@ -5470,11 +5760,28 @@ fn export_web_debug_bundle(
         .map(|(index, city)| (city.city_id.clone(), index as u32))
         .collect::<HashMap<_, _>>();
     let station_artifact = build_runtime_station_artifact(canonical, &city_index_by_id)?;
-    write_json(&output_dir.join("meta.json"), meta)?;
+    let service_places = build_runtime_service_place_layer(canonical, services, &city_index_by_id)?;
+    let registry_places =
+        build_runtime_registry_place_layer(canonical, registry_overlay, &city_index_by_id)?;
+    write_json(
+        &output_dir.join("meta.json"),
+        &WebDebugDatasetMeta::from_dataset_meta(meta),
+    )?;
     write_json(&output_dir.join("cities.json"), &web_cities)?;
     write_json(&output_dir.join("edges.json"), &canonical.edges)?;
     write_json(&output_dir.join("stations.json"), &station_artifact)?;
+    write_json(
+        &output_dir.join("station-complexes.json"),
+        &station_complexes,
+    )?;
+    write_json(
+        &output_dir.join("station-rail-anchors.json"),
+        &station_rail_anchors,
+    )?;
     export_chunked_edge_geometries(output_dir, &edge_geometries)?;
+    export_chunked_service_patterns(output_dir, services)?;
+    export_chunked_place_layer(output_dir, "service-places", &service_places)?;
+    export_chunked_place_layer(output_dir, "registry-places", &registry_places)?;
     write_json(
         &output_dir.join("city-rail-profiles.json"),
         &city_rail_profiles,
@@ -5487,9 +5794,22 @@ fn export_web_runtime_bundle(
     output_dir: &Path,
     canonical: &DatasetBundle,
     edge_geometries: &Option<EdgeGeometryArtifact>,
+    services: &ServicePatternArtifact,
+    registry_overlay: Option<&RegistryCanonicalBundle>,
     attribution: &PipelineAttributionFile,
 ) -> Result<()> {
     let edge_geometries = resolved_edge_geometries(canonical, edge_geometries)?;
+    let station_complexes = build_station_complex_artifact(&canonical.stations);
+    let station_rail_anchors = build_station_rail_anchor_artifact(&canonical.stations);
+    let city_index_by_id = canonical
+        .cities
+        .iter()
+        .enumerate()
+        .map(|(index, city)| (city.city_id.clone(), index as u32))
+        .collect::<HashMap<_, _>>();
+    let service_places = build_runtime_service_place_layer(canonical, services, &city_index_by_id)?;
+    let registry_places =
+        build_runtime_registry_place_layer(canonical, registry_overlay, &city_index_by_id)?;
     let (runtime_bundle, station_artifact, runtime_edge_geometries) =
         build_web_runtime_bundle(canonical, &edge_geometries)?;
     write_json(&output_dir.join("meta.json"), &runtime_bundle.meta)?;
@@ -5501,9 +5821,309 @@ fn export_web_runtime_bundle(
     write_json(&output_dir.join("graph.json"), &runtime_bundle.graph)?;
     write_json(&output_dir.join("aliases.json"), &runtime_bundle.aliases)?;
     write_json(&output_dir.join("stations.json"), &station_artifact)?;
+    write_json(
+        &output_dir.join("station-complexes.json"),
+        &station_complexes,
+    )?;
+    write_json(
+        &output_dir.join("station-rail-anchors.json"),
+        &station_rail_anchors,
+    )?;
     export_chunked_web_runtime_route_geometries(output_dir, &runtime_edge_geometries)?;
+    export_chunked_service_patterns(output_dir, services)?;
+    export_chunked_place_layer(output_dir, "service-places", &service_places)?;
+    export_chunked_place_layer(output_dir, "registry-places", &registry_places)?;
     write_json(&output_dir.join("attribution.json"), attribution)?;
     Ok(())
+}
+
+#[derive(Debug)]
+struct RuntimePlaceAccumulator {
+    place_id: String,
+    role: RuntimePlaceRole,
+    display_name: String,
+    country_code: Option<String>,
+    lat_e5: i32,
+    lon_e5: i32,
+    linked_city_id: Option<aetrain_domain::CityId>,
+    linked_city_index: Option<u32>,
+    linked_station_id: Option<aetrain_domain::StationId>,
+    wikidata_qid: Option<String>,
+    population: Option<u32>,
+    source_ids: BTreeSet<String>,
+    source_stop_ids: BTreeSet<String>,
+    pattern_ids: BTreeSet<String>,
+}
+
+fn build_runtime_service_place_layer(
+    canonical: &DatasetBundle,
+    services: &ServicePatternArtifact,
+    city_index_by_id: &HashMap<aetrain_domain::CityId, u32>,
+) -> Result<RuntimePlaceLayerArtifact> {
+    let cities_by_id = canonical
+        .cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let stations_by_id = canonical
+        .stations
+        .iter()
+        .map(|station| (station.station_id.clone(), station))
+        .collect::<BTreeMap<_, _>>();
+    let mut places = BTreeMap::<String, RuntimePlaceAccumulator>::new();
+
+    for pattern in &services.patterns {
+        if pattern.mode != ServicePatternMode::ReplacementBus {
+            continue;
+        }
+
+        for stop in &pattern.stops {
+            let key = format!("replacement_bus|{}|{}", pattern.source_id, stop.station_key);
+            let linked_city = stop
+                .city_id
+                .as_ref()
+                .and_then(|city_id| cities_by_id.get(city_id).copied())
+                .or_else(|| {
+                    stop.station_id
+                        .as_ref()
+                        .and_then(|station_id| stations_by_id.get(station_id))
+                        .and_then(|station| cities_by_id.get(&station.city_id).copied())
+                });
+            let linked_station_id = stop.station_id.clone();
+            let country_code = linked_city
+                .map(|city| city.country_code.clone())
+                .or_else(|| infer_country_code_from_service_stop(stop, pattern.source_id.as_str()));
+            let place_id = runtime_place_id("service", &stop.display_name, &key);
+            let entry = places
+                .entry(key)
+                .or_insert_with(|| RuntimePlaceAccumulator {
+                    place_id,
+                    role: RuntimePlaceRole::ReplacementBusStop,
+                    display_name: stop.display_name.clone(),
+                    country_code,
+                    lat_e5: stop.lat_e5,
+                    lon_e5: stop.lon_e5,
+                    linked_city_id: linked_city.map(|city| city.city_id.clone()),
+                    linked_city_index: linked_city
+                        .and_then(|city| city_index_by_id.get(&city.city_id).copied()),
+                    linked_station_id,
+                    wikidata_qid: linked_city.and_then(|city| city.wikidata_qid.clone()),
+                    population: linked_city
+                        .and_then(|city| city.population)
+                        .map(|value| value.min(u32::MAX as u64) as u32),
+                    source_ids: BTreeSet::new(),
+                    source_stop_ids: BTreeSet::new(),
+                    pattern_ids: BTreeSet::new(),
+                });
+            entry.source_ids.insert(pattern.source_id.clone());
+            entry.source_stop_ids.insert(stop.source_stop_id.clone());
+            entry.pattern_ids.insert(pattern.pattern_id.clone());
+        }
+    }
+
+    Ok(RuntimePlaceLayerArtifact {
+        schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+        layer_id: "service_places".to_string(),
+        places: places
+            .into_values()
+            .map(runtime_place_record_from_accumulator)
+            .collect(),
+    })
+}
+
+fn build_runtime_registry_place_layer(
+    canonical: &DatasetBundle,
+    registry_overlay: Option<&RegistryCanonicalBundle>,
+    city_index_by_id: &HashMap<aetrain_domain::CityId, u32>,
+) -> Result<RuntimePlaceLayerArtifact> {
+    let Some(registry_overlay) = registry_overlay else {
+        return Ok(RuntimePlaceLayerArtifact {
+            schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+            layer_id: "registry_places".to_string(),
+            places: Vec::new(),
+        });
+    };
+
+    let canonical_city_id_by_qid = canonical
+        .cities
+        .iter()
+        .filter_map(|city| {
+            city.wikidata_qid
+                .as_ref()
+                .map(|qid| (qid.clone(), city.city_id.clone()))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let canonical_city_by_id = canonical
+        .cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+
+    let mut places = Vec::<RuntimePlaceRecord>::with_capacity(registry_overlay.cities.len());
+    for city in &registry_overlay.cities {
+        let linked_city_id = if city_index_by_id.contains_key(&city.city_id) {
+            Some(city.city_id.clone())
+        } else {
+            city.wikidata_qid
+                .as_ref()
+                .and_then(|qid| canonical_city_id_by_qid.get(qid).cloned())
+        };
+        let linked_city = linked_city_id
+            .as_ref()
+            .and_then(|city_id| canonical_city_by_id.get(city_id).copied());
+        let source_ids = city
+            .external_refs
+            .iter()
+            .map(|source_ref| source_ref.source_id.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+
+        places.push(RuntimePlaceRecord {
+            place_id: format!("registry-{}", city.city_id),
+            role: RuntimePlaceRole::RegistryPlace,
+            display_name: city.display_name.clone(),
+            country_code: Some(city.country_code.clone()),
+            lat_e5: scale_coord_e5(city.map_anchor_point.lat)?,
+            lon_e5: scale_coord_e5(city.map_anchor_point.lon)?,
+            linked_city_id: linked_city_id.clone(),
+            linked_city_index: linked_city_id
+                .as_ref()
+                .and_then(|city_id| city_index_by_id.get(city_id).copied()),
+            linked_station_id: None,
+            wikidata_qid: city
+                .wikidata_qid
+                .clone()
+                .or_else(|| linked_city.and_then(|city| city.wikidata_qid.clone())),
+            population: city
+                .population
+                .or_else(|| linked_city.and_then(|city| city.population))
+                .map(|value| value.min(u32::MAX as u64) as u32),
+            source_ids,
+            source_stop_ids: Vec::new(),
+            service_pattern_count: 0,
+        });
+    }
+
+    places.sort_by(|left, right| {
+        left.country_code
+            .cmp(&right.country_code)
+            .then_with(|| left.display_name.cmp(&right.display_name))
+            .then_with(|| left.place_id.cmp(&right.place_id))
+    });
+
+    Ok(RuntimePlaceLayerArtifact {
+        schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+        layer_id: "registry_places".to_string(),
+        places,
+    })
+}
+
+fn runtime_place_record_from_accumulator(
+    accumulator: RuntimePlaceAccumulator,
+) -> RuntimePlaceRecord {
+    RuntimePlaceRecord {
+        place_id: accumulator.place_id,
+        role: accumulator.role,
+        display_name: accumulator.display_name,
+        country_code: accumulator.country_code,
+        lat_e5: accumulator.lat_e5,
+        lon_e5: accumulator.lon_e5,
+        linked_city_id: accumulator.linked_city_id,
+        linked_city_index: accumulator.linked_city_index,
+        linked_station_id: accumulator.linked_station_id,
+        wikidata_qid: accumulator.wikidata_qid,
+        population: accumulator.population,
+        source_ids: accumulator.source_ids.into_iter().collect(),
+        source_stop_ids: accumulator.source_stop_ids.into_iter().collect(),
+        service_pattern_count: accumulator.pattern_ids.len().min(u32::MAX as usize) as u32,
+    }
+}
+
+fn infer_country_code_from_service_stop(
+    stop: &ServicePatternStopRecord,
+    source_id: &str,
+) -> Option<String> {
+    if let Some(station_id) = &stop.station_id {
+        if let Some(country_code) =
+            infer_country_code_from_station_ids(std::slice::from_ref(station_id))
+        {
+            return Some(country_code);
+        }
+    }
+
+    infer_country_code_from_station_key(&stop.station_key)
+        .or_else(|| infer_country_code_from_service_stop_id(&stop.source_stop_id))
+        .or_else(|| infer_country_code_from_service_source_id(source_id))
+}
+
+fn infer_country_code_from_service_stop_id(value: &str) -> Option<String> {
+    let mut last_digit_group = String::new();
+    let mut current_digit_group = String::new();
+    for ch in value.chars() {
+        if ch.is_ascii_digit() {
+            current_digit_group.push(ch);
+            continue;
+        }
+        if !current_digit_group.is_empty() {
+            last_digit_group = std::mem::take(&mut current_digit_group);
+        }
+    }
+    if !current_digit_group.is_empty() {
+        last_digit_group = current_digit_group;
+    }
+
+    if last_digit_group.len() < 2 {
+        return None;
+    }
+
+    infer_country_code_from_uic_code(&last_digit_group).map(str::to_string)
+}
+
+fn infer_country_code_from_service_source_id(source_id: &str) -> Option<String> {
+    if source_id.starts_with("sncf-fr-gtfs") {
+        return Some("FR".to_string());
+    }
+    if source_id.starts_with("ch-gtfs") {
+        return Some("CH".to_string());
+    }
+    if source_id.starts_with("de-delfi-gtfs") {
+        return Some("DE".to_string());
+    }
+    if source_id.starts_with("be-sncb-gtfs") {
+        return Some("BE".to_string());
+    }
+    if source_id.starts_with("nl-ovapi-gtfs") {
+        return Some("NL".to_string());
+    }
+    if source_id.starts_with("es-renfe-mainline-gtfs")
+        || source_id.starts_with("es-renfe-cercanias-gtfs")
+    {
+        return Some("ES".to_string());
+    }
+    if source_id.starts_with("at-oebb-gtfs") {
+        return Some("AT".to_string());
+    }
+    None
+}
+
+fn runtime_place_id(prefix: &str, display_name: &str, stable_key: &str) -> String {
+    let slug = safe_runtime_slug(display_name);
+    let digest = Sha256::digest(stable_key.as_bytes());
+    let hash = hex::encode(&digest[..5]);
+    format!("{prefix}-{slug}-{hash}")
+}
+
+fn safe_runtime_slug(value: &str) -> String {
+    let normalized = normalize_name(value)
+        .replace(' ', "-")
+        .trim_matches('-')
+        .to_string();
+    if normalized.is_empty() {
+        "place".to_string()
+    } else {
+        normalized
+    }
 }
 
 fn build_web_debug_city_records(
@@ -6018,6 +6638,240 @@ fn build_station_layer_visibility_gap_records(
     records
 }
 
+fn build_service_graph_audit_records(
+    cities: &[City],
+    edges: &[aetrain_domain::TravelEdge],
+    services: &ServicePatternArtifact,
+) -> Vec<PipelineServiceGraphAuditRecord> {
+    let cities_by_id = cities
+        .iter()
+        .map(|city| (city.city_id.clone(), city))
+        .collect::<BTreeMap<_, _>>();
+    let mut adjacency = BTreeMap::<aetrain_domain::CityId, Vec<aetrain_domain::CityId>>::new();
+    let mut directed_edges = BTreeSet::<(aetrain_domain::CityId, aetrain_domain::CityId)>::new();
+    let mut edge_provenance_by_pair =
+        BTreeMap::<(aetrain_domain::CityId, aetrain_domain::CityId), Vec<String>>::new();
+    for edge in edges {
+        adjacency
+            .entry(edge.from_city_id.clone())
+            .or_default()
+            .push(edge.to_city_id.clone());
+        directed_edges.insert((edge.from_city_id.clone(), edge.to_city_id.clone()));
+        edge_provenance_by_pair.insert(
+            (edge.from_city_id.clone(), edge.to_city_id.clone()),
+            edge.provenance.clone(),
+        );
+    }
+
+    let mut records = Vec::new();
+    for pattern in &services.patterns {
+        let journey_pairs = service_pattern_journey_pairs(pattern);
+        match pattern.mode {
+            ServicePatternMode::Rail => {
+                for pair in &journey_pairs {
+                    let Some(from_city) = cities_by_id.get(&pair.from_city_id) else {
+                        continue;
+                    };
+                    let Some(to_city) = cities_by_id.get(&pair.to_city_id) else {
+                        continue;
+                    };
+                    let has_direct_edge = directed_edges
+                        .contains(&(pair.from_city_id.clone(), pair.to_city_id.clone()));
+                    let is_adjacent_stop_pair = pair.to_stop_index == pair.from_stop_index + 1;
+                    if is_adjacent_stop_pair && !has_direct_edge {
+                        records.push(service_graph_audit_record(
+                            pattern,
+                            pair,
+                            from_city,
+                            to_city,
+                            "rail_adjacent_stop_edge_missing",
+                            "create or preserve the adjacent rail graph edge for this GTFS stop sequence",
+                        ));
+                        continue;
+                    }
+                    if !city_graph_reachable(&adjacency, &pair.from_city_id, &pair.to_city_id) {
+                        records.push(service_graph_audit_record(
+                            pattern,
+                            pair,
+                            from_city,
+                            to_city,
+                            "rail_service_pair_unreachable",
+                            "repair the rail graph so the service pair is reachable without falling back to a straight service chord",
+                        ));
+                    }
+                }
+            }
+            ServicePatternMode::ReplacementBus => {
+                if !non_rail_route_type(pattern.route_type) {
+                    continue;
+                }
+                let route_provenance = format!("{}:{}", pattern.source_id, pattern.route_id);
+                for pair in adjacent_service_pairs(&journey_pairs) {
+                    let Some(provenance) = edge_provenance_by_pair
+                        .get(&(pair.from_city_id.clone(), pair.to_city_id.clone()))
+                    else {
+                        continue;
+                    };
+                    if !provenance.iter().any(|entry| entry == &route_provenance) {
+                        continue;
+                    }
+                    let Some(from_city) = cities_by_id.get(&pair.from_city_id) else {
+                        continue;
+                    };
+                    let Some(to_city) = cities_by_id.get(&pair.to_city_id) else {
+                        continue;
+                    };
+                    records.push(service_graph_audit_record(
+                        pattern,
+                        pair,
+                        from_city,
+                        to_city,
+                        "replacement_bus_route_leaked_into_rail_graph",
+                        "keep this route in services.json only; remove the non-rail route provenance from rail graph generation",
+                    ));
+                }
+            }
+        }
+    }
+
+    records.sort_by(|left, right| {
+        left.issue_kind
+            .cmp(&right.issue_kind)
+            .then_with(|| left.source_id.cmp(&right.source_id))
+            .then_with(|| left.route_id.cmp(&right.route_id))
+            .then_with(|| left.from_display_name.cmp(&right.from_display_name))
+            .then_with(|| left.to_display_name.cmp(&right.to_display_name))
+    });
+    records
+}
+
+fn service_graph_audit_record(
+    pattern: &ServicePatternRecord,
+    pair: &ServicePatternJourneyPairRecord,
+    from_city: &City,
+    to_city: &City,
+    issue_kind: &str,
+    suggested_action: &str,
+) -> PipelineServiceGraphAuditRecord {
+    PipelineServiceGraphAuditRecord {
+        pattern_id: pattern.pattern_id.clone(),
+        source_id: pattern.source_id.clone(),
+        route_id: pattern.route_id.clone(),
+        route_type: pattern.route_type,
+        mode: service_pattern_mode_label(&pattern.mode).to_string(),
+        issue_kind: issue_kind.to_string(),
+        from_city_id: from_city.city_id.clone(),
+        from_display_name: from_city.display_name.clone(),
+        to_city_id: to_city.city_id.clone(),
+        to_display_name: to_city.display_name.clone(),
+        from_stop_index: pair.from_stop_index,
+        to_stop_index: pair.to_stop_index,
+        trip_count: pattern.trip_count,
+        duration_min: pair.duration_min,
+        intermediate_city_ids: pair.intermediate_city_ids.clone(),
+        suggested_action: suggested_action.to_string(),
+    }
+}
+
+fn city_graph_reachable(
+    adjacency: &BTreeMap<aetrain_domain::CityId, Vec<aetrain_domain::CityId>>,
+    from_city_id: &aetrain_domain::CityId,
+    to_city_id: &aetrain_domain::CityId,
+) -> bool {
+    if from_city_id == to_city_id {
+        return true;
+    }
+    let mut queue = std::collections::VecDeque::from([from_city_id.clone()]);
+    let mut visited = BTreeSet::from([from_city_id.clone()]);
+    while let Some(city_id) = queue.pop_front() {
+        let Some(neighbors) = adjacency.get(&city_id) else {
+            continue;
+        };
+        for neighbor in neighbors {
+            if neighbor == to_city_id {
+                return true;
+            }
+            if visited.insert(neighbor.clone()) {
+                queue.push_back(neighbor.clone());
+            }
+        }
+    }
+    false
+}
+
+fn adjacent_service_pairs(
+    pairs: &[ServicePatternJourneyPairRecord],
+) -> impl Iterator<Item = &ServicePatternJourneyPairRecord> {
+    pairs
+        .iter()
+        .filter(|pair| pair.to_stop_index == pair.from_stop_index + 1)
+}
+
+fn service_pattern_journey_pairs(
+    pattern: &ServicePatternRecord,
+) -> Vec<ServicePatternJourneyPairRecord> {
+    build_journey_pairs_from_service_stops(&pattern.stops)
+}
+
+fn build_journey_pairs_from_service_stops(
+    stops: &[ServicePatternStopRecord],
+) -> Vec<ServicePatternJourneyPairRecord> {
+    let mut pairs = Vec::new();
+    for from_index in 0..stops.len() {
+        let from = &stops[from_index];
+        let Some(from_city_id) = from.city_id.clone() else {
+            continue;
+        };
+        for to_index in from_index + 1..stops.len() {
+            let to = &stops[to_index];
+            let Some(to_city_id) = to.city_id.clone() else {
+                continue;
+            };
+            if from_city_id == to_city_id {
+                continue;
+            }
+            let duration_min =
+                from.departure_seconds
+                    .zip(to.arrival_seconds)
+                    .and_then(|(departure, arrival)| {
+                        (arrival >= departure).then(|| (arrival - departure).div_ceil(60))
+                    });
+            let mut intermediate_city_ids = Vec::new();
+            for intermediate in &stops[from_index + 1..to_index] {
+                let Some(city_id) = intermediate.city_id.clone() else {
+                    continue;
+                };
+                if city_id == from_city_id || city_id == to_city_id {
+                    continue;
+                }
+                if intermediate_city_ids.last() != Some(&city_id) {
+                    intermediate_city_ids.push(city_id);
+                }
+            }
+            pairs.push(ServicePatternJourneyPairRecord {
+                from_stop_index: from.stop_index,
+                to_stop_index: to.stop_index,
+                from_city_id: from_city_id.clone(),
+                to_city_id,
+                duration_min,
+                intermediate_city_ids,
+            });
+        }
+    }
+    pairs
+}
+
+fn service_pattern_mode_label(mode: &ServicePatternMode) -> &'static str {
+    match mode {
+        ServicePatternMode::Rail => "rail",
+        ServicePatternMode::ReplacementBus => "replacement_bus",
+    }
+}
+
+fn non_rail_route_type(route_type: i16) -> bool {
+    route_type != 2 && !(100..=117).contains(&route_type)
+}
+
 fn build_web_runtime_bundle(
     canonical: &DatasetBundle,
     edge_geometries: &EdgeGeometryArtifact,
@@ -6183,7 +7037,20 @@ fn build_runtime_station_artifact(
                 display_name: station.display_name.clone(),
                 lat_e5: scale_coord_e5(station.location.lat)?,
                 lon_e5: scale_coord_e5(station.location.lon)?,
+                rail_anchor_lat_e5: station
+                    .rail_anchor_location
+                    .map(|point| scale_coord_e5(point.lat))
+                    .transpose()?,
+                rail_anchor_lon_e5: station
+                    .rail_anchor_location
+                    .map(|point| scale_coord_e5(point.lon))
+                    .transpose()?,
+                station_kind: station.station_kind.as_str().to_string(),
+                station_scope: station.station_scope.as_str().to_string(),
+                station_complex_id: station.station_complex_id.clone(),
+                wikidata_qid: station.wikidata_qid.clone(),
                 uic_code: station.uic_code.clone(),
+                prominence: station.prominence,
             })
         })
         .collect::<Result<Vec<_>>>()?;
@@ -6420,6 +7287,93 @@ fn export_chunked_web_runtime_route_geometries(
     Ok(())
 }
 
+fn export_chunked_service_patterns(
+    output_dir: &Path,
+    services: &ServicePatternArtifact,
+) -> Result<()> {
+    let chunk_ranges = chunk_service_pattern_ranges(
+        &services.patterns,
+        WEB_RUNTIME_SERVICE_PATTERN_CHUNK_TARGET_BYTES,
+    )?;
+    let chunk_dir = output_dir.join("services");
+    recreate_dir(&chunk_dir)?;
+
+    let total_counts = service_pattern_mode_counts(&services.patterns);
+    let mut manifest = ChunkedServicePatternManifest {
+        version: 1,
+        schema_version: services.schema_version,
+        total_pattern_count: services.patterns.len(),
+        rail_pattern_count: total_counts.rail,
+        replacement_bus_pattern_count: total_counts.replacement_bus,
+        chunk_target_bytes: WEB_RUNTIME_SERVICE_PATTERN_CHUNK_TARGET_BYTES,
+        chunks: Vec::with_capacity(chunk_ranges.len()),
+    };
+
+    for (chunk_index, range) in chunk_ranges.iter().enumerate() {
+        let file_name = format!("chunk-{chunk_index:04}.json");
+        let relative_file = format!("services/{file_name}");
+        let chunk_path = chunk_dir.join(&file_name);
+        let patterns = &services.patterns[range.clone()];
+        let chunk_counts = service_pattern_mode_counts(patterns);
+        write_json_compact(&chunk_path, patterns)?;
+        manifest.chunks.push(ChunkedServicePatternManifestChunk {
+            file: relative_file,
+            pattern_count: range.len(),
+            rail_pattern_count: chunk_counts.rail,
+            replacement_bus_pattern_count: chunk_counts.replacement_bus,
+        });
+    }
+
+    write_json(&output_dir.join("services.manifest.json"), &manifest)?;
+    Ok(())
+}
+
+fn export_chunked_place_layer(
+    output_dir: &Path,
+    layer_dir_name: &str,
+    artifact: &RuntimePlaceLayerArtifact,
+) -> Result<()> {
+    let chunk_ranges =
+        chunk_place_record_ranges(&artifact.places, WEB_RUNTIME_PLACE_LAYER_CHUNK_TARGET_BYTES)?;
+    let chunk_dir = output_dir.join(layer_dir_name);
+    recreate_dir(&chunk_dir)?;
+
+    let total_counts = runtime_place_role_counts(&artifact.places);
+    let mut manifest = ChunkedPlaceLayerManifest {
+        version: 1,
+        schema_version: artifact.schema_version,
+        layer_id: artifact.layer_id.clone(),
+        total_place_count: artifact.places.len(),
+        rail_city_count: total_counts.rail_city,
+        replacement_bus_stop_count: total_counts.replacement_bus_stop,
+        registry_place_count: total_counts.registry_place,
+        chunk_target_bytes: WEB_RUNTIME_PLACE_LAYER_CHUNK_TARGET_BYTES,
+        chunks: Vec::with_capacity(chunk_ranges.len()),
+    };
+
+    for (chunk_index, range) in chunk_ranges.iter().enumerate() {
+        let file_name = format!("chunk-{chunk_index:04}.json");
+        let relative_file = format!("{layer_dir_name}/{file_name}");
+        let chunk_path = chunk_dir.join(&file_name);
+        let places = &artifact.places[range.clone()];
+        let chunk_counts = runtime_place_role_counts(places);
+        write_json_compact(&chunk_path, places)?;
+        manifest.chunks.push(ChunkedPlaceLayerManifestChunk {
+            file: relative_file,
+            place_count: range.len(),
+            rail_city_count: chunk_counts.rail_city,
+            replacement_bus_stop_count: chunk_counts.replacement_bus_stop,
+            registry_place_count: chunk_counts.registry_place,
+        });
+    }
+
+    write_json(
+        &output_dir.join(format!("{layer_dir_name}.manifest.json")),
+        &manifest,
+    )?;
+    Ok(())
+}
+
 fn chunk_edge_geometry_ranges(
     geometries: &[EdgeGeometryRecord],
     max_bytes: usize,
@@ -6432,6 +7386,56 @@ fn chunk_runtime_route_geometry_ranges(
     max_bytes: usize,
 ) -> Result<Vec<std::ops::Range<usize>>> {
     chunk_serialized_record_ranges(geometries, max_bytes, "runtime route geometry")
+}
+
+fn chunk_service_pattern_ranges(
+    patterns: &[ServicePatternRecord],
+    max_bytes: usize,
+) -> Result<Vec<std::ops::Range<usize>>> {
+    chunk_serialized_record_ranges(patterns, max_bytes, "service pattern")
+}
+
+fn chunk_place_record_ranges(
+    places: &[RuntimePlaceRecord],
+    max_bytes: usize,
+) -> Result<Vec<std::ops::Range<usize>>> {
+    chunk_serialized_record_ranges(places, max_bytes, "runtime place")
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct ServicePatternModeCounts {
+    rail: usize,
+    replacement_bus: usize,
+}
+
+fn service_pattern_mode_counts(patterns: &[ServicePatternRecord]) -> ServicePatternModeCounts {
+    let mut counts = ServicePatternModeCounts::default();
+    for pattern in patterns {
+        match &pattern.mode {
+            ServicePatternMode::Rail => counts.rail += 1,
+            ServicePatternMode::ReplacementBus => counts.replacement_bus += 1,
+        }
+    }
+    counts
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct RuntimePlaceRoleCounts {
+    rail_city: usize,
+    replacement_bus_stop: usize,
+    registry_place: usize,
+}
+
+fn runtime_place_role_counts(places: &[RuntimePlaceRecord]) -> RuntimePlaceRoleCounts {
+    let mut counts = RuntimePlaceRoleCounts::default();
+    for place in places {
+        match &place.role {
+            RuntimePlaceRole::RailCity => counts.rail_city += 1,
+            RuntimePlaceRole::ReplacementBusStop => counts.replacement_bus_stop += 1,
+            RuntimePlaceRole::RegistryPlace => counts.registry_place += 1,
+        }
+    }
+    counts
 }
 
 fn chunk_serialized_record_ranges<T: Serialize>(
@@ -6507,6 +7511,7 @@ struct AggregateTargetInput {
     manifest: PipelineArtifactManifest,
     canonical: DatasetBundle,
     edge_geometries: EdgeGeometryArtifact,
+    services: ServicePatternArtifact,
     station_mappings: Option<StationMappingReport>,
     rejected_city_candidates: Option<crate::RejectedCityCandidateReport>,
     issues: Vec<NormalizationIssue>,
@@ -6529,6 +7534,12 @@ fn load_aggregate_target_input(
 
     let canonical = read_json::<DatasetBundle>(&canonical_dir.join("bundle.json"))?;
     let edge_geometries = read_canonical_edge_geometries(&canonical_dir)?;
+    let services_path = canonical_dir.join("services.json");
+    let services = if services_path.exists() {
+        read_json::<ServicePatternArtifact>(&services_path)?
+    } else {
+        ServicePatternArtifact::default()
+    };
     let station_mappings_path = canonical_dir.join("station-mappings.json");
     let station_mappings = if station_mappings_path.exists() {
         Some(read_json::<StationMappingReport>(&station_mappings_path)?)
@@ -6552,6 +7563,7 @@ fn load_aggregate_target_input(
         manifest,
         canonical,
         edge_geometries,
+        services,
         station_mappings,
         rejected_city_candidates,
         issues,
@@ -6749,6 +7761,30 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
         &merged_cities.city_id_remap,
         request.target.id.as_str(),
     )?;
+    if let Some(overlay) = registry_overlay.as_ref() {
+        let station_overlay_stats = apply_registry_station_authority(
+            &mut stations,
+            overlay,
+            request.target.id.as_str(),
+            &mut merged_cities.issues,
+        );
+        counters.insert(
+            "registry_overlay_station_qid_match_count".to_string(),
+            station_overlay_stats.matched_count,
+        );
+        counters.insert(
+            "registry_overlay_station_qid_applied_count".to_string(),
+            station_overlay_stats.applied_count,
+        );
+        counters.insert(
+            "registry_overlay_station_qid_unmatched_count".to_string(),
+            station_overlay_stats.unmatched_count,
+        );
+        counters.insert(
+            "registry_overlay_station_qid_conflict_count".to_string(),
+            station_overlay_stats.conflict_count,
+        );
+    }
     let mut edges = merge_edges(&dependency_inputs, &merged_cities.city_id_remap);
     let mut edge_geometries =
         merge_edge_geometries(&dependency_inputs, &merged_cities.city_id_remap);
@@ -6918,6 +7954,20 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
             customer_facing_scope_stats.kept_edge_count
         ));
     }
+    let mut services = merge_service_patterns(&dependency_inputs, &merged_cities.city_id_remap);
+    filter_service_patterns_to_cities(&mut services, &merged_cities.cities);
+    counters.insert(
+        "service_pattern_count".to_string(),
+        services.patterns.len() as u64,
+    );
+    counters.insert(
+        "replacement_bus_pattern_count".to_string(),
+        services
+            .patterns
+            .iter()
+            .filter(|pattern| pattern.replacement_bus)
+            .count() as u64,
+    );
     apply_computed_city_enrichment(&mut merged_cities.cities, &edges);
     counters.insert(
         "residual_station_like_city_count".to_string(),
@@ -6960,6 +8010,7 @@ fn build_aggregate_bundle(request: AdapterBuildRequest<'_>) -> Result<AdapterBui
     Ok(AdapterBuildArtifacts {
         canonical,
         edge_geometries: Some(edge_geometries),
+        services,
         station_mappings: Some(station_mappings),
         rejected_city_candidates: Some(rejected_city_candidates),
         plain_name_fallback_gap_registry_candidates,
@@ -7117,6 +8168,82 @@ fn merge_rejected_city_candidates(
         }
     }
     crate::RejectedCityCandidateReport { records }
+}
+
+fn merge_service_patterns(
+    inputs: &[AggregateTargetInput],
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) -> ServicePatternArtifact {
+    let mut patterns = Vec::new();
+    for input in inputs {
+        for pattern in &input.services.patterns {
+            let mut pattern = pattern.clone();
+            remap_service_pattern_city_ids(&mut pattern, city_id_remap);
+            patterns.push(pattern);
+        }
+    }
+    patterns.sort_by(|left, right| {
+        left.source_id
+            .cmp(&right.source_id)
+            .then_with(|| left.route_id.cmp(&right.route_id))
+            .then_with(|| left.pattern_id.cmp(&right.pattern_id))
+    });
+    ServicePatternArtifact {
+        schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+        patterns,
+    }
+}
+
+fn remap_service_pattern_city_ids(
+    pattern: &mut ServicePatternRecord,
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) {
+    for stop in &mut pattern.stops {
+        if let Some(city_id) = stop.city_id.clone() {
+            stop.city_id = Some(resolve_remapped_city_id(&city_id, city_id_remap));
+        }
+    }
+}
+
+fn resolve_remapped_city_id(
+    city_id: &aetrain_domain::CityId,
+    city_id_remap: &BTreeMap<aetrain_domain::CityId, aetrain_domain::CityId>,
+) -> aetrain_domain::CityId {
+    city_id_remap
+        .get(city_id)
+        .cloned()
+        .unwrap_or_else(|| city_id.clone())
+}
+
+fn filter_service_patterns_to_cities(
+    services: &mut ServicePatternArtifact,
+    cities: &[aetrain_domain::City],
+) {
+    let retained_city_ids = cities
+        .iter()
+        .map(|city| city.city_id.clone())
+        .collect::<BTreeSet<_>>();
+    for pattern in &mut services.patterns {
+        for stop in &mut pattern.stops {
+            if stop
+                .city_id
+                .as_ref()
+                .is_some_and(|city_id| !retained_city_ids.contains(city_id))
+            {
+                stop.city_id = None;
+            }
+        }
+        pattern.mapped_city_count = pattern
+            .stops
+            .iter()
+            .filter_map(|stop| stop.city_id.clone())
+            .collect::<BTreeSet<_>>()
+            .len()
+            .min(u16::MAX as usize) as u16;
+        pattern.direct_journey_pair_count = service_pattern_journey_pairs(pattern)
+            .len()
+            .min(u32::MAX as usize) as u32;
+    }
 }
 
 fn merge_cities(inputs: &[AggregateTargetInput], aggregate_source_id: &str) -> MergedCityOutput {
@@ -7528,8 +8655,49 @@ fn merge_stations(
                     if station.display_name.len() > existing.display_name.len() {
                         existing.display_name = station.display_name.clone();
                     }
+                    if existing.rail_anchor_location.is_none() {
+                        existing.rail_anchor_location = station.rail_anchor_location;
+                    }
+                    if matches!(existing.station_kind, aetrain_domain::StationKind::Unknown) {
+                        existing.station_kind = station.station_kind.clone();
+                    }
+                    if matches!(
+                        existing.station_scope,
+                        aetrain_domain::StationScope::Unknown
+                    ) {
+                        existing.station_scope = station.station_scope.clone();
+                    }
+                    if existing.station_complex_id.is_none() {
+                        existing.station_complex_id = station.station_complex_id.clone();
+                    }
+                    match (
+                        existing.wikidata_qid.as_deref(),
+                        station.wikidata_qid.as_deref(),
+                    ) {
+                        (None, Some(_)) => {
+                            existing.wikidata_qid = station.wikidata_qid.clone();
+                        }
+                        (Some(existing_qid), Some(incoming_qid))
+                            if existing_qid != incoming_qid =>
+                        {
+                            existing.source_refs.push(aetrain_domain::SourceRef {
+                                source_id: aggregate_source_id.to_string(),
+                                raw_id: format!(
+                                    "conflicting-wikidata-qid:{}:{}",
+                                    existing_qid, incoming_qid
+                                ),
+                            });
+                        }
+                        _ => {}
+                    }
                     if existing.uic_code.is_none() {
                         existing.uic_code = station.uic_code.clone();
+                    }
+                    merge_strings(&mut existing.aliases, &station.aliases);
+                    merge_strings(&mut existing.operators, &station.operators);
+                    merge_strings(&mut existing.networks, &station.networks);
+                    if existing.prominence.is_none() {
+                        existing.prominence = station.prominence;
                     }
                     existing.location = merge_geo_points(existing.location, station.location);
                     merge_source_refs(&mut existing.source_refs, &station.source_refs);
@@ -7548,6 +8716,65 @@ fn merge_stations(
         }
     }
     Ok(stations)
+}
+
+fn apply_registry_station_authority(
+    stations: &mut [aetrain_domain::Station],
+    overlay: &RegistryCanonicalBundle,
+    aggregate_source_id: &str,
+    issues: &mut Vec<NormalizationIssue>,
+) -> RegistryStationOverlayStats {
+    let station_index = stations
+        .iter()
+        .enumerate()
+        .map(|(index, station)| (station.station_id.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut stats = RegistryStationOverlayStats::default();
+
+    for registry_station in &overlay.stations {
+        let Some(registry_qid) = registry_station.wikidata_qid.as_deref() else {
+            continue;
+        };
+        let Some(index) = station_index.get(&registry_station.station_id).copied() else {
+            stats.unmatched_count += 1;
+            continue;
+        };
+        stats.matched_count += 1;
+        let station = &mut stations[index];
+        station.rail_anchor_location = registry_station.rail_anchor_location;
+        station.station_kind = registry_station.station_kind.clone();
+        station.station_scope = registry_station.station_scope.clone();
+        station.station_complex_id = registry_station.station_complex_id.clone();
+        merge_strings(&mut station.aliases, &registry_station.aliases);
+        merge_strings(&mut station.operators, &registry_station.operators);
+        merge_strings(&mut station.networks, &registry_station.networks);
+        if registry_station.prominence.is_some() {
+            station.prominence = registry_station.prominence;
+        }
+        match station.wikidata_qid.as_deref() {
+            Some(existing_qid) if existing_qid == registry_qid => {}
+            Some(existing_qid) => {
+                stats.conflict_count += 1;
+                stats.applied_count += 1;
+                issues.push(NormalizationIssue {
+                    severity: crate::IssueSeverity::Warning,
+                    source_id: aggregate_source_id.to_string(),
+                    entity_ref: station.station_id.to_string(),
+                    message: format!(
+                        "registry station authority replaced wikidata_qid {} with {}",
+                        existing_qid, registry_qid
+                    ),
+                });
+                station.wikidata_qid = Some(registry_qid.to_string());
+            }
+            None => {
+                stats.applied_count += 1;
+                station.wikidata_qid = Some(registry_qid.to_string());
+            }
+        }
+    }
+
+    stats
 }
 
 fn merge_edges(
@@ -7642,12 +8869,8 @@ fn reject_foreign_domestic_feed_leakage(
         let Some(to_city) = cities_by_id.get(&edge.to_city_id) else {
             return true;
         };
-        let Some(home_country_code) = infer_home_country_code_from_provenance(&edge.provenance)
-        else {
-            return true;
-        };
-        if !is_foreign_domestic_feed_leakage(
-            home_country_code,
+        if !is_foreign_domestic_feed_leakage_from_provenance(
+            &edge.provenance,
             &from_city.country_code,
             &to_city.country_code,
         ) {
@@ -7663,7 +8886,8 @@ fn reject_foreign_domestic_feed_leakage(
                 "rejected foreign-domestic edge leakage {} -> {} from feed {} with countries {} -> {}",
                 from_city.display_name,
                 to_city.display_name,
-                home_country_code,
+                infer_home_country_codes_label_from_provenance(&edge.provenance)
+                    .unwrap_or_else(|| "unknown".to_string()),
                 from_city.country_code,
                 to_city.country_code
             ),
@@ -7698,12 +8922,8 @@ fn reject_foreign_cross_border_feed_leakage(
         let Some(to_city) = cities_by_id.get(&edge.to_city_id) else {
             return true;
         };
-        let Some(home_country_code) = infer_home_country_code_from_provenance(&edge.provenance)
-        else {
-            return true;
-        };
-        if !is_foreign_cross_border_feed_leakage(
-            home_country_code,
+        if !is_foreign_cross_border_feed_leakage_from_provenance(
+            &edge.provenance,
             &from_city.country_code,
             &to_city.country_code,
         ) {
@@ -7719,7 +8939,8 @@ fn reject_foreign_cross_border_feed_leakage(
                 "rejected foreign cross-border edge leakage {} -> {} from feed {} with countries {} -> {}",
                 from_city.display_name,
                 to_city.display_name,
-                home_country_code,
+                infer_home_country_codes_label_from_provenance(&edge.provenance)
+                    .unwrap_or_else(|| "unknown".to_string()),
                 from_city.country_code,
                 to_city.country_code
             ),
@@ -10384,6 +11605,16 @@ fn merge_station_ids(
     }
 }
 
+fn merge_strings(target: &mut Vec<String>, values: &[String]) {
+    let mut seen = target.iter().cloned().collect::<BTreeSet<_>>();
+    for value in values {
+        if seen.insert(value.clone()) {
+            target.push(value.clone());
+        }
+    }
+    target.sort();
+}
+
 fn merge_source_refs(
     target: &mut Vec<aetrain_domain::SourceRef>,
     values: &[aetrain_domain::SourceRef],
@@ -10699,11 +11930,20 @@ impl PipelineAdapter for SncfAdapter {
                     })
                     .count() as u64,
             ),
+            (
+                "service_pattern_count".to_string(),
+                output.summary.service_pattern_count as u64,
+            ),
+            (
+                "replacement_bus_pattern_count".to_string(),
+                output.summary.replacement_bus_pattern_count as u64,
+            ),
         ]);
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_output(&output),
             edge_geometries: Some(output.edge_geometries),
+            services: output.services,
             station_mappings: Some(output.station_mappings),
             rejected_city_candidates: Some(output.rejected_city_candidates),
             plain_name_fallback_gap_registry_candidates: Vec::new(),
@@ -10839,11 +12079,20 @@ impl PipelineAdapter for GtfsBasicAdapter {
                     })
                     .count() as u64,
             ),
+            (
+                "service_pattern_count".to_string(),
+                output.summary.service_pattern_count as u64,
+            ),
+            (
+                "replacement_bus_pattern_count".to_string(),
+                output.summary.replacement_bus_pattern_count as u64,
+            ),
         ]);
 
         Ok(AdapterBuildArtifacts {
             canonical: bundle_from_basic_output(&output),
             edge_geometries: Some(output.edge_geometries),
+            services: output.services,
             station_mappings: Some(output.station_mappings),
             rejected_city_candidates: Some(output.rejected_city_candidates),
             plain_name_fallback_gap_registry_candidates: Vec::new(),
@@ -10879,12 +12128,12 @@ mod tests {
     use crate::{StationMappingRecord, StationMappingStrategy};
     use aetrain_dataset::{
         AliasRecord, DatasetMeta, EdgeGeometryArtifact, EdgeGeometryRecord, EdgeGeometrySource,
-        PolylinePointE5,
+        PolylinePointE5, ServicePatternMode, ServicePatternRecord, ServicePatternStopRecord,
     };
     use aetrain_domain::{City, CityId, GeoPoint, Station, StationId, TravelEdge};
     use aetrain_registry::{
         RegistryCanonicalBundle, RegistryCity, RegistryMeta, RegistryNameVariant,
-        RegistryNameVariantKind, RegistryStatus,
+        RegistryNameVariantKind, RegistryStation, RegistryStatus,
     };
 
     #[test]
@@ -10932,7 +12181,16 @@ mod tests {
                         lat: 48.8809,
                         lon: 2.3553,
                     },
+                    rail_anchor_location: None,
+                    station_kind: aetrain_domain::StationKind::MainlineRail,
+                    station_scope: aetrain_domain::StationScope::CustomerStation,
+                    station_complex_id: None,
+                    wikidata_qid: None,
                     uic_code: Some("8727100".to_string()),
+                    aliases: Vec::new(),
+                    operators: Vec::new(),
+                    networks: Vec::new(),
+                    prominence: None,
                     source_refs: Vec::new(),
                 },
                 Station {
@@ -10943,7 +12201,16 @@ mod tests {
                         lat: 45.7604,
                         lon: 4.8599,
                     },
+                    rail_anchor_location: None,
+                    station_kind: aetrain_domain::StationKind::MainlineRail,
+                    station_scope: aetrain_domain::StationScope::CustomerStation,
+                    station_complex_id: None,
+                    wikidata_qid: None,
                     uic_code: Some("8772319".to_string()),
+                    aliases: Vec::new(),
+                    operators: Vec::new(),
+                    networks: Vec::new(),
+                    prominence: None,
                     source_refs: Vec::new(),
                 },
             ],
@@ -11031,6 +12298,271 @@ mod tests {
             chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),
             geometries.len()
         );
+    }
+
+    fn test_service_pattern(index: usize, mode: ServicePatternMode) -> ServicePatternRecord {
+        let replacement_bus = mode == ServicePatternMode::ReplacementBus;
+        ServicePatternRecord {
+            pattern_id: format!("test-pattern-{index:04}"),
+            source_id: "test-gtfs".to_string(),
+            route_id: format!("route-{index:04}"),
+            route_type: if replacement_bus { 3 } else { 2 },
+            mode,
+            replacement_bus,
+            trip_count: 3,
+            sample_trip_ids: vec![format!("trip-{index:04}-a"), format!("trip-{index:04}-b")],
+            service_ids: vec![format!("service-{index:04}")],
+            headsigns: vec![format!("Long service headsign {index}")],
+            service_date_count: 12,
+            first_service_date: Some("20260525".to_string()),
+            last_service_date: Some("20260605".to_string()),
+            stop_count: 2,
+            mapped_city_count: 2,
+            direct_journey_pair_count: 1,
+            stops: vec![
+                ServicePatternStopRecord {
+                    stop_index: 0,
+                    stop_sequence: 1,
+                    source_stop_id: format!("stop-{index:04}-a"),
+                    station_key: format!("station-key-{index:04}-a"),
+                    station_id: Some(
+                        StationId::new(format!("station-{index:04}-a")).expect("valid station id"),
+                    ),
+                    city_id: Some(
+                        CityId::new(format!("city-{index:04}-a-fr")).expect("valid city id"),
+                    ),
+                    display_name: format!("Origin Station {index}"),
+                    lat_e5: 4_800_000 + index as i32,
+                    lon_e5: 200_000 + index as i32,
+                    arrival_seconds: None,
+                    departure_seconds: Some(7 * 3600),
+                },
+                ServicePatternStopRecord {
+                    stop_index: 1,
+                    stop_sequence: 2,
+                    source_stop_id: format!("stop-{index:04}-b"),
+                    station_key: format!("station-key-{index:04}-b"),
+                    station_id: Some(
+                        StationId::new(format!("station-{index:04}-b")).expect("valid station id"),
+                    ),
+                    city_id: Some(
+                        CityId::new(format!("city-{index:04}-b-fr")).expect("valid city id"),
+                    ),
+                    display_name: format!("Destination Station {index}"),
+                    lat_e5: 4_810_000 + index as i32,
+                    lon_e5: 210_000 + index as i32,
+                    arrival_seconds: Some(8 * 3600),
+                    departure_seconds: None,
+                },
+            ],
+        }
+    }
+
+    #[test]
+    fn service_pattern_chunking_splits_large_artifacts() {
+        let patterns = (0..8)
+            .map(|index| test_service_pattern(index, ServicePatternMode::Rail))
+            .collect::<Vec<_>>();
+
+        let chunk_ranges =
+            chunk_service_pattern_ranges(&patterns, 700).expect("chunking should succeed");
+
+        assert!(chunk_ranges.len() > 1);
+        assert_eq!(
+            chunk_ranges.iter().map(|range| range.len()).sum::<usize>(),
+            patterns.len()
+        );
+    }
+
+    fn test_service_place_canonical_bundle() -> DatasetBundle {
+        let city_id = CityId::new("nogent-sur-seine-fr").expect("valid city id");
+        let station_id = StationId::new("sncf-fr-8711813").expect("valid station id");
+        DatasetBundle {
+            meta: DatasetMeta::new("2026-05-25", "2026-05-25T12:00:00Z"),
+            cities: vec![City {
+                city_id: city_id.clone(),
+                slug: "nogent-sur-seine".to_string(),
+                display_name: "Nogent Sur Seine".to_string(),
+                country_code: "FR".to_string(),
+                location: GeoPoint {
+                    lat: 48.494,
+                    lon: 3.502,
+                },
+                wikidata_qid: Some("Q133086".to_string()),
+                population: Some(5_900),
+                interest_score: Some(2),
+                station_ids: vec![station_id.clone()],
+                aliases: Vec::new(),
+            }],
+            stations: vec![Station {
+                station_id,
+                city_id,
+                display_name: "Nogent-sur-Seine".to_string(),
+                location: GeoPoint {
+                    lat: 48.494,
+                    lon: 3.502,
+                },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
+                uic_code: Some("8711813".to_string()),
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
+                source_refs: Vec::new(),
+            }],
+            edges: Vec::new(),
+            aliases: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn service_place_layer_deduplicates_replacement_bus_stops() {
+        let canonical = test_service_place_canonical_bundle();
+        let city_index_by_id = canonical
+            .cities
+            .iter()
+            .enumerate()
+            .map(|(index, city)| (city.city_id.clone(), index as u32))
+            .collect::<HashMap<_, _>>();
+        let mut replacement = test_service_pattern(12, ServicePatternMode::ReplacementBus);
+        replacement.source_id = "sncf-fr-gtfs".to_string();
+        replacement.stops[0].source_stop_id = "StopPoint:OCECar TER-8711813".to_string();
+        replacement.stops[0].station_key = "StopArea:OCECar TER-8711813".to_string();
+        replacement.stops[0].station_id =
+            Some(StationId::new("sncf-fr-8711813").expect("valid station id"));
+        replacement.stops[0].city_id =
+            Some(CityId::new("nogent-sur-seine-fr").expect("valid city id"));
+        replacement.stops[0].display_name = "Nogent-sur-Seine".to_string();
+        replacement.stops[1].source_stop_id = "StopPoint:OCECar TER-saint-mesmin".to_string();
+        replacement.stops[1].station_key = "StopArea:OCECar TER-saint-mesmin".to_string();
+        replacement.stops[1].station_id = None;
+        replacement.stops[1].city_id = None;
+        replacement.stops[1].display_name = "Saint-Mesmin".to_string();
+
+        let services = ServicePatternArtifact {
+            schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+            patterns: vec![
+                test_service_pattern(11, ServicePatternMode::Rail),
+                replacement.clone(),
+                replacement,
+            ],
+        };
+
+        let layer = build_runtime_service_place_layer(&canonical, &services, &city_index_by_id)
+            .expect("service place layer should build");
+
+        assert_eq!(layer.layer_id, "service_places");
+        assert_eq!(layer.places.len(), 2);
+        assert!(
+            layer
+                .places
+                .iter()
+                .all(|place| place.role == RuntimePlaceRole::ReplacementBusStop)
+        );
+        let nogent = layer
+            .places
+            .iter()
+            .find(|place| place.display_name == "Nogent-sur-Seine")
+            .expect("linked replacement bus stop should be present");
+        assert_eq!(nogent.linked_city_index, Some(0));
+        assert_eq!(nogent.country_code.as_deref(), Some("FR"));
+        assert_eq!(nogent.service_pattern_count, 1);
+        let saint_mesmin = layer
+            .places
+            .iter()
+            .find(|place| place.display_name == "Saint-Mesmin")
+            .expect("service-only replacement bus stop should be present");
+        assert_eq!(saint_mesmin.country_code.as_deref(), Some("FR"));
+    }
+
+    #[test]
+    fn chunked_place_layer_export_writes_manifest_and_chunks() {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("current time should be after epoch")
+            .as_nanos();
+        let output_dir = std::env::temp_dir().join(format!("{timestamp}-aetrain-places-test"));
+        fs::create_dir_all(&output_dir).expect("output dir should be created");
+        let artifact = RuntimePlaceLayerArtifact {
+            schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+            layer_id: "service_places".to_string(),
+            places: vec![RuntimePlaceRecord {
+                place_id: "service-saint-mesmin-abc123".to_string(),
+                role: RuntimePlaceRole::ReplacementBusStop,
+                display_name: "Saint-Mesmin".to_string(),
+                country_code: Some("FR".to_string()),
+                lat_e5: 4_850_000,
+                lon_e5: 355_000,
+                linked_city_id: None,
+                linked_city_index: None,
+                linked_station_id: None,
+                wikidata_qid: None,
+                population: None,
+                source_ids: vec!["sncf".to_string()],
+                source_stop_ids: vec!["StopPoint:OCECar TER-saint-mesmin".to_string()],
+                service_pattern_count: 2,
+            }],
+        };
+
+        export_chunked_place_layer(&output_dir, "service-places", &artifact)
+            .expect("chunked place layer should write");
+
+        let manifest: ChunkedPlaceLayerManifest =
+            read_json(&output_dir.join("service-places.manifest.json"))
+                .expect("manifest should load");
+        assert_eq!(manifest.layer_id, "service_places");
+        assert_eq!(manifest.total_place_count, 1);
+        assert_eq!(manifest.replacement_bus_stop_count, 1);
+        assert_eq!(manifest.chunks.len(), 1);
+
+        let restored: Vec<RuntimePlaceRecord> =
+            read_json(&output_dir.join(&manifest.chunks[0].file)).expect("chunk should load");
+        assert_eq!(restored, artifact.places);
+
+        let _ = fs::remove_dir_all(output_dir);
+    }
+
+    #[test]
+    fn chunked_service_pattern_export_writes_manifest_and_chunks() {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("current time should be after epoch")
+            .as_nanos();
+        let output_dir = std::env::temp_dir().join(format!("{timestamp}-aetrain-services-test"));
+        fs::create_dir_all(&output_dir).expect("output dir should be created");
+        let services = ServicePatternArtifact {
+            schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+            patterns: vec![
+                test_service_pattern(0, ServicePatternMode::Rail),
+                test_service_pattern(1, ServicePatternMode::ReplacementBus),
+                test_service_pattern(2, ServicePatternMode::Rail),
+            ],
+        };
+
+        export_chunked_service_patterns(&output_dir, &services)
+            .expect("chunked service patterns should write");
+
+        let manifest: ChunkedServicePatternManifest =
+            read_json(&output_dir.join("services.manifest.json")).expect("manifest should load");
+        assert_eq!(manifest.total_pattern_count, 3);
+        assert_eq!(manifest.rail_pattern_count, 2);
+        assert_eq!(manifest.replacement_bus_pattern_count, 1);
+        assert!(!manifest.chunks.is_empty());
+
+        let mut restored = Vec::<ServicePatternRecord>::new();
+        for chunk in &manifest.chunks {
+            let mut patterns: Vec<ServicePatternRecord> =
+                read_json(&output_dir.join(&chunk.file)).expect("chunk should load");
+            assert_eq!(patterns.len(), chunk.pattern_count);
+            restored.append(&mut patterns);
+        }
+        assert_eq!(restored, services.patterns);
+
+        let _ = fs::remove_dir_all(output_dir);
     }
 
     #[test]
@@ -11275,6 +12807,7 @@ mod tests {
             edge_geometries: EdgeGeometryArtifact {
                 geometries: Vec::new(),
             },
+            services: ServicePatternArtifact::default(),
             station_mappings: None,
             rejected_city_candidates: None,
             issues: Vec::new(),
@@ -11342,6 +12875,7 @@ mod tests {
             edge_geometries: EdgeGeometryArtifact {
                 geometries: Vec::new(),
             },
+            services: ServicePatternArtifact::default(),
             station_mappings: None,
             rejected_city_candidates: None,
             issues: Vec::new(),
@@ -11705,14 +13239,17 @@ mod tests {
     }
 
     #[test]
-    fn infer_home_country_code_from_provenance_covers_benelux_feeds() {
+    fn infer_home_country_codes_from_provenance_covers_known_feeds() {
         assert_eq!(
-            infer_home_country_code_from_provenance(&["be-sncb-gtfs:R1".to_string()]),
-            Some("BE")
+            infer_home_country_codes_from_provenance(&["be-sncb-gtfs:R1".to_string()]),
+            BTreeSet::from(["BE"])
         );
         assert_eq!(
-            infer_home_country_code_from_provenance(&["nl-ovapi-gtfs:R1".to_string()]),
-            Some("NL")
+            infer_home_country_codes_from_provenance(&[
+                "nl-ovapi-gtfs:R1".to_string(),
+                "sncf-fr-gtfs:R2".to_string(),
+            ]),
+            BTreeSet::from(["FR", "NL"])
         );
     }
 
@@ -12363,7 +13900,16 @@ mod tests {
                     lat: 48.8801,
                     lon: 2.3546,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: None,
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
             Station {
@@ -12374,7 +13920,16 @@ mod tests {
                     lat: 48.8412,
                     lon: 2.3205,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: None,
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
         ];
@@ -12458,7 +14013,16 @@ mod tests {
                     lat: 47.016,
                     lon: 8.050,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: None,
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
             Station {
@@ -12469,7 +14033,16 @@ mod tests {
                     lat: 47.286,
                     lon: 8.050,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: None,
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
         ];
@@ -12584,7 +14157,16 @@ mod tests {
                     lat: 48.8801,
                     lon: 2.3546,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: None,
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
             Station {
@@ -12595,7 +14177,16 @@ mod tests {
                     lat: 48.8412,
                     lon: 2.3205,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: None,
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
         ];
@@ -12722,7 +14313,16 @@ mod tests {
                     lat: 42.873947,
                     lon: 2.181787,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: Some("87615260".to_string()),
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
             Station {
@@ -12733,7 +14333,16 @@ mod tests {
                     lat: 43.0,
                     lon: 2.0,
                 },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
                 uic_code: Some("87000001".to_string()),
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
                 source_refs: Vec::new(),
             },
         ];
@@ -13718,6 +15327,145 @@ mod tests {
     }
 
     #[test]
+    fn registry_station_overlay_backfills_wikidata_qids() {
+        let mut stations = vec![
+            Station {
+                station_id: StationId::new("station-uic-87271007").expect("valid station id"),
+                city_id: CityId::new("paris-fr-q90").expect("valid city id"),
+                display_name: "Paris Gare de Lyon".to_string(),
+                location: GeoPoint {
+                    lat: 48.8443,
+                    lon: 2.3744,
+                },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: None,
+                uic_code: Some("87271007".to_string()),
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
+                source_refs: Vec::new(),
+            },
+            Station {
+                station_id: StationId::new("station-uic-87391003").expect("valid station id"),
+                city_id: CityId::new("paris-fr-q90").expect("valid city id"),
+                display_name: "Paris Montparnasse".to_string(),
+                location: GeoPoint {
+                    lat: 48.8406,
+                    lon: 2.3208,
+                },
+                rail_anchor_location: None,
+                station_kind: aetrain_domain::StationKind::MainlineRail,
+                station_scope: aetrain_domain::StationScope::CustomerStation,
+                station_complex_id: None,
+                wikidata_qid: Some("QOLD".to_string()),
+                uic_code: Some("87391003".to_string()),
+                aliases: Vec::new(),
+                operators: Vec::new(),
+                networks: Vec::new(),
+                prominence: None,
+                source_refs: Vec::new(),
+            },
+        ];
+        let overlay = RegistryCanonicalBundle {
+            meta: RegistryMeta {
+                schema_version: 1,
+                dataset_id: "test-overlay".to_string(),
+                scope: "fr-test".to_string(),
+                generated_at: "2026-05-10T00:00:00Z".to_string(),
+            },
+            cities: Vec::new(),
+            stations: vec![
+                RegistryStation {
+                    station_id: StationId::new("station-uic-87271007").expect("valid station id"),
+                    display_name: "Paris Gare de Lyon".to_string(),
+                    country_code: "FR".to_string(),
+                    location: GeoPoint {
+                        lat: 48.8443,
+                        lon: 2.3744,
+                    },
+                    rail_anchor_location: None,
+                    station_kind: aetrain_domain::StationKind::MainlineRail,
+                    station_scope: aetrain_domain::StationScope::CustomerStation,
+                    station_complex_id: None,
+                    wikidata_qid: Some("Q3094934".to_string()),
+                    uic_code: Some("87271007".to_string()),
+                    aliases: Vec::new(),
+                    operators: Vec::new(),
+                    networks: Vec::new(),
+                    prominence: None,
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+                RegistryStation {
+                    station_id: StationId::new("station-uic-87391003").expect("valid station id"),
+                    display_name: "Paris Montparnasse".to_string(),
+                    country_code: "FR".to_string(),
+                    location: GeoPoint {
+                        lat: 48.8406,
+                        lon: 2.3208,
+                    },
+                    rail_anchor_location: None,
+                    station_kind: aetrain_domain::StationKind::MainlineRail,
+                    station_scope: aetrain_domain::StationScope::CustomerStation,
+                    station_complex_id: None,
+                    wikidata_qid: Some("Q3094940".to_string()),
+                    uic_code: Some("87391003".to_string()),
+                    aliases: Vec::new(),
+                    operators: Vec::new(),
+                    networks: Vec::new(),
+                    prominence: None,
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+                RegistryStation {
+                    station_id: StationId::new("station-uic-00000000").expect("valid station id"),
+                    display_name: "Unmatched".to_string(),
+                    country_code: "FR".to_string(),
+                    location: GeoPoint { lat: 0.0, lon: 0.0 },
+                    rail_anchor_location: None,
+                    station_kind: aetrain_domain::StationKind::MainlineRail,
+                    station_scope: aetrain_domain::StationScope::CustomerStation,
+                    station_complex_id: None,
+                    wikidata_qid: Some("Q999".to_string()),
+                    uic_code: None,
+                    aliases: Vec::new(),
+                    operators: Vec::new(),
+                    networks: Vec::new(),
+                    prominence: None,
+                    status: RegistryStatus::Resolved,
+                    external_refs: Vec::new(),
+                },
+            ],
+            memberships: Vec::new(),
+            name_variants: Vec::new(),
+            city_facts: Vec::new(),
+            city_signals: Vec::new(),
+            city_authority_evidence: Vec::new(),
+            membership_evidence: Vec::new(),
+        };
+        let mut issues = Vec::new();
+
+        let stats = apply_registry_station_authority(
+            &mut stations,
+            &overlay,
+            "europe-aggregate",
+            &mut issues,
+        );
+
+        assert_eq!(stations[0].wikidata_qid.as_deref(), Some("Q3094934"));
+        assert_eq!(stations[1].wikidata_qid.as_deref(), Some("Q3094940"));
+        assert_eq!(stats.matched_count, 2);
+        assert_eq!(stats.applied_count, 2);
+        assert_eq!(stats.unmatched_count, 1);
+        assert_eq!(stats.conflict_count, 1);
+        assert_eq!(issues.len(), 1);
+    }
+
+    #[test]
     fn registry_overlay_rejects_far_alias_homonyms() {
         let mut cities = vec![
             City {
@@ -13970,6 +15718,7 @@ mod tests {
             &[],
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
+            &ServicePatternArtifact::default(),
             None,
             &[],
             &[],
@@ -14171,6 +15920,7 @@ mod tests {
             &[],
             &edges,
             &edge_geometries,
+            &ServicePatternArtifact::default(),
             None,
             &[],
             &[],
@@ -14213,6 +15963,159 @@ mod tests {
             report.domestic_geometry_backlog_by_country[0].country_code,
             "FR"
         );
+    }
+
+    #[test]
+    fn service_graph_audit_accepts_reachable_direct_pairs_but_flags_missing_adjacent_edges() {
+        let alpha = City {
+            city_id: CityId::new("alpha-fr").expect("valid city id"),
+            slug: "alpha".to_string(),
+            display_name: "Alpha".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.0,
+                lon: 2.0,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let beta = City {
+            city_id: CityId::new("beta-fr").expect("valid city id"),
+            slug: "beta".to_string(),
+            display_name: "Beta".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.1,
+                lon: 2.1,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let gamma = City {
+            city_id: CityId::new("gamma-fr").expect("valid city id"),
+            slug: "gamma".to_string(),
+            display_name: "Gamma".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.2,
+                lon: 2.2,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let edges = vec![
+            TravelEdge {
+                from_city_id: alpha.city_id.clone(),
+                to_city_id: beta.city_id.clone(),
+                duration_min: 10,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Regional,
+                change_count_estimate: Some(0),
+                source_confidence: 90,
+                provenance: vec!["test-gtfs:R1".to_string()],
+            },
+            TravelEdge {
+                from_city_id: beta.city_id.clone(),
+                to_city_id: gamma.city_id.clone(),
+                duration_min: 10,
+                service_kind: ServiceKind::Rail,
+                service_class: ServiceClass::Regional,
+                change_count_estimate: Some(0),
+                source_confidence: 90,
+                provenance: vec!["test-gtfs:R1".to_string()],
+            },
+        ];
+        let service_stop =
+            |stop_index: u16, city: &City, display_name: &str| ServicePatternStopRecord {
+                stop_index,
+                stop_sequence: stop_index as u32 + 1,
+                source_stop_id: format!("stop-{stop_index}"),
+                station_key: format!("station-key-{stop_index}"),
+                station_id: None,
+                city_id: Some(city.city_id.clone()),
+                display_name: display_name.to_string(),
+                lat_e5: 0,
+                lon_e5: 0,
+                arrival_seconds: Some(stop_index as u32 * 600),
+                departure_seconds: Some(stop_index as u32 * 600),
+            };
+        let reachable_direct_pattern = ServicePatternRecord {
+            pattern_id: "service-test-reachable".to_string(),
+            source_id: "test-gtfs".to_string(),
+            route_id: "R1".to_string(),
+            route_type: 2,
+            mode: ServicePatternMode::Rail,
+            replacement_bus: false,
+            trip_count: 1,
+            sample_trip_ids: vec!["T1".to_string()],
+            service_ids: vec!["S1".to_string()],
+            headsigns: Vec::new(),
+            service_date_count: 0,
+            first_service_date: None,
+            last_service_date: None,
+            stop_count: 3,
+            mapped_city_count: 3,
+            direct_journey_pair_count: 3,
+            stops: vec![
+                service_stop(0, &alpha, "Alpha"),
+                service_stop(1, &beta, "Beta"),
+                service_stop(2, &gamma, "Gamma"),
+            ],
+        };
+        assert!(
+            build_service_graph_audit_records(
+                &[alpha.clone(), beta.clone(), gamma.clone()],
+                &edges,
+                &ServicePatternArtifact {
+                    schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+                    patterns: vec![reachable_direct_pattern],
+                },
+            )
+            .is_empty(),
+            "non-adjacent direct service pairs are acceptable when the rail graph routes through intermediate stops"
+        );
+
+        let missing_adjacent_pattern = ServicePatternRecord {
+            pattern_id: "service-test-missing-adjacent".to_string(),
+            source_id: "test-gtfs".to_string(),
+            route_id: "R2".to_string(),
+            route_type: 2,
+            mode: ServicePatternMode::Rail,
+            replacement_bus: false,
+            trip_count: 1,
+            sample_trip_ids: vec!["T2".to_string()],
+            service_ids: vec!["S1".to_string()],
+            headsigns: Vec::new(),
+            service_date_count: 0,
+            first_service_date: None,
+            last_service_date: None,
+            stop_count: 2,
+            mapped_city_count: 2,
+            direct_journey_pair_count: 1,
+            stops: vec![
+                service_stop(0, &gamma, "Gamma"),
+                service_stop(1, &alpha, "Alpha"),
+            ],
+        };
+        let records = build_service_graph_audit_records(
+            &[alpha, beta, gamma],
+            &edges,
+            &ServicePatternArtifact {
+                schema_version: aetrain_domain::DATASET_SCHEMA_VERSION,
+                patterns: vec![missing_adjacent_pattern],
+            },
+        );
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].issue_kind, "rail_adjacent_stop_edge_missing");
     }
 
     #[test]
@@ -14295,6 +16198,7 @@ mod tests {
             &[],
             &edges,
             &edge_geometries,
+            &ServicePatternArtifact::default(),
             None,
             &[],
             &[],
@@ -14430,6 +16334,7 @@ mod tests {
             &[],
             &edges,
             &edge_geometries,
+            &ServicePatternArtifact::default(),
             None,
             &[],
             &[],
@@ -14483,6 +16388,19 @@ mod tests {
                 Some("straight_line_fallback"),
             ),
             "foreign_domestic_leakage"
+        );
+        assert_eq!(
+            classify_geometry_resolution_status(
+                "FR",
+                "FR",
+                &EdgeGeometrySource::StraightLineFallback,
+                &[
+                    "ch-gtfs:91-50-C-j26-1".to_string(),
+                    "sncf-fr-gtfs:OCESN87118158".to_string(),
+                ],
+                Some("straight_line_fallback"),
+            ),
+            "missing_domestic_authority"
         );
         assert_eq!(
             classify_geometry_resolution_status(
@@ -14557,6 +16475,82 @@ mod tests {
             classify_authority_detour_corridor_policy(1, 120, 120, 160).0,
             "review_authority_corridor"
         );
+    }
+
+    #[test]
+    fn reject_foreign_domestic_feed_leakage_keeps_domestic_backed_edge() {
+        let nogent = City {
+            city_id: CityId::new("nogent-sur-seine-fr").expect("valid city id"),
+            slug: "nogent-sur-seine".to_string(),
+            display_name: "Nogent Sur Seine".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.4978,
+                lon: 3.4937,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let romilly = City {
+            city_id: CityId::new("romilly-sur-seine-fr").expect("valid city id"),
+            slug: "romilly-sur-seine".to_string(),
+            display_name: "Romilly Sur Seine".to_string(),
+            country_code: "FR".to_string(),
+            location: GeoPoint {
+                lat: 48.5144,
+                lon: 3.7289,
+            },
+            wikidata_qid: None,
+            population: None,
+            interest_score: None,
+            station_ids: Vec::new(),
+            aliases: Vec::new(),
+        };
+        let mut edges = vec![TravelEdge {
+            from_city_id: nogent.city_id.clone(),
+            to_city_id: romilly.city_id.clone(),
+            duration_min: 10,
+            service_kind: ServiceKind::Rail,
+            service_class: ServiceClass::Regional,
+            change_count_estimate: Some(0),
+            source_confidence: 100,
+            provenance: vec![
+                "ch-gtfs:91-50-C-j26-1".to_string(),
+                "sncf-fr-gtfs:OCESN87118158".to_string(),
+            ],
+        }];
+        let mut edge_geometries = EdgeGeometryArtifact {
+            geometries: vec![EdgeGeometryRecord {
+                from_city_id: nogent.city_id.clone(),
+                to_city_id: romilly.city_id.clone(),
+                points: vec![
+                    scale_geo_point_e5_for_pipeline(nogent.location),
+                    scale_geo_point_e5_for_pipeline(romilly.location),
+                ],
+                source: EdgeGeometrySource::StraightLineFallback,
+                provenance: vec![
+                    "ch-gtfs:91-50-C-j26-1".to_string(),
+                    "sncf-fr-gtfs:OCESN87118158".to_string(),
+                ],
+            }],
+        };
+        let mut issues = Vec::new();
+
+        let rejected = reject_foreign_domestic_feed_leakage(
+            &mut edges,
+            &mut edge_geometries,
+            &[nogent, romilly],
+            "europe-validated",
+            &mut issues,
+        );
+
+        assert_eq!(rejected, 0);
+        assert_eq!(edges.len(), 1);
+        assert_eq!(edge_geometries.geometries.len(), 1);
+        assert!(issues.is_empty());
     }
 
     #[test]
@@ -14891,6 +16885,7 @@ mod tests {
             &[],
             &[],
             &EdgeGeometryArtifact { geometries: vec![] },
+            &ServicePatternArtifact::default(),
             None,
             &[],
             &[],

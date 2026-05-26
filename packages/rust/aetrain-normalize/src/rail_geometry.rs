@@ -1594,8 +1594,11 @@ mod tests {
     use rusqlite::Connection;
     use std::{
         env, fs,
+        sync::atomic::{AtomicU64, Ordering},
         time::{SystemTime, UNIX_EPOCH},
     };
+
+    static TEST_FILE_COUNTER: AtomicU64 = AtomicU64::new(0);
 
     #[test]
     fn route_polyline_uses_active_lines_only() {
@@ -2253,7 +2256,8 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("current time should be after epoch")
             .as_nanos();
-        let path = env::temp_dir().join(format!("{timestamp}-aetrain-rfn-test.geojson"));
+        let counter = TEST_FILE_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = env::temp_dir().join(format!("{timestamp}-{counter}-aetrain-rfn-test.geojson"));
         fs::write(&path, contents)
             .with_context(|| format!("failed to write {}", path.display()))?;
         Ok(path)
@@ -2264,7 +2268,8 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("current time should be after epoch")
             .as_nanos();
-        let path = env::temp_dir().join(format!("{timestamp}-aetrain-rail-test.gpkg"));
+        let counter = TEST_FILE_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = env::temp_dir().join(format!("{timestamp}-{counter}-aetrain-rail-test.gpkg"));
         let connection = Connection::open(&path)
             .with_context(|| format!("failed to create {}", path.display()))?;
         connection.execute_batch(

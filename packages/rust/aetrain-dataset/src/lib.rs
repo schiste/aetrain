@@ -1,4 +1,4 @@
-use aetrain_domain::{City, CityId, DATASET_SCHEMA_VERSION, Station, TravelEdge};
+use aetrain_domain::{City, CityId, DATASET_SCHEMA_VERSION, Station, StationId, TravelEdge};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -80,6 +80,116 @@ pub struct EdgeGeometryArtifact {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ServicePatternMode {
+    Rail,
+    ReplacementBus,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServicePatternStopRecord {
+    pub stop_index: u16,
+    pub stop_sequence: u32,
+    pub source_stop_id: String,
+    pub station_key: String,
+    pub station_id: Option<StationId>,
+    pub city_id: Option<CityId>,
+    pub display_name: String,
+    pub lat_e5: i32,
+    pub lon_e5: i32,
+    pub arrival_seconds: Option<u32>,
+    pub departure_seconds: Option<u32>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServicePatternJourneyPairRecord {
+    pub from_stop_index: u16,
+    pub to_stop_index: u16,
+    pub from_city_id: CityId,
+    pub to_city_id: CityId,
+    pub duration_min: Option<u32>,
+    pub intermediate_city_ids: Vec<CityId>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServicePatternRecord {
+    pub pattern_id: String,
+    pub source_id: String,
+    pub route_id: String,
+    pub route_type: i16,
+    pub mode: ServicePatternMode,
+    pub replacement_bus: bool,
+    pub trip_count: u32,
+    pub sample_trip_ids: Vec<String>,
+    pub service_ids: Vec<String>,
+    pub headsigns: Vec<String>,
+    pub service_date_count: u32,
+    pub first_service_date: Option<String>,
+    pub last_service_date: Option<String>,
+    pub stop_count: u16,
+    pub mapped_city_count: u16,
+    pub direct_journey_pair_count: u32,
+    pub stops: Vec<ServicePatternStopRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServicePatternArtifact {
+    pub schema_version: u16,
+    pub patterns: Vec<ServicePatternRecord>,
+}
+
+impl Default for ServicePatternArtifact {
+    fn default() -> Self {
+        Self {
+            schema_version: DATASET_SCHEMA_VERSION,
+            patterns: Vec::new(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RuntimePlaceRole {
+    RailCity,
+    ReplacementBusStop,
+    RegistryPlace,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RuntimePlaceRecord {
+    pub place_id: String,
+    pub role: RuntimePlaceRole,
+    pub display_name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub country_code: Option<String>,
+    pub lat_e5: i32,
+    pub lon_e5: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linked_city_id: Option<CityId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linked_city_index: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linked_station_id: Option<StationId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wikidata_qid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub population: Option<u32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub source_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub source_stop_ids: Vec<String>,
+    #[serde(default)]
+    pub service_pattern_count: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RuntimePlaceLayerArtifact {
+    pub schema_version: u16,
+    pub layer_id: String,
+    pub places: Vec<RuntimePlaceRecord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RuntimeDatasetMeta {
     pub schema_version: u16,
     pub dataset_version: String,
@@ -90,6 +200,16 @@ pub struct RuntimeDatasetMeta {
     pub alias_count: u32,
     pub route_geometry_artifact_path: Option<String>,
     pub station_artifact_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub station_complex_artifact_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub station_rail_anchor_artifact_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub service_pattern_artifact_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub service_place_artifact_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub registry_place_artifact_path: Option<String>,
     pub attribution_path: String,
 }
 
@@ -111,6 +231,11 @@ impl RuntimeDatasetMeta {
             alias_count,
             route_geometry_artifact_path: Some("route-geometries.manifest.json".to_string()),
             station_artifact_path: Some("stations.json".to_string()),
+            station_complex_artifact_path: Some("station-complexes.json".to_string()),
+            station_rail_anchor_artifact_path: Some("station-rail-anchors.json".to_string()),
+            service_pattern_artifact_path: Some("services.manifest.json".to_string()),
+            service_place_artifact_path: Some("service-places.manifest.json".to_string()),
+            registry_place_artifact_path: Some("registry-places.manifest.json".to_string()),
             attribution_path: meta.attribution_path.clone(),
         }
     }
@@ -338,7 +463,28 @@ pub struct RuntimeStationRecord {
     pub display_name: String,
     pub lat_e5: i32,
     pub lon_e5: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rail_anchor_lat_e5: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rail_anchor_lon_e5: Option<i32>,
+    #[serde(default = "default_runtime_station_kind")]
+    pub station_kind: String,
+    #[serde(default = "default_runtime_station_scope")]
+    pub station_scope: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub station_complex_id: Option<String>,
+    pub wikidata_qid: Option<String>,
     pub uic_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prominence: Option<u16>,
+}
+
+fn default_runtime_station_kind() -> String {
+    "unknown".to_string()
+}
+
+fn default_runtime_station_scope() -> String {
+    "unknown".to_string()
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -476,6 +622,11 @@ mod tests {
                 alias_count: 2,
                 route_geometry_artifact_path: Some("route-geometries.manifest.json".to_string()),
                 station_artifact_path: Some("stations.json".to_string()),
+                station_complex_artifact_path: Some("station-complexes.json".to_string()),
+                station_rail_anchor_artifact_path: Some("station-rail-anchors.json".to_string()),
+                service_pattern_artifact_path: Some("services.manifest.json".to_string()),
+                service_place_artifact_path: Some("service-places.manifest.json".to_string()),
+                registry_place_artifact_path: Some("registry-places.manifest.json".to_string()),
                 attribution_path: "attribution.json".to_string(),
             },
             countries: vec![RuntimeCountryRecord {

@@ -147,13 +147,90 @@ pub struct City {
     pub aliases: Vec<String>,
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StationKind {
+    MainlineRail,
+    HighSpeedRail,
+    AirportRail,
+    SuburbanRail,
+    Metro,
+    Tram,
+    Bus,
+    Ferry,
+    Platform,
+    StationComplex,
+    #[default]
+    Unknown,
+}
+
+impl StationKind {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::MainlineRail => "mainline_rail",
+            Self::HighSpeedRail => "high_speed_rail",
+            Self::AirportRail => "airport_rail",
+            Self::SuburbanRail => "suburban_rail",
+            Self::Metro => "metro",
+            Self::Tram => "tram",
+            Self::Bus => "bus",
+            Self::Ferry => "ferry",
+            Self::Platform => "platform",
+            Self::StationComplex => "station_complex",
+            Self::Unknown => "unknown",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StationScope {
+    #[default]
+    CustomerStation,
+    StationPart,
+    PlatformArea,
+    InterchangeComplex,
+    NonRailStop,
+    Unknown,
+}
+
+impl StationScope {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::CustomerStation => "customer_station",
+            Self::StationPart => "station_part",
+            Self::PlatformArea => "platform_area",
+            Self::InterchangeComplex => "interchange_complex",
+            Self::NonRailStop => "non_rail_stop",
+            Self::Unknown => "unknown",
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Station {
     pub station_id: StationId,
     pub city_id: CityId,
     pub display_name: String,
     pub location: GeoPoint,
+    #[serde(default)]
+    pub rail_anchor_location: Option<GeoPoint>,
+    #[serde(default)]
+    pub station_kind: StationKind,
+    #[serde(default)]
+    pub station_scope: StationScope,
+    #[serde(default)]
+    pub station_complex_id: Option<String>,
+    pub wikidata_qid: Option<String>,
     pub uic_code: Option<String>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
+    #[serde(default)]
+    pub operators: Vec<String>,
+    #[serde(default)]
+    pub networks: Vec<String>,
+    #[serde(default)]
+    pub prominence: Option<u16>,
     pub source_refs: Vec<SourceRef>,
 }
 

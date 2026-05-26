@@ -1,4 +1,4 @@
-use aetrain_domain::{CityId, GeoPoint, StationId};
+use aetrain_domain::{CityId, GeoPoint, StationId, StationKind, StationScope};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -86,7 +86,24 @@ pub struct RegistryStation {
     pub display_name: String,
     pub country_code: String,
     pub location: GeoPoint,
+    #[serde(default)]
+    pub rail_anchor_location: Option<GeoPoint>,
+    #[serde(default)]
+    pub station_kind: StationKind,
+    #[serde(default)]
+    pub station_scope: StationScope,
+    #[serde(default)]
+    pub station_complex_id: Option<String>,
+    pub wikidata_qid: Option<String>,
     pub uic_code: Option<String>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
+    #[serde(default)]
+    pub operators: Vec<String>,
+    #[serde(default)]
+    pub networks: Vec<String>,
+    #[serde(default)]
+    pub prominence: Option<u16>,
     pub status: RegistryStatus,
     #[serde(default)]
     pub external_refs: Vec<ExternalRecordRef>,
