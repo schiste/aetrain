@@ -9,6 +9,9 @@ Near-term output shape:
 - `cities.json`
 - `edges.json` or `graph.json` during the transition
 - `edge-geometries.manifest.json` plus `edge-geometries/chunk-*.json` for large route geometry payloads
+- `services.manifest.json` plus `services/chunk-*.json` for deferred GTFS service-pattern payloads
+- `service-places.manifest.json` plus `service-places/chunk-*.json` for deferred service-only/replacement-bus places
+- `registry-places.manifest.json` plus `registry-places/chunk-*.json` for deferred authority-backed places
 - `aliases.json`
 - `attribution.json`
 

@@ -217,11 +217,16 @@ Stage 1 artifacts should be versioned and immutable, for example:
 - `meta.json`
 - `cities.json`
 - `edges.json`
+- `services.json` in canonical outputs
+- `services.manifest.json` plus `services/chunk-*.json` in browser runtime
+  outputs
 - `edge-geometries.json`
 - `route-geometries.json`
 - `aliases.json`
 - `stations.json`
 - `station-mappings.json`
+- `service-places.json`
+- `registry-places.json`
 - `attribution.json`
 
 Stored under a versioned directory such as:
@@ -255,6 +260,10 @@ The browser should load these only when needed:
 
 - `aliases.json` on first search interaction if it is large enough to matter
 - `stations.json` only for future station-aware product surfaces
+- `services.manifest.json` only from service-aware features; build audits
+  consume the canonical `services.json` artifact
+- `service-places.manifest.json` only for replacement-bus/service overlays
+- `registry-places.manifest.json` only for broad municipality/search overlays
 - `attribution.json` from an about/help surface, not as part of initial route rendering
 
 Route geometry should be produced as a separate artifact, not embedded directly
@@ -315,6 +324,38 @@ Stage 1 edge semantics are intentionally narrow:
   cities, and what is the fastest travel time we currently know?"
 - Fare class, seat availability, booking rules, and itinerary preference are
   deferred to downstream booking surfaces and later product stages.
+
+Service semantics live in a separate artifact:
+
+- `services.json` stores aggregated GTFS service patterns, service IDs,
+  active-date bounds, stop sequences, direct journey pairs, intermediate stops,
+  route mode, and replacement-bus markers.
+- Runtime exports expose the same service layer through `services.manifest.json`
+  and `services/chunk-*.json`; this keeps each static file below host limits and
+  lets the frontend load service data only when a feature needs it.
+- Rail graph generation may use rail service patterns to derive adjacent
+  planning edges, but replacement-bus patterns must not be silently mixed into
+  `edges.json`.
+- The build must audit rail service pairs against graph reachability. A
+  non-adjacent direct commercial pair is valid when the graph can route through
+  intermediate rail stops; a consecutive GTFS rail stop pair missing from the
+  graph is a data-quality defect.
+
+Place semantics are layered:
+
+- `cities.json` remains the eager rail-planning node set. These are the places
+  that can participate in graph routing and high-priority map rendering.
+- `service-places.manifest.json` plus `service-places/chunk-*.json` exposes
+  replacement-bus/service-only stops derived from GTFS service patterns. These
+  records may link back to a rail city or station, but they do not create rail
+  graph nodes.
+- `registry-places.manifest.json` plus `registry-places/chunk-*.json` exposes
+  authority-backed municipalities and broad place identities. Linked records can
+  point back to rail cities; unlinked records are search/map context and should
+  be fetched lazily by viewport, country, or search feature.
+- Future tourism facts such as nature, history, museums, and scenic scores
+  attach to registry places, then project into the rail-city layer only when a
+  product feature needs that signal.
 
 Browser integration rule:
 

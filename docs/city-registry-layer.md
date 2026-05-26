@@ -84,6 +84,25 @@ The registry crate defines these first-class artifact records:
 - `RegistryStationCityMembershipEvidence`
 - `RegistrySourceCoverageReport`
 
+`RegistryStation` carries station-level identity fields, including
+`station_id`, `display_name`, `country_code`, `location`, optional
+`rail_anchor_location`, `station_kind`, `station_scope`,
+`station_complex_id`, optional `wikidata_qid`, optional `uic_code`,
+aliases, operators, networks, prominence, status, and external references.
+
+The station layer emits separate artifacts for the final authority model:
+
+- `station-authority.json` records accepted identifiers, exact-ID evidence,
+  Wikidata QID status, and resolution state per station.
+- `station-complexes.json` groups component stations when the source or
+  authority layer identifies a complex such as Berlin Hbf or Atocha.
+- `station-enrichment.json` keeps display/search metadata, operators,
+  networks, and prominence separate from routing data.
+- `station-rail-anchors.json` records explicit snap points onto the railway
+  layer; it never fabricates an anchor from the station coordinate.
+- `station-quality.json` lists station identity conflicts, invalid QIDs,
+  missing city attachments, non-mainline leakage, and missing rail anchors.
+
 The important design change is evidence separation. A city can have many
 external references, but promotion should be based on evidence with an explicit
 `authority_role`, `trust_tier`, `evidence_kind`, and confidence.
@@ -107,6 +126,22 @@ Runtime pipeline cleanup should consume the registry outputs in this order:
 4. linked-open-data enrichment
 5. community observations
 6. feed-local evidence
+
+## Runtime Projections
+
+The registry is canonical identity, not the browser hot path. Runtime exports
+split it into layered projections:
+
+- `cities.json` is the eager rail-city projection used by the planner graph.
+- `service-places.manifest.json` is the lazy service-place projection. It is
+  derived from service patterns and includes replacement-bus stops or
+  service-only stops without promoting them into rail routing.
+- `registry-places.manifest.json` is the lazy authority-place projection. It
+  can include municipalities that are not train nodes and links records back to
+  `cities.json` when a rail city exists.
+
+This lets the frontend display or search more places without parsing every
+municipality, bus stop, and railway city during initial route-planner startup.
 
 ## Why This Prevents Toulouse-Class Bugs
 
