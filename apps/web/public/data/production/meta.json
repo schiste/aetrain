@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dataset_version": "20260525-072403.368578",
-  "generated_at": "2026-05-25T07:24:03.368578Z",
+  "dataset_version": "20260525-163215.825338",
+  "generated_at": "2026-05-25T16:32:15.825338Z",
   "source_snapshots": [
     {
       "source_id": "at-oebb-gtfs",
@@ -184,5 +184,12 @@
       "version_hint": "2026-05-12T12:43:06+00:00"
     }
   ],
-  "attribution_path": "attribution.json"
+  "attribution_path": "attribution.json",
+  "route_geometry_artifact_path": "edge-geometries.manifest.json",
+  "station_artifact_path": "stations.json",
+  "station_complex_artifact_path": "station-complexes.json",
+  "station_rail_anchor_artifact_path": "station-rail-anchors.json",
+  "service_pattern_artifact_path": "services.manifest.json",
+  "service_place_artifact_path": "service-places.manifest.json",
+  "registry_place_artifact_path": "registry-places.manifest.json"
 }

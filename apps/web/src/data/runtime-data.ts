@@ -8,6 +8,7 @@ import type {
   PlannerDataset,
   ProductionArtifactBundle,
   RawEdgeGeometries,
+  RawServicePatternArtifact,
   RawStationArtifact
 } from "../types/planner-dataset.ts";
 import {
@@ -17,6 +18,17 @@ import {
   type EdgeGeometryManifest
 } from "./edge-geometry-artifacts.ts";
 import { buildProductionPlannerData } from "./production-adapter.ts";
+import {
+  fetchServicePatternArtifact,
+  type ServicePatternChunkResult,
+  type ServicePatternManifest
+} from "./service-pattern-artifacts.ts";
+import {
+  fetchRuntimePlaceArtifact,
+  type PlannerPlace,
+  type RuntimePlaceChunkResult,
+  type RuntimePlaceManifest
+} from "./runtime-place-artifacts.ts";
 
 // Vite serves `apps/web/public/` contents at the site root in both dev
 // (vite serve) and prod (vite build copies them to dist/). Anchoring the
@@ -80,6 +92,34 @@ interface WorkerLoadGeometriesResponse {
   error?: SerializedWorkerError;
 }
 
+interface WorkerLoadServicesResponse {
+  requestId?: string;
+  type?: string;
+  ok?: boolean;
+  services?: RawServicePatternArtifact;
+  loadedChunkFiles?: string[];
+  chunk?: ServicePatternChunkResult;
+  error?: SerializedWorkerError;
+}
+
+interface WorkerLoadPlacesResponse {
+  requestId?: string;
+  /** "runtime-place-chunk" for a streamed per-chunk message; absent on the
+   *  terminal ok/error response. */
+  type?: string;
+  ok?: boolean;
+  /** Echoed back from the request so a shared worker channel can be routed
+   *  to the right layer. Not consumed today (one worker per request) but kept
+   *  for parity with the worker contract. */
+  layerId?: string;
+  /** Present only on a non-streaming terminal response. */
+  places?: PlannerPlace[];
+  loadedChunkFiles?: string[];
+  /** Present only on "runtime-place-chunk" messages. */
+  chunk?: RuntimePlaceChunkResult;
+  error?: SerializedWorkerError;
+}
+
 export async function loadPlannerDataset(): Promise<PlannerDataset> {
   return diagnostics.timeAsync("load-planner-dataset", async () => {
     diagnostics.info("loading planner dataset (no geometry)");
@@ -90,6 +130,76 @@ export async function loadPlannerDataset(): Promise<PlannerDataset> {
         error: summarizeError(error)
       });
       return loadProductionDataSourceInline();
+    }
+  });
+}
+
+export interface LoadServicePatternsResult {
+  services: RawServicePatternArtifact;
+  loadedChunkFiles: string[];
+}
+
+export interface LoadServicePatternsOptions {
+  seenChunkFiles?: ReadonlySet<string>;
+  onChunk?(chunk: ServicePatternChunkResult): void | Promise<void>;
+}
+
+export async function loadServicePatterns(
+  options: LoadServicePatternsOptions = {}
+): Promise<LoadServicePatternsResult> {
+  return diagnostics.timeAsync("load-service-patterns", async () => {
+    diagnostics.info("loading service patterns", {
+      already_loaded_count: options.seenChunkFiles?.size ?? 0,
+      streaming: Boolean(options.onChunk)
+    });
+    try {
+      return await loadServicePatternsFromWorker(options);
+    } catch (error) {
+      diagnostics.warn("falling back to inline service pattern loader", {
+        error: summarizeError(error)
+      });
+      return loadServicePatternsInline(options);
+    }
+  });
+}
+
+export interface LoadRuntimePlacesResult {
+  /** The accumulated, browser-projected places. Empty in streaming mode (every
+   *  place was already delivered through `onChunk`); use `loadedChunkFiles` to
+   *  detect the no-op (manifest-absent or all-seen) case. */
+  places: PlannerPlace[];
+  loadedChunkFiles: string[];
+}
+
+export interface LoadRuntimePlacesOptions {
+  /** Which place layer to load. One loader serves both layers; the manifest
+   *  file selects between `service-places.manifest.json` and
+   *  `registry-places.manifest.json`. */
+  manifestFile: string;
+  /** Opaque tag echoed through the worker round-trip; useful for diagnostics. */
+  layerId?: string;
+  seenChunkFiles?: ReadonlySet<string>;
+  onChunk?(chunk: RuntimePlaceChunkResult): void | Promise<void>;
+}
+
+export async function loadRuntimePlaces(
+  options: LoadRuntimePlacesOptions
+): Promise<LoadRuntimePlacesResult> {
+  return diagnostics.timeAsync("load-runtime-places", async () => {
+    diagnostics.info("loading runtime places", {
+      manifest_file: options.manifestFile,
+      layer_id: options.layerId ?? null,
+      already_loaded_count: options.seenChunkFiles?.size ?? 0,
+      streaming: Boolean(options.onChunk)
+    });
+    try {
+      return await loadRuntimePlacesFromWorker(options);
+    } catch (error) {
+      diagnostics.warn("falling back to inline runtime place loader", {
+        manifest_file: options.manifestFile,
+        error: summarizeError(error)
+      });
+      return loadRuntimePlacesInline(options);
     }
   });
 }
@@ -195,7 +305,8 @@ async function loadEdgeGeometriesInline(
       {
         basePaths: PRODUCTION_BASE_PATHS,
         fetchJsonWithFallback,
-        fetchOptionalJsonWithFallback,
+        fetchOptionalJsonWithFallback: (fileName: string) =>
+          fetchOptionalJsonWithFallback<ServicePatternManifest>(fileName),
         fetchJsonFromBasePath,
         diagnostics
       },
@@ -207,6 +318,58 @@ async function loadEdgeGeometriesInline(
     );
     diagnostics.info("loaded edge geometries inline", {
       geometry_count: result.geometries.geometries.length,
+      loaded_chunk_count: result.loadedChunkFiles.length
+    });
+    return result;
+  });
+}
+
+async function loadServicePatternsInline(
+  options: LoadServicePatternsOptions
+): Promise<LoadServicePatternsResult> {
+  return diagnostics.timeAsync("load-service-patterns-inline", async () => {
+    const result = await fetchServicePatternArtifact(
+      {
+        basePaths: PRODUCTION_BASE_PATHS,
+        fetchJsonWithFallback,
+        fetchOptionalJsonWithFallback,
+        fetchJsonFromBasePath,
+        diagnostics
+      },
+      {
+        seenChunkFiles: options.seenChunkFiles,
+        onChunk: options.onChunk
+      }
+    );
+    diagnostics.info("loaded service patterns inline", {
+      pattern_count: result.services.patterns.length,
+      loaded_chunk_count: result.loadedChunkFiles.length
+    });
+    return result;
+  });
+}
+
+async function loadRuntimePlacesInline(
+  options: LoadRuntimePlacesOptions
+): Promise<LoadRuntimePlacesResult> {
+  return diagnostics.timeAsync("load-runtime-places-inline", async () => {
+    const result = await fetchRuntimePlaceArtifact(
+      {
+        basePaths: PRODUCTION_BASE_PATHS,
+        fetchOptionalJsonWithFallback: (fileName: string) =>
+          fetchOptionalJsonWithFallback<RuntimePlaceManifest>(fileName),
+        fetchJsonFromBasePath,
+        diagnostics
+      },
+      {
+        manifestFile: options.manifestFile,
+        seenChunkFiles: options.seenChunkFiles,
+        onChunk: options.onChunk
+      }
+    );
+    diagnostics.info("loaded runtime places inline", {
+      manifest_file: options.manifestFile,
+      place_count: result.places.length,
       loaded_chunk_count: result.loadedChunkFiles.length
     });
     return result;
@@ -380,6 +543,194 @@ async function loadEdgeGeometriesFromWorker(
         requestId,
         basePaths: PRODUCTION_BASE_PATHS,
         viewport: options.viewport,
+        seenChunkFiles: options.seenChunkFiles
+          ? Array.from(options.seenChunkFiles)
+          : undefined,
+        stream: streaming
+      });
+    });
+  });
+}
+
+async function loadServicePatternsFromWorker(
+  options: LoadServicePatternsOptions
+): Promise<LoadServicePatternsResult> {
+  if (typeof Worker === "undefined") {
+    throw new Error("Worker API unavailable");
+  }
+
+  return diagnostics.timeAsync("load-service-patterns-from-worker", async () => {
+    const worker = new Worker(new URL("../workers/runtime-data.worker.ts", import.meta.url), {
+      type: "module"
+    });
+    worker.addEventListener("message", (event: MessageEvent<unknown>) => {
+      tryIngestWorkerDiagnostic(event.data);
+    });
+    diagnostics.debug("spawned runtime data worker for services");
+
+    return new Promise<LoadServicePatternsResult>((resolve, reject) => {
+      const requestId = `services-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const streaming = Boolean(options.onChunk);
+      let applyChain: Promise<void> = Promise.resolve();
+
+      function cleanup(): void {
+        diagnostics.debug("terminating runtime data worker for services", {
+          request_id: requestId
+        });
+        worker.terminate();
+      }
+
+      worker.addEventListener("message", async (event: MessageEvent<WorkerLoadServicesResponse>) => {
+        const message: WorkerLoadServicesResponse = event.data || {};
+        if ((message as unknown as { __aetrain_diag?: unknown }).__aetrain_diag) {
+          return;
+        }
+        if (message.requestId !== requestId) {
+          return;
+        }
+
+        if (message.type === "service-pattern-chunk" && message.chunk) {
+          const chunk = message.chunk;
+          applyChain = applyChain.then(() => options.onChunk?.(chunk));
+          return;
+        }
+
+        if (message.ok) {
+          try {
+            await applyChain;
+          } catch (error) {
+            cleanup();
+            reject(error instanceof Error ? error : new Error(String(error)));
+            return;
+          }
+          cleanup();
+          diagnostics.info("runtime data worker loaded service patterns", {
+            request_id: requestId,
+            pattern_count: message.services?.patterns.length ?? 0,
+            loaded_chunk_count: message.loadedChunkFiles?.length ?? 0,
+            streaming
+          });
+          resolve({
+            services: message.services ?? { schema_version: 0, patterns: [] },
+            loadedChunkFiles: message.loadedChunkFiles ?? []
+          });
+          return;
+        }
+
+        cleanup();
+        reject(deserializeWorkerError(message.error));
+      });
+
+      worker.addEventListener("error", (event: ErrorEvent) => {
+        cleanup();
+        reject(event.error || new Error(event.message || "Worker error"));
+      });
+
+      diagnostics.debug("posting runtime data worker service request", {
+        request_id: requestId,
+        base_paths: PRODUCTION_BASE_PATHS
+      });
+      worker.postMessage({
+        type: "load-service-patterns",
+        requestId,
+        basePaths: PRODUCTION_BASE_PATHS,
+        seenChunkFiles: options.seenChunkFiles
+          ? Array.from(options.seenChunkFiles)
+          : undefined,
+        stream: streaming
+      });
+    });
+  });
+}
+
+async function loadRuntimePlacesFromWorker(
+  options: LoadRuntimePlacesOptions
+): Promise<LoadRuntimePlacesResult> {
+  if (typeof Worker === "undefined") {
+    throw new Error("Worker API unavailable");
+  }
+
+  return diagnostics.timeAsync("load-runtime-places-from-worker", async () => {
+    const worker = new Worker(new URL("../workers/runtime-data.worker.ts", import.meta.url), {
+      type: "module"
+    });
+    worker.addEventListener("message", (event: MessageEvent<unknown>) => {
+      tryIngestWorkerDiagnostic(event.data);
+    });
+    diagnostics.debug("spawned runtime data worker for places", {
+      manifest_file: options.manifestFile
+    });
+
+    return new Promise<LoadRuntimePlacesResult>((resolve, reject) => {
+      const requestId = `places-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const streaming = Boolean(options.onChunk);
+      let applyChain: Promise<void> = Promise.resolve();
+
+      function cleanup(): void {
+        diagnostics.debug("terminating runtime data worker for places", {
+          request_id: requestId
+        });
+        worker.terminate();
+      }
+
+      worker.addEventListener("message", async (event: MessageEvent<WorkerLoadPlacesResponse>) => {
+        const message: WorkerLoadPlacesResponse = event.data || {};
+        if ((message as unknown as { __aetrain_diag?: unknown }).__aetrain_diag) {
+          return;
+        }
+        if (message.requestId !== requestId) {
+          return;
+        }
+
+        if (message.type === "runtime-place-chunk" && message.chunk) {
+          const chunk = message.chunk;
+          applyChain = applyChain.then(() => options.onChunk?.(chunk));
+          return;
+        }
+
+        if (message.ok) {
+          try {
+            await applyChain;
+          } catch (error) {
+            cleanup();
+            reject(error instanceof Error ? error : new Error(String(error)));
+            return;
+          }
+          cleanup();
+          diagnostics.info("runtime data worker loaded runtime places", {
+            request_id: requestId,
+            manifest_file: options.manifestFile,
+            place_count: message.places?.length ?? 0,
+            loaded_chunk_count: message.loadedChunkFiles?.length ?? 0,
+            streaming
+          });
+          resolve({
+            places: message.places ?? [],
+            loadedChunkFiles: message.loadedChunkFiles ?? []
+          });
+          return;
+        }
+
+        cleanup();
+        reject(deserializeWorkerError(message.error));
+      });
+
+      worker.addEventListener("error", (event: ErrorEvent) => {
+        cleanup();
+        reject(event.error || new Error(event.message || "Worker error"));
+      });
+
+      diagnostics.debug("posting runtime data worker place request", {
+        request_id: requestId,
+        manifest_file: options.manifestFile,
+        base_paths: PRODUCTION_BASE_PATHS
+      });
+      worker.postMessage({
+        type: "load-runtime-places",
+        requestId,
+        basePaths: PRODUCTION_BASE_PATHS,
+        manifestFile: options.manifestFile,
+        layerId: options.layerId,
         seenChunkFiles: options.seenChunkFiles
           ? Array.from(options.seenChunkFiles)
           : undefined,

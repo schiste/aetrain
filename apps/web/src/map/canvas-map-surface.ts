@@ -1,4 +1,5 @@
 import { createDiagnostics } from "../app-shell/diagnostics.ts";
+import type { PlannerPlace } from "../data/runtime-place-artifacts.ts";
 import type { DiagnosticsData } from "../types/diagnostics.ts";
 import type { PlannerCity, PlannerStation } from "../types/planner-dataset.ts";
 import type {
@@ -106,6 +107,7 @@ interface VisibleCity extends MapPoint {
    *  live-zoom-derived population threshold slides past the city. */
   fadeOpacity: number;
   inTrip: boolean;
+  inRoutePath: boolean;
   radius: number;
   style: MarkerStyle;
   travelTime: number | undefined;
@@ -315,6 +317,19 @@ export interface CanvasMapSurface {
    * a full surface rebuild — and crucially without resetting the camera.
    */
   refreshGeometry(): void;
+  /**
+   * Append a streamed chunk of service-places (replacement-bus stops) and
+   * recompute which of them sit on a loaded rail route. Called once per chunk
+   * as the service-places layer streams in; the reveal is recomputed off the
+   * render path, so callers can fire this freely as chunks land.
+   */
+  setServicePlaceChunk(places: readonly PlannerPlace[]): void;
+  /**
+   * Replace the registry-place layer (the standalone authority municipalities
+   * with no linked city). Unlike service-places these reveal unconditionally
+   * and arrive as a single short layer, so this replaces rather than appends.
+   */
+  setRegistryPlaces(places: readonly PlannerPlace[]): void;
   setViewState(viewState: MapView | null | undefined): void;
   subscribeViewChange(listener: ViewChangeListener): () => void;
 }
@@ -402,6 +417,36 @@ const ARRIVAL_PULSE_MAX_RADIUS_PX = 28;
 const SEED_PULSE_PERIOD_MS = 2200;
 const SEED_PULSE_MIN_RADIUS_PX = 10;
 const SEED_PULSE_MAX_RADIUS_PX = 22;
+
+// --- Runtime place layers (service-places + registry-places) ---
+//
+// Service-places are replacement_bus_stop dots revealed only where the
+// rail-edge geometry beneath them has actually streamed in (progressive
+// reveal, mirroring the network reveal). They read as subordinate to cities:
+// a small cyan dot, gated to the same zoom band as the station layer so they
+// don't clutter the continental view. Registry-places are the handful of
+// standalone authority municipalities — drawn as a hollow violet ring so they
+// read as "place of record", not a bus stop, and surfaced a bit earlier since
+// there are only a few and each adds genuinely new geography.
+const SERVICE_PLACE_LAYER_MIN_ZOOM = STATION_LAYER_MIN_ZOOM;
+const SERVICE_PLACE_LAYER_FULL_ZOOM = STATION_LAYER_FULL_ZOOM;
+const SERVICE_PLACE_DOT_RADIUS_PX = 1.4;
+const SERVICE_PLACE_COLOR = "#06b6d4";
+const REGISTRY_PLACE_LAYER_MIN_ZOOM = 5;
+const REGISTRY_PLACE_LAYER_FULL_ZOOM = 6.4;
+const REGISTRY_PLACE_RING_RADIUS_PX = 3.6;
+const REGISTRY_PLACE_COLOR = "#a78bfa";
+
+// World-space proximity radius for "this service-place sits on a loaded rail
+// route". Also the cell size of the segment hash grid, so a place only ever
+// needs to look in its own cell + 8 neighbours to find every segment within
+// the radius. World units are normalized mercator (1.0 ≈ 40,075 km at the
+// equator); at ~50°N cos(lat) ≈ 0.64, so 0.0004 ≈ 10 km of ground distance.
+// TODO(human): tune this — it decides how tightly a stop must hug the line
+// before it lights up. Too large and stops bleed onto unrelated parallel
+// corridors; too small and a stop slightly off its slightly-decimated edge
+// geometry never reveals.
+const PLACE_REVEAL_RADIUS_WORLD = 0.0004;
 
 const diagnostics = createDiagnostics("web/map/canvas-surface");
 
@@ -547,6 +592,20 @@ export function createCanvasMapSurface({
     station,
     world: mercatorProject(station.lon, station.lat)
   }));
+
+  // Runtime place layers, accumulated as their chunks stream in. World points
+  // are projected once on arrival (the same project-once idiom as
+  // preparedStations) so the 60fps draw only does world→screen, never the
+  // lon/lat mercator transform. Parallel arrays keep PlannerPlace metadata
+  // (display name, role) addressable by the same index used in the reveal set.
+  const servicePlaces: PlannerPlace[] = [];
+  const servicePlaceWorld: WorldPoint[] = [];
+  // Indexes into servicePlaces/servicePlaceWorld that currently sit on a
+  // loaded rail route. Recomputed off the render path whenever a place chunk
+  // arrives or edge geometry is augmented — never per frame.
+  let revealedServicePlaceIndexes: Set<number> = new Set<number>();
+  const registryPlaces: PlannerPlace[] = [];
+  const registryPlaceWorld: WorldPoint[] = [];
   const landmassPolygons: WorldPoint[][][] = buildLandmassPolygons(borderData).map((polygon) =>
     polygon.map((ring) =>
       ring.map((point) => mercatorProject(point.lon, point.lat))
@@ -853,6 +912,10 @@ export function createCanvasMapSurface({
       if (sawRealGeometry) {
         networkGeometryLoaded = true;
       }
+      // Newly merged geometry can put a previously-hidden service-place onto a
+      // now-loaded route, so re-run the reveal off the freshly upgraded edges.
+      // No-ops cheaply when no place layer has streamed in yet.
+      recomputeRevealedServicePlaces();
       diagnostics.info("map surface refreshed geometry", {
         updated_edge_count: updated,
         edge_count: edgeRefs.length,
@@ -874,6 +937,37 @@ export function createCanvasMapSurface({
         network: true,
         routes: true
       }));
+    },
+    setServicePlaceChunk(places: readonly PlannerPlace[]): void {
+      // Append + project once (parallel arrays, same project-once idiom as
+      // preparedStations), then recompute the reveal set. The metadata array
+      // (servicePlaces) stays index-aligned with servicePlaceWorld for the
+      // future hover/tooltip follow-up; only the world points feed the draw.
+      for (const place of places) {
+        servicePlaces.push(place);
+        servicePlaceWorld.push(mercatorProject(place.lon, place.lat));
+      }
+      diagnostics.info("appended service-place chunk", {
+        chunk_place_count: places.length,
+        service_place_count_total: servicePlaces.length
+      });
+      recomputeRevealedServicePlaces();
+    },
+    setRegistryPlaces(places: readonly PlannerPlace[]): void {
+      // Registry-places arrive as one short, already-filtered layer (the 4
+      // standalone municipalities), so replace rather than accumulate. They
+      // reveal unconditionally — no route-proximity gate — since each is a
+      // place of record in its own right, not a stop hung off a rail line.
+      registryPlaces.length = 0;
+      registryPlaceWorld.length = 0;
+      for (const place of places) {
+        registryPlaces.push(place);
+        registryPlaceWorld.push(mercatorProject(place.lon, place.lat));
+      }
+      diagnostics.info("set registry places", {
+        registry_place_count: registryPlaces.length
+      });
+      scheduleRender("registry-places", createDirtyFlags({ cities: true }));
     },
     setViewState(viewState: MapView | null | undefined): void {
       if (!viewState) {
@@ -2031,6 +2125,12 @@ export function createCanvasMapSurface({
     clearCanvas(cityContext, cityCanvas);
 
     drawStations(frame);
+    // Place layers ride on the cities canvas (same clear/redraw cadence as
+    // stations). Service-places sit beneath city markers visually — drawn
+    // first so a city dot always wins an overlap — registry rings after,
+    // since there are only a few and they should read as on top.
+    drawServicePlaces(frame);
+    drawRegistryPlaces(frame);
 
     for (const visibleCity of visibleCities) {
       drawMarker(visibleCity, visibleCity.style);
@@ -2063,6 +2163,153 @@ export function createCanvasMapSurface({
       cityContext.fill();
     }
     cityContext.restore();
+  }
+
+  // Service-places (replacement-bus stops) revealed along loaded rail. We
+  // iterate only the precomputed revealed set — the proximity work already ran
+  // off the render path in recomputeRevealedServicePlaces — so the draw loop is
+  // just world→screen + viewport cull + a dot, mirroring drawStations. The dot
+  // is smaller and cyan so it reads as subordinate to a city marker.
+  function drawServicePlaces(frame: MapFrame): void {
+    if (
+      revealedServicePlaceIndexes.size === 0 ||
+      frame.zoom <= SERVICE_PLACE_LAYER_MIN_ZOOM
+    ) {
+      return;
+    }
+    const fadeSpan = Math.max(
+      0.001,
+      SERVICE_PLACE_LAYER_FULL_ZOOM - SERVICE_PLACE_LAYER_MIN_ZOOM
+    );
+    const opacity = Math.min(1, (frame.zoom - SERVICE_PLACE_LAYER_MIN_ZOOM) / fadeSpan);
+    if (opacity <= 0) {
+      return;
+    }
+
+    cityContext.save();
+    cityContext.fillStyle = toCanvasColor(SERVICE_PLACE_COLOR, 0.75 * opacity);
+    for (const index of revealedServicePlaceIndexes) {
+      const world = servicePlaceWorld[index];
+      if (!world) {
+        continue;
+      }
+      const point = frame.projectWorld(world);
+      if (!pointInViewport(point, frame.size, frame.lod.cityPadding)) {
+        continue;
+      }
+      cityContext.beginPath();
+      cityContext.arc(point.x, point.y, SERVICE_PLACE_DOT_RADIUS_PX, 0, Math.PI * 2);
+      cityContext.fill();
+    }
+    cityContext.restore();
+  }
+
+  // Standalone authority municipalities — the 4 registry-places with no linked
+  // city. Drawn as a hollow ring (stroke, no fill) so they read as a "place of
+  // record" rather than a bus stop, and gated to a lower zoom band since there
+  // are so few and each adds genuinely new geography.
+  function drawRegistryPlaces(frame: MapFrame): void {
+    if (
+      registryPlaceWorld.length === 0 ||
+      frame.zoom <= REGISTRY_PLACE_LAYER_MIN_ZOOM
+    ) {
+      return;
+    }
+    const fadeSpan = Math.max(
+      0.001,
+      REGISTRY_PLACE_LAYER_FULL_ZOOM - REGISTRY_PLACE_LAYER_MIN_ZOOM
+    );
+    const opacity = Math.min(1, (frame.zoom - REGISTRY_PLACE_LAYER_MIN_ZOOM) / fadeSpan);
+    if (opacity <= 0) {
+      return;
+    }
+
+    cityContext.save();
+    cityContext.lineWidth = 1.5;
+    cityContext.strokeStyle = toCanvasColor(REGISTRY_PLACE_COLOR, 0.9 * opacity);
+    for (const world of registryPlaceWorld) {
+      const point = frame.projectWorld(world);
+      if (!pointInViewport(point, frame.size, frame.lod.cityPadding)) {
+        continue;
+      }
+      cityContext.beginPath();
+      cityContext.arc(point.x, point.y, REGISTRY_PLACE_RING_RADIUS_PX, 0, Math.PI * 2);
+      cityContext.stroke();
+    }
+    cityContext.restore();
+  }
+
+  // Bucket the segments of every edge carrying *real* streamed geometry into a
+  // world-space hash grid (cell size === reveal radius). Rebuilt from scratch
+  // each recompute — cheap relative to the per-place tests it replaces, and it
+  // keeps the grid honest as geometry merges in. Stub/fallback chords
+  // (length <= 2) are excluded so we never reveal a stop along a fabricated line.
+  function buildLoadedEdgeSegmentGrid(): Map<string, WorldSegment[]> {
+    const grid = new Map<string, WorldSegment[]>();
+    const cellSize = PLACE_REVEAL_RADIUS_WORLD;
+    const push = (key: string, segment: WorldSegment): void => {
+      const bucket = grid.get(key);
+      if (bucket) {
+        bucket.push(segment);
+      } else {
+        grid.set(key, [segment]);
+      }
+    };
+    for (const edge of edgeRefs) {
+      const geometry = edge.geometryWorld;
+      if (!geometry || geometry.length <= 2) {
+        continue;
+      }
+      for (let index = 1; index < geometry.length; index += 1) {
+        const a = geometry[index - 1];
+        const b = geometry[index];
+        if (!a || !b) {
+          continue;
+        }
+        const segment: WorldSegment = [a, b];
+        const keyA = worldCellKey(a, cellSize);
+        push(keyA, segment);
+        const keyB = worldCellKey(b, cellSize);
+        if (keyB !== keyA) {
+          push(keyB, segment);
+        }
+      }
+    }
+    return grid;
+  }
+
+  // Recompute which service-places sit on a loaded route. Runs off the render
+  // path — only on chunk arrival (setServicePlaceChunk) or geometry merge
+  // (refreshGeometry) — so the 60fps draw never pays for proximity work. The
+  // reveal is monotonic in practice: streamed geometry is kept, so the set only
+  // grows. We trigger a cities-layer redraw (not a render-plan invalidation —
+  // places don't participate in the plan) only when the revealed set changed.
+  function recomputeRevealedServicePlaces(): void {
+    if (servicePlaceWorld.length === 0) {
+      return;
+    }
+    const grid = buildLoadedEdgeSegmentGrid();
+    const revealed = new Set<number>();
+    for (let index = 0; index < servicePlaceWorld.length; index += 1) {
+      const world = servicePlaceWorld[index];
+      if (
+        world &&
+        isPlaceOnLoadedRoute(world, grid, PLACE_REVEAL_RADIUS_WORLD, PLACE_REVEAL_RADIUS_WORLD)
+      ) {
+        revealed.add(index);
+      }
+    }
+    const changed = revealed.size !== revealedServicePlaceIndexes.size;
+    revealedServicePlaceIndexes = revealed;
+    diagnostics.info("recomputed revealed service-places", {
+      service_place_count: servicePlaceWorld.length,
+      revealed_count: revealed.size,
+      loaded_segment_cells: grid.size,
+      changed
+    });
+    if (changed) {
+      scheduleRender("service-place-reveal", createDirtyFlags({ cities: true }));
+    }
   }
 
   function drawKeyboardFocusRing(visibleCities: VisibleCity[]): void {
@@ -2228,10 +2475,13 @@ export function createCanvasMapSurface({
       }
       visibleStationsCache = { frameKey: frame.key, stations: visibleStations };
     }
+    const routePathCities = routeIntermediateCitySet(plannerState.segments);
 
     for (const entry of preparedCities) {
       const city = entry.city;
       const inTrip = tripSet.has(city.name);
+      const inRoutePath = !inTrip && routePathCities.has(city.name);
+      const pinnedToRoute = inTrip || inRoutePath;
       // Lifted above `visible` so keyboard focus can bypass the network gate
       // (and the fade below): the focus ring resolves its target through
       // visibleCities, so a focused city must reach the plan even when its
@@ -2242,7 +2492,7 @@ export function createCanvasMapSurface({
       // "which cities show" rule has a unit-tested home outside the renderer.
       const decision = decideCityVisibility({
         filterInterest: plannerState.filterInterest,
-        inTrip,
+        inTrip: pinnedToRoute,
         interest: city.interest,
         isKeyboardFocused,
         onNetwork: visibleStations.has(city.name),
@@ -2260,7 +2510,7 @@ export function createCanvasMapSurface({
       }
 
       const travelTime = plannerState.distFromLast[city.name];
-      if (visible && hasLegFilter && !inTrip) {
+      if (visible && hasLegFilter && !pinnedToRoute) {
         if (travelTime !== undefined && travelTime !== Infinity) {
           if (travelTime < plannerState.legMin || travelTime > plannerState.legMax) {
             visible = false;
@@ -2280,7 +2530,7 @@ export function createCanvasMapSurface({
       // trip overlay and focus ring never blink out (isKeyboardFocused is
       // computed above, where it also bypasses the network gate).
       const fadeOpacity =
-        inTrip || isKeyboardFocused
+        pinnedToRoute || isKeyboardFocused
           ? 1
           : cityPopFadeOpacity(city.pop, popThresholdAbs, CITY_POP_FADE_RATIO);
       if (fadeOpacity <= 0) {
@@ -2307,11 +2557,12 @@ export function createCanvasMapSurface({
       // France. Anchoring to the visible network replaces it as the flood
       // guard at continental zoom.
       shown += 1;
-      const style = markerStyle(city, frame.zoom, inTrip, fadeOpacity);
+      const style = markerStyle(city, frame.zoom, inTrip, fadeOpacity, inRoutePath);
       const visibleCity: VisibleCity = {
         city,
         fadeOpacity,
         inTrip,
+        inRoutePath,
         radius: style.radius,
         style,
         travelTime,
@@ -2326,6 +2577,7 @@ export function createCanvasMapSurface({
 
       const showLabel =
         inTrip ||
+        inRoutePath ||
         (city.interest >= frame.lod.labelThreshold.interest &&
           city.pop >= frame.lod.labelThreshold.pop);
       if (!showLabel) {
@@ -2726,6 +2978,9 @@ function buildLabelCandidate(
   if (visibleCity.inTrip) {
     className = "city-lbl trip-lbl";
     text = `${plannerState.trip.indexOf(visibleCity.city.name) + 1}. ${visibleCity.city.name}`;
+  } else if (visibleCity.inRoutePath) {
+    className = "city-lbl trip-lbl";
+    text = `via ${visibleCity.city.name}`;
   } else if (visibleCity.city.interest >= 9) {
     className = "city-lbl top";
   }
@@ -2765,6 +3020,9 @@ function labelPriority(visibleCity: VisibleCity, plannerState: MapPlannerState):
   if (visibleCity.inTrip) {
     return 100_000 - plannerState.trip.indexOf(visibleCity.city.name);
   }
+  if (visibleCity.inRoutePath) {
+    return 90_000;
+  }
 
   return visibleCity.city.interest * 10_000 + visibleCity.city.pop / 1000;
 }
@@ -2790,7 +3048,14 @@ function hitTestRouteSegments(
   return bestSegment;
 }
 
-function distanceFromPointToPolyline(p: MapPoint, points: readonly MapPoint[]): number {
+// Generalized over the structural {x, y} shape so it serves both screen-space
+// hit-testing (MapPoint) and world-space reveal proximity (WorldPoint) — both
+// are structurally identical, so widening the param avoids duplicating the
+// point-to-segment math. Distance is returned in the same units as the inputs.
+function distanceFromPointToPolyline(
+  p: { x: number; y: number },
+  points: readonly { x: number; y: number }[]
+): number {
   if (points.length === 0) return Number.POSITIVE_INFINITY;
   if (points.length === 1) {
     const only = points[0];
@@ -2816,6 +3081,76 @@ function distanceFromPointToPolyline(p: MapPoint, points: readonly MapPoint[]): 
     if (d < min) min = d;
   }
   return min;
+}
+
+// --- Service-place reveal: world-space proximity to loaded rail geometry ---
+//
+// A service-place reveals only when it sits within PLACE_REVEAL_RADIUS_WORLD of
+// a rail-edge polyline that has actually streamed in. Brute-forcing every place
+// against every loaded segment would be O(places × segments) on each chunk/geo
+// merge, so we bucket segments into a coarse hash grid whose cell size equals
+// the reveal radius. A place then only consults its own cell + the 8 neighbours
+// to find every segment that could be within range — turning the per-place test
+// into a near-constant-time gather.
+
+/** One rail-edge polyline segment in mercator world space. */
+export type WorldSegment = readonly [WorldPoint, WorldPoint];
+
+/**
+ * Hash-grid cell key for a world point. With cellSize === the reveal radius, a
+ * point within `radius` of a segment is guaranteed to fall in that segment's
+ * cell or one of its 8 neighbours (segments are bucketed by both endpoints).
+ * Floors to an integer lattice; the `${cx}:${cy}` string is the Map key.
+ */
+export function worldCellKey(point: { x: number; y: number }, cellSize: number): string {
+  const cx = Math.floor(point.x / cellSize);
+  const cy = Math.floor(point.y / cellSize);
+  return `${cx}:${cy}`;
+}
+
+/**
+ * Reveal predicate — does the service-place at `placeWorld` sit "on a loaded
+ * rail route"? `grid` buckets the segments of every edge whose real geometry
+ * has streamed in, keyed by worldCellKey(·, cellSize). The place reveals when
+ * it is within `radius` (world units) of any such segment.
+ *
+ * Gather strategy: a place within `radius` of a segment must share that
+ * segment's cell or one of the 8 neighbours — cellSize === radius and
+ * both-endpoint bucketing guarantee it. So we sweep cx-1..cx+1 / cy-1..cy+1
+ * around the place's own cell, union the segment lists, and return true as soon
+ * as distanceFromPointToPolyline(placeWorld, segment) <= radius. The radius
+ * itself (PLACE_REVEAL_RADIUS_WORLD) is the feel-knob: how tightly a stop must
+ * hug the line before it lights up.
+ */
+export function isPlaceOnLoadedRoute(
+  placeWorld: WorldPoint,
+  grid: Map<string, WorldSegment[]>,
+  cellSize: number,
+  radius: number
+): boolean {
+  // The place's own lattice cell. Sweeping ±1 in each axis covers the only
+  // cells a within-radius segment can have been bucketed into (cellSize ===
+  // radius, segments bucketed by both endpoints), so this 3×3 block is the
+  // complete-yet-tight candidate set.
+  const cx = Math.floor(placeWorld.x / cellSize);
+  const cy = Math.floor(placeWorld.y / cellSize);
+  for (let dx = -1; dx <= 1; dx += 1) {
+    for (let dy = -1; dy <= 1; dy += 1) {
+      const bucket = grid.get(`${cx + dx}:${cy + dy}`);
+      if (!bucket) {
+        continue;
+      }
+      for (const segment of bucket) {
+        // Point-to-segment (a 2-point polyline) — the stop hugs the drawn
+        // line itself, not just its vertices, so dots land along the corridor
+        // rather than clustering at bends.
+        if (distanceFromPointToPolyline(placeWorld, segment) <= radius) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 function buildSegmentTooltipHtml(
@@ -3230,23 +3565,45 @@ function markerStyle(
   city: PlannerCity,
   zoom: number,
   inTrip: boolean,
-  fadeOpacity = 1
+  fadeOpacity = 1,
+  inRoutePath = false
 ): MarkerStyle {
-  const color = inTrip ? "#f59e0b" : markerColor(city.interest);
+  const color = inTrip ? "#f59e0b" : inRoutePath ? "#fbbf24" : markerColor(city.interest);
   const radius = inTrip
     ? Math.max(8, markerRadius(city.interest, zoom) + 3)
+    : inRoutePath
+      ? Math.max(6, markerRadius(city.interest, zoom) + 1.5)
     : markerRadius(city.interest, zoom);
   const baseFillOpacity =
-    inTrip ? 0.7 : city.interest >= 9 ? 0.5 : city.interest >= 7 ? 0.35 : 0.25;
-  const baseStrokeOpacity = inTrip ? 1 : 0.8;
+    inTrip ? 0.7 : inRoutePath ? 0.55 : city.interest >= 9 ? 0.5 : city.interest >= 7 ? 0.35 : 0.25;
+  const baseStrokeOpacity = inTrip || inRoutePath ? 1 : 0.8;
   return {
     color,
     fillColor: color,
     fillOpacity: baseFillOpacity * fadeOpacity,
     opacity: baseStrokeOpacity * fadeOpacity,
     radius,
-    weight: inTrip ? 2.5 : city.interest >= 7 ? 1.5 : 1
+    weight: inTrip ? 2.5 : inRoutePath ? 2 : city.interest >= 7 ? 1.5 : 1
   };
+}
+
+function routeIntermediateCitySet(
+  segments: readonly (PlannerSegment | null)[]
+): Set<string> {
+  const routeCities = new Set<string>();
+  for (const segment of segments) {
+    const path = segment?.path;
+    if (!path || path.length <= 2) {
+      continue;
+    }
+    for (let index = 1; index < path.length - 1; index += 1) {
+      const cityName = path[index];
+      if (cityName) {
+        routeCities.add(cityName);
+      }
+    }
+  }
+  return routeCities;
 }
 
 function toCanvasColor(hexColor: string, alpha: number): string {

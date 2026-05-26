@@ -12,7 +12,8 @@
 import { createDiagnostics, summarizeError } from "../../app-shell/diagnostics.ts";
 import { notifyServiceWorkerDatasetVersion } from "../../app-shell/service-worker.ts";
 import { borderData as rawBorderData } from "../../data/landmass-borders.ts";
-import { loadEdgeGeometries, loadPlannerDataset } from "../../data/runtime-data.ts";
+import { loadEdgeGeometries, loadPlannerDataset, loadRuntimePlaces } from "../../data/runtime-data.ts";
+import type { PlannerPlace } from "../../data/runtime-place-artifacts.ts";
 import {
   createPlannerClient,
   prewarmPlannerClient
@@ -390,6 +391,15 @@ async function boot(host: HTMLElement): Promise<ShellResources | null> {
       mapSurface,
       loadedChunkFiles
     });
+    // Hot upgrade: stream the lazy place layers alongside the geometry.
+    // Service-places reveal progressively as their supporting rail geometry
+    // lands (the surface keys reveal off loaded edges); registry-places are a
+    // tiny standalone layer surfaced once. Failures degrade to cities-only —
+    // the layers are optional. See project_place_layers_unconsumed.
+    void scheduleRuntimePlaceLoad({
+      meta: dataset.meta,
+      mapSurface
+    });
     // Re-fetch newly-visible chunks on view change. Debounced via the
     // existing subscribeViewChange (which already batches at
     // VIEW_CHANGE_COMMIT_DELAY_MS in the surface). When the manifest
@@ -551,6 +561,111 @@ async function scheduleEdgeGeometryUpgrade({
   } finally {
     endLoading?.();
   }
+}
+
+interface RuntimePlaceLoadArgs {
+  meta: import("../../types/planner-dataset.ts").RuntimeArtifactMeta | undefined;
+  mapSurface: {
+    /** Append a streamed batch of service-places; the surface accumulates
+     *  them and recomputes which sit on loaded rail geometry. */
+    setServicePlaceChunk(places: PlannerPlace[]): void;
+    /** Replace the standalone authority places (already filtered to unlinked). */
+    setRegistryPlaces(places: PlannerPlace[]): void;
+  };
+}
+
+/** Read a string-valued meta field. `RuntimeArtifactMeta` is an open record
+ *  (`[key: string]: unknown`), so the manifest paths come back untyped — coerce
+ *  defensively and treat a missing/blank value as "layer absent". */
+function readStringMetaField(
+  meta: RuntimePlaceLoadArgs["meta"],
+  key: string
+): string | null {
+  const value = meta?.[key];
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+/**
+ * Stream the two lazy place layers after the shell is interactive.
+ *
+ * service-places: streamed chunk-by-chunk into `setServicePlaceChunk`, which
+ * accumulates and recomputes the reveal index. Reveal is driven by the surface
+ * (proximity to loaded rail geometry), so the stops light up as their corridor
+ * geometry arrives — no global "all or nothing" flash.
+ *
+ * registry-places: a tiny single-chunk layer. We load it fully (no `onChunk`,
+ * so the terminal result carries the combined array) and keep only the
+ * standalone (unlinked) municipalities — the linked ones duplicate a city dot.
+ *
+ * Both layers are optional: a dataset without the manifests is a silent no-op,
+ * and a fetch failure degrades to cities-only.
+ */
+async function scheduleRuntimePlaceLoad({
+  meta,
+  mapSurface
+}: RuntimePlaceLoadArgs): Promise<void> {
+  const serviceManifest = readStringMetaField(meta, "service_place_artifact_path");
+  const registryManifest = readStringMetaField(meta, "registry_place_artifact_path");
+
+  const tasks: Promise<void>[] = [];
+
+  if (serviceManifest) {
+    // Per-layer dedup set: the manifest is single-chunk today, but the set
+    // keeps the streaming contract honest if it grows (and matches the
+    // geometry upgrade's seen-set idiom).
+    const seenChunkFiles = new Set<string>();
+    tasks.push(
+      loadRuntimePlaces({
+        manifestFile: serviceManifest,
+        layerId: "service-places",
+        seenChunkFiles,
+        onChunk: (chunk) => {
+          seenChunkFiles.add(chunk.chunkFile);
+          mapSurface.setServicePlaceChunk(chunk.places);
+        }
+      })
+        .then((result) => {
+          diagnostics.info("service-places layer loaded", {
+            loaded_chunk_count: result.loadedChunkFiles.length
+          });
+        })
+        .catch((error: unknown) => {
+          diagnostics.warn("service-places layer load failed", {
+            error: summarizeError(error)
+          });
+        })
+    );
+  } else {
+    diagnostics.debug("service-places layer absent from meta");
+  }
+
+  if (registryManifest) {
+    tasks.push(
+      loadRuntimePlaces({
+        manifestFile: registryManifest,
+        layerId: "registry-places"
+        // No onChunk: this layer is tiny, so we take the combined terminal
+        // result and filter it in one pass.
+      })
+        .then((result) => {
+          const standalone = result.places.filter((place) => place.linkedCityId == null);
+          mapSurface.setRegistryPlaces(standalone);
+          diagnostics.info("registry-places layer loaded", {
+            total_count: result.places.length,
+            standalone_count: standalone.length
+          });
+        })
+        .catch((error: unknown) => {
+          diagnostics.warn("registry-places layer load failed", {
+            error: summarizeError(error)
+          });
+        })
+    );
+  } else {
+    diagnostics.debug("registry-places layer absent from meta");
+  }
+
+  await Promise.all(tasks);
 }
 
 // The population slider has a step of 10; the auto curve returns continuous

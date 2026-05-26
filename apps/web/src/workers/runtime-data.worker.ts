@@ -8,12 +8,21 @@ import {
   type EdgeGeometryChunkResult,
   type EdgeGeometryManifest
 } from "../data/edge-geometry-artifacts.ts";
+import {
+  fetchServicePatternArtifact,
+  type ServicePatternChunkResult,
+  type ServicePatternManifest
+} from "../data/service-pattern-artifacts.ts";
+import {
+  fetchRuntimePlaceArtifact,
+  type RuntimePlaceChunkResult,
+  type RuntimePlaceManifest
+} from "../data/runtime-place-artifacts.ts";
 import { buildProductionPlannerData } from "../data/production-adapter.ts";
 import type {
   ProductionArtifactBundle,
   RawCity,
   RawEdge,
-  RawEdgeGeometries,
   RawStationArtifact,
   RuntimeArtifactMeta
 } from "../types/planner-dataset.ts";
@@ -35,6 +44,12 @@ interface IncomingMessage {
    *  structured clone. When false/absent it keeps the legacy single
    *  combined-payload contract. */
   stream?: boolean;
+  /** load-runtime-places: which place-layer manifest to load
+   *  (`service-places.manifest.json` or `registry-places.manifest.json`). */
+  manifestFile?: string;
+  /** load-runtime-places: echoed back on chunk + terminal messages so the
+   *  caller can route a shared worker channel to the right layer. */
+  layerId?: string;
 }
 
 interface FetchAssetError extends Error {
@@ -64,6 +79,16 @@ self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) =>
 
   if (message.type === "load-edge-geometries") {
     await handleLoadGeometries(message);
+    return;
+  }
+
+  if (message.type === "load-service-patterns") {
+    await handleLoadServices(message);
+    return;
+  }
+
+  if (message.type === "load-runtime-places") {
+    await handleLoadRuntimePlaces(message);
     return;
   }
 });
@@ -148,7 +173,7 @@ async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
             fetchJsonWithFallback: (fileName: string) =>
               fetchJsonWithFallback(basePaths, fileName),
             fetchOptionalJsonWithFallback: (fileName: string) =>
-              fetchOptionalJsonWithFallback(basePaths, fileName),
+              fetchOptionalJsonWithFallback<ServicePatternManifest>(basePaths, fileName),
             fetchJsonFromBasePath,
             diagnostics
           },
@@ -194,6 +219,162 @@ async function handleLoadGeometries(message: IncomingMessage): Promise<void> {
     self.postMessage({
       requestId,
       ok: false,
+      error: serializeError(error)
+    });
+  }
+}
+
+async function handleLoadServices(message: IncomingMessage): Promise<void> {
+  const basePaths: string[] = message.basePaths ?? [];
+  const requestId = message.requestId;
+  const seenChunkFiles = message.seenChunkFiles
+    ? new Set<string>(message.seenChunkFiles)
+    : undefined;
+  const stream = Boolean(message.stream);
+  diagnostics.info("received runtime data worker service request", {
+    request_id: requestId,
+    base_path_count: basePaths.length,
+    already_loaded_count: seenChunkFiles?.size ?? 0,
+    streaming: stream
+  });
+
+  try {
+    const result = await diagnostics.timeAsync(
+      "load-service-patterns",
+      async () => {
+        return fetchServicePatternArtifact(
+          {
+            basePaths,
+            fetchJsonWithFallback: (fileName: string) =>
+              fetchJsonWithFallback(basePaths, fileName),
+            fetchOptionalJsonWithFallback: (fileName: string) =>
+              fetchOptionalJsonWithFallback(basePaths, fileName),
+            fetchJsonFromBasePath,
+            diagnostics
+          },
+          {
+            seenChunkFiles,
+            onChunk: stream
+              ? (chunk: ServicePatternChunkResult) => {
+                  self.postMessage({ requestId, type: "service-pattern-chunk", chunk });
+                }
+              : undefined
+          }
+        );
+      },
+      { request_id: requestId }
+    );
+
+    diagnostics.info("runtime data worker loaded service patterns", {
+      request_id: requestId,
+      pattern_count: result.services.patterns.length,
+      loaded_chunk_count: result.loadedChunkFiles.length,
+      streaming: stream
+    });
+    self.postMessage({
+      requestId,
+      ok: true,
+      loadedChunkFiles: result.loadedChunkFiles,
+      ...(stream ? {} : { services: result.services })
+    });
+  } catch (error) {
+    diagnostics.error("runtime data worker service request failed", {
+      request_id: requestId,
+      error: summarizeError(error)
+    });
+    self.postMessage({
+      requestId,
+      ok: false,
+      error: serializeError(error)
+    });
+  }
+}
+
+async function handleLoadRuntimePlaces(message: IncomingMessage): Promise<void> {
+  const basePaths: string[] = message.basePaths ?? [];
+  const requestId = message.requestId;
+  const manifestFile = message.manifestFile;
+  // layerId is opaque to the worker — it just echoes it back so the caller can
+  // route a single worker channel to the right place layer (service vs registry).
+  const layerId = message.layerId;
+  const seenChunkFiles = message.seenChunkFiles
+    ? new Set<string>(message.seenChunkFiles)
+    : undefined;
+  const stream = Boolean(message.stream);
+  diagnostics.info("received runtime data worker place request", {
+    request_id: requestId,
+    layer_id: layerId ?? null,
+    manifest_file: manifestFile ?? null,
+    base_path_count: basePaths.length,
+    already_loaded_count: seenChunkFiles?.size ?? 0,
+    streaming: stream
+  });
+
+  if (!manifestFile) {
+    // The place layers are addressed by manifest file; without one there is
+    // nothing to load. Treat as a hard error so the caller surfaces the bug
+    // rather than silently rendering an empty layer.
+    const error = new Error("load-runtime-places requires a manifestFile");
+    diagnostics.error("runtime data worker place request missing manifestFile", {
+      request_id: requestId,
+      layer_id: layerId ?? null
+    });
+    self.postMessage({ requestId, ok: false, layerId, error: serializeError(error) });
+    return;
+  }
+
+  try {
+    const result = await diagnostics.timeAsync(
+      "load-runtime-places",
+      async () => {
+        return fetchRuntimePlaceArtifact(
+          {
+            basePaths,
+            fetchOptionalJsonWithFallback: (fileName: string) =>
+              fetchOptionalJsonWithFallback<RuntimePlaceManifest>(basePaths, fileName),
+            fetchJsonFromBasePath,
+            diagnostics
+          },
+          {
+            manifestFile,
+            seenChunkFiles,
+            onChunk: stream
+              ? (chunk: RuntimePlaceChunkResult) => {
+                  self.postMessage({ requestId, type: "runtime-place-chunk", layerId, chunk });
+                }
+              : undefined
+          }
+        );
+      },
+      { request_id: requestId, layer_id: layerId ?? null }
+    );
+
+    diagnostics.info("runtime data worker loaded runtime places", {
+      request_id: requestId,
+      layer_id: layerId ?? null,
+      place_count: result.places.length,
+      loaded_chunk_count: result.loadedChunkFiles.length,
+      streaming: stream
+    });
+    // Streamed loads already shipped every place via runtime-place-chunk
+    // messages; omit the combined array to avoid a duplicate structured clone.
+    self.postMessage({
+      requestId,
+      ok: true,
+      layerId,
+      loadedChunkFiles: result.loadedChunkFiles,
+      ...(stream ? {} : { places: result.places })
+    });
+  } catch (error) {
+    diagnostics.error("runtime data worker place request failed", {
+      request_id: requestId,
+      layer_id: layerId ?? null,
+      error: summarizeError(error)
+    });
+    self.postMessage({
+      requestId,
+      ok: false,
+      layerId,
       error: serializeError(error)
     });
   }

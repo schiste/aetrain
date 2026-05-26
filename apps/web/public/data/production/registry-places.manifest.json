@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "schema_version": 1,
+  "layer_id": "registry_places",
+  "total_place_count": 27,
+  "rail_city_count": 0,
+  "replacement_bus_stop_count": 0,
+  "registry_place_count": 27,
+  "chunk_target_bytes": 5242880,
+  "chunks": [
+    {
+      "file": "registry-places/chunk-0000.json",
+      "place_count": 27,
+      "rail_city_count": 0,
+      "replacement_bus_stop_count": 0,
+      "registry_place_count": 27
+    }
+  ]
+}
